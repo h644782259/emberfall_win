@@ -69,6 +69,27 @@ namespace Emberfall
         public static float CinderTrailTickMultiplier(bool concentrated){return concentrated?1f/7f:.1f;}
         public const float CinderDirectMultiplier=.8f;
 
+        public static string VenomModifier(bool concentrated){return concentrated?"单发 · 收束毒矢":"扇形 · 毒种传播";}
+        public static string VenomSkillSummary(int rank,bool concentrated)
+        {
+            string identity=GameBalance.SkillName(HeroClass.Ranger,0)+" · "+VenomModifier(concentrated)+"\n";
+            if(concentrated)return identity+"一发窄幅实体毒矢，直伤 "+(100*ConcentratedVenomCoefficient(rank)).ToString("0.##")+"%攻击；仅首个实际拦截目标，受墙体和前排阻挡，固定目标意图不保证送达。取消扇形、多目标爆炸与毒传播；保留普通三毒引爆，独立且一次。能量/冷却不变。";
+            return identity+GameBalance.SkillEvolution(HeroClass.Ranger,0,rank)+"\n变体A：毒爆加成 -20%；每2秒向附近最多2个合法目标传播1层毒素。";
+        }
+        public static bool ConcentratedVenomEquipped(GameProfile profile)
+        {
+            if(profile==null||profile.heroClass!=HeroClass.Ranger||profile.inventory==null)return false;
+            var item=profile.inventory.Find(x=>x.id==profile.relicId);
+            return item!=null&&item.slot==ItemSlot.Relic&&item.mechanic==EquipmentMechanic.VenomSpread&&item.mechanicVariantUnlocked&&item.mechanicVariant==1;
+        }
+        public static string VenomSkillOverride(GameProfile profile,int skill,int rank)
+        {
+            if(profile==null||profile.heroClass!=HeroClass.Ranger||skill!=0||profile.inventory==null)return "";
+            var item=profile.inventory.Find(x=>x.id==profile.relicId);
+            if(item==null||item.slot!=ItemSlot.Relic||item.mechanic!=EquipmentMechanic.VenomSpread)return "";
+            return VenomSkillSummary(Math.Max(1,Math.Min(3,rank)),item.mechanicVariantUnlocked&&item.mechanicVariant==1);
+        }
+
         public static bool HasMechanicVariant(EquipmentMechanic mechanic)
         { return mechanic == EquipmentMechanic.FrostEcho || mechanic == EquipmentMechanic.CinderTrail || mechanic == EquipmentMechanic.ReturningBlade || mechanic == EquipmentMechanic.VenomSpread; }
 
@@ -225,6 +246,9 @@ namespace Emberfall
         public string weaponId, armorId, relicId;
         // Null in legacy presets: preserve current item variants. -1 means no unlocked variant captured.
         public int[] equipmentVariants;
+        public EquipmentMechanic[] equipmentMechanics;
+        // A zero enum entry is not evidence: each slot explicitly records whether its mechanism is known.
+        public int equipmentMechanicKnownMask;
     }
 
     public enum ProgressionGoalKind { None, Core, Variant, Ascension, SecondPreset, Tier, Reforge, ClassTutorial }
@@ -273,6 +297,8 @@ namespace Emberfall
         public int[] slotUpgradeRanks = new int[3];
         public bool slotUpgradesInitialized;
         public int mechanicMaterials;
+        public int variantKnowledgeRevision;
+        public List<EquipmentMechanic> variantKnowledge = new List<EquipmentMechanic>();
         public int materialRewardedClears;
         public bool firstClearRewardClaimed;
         public bool pendingFirstClearReward;

@@ -1,0 +1,170 @@
+
+/workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs(21,131): warning CS0067: The event 'Application.wantsToQuit' is never used [/tmp/practice-session-sas096fe/project/Validation.csproj]
+/workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs(32,208): warning CS0067: The event 'ProgressionService.LeveledUp' is never used [/tmp/practice-session-sas096fe/project/Validation.csproj]
+/workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs(32,175): warning CS0067: The event 'ProgressionService.Changed' is never used [/tmp/practice-session-sas096fe/project/Validation.csproj]
+PASS 113 actual GameSession.Practice lifecycle assertions (Unity boundary doubles, no engine execution)
+
+/workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs(32,208): warning CS0067: The event 'ProgressionService.LeveledUp' is never used [/tmp/practice-session-sas096fe/project/Validation.csproj]
+/workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs(32,175): warning CS0067: The event 'ProgressionService.Changed' is never used [/tmp/practice-session-sas096fe/project/Validation.csproj]
+/workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs(21,131): warning CS0067: The event 'Application.wantsToQuit' is never used [/tmp/practice-session-sas096fe/project/Validation.csproj]
+
+Build succeeded.
+
+/workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs(32,208): warning CS0067: The event 'ProgressionService.LeveledUp' is never used [/tmp/practice-session-sas096fe/project/Validation.csproj]
+/workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs(32,175): warning CS0067: The event 'ProgressionService.Changed' is never used [/tmp/practice-session-sas096fe/project/Validation.csproj]
+/workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs(21,131): warning CS0067: The event 'Application.wantsToQuit' is never used [/tmp/practice-session-sas096fe/project/Validation.csproj]
+    3 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.50
+
+Unhandled exception. System.Exception: actual clipped Heal and damage telemetry stay out of original run
+   at CampPracticeSessionTests.Check(Boolean value, String text) in /workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs:line 64
+   at CampPracticeSessionTests.Run() in /workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs:line 91
+   at Program.Main() in /tmp/practice-session-sas096fe/project/Program.cs:line 1
+
+PASS compiled telemetry isolation negative: actual clipped Heal and damage telemetry stay out of original run
+/workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs(32,208): warning CS0067: The event 'ProgressionService.LeveledUp' is never used [/tmp/practice-session-sas096fe/project/Validation.csproj]
+/workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs(21,131): warning CS0067: The event 'Application.wantsToQuit' is never used [/tmp/practice-session-sas096fe/project/Validation.csproj]
+/workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs(32,175): warning CS0067: The event 'ProgressionService.Changed' is never used [/tmp/practice-session-sas096fe/project/Validation.csproj]
+
+Build succeeded.
+
+/workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs(32,208): warning CS0067: The event 'ProgressionService.LeveledUp' is never used [/tmp/practice-session-sas096fe/project/Validation.csproj]
+/workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs(21,131): warning CS0067: The event 'Application.wantsToQuit' is never used [/tmp/practice-session-sas096fe/project/Validation.csproj]
+/workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs(32,175): warning CS0067: The event 'ProgressionService.Changed' is never used [/tmp/practice-session-sas096fe/project/Validation.csproj]
+    3 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.50
+
+Unhandled exception. System.Exception: actual clipped Heal and damage telemetry stay out of original run
+   at CampPracticeSessionTests.Check(Boolean value, String text) in /workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs:line 64
+   at CampPracticeSessionTests.Run() in /workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs:line 91
+   at Program.Main() in /tmp/practice-session-sas096fe/project/Program.cs:line 1
+
+PASS compiled telemetry isolation negative: actual clipped Heal and damage telemetry stay out of original run
+/workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs(32,208): warning CS0067: The event 'ProgressionService.LeveledUp' is never used [/tmp/practice-session-sas096fe/project/Validation.csproj]
+/workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs(32,175): warning CS0067: The event 'ProgressionService.Changed' is never used [/tmp/practice-session-sas096fe/project/Validation.csproj]
+/workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs(21,131): warning CS0067: The event 'Application.wantsToQuit' is never used [/tmp/practice-session-sas096fe/project/Validation.csproj]
+
+Build succeeded.
+
+/workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs(32,208): warning CS0067: The event 'ProgressionService.LeveledUp' is never used [/tmp/practice-session-sas096fe/project/Validation.csproj]
+/workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs(32,175): warning CS0067: The event 'ProgressionService.Changed' is never used [/tmp/practice-session-sas096fe/project/Validation.csproj]
+/workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs(21,131): warning CS0067: The event 'Application.wantsToQuit' is never used [/tmp/practice-session-sas096fe/project/Validation.csproj]
+    3 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.51
+
+Unhandled exception. System.Exception: actual CanQuitSafely restores owner then saves once
+   at CampPracticeSessionTests.Check(Boolean value, String text) in /workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs:line 64
+   at CampPracticeSessionTests.Run() in /workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs:line 96
+   at Program.Main() in /tmp/practice-session-sas096fe/project/Program.cs:line 1
+
+PASS compiled negative control: original OS-close veto
+/workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs(32,175): warning CS0067: The event 'ProgressionService.Changed' is never used [/tmp/practice-session-sas096fe/project/Validation.csproj]
+/workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs(21,131): warning CS0067: The event 'Application.wantsToQuit' is never used [/tmp/practice-session-sas096fe/project/Validation.csproj]
+/workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs(32,208): warning CS0067: The event 'ProgressionService.LeveledUp' is never used [/tmp/practice-session-sas096fe/project/Validation.csproj]
+
+Build succeeded.
+
+/workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs(32,175): warning CS0067: The event 'ProgressionService.Changed' is never used [/tmp/practice-session-sas096fe/project/Validation.csproj]
+/workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs(21,131): warning CS0067: The event 'Application.wantsToQuit' is never used [/tmp/practice-session-sas096fe/project/Validation.csproj]
+/workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs(32,208): warning CS0067: The event 'ProgressionService.LeveledUp' is never used [/tmp/practice-session-sas096fe/project/Validation.csproj]
+    3 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.50
+
+Unhandled exception. System.Exception: prepare freezes real session before timer and attacks
+   at CampPracticeSessionTests.Check(Boolean value, String text) in /workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs:line 64
+   at CampPracticeSessionTests.Run() in /workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs:line 82
+   at Program.Main() in /tmp/practice-session-sas096fe/project/Program.cs:line 1
+
+PASS compiled negative control: prepare freezes real session before timer and attacks
+/workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs(32,175): warning CS0067: The event 'ProgressionService.Changed' is never used [/tmp/practice-session-sas096fe/project/Validation.csproj]
+/workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs(32,208): warning CS0067: The event 'ProgressionService.LeveledUp' is never used [/tmp/practice-session-sas096fe/project/Validation.csproj]
+/workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs(21,131): warning CS0067: The event 'Application.wantsToQuit' is never used [/tmp/practice-session-sas096fe/project/Validation.csproj]
+
+Build succeeded.
+
+/workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs(32,175): warning CS0067: The event 'ProgressionService.Changed' is never used [/tmp/practice-session-sas096fe/project/Validation.csproj]
+/workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs(32,208): warning CS0067: The event 'ProgressionService.LeveledUp' is never used [/tmp/practice-session-sas096fe/project/Validation.csproj]
+/workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs(21,131): warning CS0067: The event 'Application.wantsToQuit' is never used [/tmp/practice-session-sas096fe/project/Validation.csproj]
+    3 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.50
+
+Unhandled exception. System.Exception: actual kill removes supply once and records order
+   at CampPracticeSessionTests.Check(Boolean value, String text) in /workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs:line 64
+   at CampPracticeSessionTests.Run() in /workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs:line 93
+   at Program.Main() in /tmp/practice-session-sas096fe/project/Program.cs:line 1
+
+PASS compiled negative control: actual kill removes supply once and records order
+/tmp/practice-session-sas096fe/Session.cs(23,26): warning CS0162: Unreachable code detected [/tmp/practice-session-sas096fe/project/Validation.csproj]
+/workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs(32,208): warning CS0067: The event 'ProgressionService.LeveledUp' is never used [/tmp/practice-session-sas096fe/project/Validation.csproj]
+/workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs(21,131): warning CS0067: The event 'Application.wantsToQuit' is never used [/tmp/practice-session-sas096fe/project/Validation.csproj]
+/workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs(32,175): warning CS0067: The event 'ProgressionService.Changed' is never used [/tmp/practice-session-sas096fe/project/Validation.csproj]
+
+Build succeeded.
+
+/tmp/practice-session-sas096fe/Session.cs(23,26): warning CS0162: Unreachable code detected [/tmp/practice-session-sas096fe/project/Validation.csproj]
+/workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs(32,208): warning CS0067: The event 'ProgressionService.LeveledUp' is never used [/tmp/practice-session-sas096fe/project/Validation.csproj]
+/workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs(21,131): warning CS0067: The event 'Application.wantsToQuit' is never used [/tmp/practice-session-sas096fe/project/Validation.csproj]
+/workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs(32,175): warning CS0067: The event 'ProgressionService.Changed' is never used [/tmp/practice-session-sas096fe/project/Validation.csproj]
+    4 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.52
+
+Unhandled exception. System.Exception: unsafe entry refused before real enemy OnDisable
+   at CampPracticeSessionTests.Check(Boolean value, String text) in /workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs:line 64
+   at CampPracticeSessionTests.Run() in /workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs:line 70
+   at Program.Main() in /tmp/practice-session-sas096fe/project/Program.cs:line 1
+
+PASS compiled negative control: unsafe entry refused before real enemy OnDisable
+/tmp/practice-session-sas096fe/Session.cs(119,43): warning CS1717: Assignment made to same variable; did you mean to assign something else? [/tmp/practice-session-sas096fe/project/Validation.csproj]
+/workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs(32,208): warning CS0067: The event 'ProgressionService.LeveledUp' is never used [/tmp/practice-session-sas096fe/project/Validation.csproj]
+/workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs(32,175): warning CS0067: The event 'ProgressionService.Changed' is never used [/tmp/practice-session-sas096fe/project/Validation.csproj]
+/workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs(21,131): warning CS0067: The event 'Application.wantsToQuit' is never used [/tmp/practice-session-sas096fe/project/Validation.csproj]
+
+Build succeeded.
+
+/tmp/practice-session-sas096fe/Session.cs(119,43): warning CS1717: Assignment made to same variable; did you mean to assign something else? [/tmp/practice-session-sas096fe/project/Validation.csproj]
+/workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs(32,208): warning CS0067: The event 'ProgressionService.LeveledUp' is never used [/tmp/practice-session-sas096fe/project/Validation.csproj]
+/workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs(32,175): warning CS0067: The event 'ProgressionService.Changed' is never used [/tmp/practice-session-sas096fe/project/Validation.csproj]
+/workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs(21,131): warning CS0067: The event 'Application.wantsToQuit' is never used [/tmp/practice-session-sas096fe/project/Validation.csproj]
+    4 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.52
+
+Unhandled exception. System.Exception: timed finish restores exact references
+   at CampPracticeSessionTests.Check(Boolean value, String text) in /workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs:line 64
+   at CampPracticeSessionTests.Run() in /workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs:line 85
+   at Program.Main() in /tmp/practice-session-sas096fe/project/Program.cs:line 1
+
+PASS compiled negative control: timed finish restores exact references
+/workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs(32,175): warning CS0067: The event 'ProgressionService.Changed' is never used [/tmp/practice-session-sas096fe/project/Validation.csproj]
+/workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs(32,208): warning CS0067: The event 'ProgressionService.LeveledUp' is never used [/tmp/practice-session-sas096fe/project/Validation.csproj]
+/workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs(21,131): warning CS0067: The event 'Application.wantsToQuit' is never used [/tmp/practice-session-sas096fe/project/Validation.csproj]
+
+Build succeeded.
+
+/workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs(32,175): warning CS0067: The event 'ProgressionService.Changed' is never used [/tmp/practice-session-sas096fe/project/Validation.csproj]
+/workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs(32,208): warning CS0067: The event 'ProgressionService.LeveledUp' is never used [/tmp/practice-session-sas096fe/project/Validation.csproj]
+/workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs(21,131): warning CS0067: The event 'Application.wantsToQuit' is never used [/tmp/practice-session-sas096fe/project/Validation.csproj]
+    3 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.58
+
+Unhandled exception. System.Exception: random state restored
+   at CampPracticeSessionTests.Check(Boolean value, String text) in /workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs:line 64
+   at CampPracticeSessionTests.Run() in /workspace/scratch/planning-round3/practice/Tests/CampPracticeSessionBoundary.cs:line 85
+   at Program.Main() in /tmp/practice-session-sas096fe/project/Program.cs:line 1
+
+PASS compiled negative control: random state restored

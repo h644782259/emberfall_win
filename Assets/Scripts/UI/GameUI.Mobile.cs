@@ -98,7 +98,6 @@ namespace Emberfall
             {blockedRects.Add(TouchRect(l.EncounterText));Text(TouchRect(l.EncounterText),session.DungeonCleared?"遗迹肃清":"第 "+session.DungeonWave+" / "+session.TotalWaves+" 波",TouchFont(12),pale,true,false,TextAnchor.MiddleCenter);}
             DrawMobileHotbar();
             DrawCompanionCommands();
-            Text(TouchRect(22,58,155,11),CurrentCombatOpportunity(),TouchFont(10),gold,true);
             Text(TouchRect(22,71,155,11),CurrentCombatResult(),TouchFont(9),pale,true);
             string interaction=session.NearChapterExit?"沿星路前进":session.NearRoomExit?"进入下一间":session.SideEventAvailable?"晶核挑战":session.NearbyHubNpc!=HubNpcKind.None?HubNpcMobileLabel(session.NearbyHubNpc):session.IsInCamp?"营地工坊":session.InDungeon?"返回营地":session.IsNearDungeonEntrance?"进入副本":"靠近入口";
             Rect interact=TouchRect(l.Interact);blockedRects.Add(interact);
@@ -124,9 +123,6 @@ namespace Emberfall
                 Fill(r,new Color(.035f,.075f,.105f,.92f));Border(r,!learned?muted*.25f:GameBalance.ClassColor(p.heroClass));
                 float iconSize=Mathf.Min(r.width-4*TouchRatio,Mathf.Min(r.height-17*TouchRatio,30*TouchRatio));DrawSkillIdentity(new Rect(r.center.x-iconSize*.5f,r.y+TouchRatio,iconSize,iconSize),p.heroClass,skill,p.skillRanks[skill],learned,iconSize/TouchRatio<=24?24:32);
                 if(passive||!learned)Text(new Rect(r.x,r.yMax-15*TouchRatio,r.width,15*TouchRatio),passive?"被动":"Lv."+GameBalance.SkillRequiredLevels[skill],TouchFont(9),passive?new Color(.8f,.7f,1):muted,true,false,TextAnchor.MiddleCenter);
-                float cooldown=skill<0||session.Player==null?0:session.Player.SkillCooldownRemaining(skill);
-                if(cooldown>.01f)
-                {Rect stateRect=new Rect(r.x,r.yMax-15*TouchRatio,r.width,15*TouchRatio);Fill(stateRect,new Color(.01f,.02f,.04f,.9f));Text(stateRect,cooldown.ToString(cooldown>=10?"0":"0.0"),TouchFont(12),pale,true,false,TextAnchor.MiddleCenter);}
                 DrawMobileSkillAvailability(r,skill);
                 if(mobileTap.Skill==skill&&mobileTap.Active)Border(r,gold,2*TouchRatio);
             }

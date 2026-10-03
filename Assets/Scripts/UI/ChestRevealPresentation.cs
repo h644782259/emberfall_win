@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 namespace Emberfall
 {
     public enum ChestResultKind { Gold, FirstCollection, Duplicate }
@@ -24,6 +25,35 @@ namespace Emberfall
             string identity=reward.Rarity.HasValue?GameBalance.RarityName(reward.Rarity.Value)+" · "+reward.Name+"\n":"";
             string gain=reward.hasCurrencyDeltas?"到账 +"+reward.goldDelta+" 金币 · +"+reward.threadsDelta+" 星纹":"金币奖励 "+reward.Gold+"（旧记录未保存实际增量）";
             return identity+Outcome(reward)+"\n\n"+gain+"\n星纹余额 "+threads+" / "+ProgressionService.FashionChoiceCost+" · "+(threads>=ProgressionService.FashionChoiceCost?"可在营地自选传说":"攒满可在营地自选传说");
+        }
+        public const string ChoiceDisclosure = "兵装 / 羽翼：40% 时装，非必出；补给：更多金币，无时装。";
+        public static int CollectionCount(GameProfile profile,FashionSlot slot)
+        {
+            var ranks=new HashSet<Rarity>();
+            if(profile!=null&&profile.fashions!=null&&Enum.IsDefined(typeof(FashionSlot),slot))
+                foreach(var fashion in profile.fashions)
+                    if(fashion!=null&&fashion.slot==slot&&Enum.IsDefined(typeof(Rarity),fashion.rarity))ranks.Add(fashion.rarity);
+            return ranks.Count;
+        }
+        public static string CollectionProgress(GameProfile profile,FashionSlot slot)
+        {return (slot==FashionSlot.Weapon?"兵装":"羽翼")+"收藏 "+CollectionCount(profile,slot)+" / "+Enum.GetValues(typeof(Rarity)).Length;}
+        public static string ChoiceDetail(GameProfile profile,int choice)
+        {
+            if(choice==2)return "金币 ×1.5 · 无时装\n基础星纹 +1";
+            return "40% 时装 · 非必出\n"+CollectionProgress(profile,choice==0?FashionSlot.Weapon:FashionSlot.Wings);
+        }
+        // A historical choice index is not a box type. Only revision 1 defines supply.
+        public static bool IsSupplyReceipt(ChestReward reward)
+        {return reward!=null&&reward.rulesRevision==1&&reward.choice==2&&!reward.Rarity.HasValue;}
+        public static string GoldHeadline(ChestReward reward)
+        {return reward==null?"金币奖励":reward.hasCurrencyDeltas?"+"+reward.goldDelta+" 金币":"金币奖励 "+reward.Gold;}
+        public static string ResultWithCollection(ChestReward reward,GameProfile profile)
+        {
+            string result=Result(reward,profile==null?0:profile.fashionThreads);
+            if(IsSupplyReceipt(reward))result="补给 · 更多金币（×1.5，向下取整）\n"+result;
+            if(reward!=null&&reward.Rarity.HasValue&&reward.Slot.HasValue&&Enum.IsDefined(typeof(FashionSlot),reward.Slot.Value))
+                result+="\n当前"+CollectionProgress(profile,reward.Slot.Value);
+            return result;
         }
         public static float Travel(float progress)
         {float t=Math.Max(0,Math.Min(1,(progress-.15f)/.65f));return t*t*(3-2*t);}

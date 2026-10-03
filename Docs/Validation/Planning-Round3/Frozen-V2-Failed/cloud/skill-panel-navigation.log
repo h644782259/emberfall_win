@@ -1,0 +1,25 @@
+/tmp/skill-panel-navigation-j4hkquzl/Replay.cs(15,16): error CS0103: The name 'presetSaleOpen' does not exist in the current context [/tmp/skill-panel-navigation-j4hkquzl/project/Validation.csproj]
+/tmp/skill-panel-navigation-j4hkquzl/Replay.cs(15,32): error CS0103: The name 'CancelPresetSale' does not exist in the current context [/tmp/skill-panel-navigation-j4hkquzl/project/Validation.csproj]
+/tmp/skill-panel-navigation-j4hkquzl/Replay.cs(10,26): warning CS0649: Field 'GameUI.bindingReturnPanel' is never assigned to, and will always have its default value [/tmp/skill-panel-navigation-j4hkquzl/project/Validation.csproj]
+/tmp/skill-panel-navigation-j4hkquzl/Replay.cs(11,8): warning CS0414: The field 'GameUI.routeSkillOwner' is assigned but its value is never used [/tmp/skill-panel-navigation-j4hkquzl/project/Validation.csproj]
+/tmp/skill-panel-navigation-j4hkquzl/Replay.cs(10,198): warning CS0414: The field 'GameUI.rebindingSlot' is assigned but its value is never used [/tmp/skill-panel-navigation-j4hkquzl/project/Validation.csproj]
+/tmp/skill-panel-navigation-j4hkquzl/Replay.cs(11,31): warning CS0414: The field 'GameUI.routeSkillSlot' is assigned but its value is never used [/tmp/skill-panel-navigation-j4hkquzl/project/Validation.csproj]
+
+Build FAILED.
+
+/tmp/skill-panel-navigation-j4hkquzl/Replay.cs(10,26): warning CS0649: Field 'GameUI.bindingReturnPanel' is never assigned to, and will always have its default value [/tmp/skill-panel-navigation-j4hkquzl/project/Validation.csproj]
+/tmp/skill-panel-navigation-j4hkquzl/Replay.cs(11,8): warning CS0414: The field 'GameUI.routeSkillOwner' is assigned but its value is never used [/tmp/skill-panel-navigation-j4hkquzl/project/Validation.csproj]
+/tmp/skill-panel-navigation-j4hkquzl/Replay.cs(10,198): warning CS0414: The field 'GameUI.rebindingSlot' is assigned but its value is never used [/tmp/skill-panel-navigation-j4hkquzl/project/Validation.csproj]
+/tmp/skill-panel-navigation-j4hkquzl/Replay.cs(11,31): warning CS0414: The field 'GameUI.routeSkillSlot' is assigned but its value is never used [/tmp/skill-panel-navigation-j4hkquzl/project/Validation.csproj]
+/tmp/skill-panel-navigation-j4hkquzl/Replay.cs(15,16): error CS0103: The name 'presetSaleOpen' does not exist in the current context [/tmp/skill-panel-navigation-j4hkquzl/project/Validation.csproj]
+/tmp/skill-panel-navigation-j4hkquzl/Replay.cs(15,32): error CS0103: The name 'CancelPresetSale' does not exist in the current context [/tmp/skill-panel-navigation-j4hkquzl/project/Validation.csproj]
+    4 Warning(s)
+    2 Error(s)
+
+Time Elapsed 00:00:00.86
+Traceback (most recent call last):
+  File "/workspace/scratch/planning-round3/validation-v2/Tests/SkillPanelNavigationProductionTests.py", line 45, in <module>
+    subprocess.run([dotnet,'build',str(project),'--configfile',str(config),'-v:q'],check=True,env=env)
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/workspace/shared/emberfall-tools/dotnet/dotnet', 'build', '/tmp/skill-panel-navigation-j4hkquzl/project/Validation.csproj', '--configfile', '/tmp/skill-panel-navigation-j4hkquzl/NuGet.Config', '-v:q']' returned non-zero exit status 1.

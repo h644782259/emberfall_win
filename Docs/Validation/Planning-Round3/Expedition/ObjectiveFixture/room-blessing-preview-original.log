@@ -1,0 +1,6 @@
+
+Unhandled exception. System.Exception: real interlude reached
+   at RoomBlessingPreviewTests.Check(Boolean ok, String why) in /workspace/scratch/planning-round3/validation-v2/Tests/RoomBlessingPreviewTests.cs:line 6
+   at RoomBlessingPreviewTests.TestSeed(Int32 seed) in /workspace/scratch/planning-round3/validation-v2/Tests/RoomBlessingPreviewTests.cs:line 39
+   at RoomBlessingPreviewTests.Run() in /workspace/scratch/planning-round3/validation-v2/Tests/RoomBlessingPreviewTests.cs:line 21
+   at Program.Main() in /tmp/EmberfallCloudValidation-2w4v40ed/room-blessing-preview/Program.cs:line 1

@@ -1,0 +1,33 @@
+current BUILD 
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.88
+ 
+current RUN PASS 30284 production cast/actor/interrupt/core bounded-lifetime assertions; managed physics/session boundary
+ 
+old-newest-interrupt BUILD 
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.73
+ 
+old-newest-interrupt RUN  Unhandled exception. System.Exception: 101 delayed meteor first contact can interrupt after102
+   at Program.C(Boolean v, String text) in /tmp/delayed-cast-y8owq505/Fixture.cs:line 13
+   at Program.Main() in /tmp/delayed-cast-y8owq505/Fixture.cs:line 16
+
+PASS compiled exact old monotonic gate rejected: old-newest-interrupt
+old-newest-core BUILD 
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.69
+ 
+old-newest-core RUN  Unhandled exception. System.Exception: 101 reverse first contact can arm core after102
+   at Program.C(Boolean v, String text) in /tmp/delayed-cast-y8owq505/Fixture.cs:line 13
+   at Program.Main() in /tmp/delayed-cast-y8owq505/Fixture.cs:line 16
+
+PASS compiled exact old monotonic gate rejected: old-newest-core

@@ -1,0 +1,240 @@
+{
+  "scope": "managed production hosts and source contracts, not Unity",
+  "managed_suites": [
+    {
+      "suite": "ArrowBatchGenerationProductionTests.py",
+      "exit_code": 0,
+      "log": "attempt3/ArrowBatchGenerationProduction.log"
+    },
+    {
+      "suite": "AuthoredProjectileProductionTests.py",
+      "exit_code": 0,
+      "log": "attempt3/AuthoredProjectileProduction.log"
+    },
+    {
+      "suite": "BlockedCombatUpdateProductionTests.py",
+      "exit_code": 0,
+      "log": "attempt2/BlockedCombatUpdateProduction.log"
+    },
+    {
+      "suite": "BuildDraftVariantEffectsProductionTests.py",
+      "exit_code": 0,
+      "log": "BuildDraftVariantEffectsProduction.log"
+    },
+    {
+      "suite": "BurnFinaleProductionTests.py",
+      "exit_code": 0,
+      "log": "attempt2/BurnFinaleProduction.log"
+    },
+    {
+      "suite": "CampBuildDraftProductionTests.py",
+      "exit_code": 0,
+      "log": "CampBuildDraftProduction.log"
+    },
+    {
+      "suite": "CampPracticeProductionTests.py",
+      "exit_code": 0,
+      "log": "CampPracticeProduction.log"
+    },
+    {
+      "suite": "ChapterCombatProductionTests.py",
+      "exit_code": 0,
+      "log": "ChapterCombatProduction.log"
+    },
+    {
+      "suite": "ChapterEntryProductionTests.py",
+      "exit_code": 0,
+      "log": "ChapterEntryProduction.log"
+    },
+    {
+      "suite": "ChapterExperienceTests.py",
+      "exit_code": 0,
+      "log": "ChapterExperience.log"
+    },
+    {
+      "suite": "ChapterHostProductionTests.py",
+      "exit_code": 0,
+      "log": "attempt2/ChapterHostProduction.log"
+    },
+    {
+      "suite": "ChapterProgressionTests.py",
+      "exit_code": 0,
+      "log": "attempt3/ChapterProgression.log"
+    },
+    {
+      "suite": "ChapterReturnTimeScaleTests.py",
+      "exit_code": 0,
+      "log": "attempt3/ChapterReturnTimeScale.log"
+    },
+    {
+      "suite": "ChestTrialProductionTests.py",
+      "exit_code": 0,
+      "log": "ChestTrialProduction-fixed.log"
+    },
+    {
+      "suite": "CombatReadabilityProductionTests.py",
+      "exit_code": 0,
+      "log": "attempt3/CombatReadabilityProduction.log"
+    },
+    {
+      "suite": "CombatReviewImpactProductionTests.py",
+      "exit_code": 0,
+      "log": "attempt2/CombatReviewImpactProduction.log"
+    },
+    {
+      "suite": "ConcentratedVenomPoisonTests.py",
+      "exit_code": 0,
+      "log": "ConcentratedVenomPoison.log"
+    },
+    {
+      "suite": "ConcentratedVenomProductionTests.py",
+      "exit_code": 0,
+      "log": "attempt2/ConcentratedVenomProduction.log"
+    },
+    {
+      "suite": "DeathLootPersistenceProductionTests.py",
+      "exit_code": 0,
+      "log": "attempt3/DeathLootPersistenceProduction.log"
+    },
+    {
+      "suite": "DefenseIdentityProductionTests.py",
+      "exit_code": 0,
+      "log": "DefenseIdentityProduction.log"
+    },
+    {
+      "suite": "DenseFinaleProductionTests.py",
+      "exit_code": 0,
+      "log": "attempt2/DenseFinaleProduction.log"
+    },
+    {
+      "suite": "EconomyGoalUiTests.py",
+      "exit_code": 0,
+      "log": "EconomyGoalUi.log"
+    },
+    {
+      "suite": "EconomyGrowthTests.py",
+      "exit_code": 0,
+      "log": "EconomyGrowth.log"
+    },
+    {
+      "suite": "EffectPriorityProductionTests.py",
+      "exit_code": 0,
+      "log": "attempt2/EffectPriorityProduction.log"
+    },
+    {
+      "suite": "FadingCombatEffectLifecycleTests.py",
+      "exit_code": 0,
+      "log": "attempt3/FadingCombatEffectLifecycle.log"
+    },
+    {
+      "suite": "IntegratedJourneyTests.py",
+      "exit_code": 0,
+      "log": "attempt3/IntegratedJourney.log"
+    },
+    {
+      "suite": "MasteryComboRound2Tests.py",
+      "exit_code": 0,
+      "log": "MasteryComboRound2-final.log"
+    },
+    {
+      "suite": "MechanismEvidenceProductionTests.py",
+      "exit_code": 0,
+      "log": "MechanismEvidenceProduction.log"
+    },
+    {
+      "suite": "MilestoneGoalSurfaceTests.py",
+      "exit_code": 0,
+      "log": "MilestoneGoalSurface.log"
+    },
+    {
+      "suite": "MobilePinnedTargetProductionTests.py",
+      "exit_code": 0,
+      "log": "attempt3/MobilePinnedTargetProduction.log"
+    },
+    {
+      "suite": "PilotStarterCompatibilityTests.py",
+      "exit_code": 0,
+      "log": "PilotStarterCompatibility.log"
+    },
+    {
+      "suite": "PlayerFinaleTailProductionTests.py",
+      "exit_code": 0,
+      "log": "attempt2/PlayerFinaleTailProduction.log"
+    },
+    {
+      "suite": "ProtectionPresentationProductionTests.py",
+      "exit_code": 0,
+      "log": "ProtectionPresentationProduction.log"
+    },
+    {
+      "suite": "ReforgeSelectionTests.py",
+      "exit_code": 0,
+      "log": "ReforgeSelection.log"
+    },
+    {
+      "suite": "RestrictedHealingProductionTests.py",
+      "exit_code": 0,
+      "log": "attempt3/RestrictedHealingProduction.log"
+    },
+    {
+      "suite": "ReturningCounterPersistenceTests.py",
+      "exit_code": 0,
+      "log": "ReturningCounterPersistence.log"
+    },
+    {
+      "suite": "RewardRevisionTests.py",
+      "exit_code": 0,
+      "log": "attempt3/RewardRevision.log"
+    },
+    {
+      "suite": "RoomBlessingUsabilityNegativeTests.py",
+      "exit_code": 0,
+      "log": "attempt3/RoomBlessingUsabilityNegative.log"
+    },
+    {
+      "suite": "SkillIdentityCallsiteProductionTests.py",
+      "exit_code": 0,
+      "log": "attempt2/SkillIdentityCallsiteProduction.log"
+    },
+    {
+      "suite": "StartingSkillBudgetTests.py",
+      "exit_code": 0,
+      "log": "StartingSkillBudget.log"
+    },
+    {
+      "suite": "ThreatAdmissionTests.py",
+      "exit_code": 0,
+      "log": "attempt3/ThreatAdmission.log"
+    },
+    {
+      "suite": "ThreatAdmissionLifecycleTests.py",
+      "exit_code": 0,
+      "log": "ThreatAdmissionLifecycle.log"
+    },
+    {
+      "suite": "WeaponSwingIdentityTests.py",
+      "exit_code": 0,
+      "log": "attempt3/WeaponSwingIdentity.log"
+    },
+    {
+      "suite": "registered:progression",
+      "exit_code": 0,
+      "log": "registered-progression.log"
+    },
+    {
+      "suite": "registered:run-combat-rules",
+      "exit_code": 0,
+      "log": "registered-run-combat-rules.log"
+    },
+    {
+      "suite": "registered:progression-growth",
+      "exit_code": 0,
+      "log": "registered-progression-growth.log"
+    },
+    {
+      "suite": "registered:room-blessing-usability",
+      "exit_code": 0,
+      "log": "registered-room-blessing-usability.log"
+    }
+  ]
+}

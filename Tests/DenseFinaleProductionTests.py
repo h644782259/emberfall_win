@@ -2,6 +2,7 @@
 """Execute production area -> burn settlement -> receipt -> filled mesh -> shared lease together.
 Enemy HP/terminal callback and Unity scene are managed boundaries, not PlayMode.
 """
+from CastReceiptFixtureSources import include_cast_receipt_source
 import os,sys,tempfile,subprocess
 from pathlib import Path
 r=Path(__file__).resolve().parents[1];dotnet=sys.argv[1] if len(sys.argv)>1 else os.environ.get('DOTNET','dotnet')
@@ -42,7 +43,7 @@ with tempfile.TemporaryDirectory(prefix='dense-finale-') as tmp:
  p=Path(tmp)
  for f in ['Core/CombatVisualBudget','Core/CombatImpactBatch','Core/ScheduledTickWindow','Core/BurnFinaleReceipts','Core/FilledVfxRecipes','Core/FilledVfxPlacement','Combat/CombatVisualLease','Combat/FilledSkillVfx','Combat/AnchoredImpactMesh','Combat/EnemyStatusEffects','Combat/CombatDamage','Combat/PlayerController.BurnFeedback']:(p/(Path(f).name+'.cs')).write_text((r/('Assets/Scripts/'+f+'.cs')).read_text())
  (p/'Shell.cs').write_text(s+extra);(p/'Player.cs').write_text('using UnityEngine;namespace Emberfall{public sealed partial class PlayerController{'+area+'}}');(p/'Test.cs').write_text(test)
- (p/'NuGet.Config').write_text('<configuration><packageSources><clear /></packageSources></configuration>');project=p/'Test.csproj';project.write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net8.0</TargetFramework><OutputType>Exe</OutputType></PropertyGroup></Project>')
+ (p/'NuGet.Config').write_text('<configuration><packageSources><clear /></packageSources></configuration>');project=p/'Test.csproj';project.write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net8.0</TargetFramework><OutputType>Exe</OutputType></PropertyGroup></Project>');include_cast_receipt_source(project)
  for old in [False,True]:
   if old:
    f=p/'FilledSkillVfx.cs';f.write_text(f.read_text().replace('priority:CombatVisualPriority.RealContact);','priority:finale?CombatVisualPriority.Finale:CombatVisualPriority.RealContact);'))

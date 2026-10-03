@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Real mesh effects, HitFeedback, global lease and decorative Slash; managed engine boundaries."""
+from CastReceiptFixtureSources import include_cast_receipt_source
 import os,sys,subprocess,tempfile
 from pathlib import Path
 r=Path(__file__).resolve().parents[1];dotnet=sys.argv[1] if len(sys.argv)>1 else os.environ.get('DOTNET','dotnet')
@@ -16,7 +17,7 @@ with tempfile.TemporaryDirectory(prefix='effect-priority-') as temp:
  p=Path(temp)
  for f in ['Core/CombatVisualBudget','Core/FilledVfxRecipes','Core/FilledVfxPlacement','Combat/CombatVisualLease','Combat/FilledSkillVfx','Combat/AnchoredImpactMesh','Combat/HitFeedback','Combat/PlayerController.BurnFeedback']:(p/(Path(f).name+'.cs')).write_text((r/('Assets/Scripts/'+f+'.cs')).read_text())
  (p/'Shell.cs').write_text(shell);(p/'Test.cs').write_text((r/'Tests/EffectPriorityProductionTests.cs').read_text());(p/'Slash.cs').write_text('using UnityEngine;namespace Emberfall{public static partial class CombatFx{'+slash+member(effects,'internal static void BurnContact(')+'}}')
- project=p/'Tests.csproj';project.write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net8.0</TargetFramework><OutputType>Exe</OutputType></PropertyGroup></Project>');cfg=p/'NuGet.Config';cfg.write_text('<configuration><packageSources><clear /></packageSources></configuration>')
+ project=p/'Tests.csproj';project.write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net8.0</TargetFramework><OutputType>Exe</OutputType></PropertyGroup></Project>');include_cast_receipt_source(project);cfg=p/'NuGet.Config';cfg.write_text('<configuration><packageSources><clear /></packageSources></configuration>')
  env=dict(os.environ,DOTNET_CLI_HOME=str(p/'cli'),DOTNET_NOLOGO='1');subprocess.run([dotnet,'restore',str(project),'--configfile',str(cfg),'-v:q'],env=env,check=True)
  cmd=[dotnet,'run','--project',str(project),'--no-restore'];subprocess.run(cmd,env=env,check=True)
  for name,a,b,error in [('FilledSkillVfx.cs','priority:CombatVisualPriority.RealContact);','priority:finale?CombatVisualPriority.Finale:CombatVisualPriority.RealContact);','dense cash contacts cannot evict their own finale main'),('FilledSkillVfx.cs','if(!confirmedFinale)','if(true)','only confirmed finale survives result; skips and owner exits retire immediately'),('Slash.cs','CombatVisualPriority.Decoration','CombatVisualPriority.ActionBody','decorative Slash cannot displace sustained background'),('HitFeedback.cs','if(CombatVisualLease.Attach(obj,priority)==null)return;','','real contact evicts decoration under the global cap'),('FilledSkillVfx.cs','if(priority==CombatVisualPriority.Finale)\n                fx.Add(rupture','if(false)\n                fx.Add(rupture','element finale retains its minimum short tail')]:

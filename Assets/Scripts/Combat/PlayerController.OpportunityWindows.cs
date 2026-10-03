@@ -10,30 +10,31 @@ namespace Emberfall
             if(!OpportunityOwnerValid||skill<0||skill>=GameBalance.SkillCount||GameBalance.IsPassive(skill)||session.Progression.Profile.skillRanks[skill]<=0)return default;
             var ready=SkillOpportunity(skill);
             if(ready.Window)return HeroClass==HeroClass.Summoner&&!ValidAimTarget(OpportunityWindowTarget(skill))?ready.Blocked("无目标"):ready;
-            CombatOpportunityKind kind=CombatOpportunityKind.None;float remaining=0;
+            CombatOpportunityKind kind=CombatOpportunityKind.None;float remaining=0,duration=0;
             if(HeroClass==HeroClass.Summoner&&(skill==2||skill==4||skill==9))
-            {kind=CombatOpportunityKind.EmpoweredContract;remaining=SummonedCompanion.CommandOpportunityRemaining(this);}
+            {kind=CombatOpportunityKind.EmpoweredContract;remaining=SummonedCompanion.CommandOpportunityRemaining(this);duration=CompanionRules.CommandOpportunityDuration;}
             else if(HeroClass==HeroClass.Arcanist&&(skill==1||skill==9))
             {
                 bool burn=Specialization==ElementalistSpecialization.Burn;if(skill==9&&!burn)return default;
                 kind=burn?(skill==9?CombatOpportunityKind.BurnFinale:CombatOpportunityKind.Reignite):CombatOpportunityKind.Shatter;
-                remaining=ElementalOpportunityRemaining(skill,kind);
+                var elemental=ElementalOpportunityWindow(skill,kind);remaining=elemental.Remaining;duration=elemental.Duration;
                 // A marked intended target retains its true clock when the release
                 // footprint is currently blocked/out of reach, without claiming a hit.
                 var target=OpportunityWindowTarget(skill);
                 if(ValidAimTarget(target)&&session.Enemies.Contains(target)&&target.gameObject.activeInHierarchy&&target.StatusEffects!=null)
                 {
                     var status=target.StatusEffects;
-                    remaining=Mathf.Max(remaining,kind==CombatOpportunityKind.Shatter?status.FrostRemaining:kind==CombatOpportunityKind.BurnFinale?status.OwnBurnRemaining(this):status.BurnRemaining);
+                    float candidate=kind==CombatOpportunityKind.Shatter?status.FrostRemaining:kind==CombatOpportunityKind.BurnFinale?status.OwnBurnRemaining(this):status.BurnRemaining;
+                    if(candidate>remaining){remaining=candidate;duration=kind==CombatOpportunityKind.Shatter?status.FrostWindowDuration:status.BurnWindowDuration;}
                 }
             }
             else if(HeroClass==HeroClass.Ranger&&skill==0)
             {
                 var target=OpportunityWindowTarget(skill);
                 if(ValidAimTarget(target)&&session.Enemies.Contains(target)&&target.gameObject.activeInHierarchy&&target.StatusEffects!=null)
-                {kind=CombatOpportunityKind.PoisonDetonation;remaining=target.StatusEffects.OwnPoisonOpportunityRemaining(this);}
+                {kind=CombatOpportunityKind.PoisonDetonation;remaining=target.StatusEffects.OwnPoisonOpportunityRemaining(this);duration=target.StatusEffects.PoisonWindowDuration;}
             }
-            return new CombatOpportunityState(kind,remaining,blockReason:OpportunityBlockReason(skill));
+            return new CombatOpportunityState(kind,remaining,blockReason:OpportunityBlockReason(skill),duration:duration);
         }
         private EnemyController OpportunityWindowTarget(int skill)
         {
@@ -72,7 +73,7 @@ namespace Emberfall
             if(remaining<=0)return default;
             string reason="";var target=OpportunityWindowTarget(-1);
             if(jumping||attackCooldown>0||skillBasicRecovery.Blocked||charge!=null&&(charge.IsCharging||charge.ConsumedThisFrame)||!BasicWindowInRange(target)||!CombatSight.Direct(transform.position,target.transform.position)||!MobilePinnedActionAllowed(-1,false))reason=OpportunityBlockReason(-1);
-            return new CombatOpportunityState(kind,remaining,blockReason:reason);
+            return new CombatOpportunityState(kind,remaining,blockReason:reason,duration:mastery?MasteryCoreRuntime.ComboDuration:CounterOpportunityDuration);
         }
     }
 }

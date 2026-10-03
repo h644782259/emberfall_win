@@ -5,8 +5,8 @@ r=Path(__file__).resolve().parents[1]/'Assets/Scripts'
 def text(path):return (r/path).read_text()
 s=text('Core/GameSession.cs');p=text('Combat/PlayerController.cs');ui=text('UI/GameUI.cs');trial=text('Core/GameSession.Practice.cs')
 assert 'if(PracticeActive){TickPractice();return;}' in s
-assert 'if(PracticeActive){if(enemy!=null&&Enemies.Remove(enemy))enemy.BeginDeath();return;}' in s
-assert 'if(PracticeActive){EndPractice("角色倒下' in s
+assert 'if(PracticeActive){if(enemy!=null&&Enemies.Remove(enemy)){PracticeRecord.Defeat(' in s
+assert 'if(PracticeActive){PracticeRecord.PlayerDefeated();return;}' in s
 assert 'if(PracticeActive)return false;' in s[s.index('public bool TryCollectGroundLoot(string'):s.index('public void CollectRemainingDungeonLoot')]
 leave=s[s.index('public bool SaveBeforeLeaving()'):s.index('public bool ExitApplication(')];assert 'EndPractice(' in leave and leave.index('EndPractice(')<leave.index('Progression.Save()')
 assert 'if(PracticeActive){PracticeRecord.Mechanism(key);return;}' in text('Core/GameSession.Expedition.cs')

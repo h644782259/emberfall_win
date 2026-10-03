@@ -99,7 +99,7 @@ public static class ProgressionGrowthTests
             var p=Fresh(root,hero);p.Profile.level=20;p.Save();ItemData item=p.CreateMechanicItem(mechanic);
             Check(p.CollectLoot(item)&&p.Equip(item.id),"known epic mechanism equipped");
             p.Profile.slotUpgradeRanks[(int)item.slot]=7;p.Profile.mechanicMaterials=24;p.Profile.bestFloor=5;
-            if(hero==HeroClass.Arcanist){item.mechanicVariantUnlocked=true;item.mechanicVariant=1;}
+            if(hero==HeroClass.Arcanist){p.Profile.variantKnowledge.Add(mechanic);item.mechanicVariantUnlocked=true;item.mechanicVariant=1;}
             p.Save();item=p.Profile.inventory.Find(i=>i.id==item.id);
             string id=item.id,name=item.name;int slotRank=p.SlotUpgradeRank(item.slot),attack=item.baseAttack,defense=item.baseDefense,health=item.baseHealth,variant=item.mechanicVariant;
             bool variantUnlocked=item.mechanicVariantUnlocked,locked=item.locked;int level=item.level;

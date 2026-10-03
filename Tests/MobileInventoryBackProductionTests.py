@@ -11,7 +11,7 @@ def method(file,signature):
  while depth:
   depth+=(source[end]=='{')-(source[end]=='}');end+=1
  return source[start:end]
-close=method('GameUI.cs','private void ClosePanel()')
+close=method('GameUI.cs','private void ClosePanel()')+'\n'+method('GameUI.BuildPlans.cs','private void CancelPresetSale()')
 hook='if(CloseMobileInventoryDetail())return;'
 assert close.count(hook)==1,'production entry must contain exactly one inventory detail hook'
 assert 'ClosePanel(); return;' in method('GameUI.MobileInventory.cs','private void DrawMobileEquipmentActions(')
@@ -28,7 +28,7 @@ namespace Emberfall {
  public sealed partial class GameUI {
   enum Panel{None,Inventory,Skills,Camp,TravelMap,SaveSelection,Chests,Fashion,PotionAssignment,Bindings,SaveLocation,Controls}
   Panel panel=Panel.Inventory,bindingReturnPanel;SessionStub session=new SessionStub();
-  bool mobileInventoryDetail=true,saveSelectionFromPause,chestDetails,bindingReturnPause,saveReturnPause,controlsReturnPause;
+  bool presetSaleOpen;bool mobileInventoryDetail=true,saveSelectionFromPause,chestDetails,bindingReturnPause,saveReturnPause,controlsReturnPause;
   int mobileInventoryTab,rebindingSlot,blocks,cancels;float mobileInventoryListScroll=173,mobileInventoryDetailScroll=81,chestRevealedAt;
   const float ChestDuration=1;bool ChestAnimationDone=>true;
   bool CloseMobileSkillDetail()=>false;bool CloseChapterSelection()=>false;bool CloseRouteSkill()=>false;bool CloseProgressionGoalSurface()=>false;bool CloseBuildPlanSurface()=>false;bool CloseTravelMap()=>false;bool CancelSaveDeletion()=>false;bool CancelActiveSaveFlow()=>false;
@@ -49,6 +49,9 @@ namespace Emberfall {
     check((ui.panel==Panel.Inventory)==intercepted,"only visible compact detail owns Back");check(ui.session.Blocked==intercepted,"wide/supply/list/desktop retain outer close behavior");
    }
    MobileControls.Active=true;MobileControls.Layout.Width=568;
+   var sale=new GameUI{presetSaleOpen=true};sale.ClosePanel();
+   check(!sale.presetSaleOpen&&sale.panel==Panel.Inventory&&sale.mobileInventoryDetail&&sale.session.Blocked&&sale.blocks==1,"preset cancellation owns Back before inventory detail and retains blocking");
+   sale.ClosePanel();check(sale.panel==Panel.Inventory&&!sale.mobileInventoryDetail&&sale.session.Blocked,"next Back returns equipment detail to list");
    var other=new GameUI{panel=Panel.Skills};other.ClosePanel();check(other.panel==Panel.None&&other.blocks==0,"stale inventory flag cannot intercept skill close");
    var paused=new GameUI();paused.session.Paused=true;paused.ClosePanel();check(paused.panel==Panel.None&&paused.session.Paused,"paused overlay retains previous outer behavior");
    Console.WriteLine("PASS: "+n+" production inventory ClosePanel assertions");

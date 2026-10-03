@@ -12,7 +12,8 @@ namespace Emberfall
         public float ControlRecovery { get; private set; }
         public float InterruptRecovery { get; private set; }
         public float KnockbackRecovery { get; private set; }
-        private int newestControlCast, interruptedWindup;
+        private int interruptedWindup;
+        private readonly CastFirstHitHistory standaloneCasts=new CastFirstHitHistory();
         public EnemyControlPolicy(EnemyControlTier tier) { Tier = tier; }
         public float MaximumImpulse { get { return Tier == EnemyControlTier.Boss ? 1.8f : Tier == EnemyControlTier.Elite ? 6f : 11f; } }
         public bool CanInterruptWindup { get { return InterruptRecovery <= 0; } }
@@ -45,12 +46,12 @@ namespace Emberfall
         }
 
         public bool TryInterrupt(int castId, int windupId, bool preparing, bool eligibleSkill, out float stagger)
+        { return TryInterrupt(standaloneCasts.Get(castId),windupId,preparing,eligibleSkill,out stagger); }
+        public bool TryInterrupt(CastFirstHitReceipt cast, int windupId, bool preparing, bool eligibleSkill, out float stagger)
         {
             stagger = 0;
-            if (castId <= 0 || !eligibleSkill || castId <= newestControlCast) return false;
-            // Consume the first impact even outside a windup. A persistent old field
-            // must not later interrupt a fresh attack, or trigger again after recovery.
-            newestControlCast = castId;
+            if (!eligibleSkill || cast==null || !cast.FirstInterruptTarget(this)) return false;
+            // Consume first eligible contact even outside a windup or during recovery.
             if (!preparing || windupId <= 0 || windupId == interruptedWindup || InterruptRecovery > 0) return false;
             interruptedWindup = windupId;
             stagger = Tier == EnemyControlTier.Boss ? .45f : Tier == EnemyControlTier.Elite ? .65f : .9f;
@@ -67,7 +68,7 @@ namespace Emberfall
             return Math.Min(requestedDistance * factor, MaximumPullSpeed * Math.Min(.1f, deltaTime));
         }
 
-        public void ResetCastOwner() { newestControlCast = 0; }
+        public void ResetCastOwner() { standaloneCasts.Clear(); }
         public static bool IsInterruptSkill(HeroClass hero, int skill)
         {
             return hero == HeroClass.Vanguard && skill == 1 ||

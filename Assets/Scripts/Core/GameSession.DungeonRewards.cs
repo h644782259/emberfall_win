@@ -7,7 +7,7 @@ namespace Emberfall
         private string pendingDungeonRewardId;
         private int pendingDungeonRewardTier,pendingDungeonRewardGold,pendingDungeonRewardExperience;
         public bool DungeonRewardPending {get{return !string.IsNullOrEmpty(pendingDungeonRewardId);}}
-        public bool CombatEnded {get{return ModeFinished||(InDungeon&&DungeonCleared);}}
+        public bool CombatEnded {get{return (PracticeActive&&PracticeRecord!=null&&PracticeRecord.Finished)||ModeFinished||(InDungeon&&DungeonCleared);}}
         private void QueueDungeonCompletion()
         {
             if(DungeonRewardPending)return;

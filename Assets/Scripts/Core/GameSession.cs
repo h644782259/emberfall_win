@@ -30,7 +30,7 @@ namespace Emberfall
                 return Time.unscaledTime < notificationUntil ? notification : "";
             }
         }
-        public bool InputBlocked { get { return !HasStarted || Paused || uiBlocking || IsDead || ModeFinished || RunChoices.AwaitingChoice || DungeonSelectionOpen || pauseState.BackgroundPaused; } }
+        public bool InputBlocked { get { return !HasStarted || Paused || uiBlocking || IsDead || ModeFinished || (PracticeActive&&PracticeRecord!=null&&PracticeRecord.Finished) || RunChoices.AwaitingChoice || RoomBranchChoiceOpen || DungeonSelectionOpen || pauseState.BackgroundPaused; } }
         public bool PointerOverUI { get { return ui != null && ui.IsPointerOverUI; } }
         public bool CanChangeLoadout { get { return HasStarted && !IsDead; } }
         public string Objective
@@ -315,7 +315,7 @@ namespace Emberfall
             else if (!string.IsNullOrEmpty(Progression.LastError)) Notify(Progression.LastError);
             return changed;
         }
-        private void UpdateTimeScale() { Time.timeScale = pauseState.CanAdvance(HasStarted, Paused, uiBlocking || RunChoices.AwaitingChoice || DungeonSelectionOpen || ModeFinished, IsDead) ? 1 : 0; }
+        private void UpdateTimeScale() { Time.timeScale = pauseState.CanAdvance(HasStarted, Paused, uiBlocking || RunChoices.AwaitingChoice || RoomBranchChoiceOpen || DungeonSelectionOpen || ModeFinished, IsDead) ? 1 : 0; }
 
         public bool IsNearDungeonEntrance {get{return NearPortal();}}
         private bool NearPortal() { return Player != null && PortalInteractionPolicy.IsNear((Player.transform.position-new Vector3(0,0,11)).sqrMagnitude); }
@@ -351,7 +351,8 @@ namespace Emberfall
         {
             // Preserve the old adventure before destroying anything. Staged load
             // and committed hub travel already supply a durable target snapshot.
-            if (!loadingSaveSnapshot && !enteringChapter && !SaveBeforeLeaving()) return false;
+            // Room retry sets this flag only after its own successful save preflight.
+            if (!loadingSaveSnapshot && !enteringChapter && !retryingRoomChain && !SaveBeforeLeaving()) return false;
             if(!dungeon&&InDungeon&&!DungeonCleared&&!IsDead&&!ModeFinished)
             {
                 if(RoomChainRun!=null)RoomChainRun.Fail(RoomFailureReason.Abandoned);
@@ -462,7 +463,7 @@ namespace Emberfall
 
         public void OnEnemyKilled(EnemyController enemy)
         {
-            if(PracticeActive){if(enemy!=null&&Enemies.Remove(enemy))enemy.BeginDeath();return;}
+            if(PracticeActive){if(enemy!=null&&Enemies.Remove(enemy)){PracticeRecord.Defeat(enemy.Kind.ToString(),PracticeRecord.HasSupplier&&enemy.Kind==EnemyKind.Wisp,Enemies.Count==0);enemy.BeginDeath();}return;}
             if (enemy == null || !AdventureResultPolicy.AcceptsKill(HasStarted,CombatEnded,Enemies.Contains(enemy))) return;
             int chapterExperience=0;bool chapterKill=ChapterActive;
             if(chapterKill&&!RecordChapterDefeat(enemy,out chapterExperience))return;
@@ -526,7 +527,7 @@ namespace Emberfall
 
         public void OnPlayerDied()
         {
-            if(PracticeActive){EndPractice("角色倒下 · 记录提前结束");return;}
+            if(PracticeActive){PracticeRecord.PlayerDefeated();return;}
             if (IsDead) return;
             IsDead = true;
             if(ModeRun!=null)ModeRun.Fail(ExpeditionModeFailure.PlayerDefeated);

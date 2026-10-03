@@ -7,10 +7,10 @@ def member(path,signature):
  source=(root/path).read_text();a=source.index(signature);b=source.index('{',a)+1;depth=1
  while depth:depth+=(source[b]=='{')-(source[b]=='}');b+=1
  return source[a:b]
-methods='\n'.join(member('Assets/Scripts/Core/GameSession.RoomChain.cs',s) for s in ['public bool NearRoomExit','private void BeginRoomChainScene()','private void RecordRoomDefeat(','public bool EnterNextRoom()'])+'\n'+member('Assets/Scripts/Core/GameSession.cs','public bool SaveBeforeLeaving()')
+methods='\n'.join(member('Assets/Scripts/Core/GameSession.RoomChain.cs',s) for s in ['public bool NearRoomExit','private void BeginRoomChainScene()','private void RecordRoomDefeat(','public bool EnterNextRoom()','private bool EnterNextRoomAfterSave()'])+'\n'+member('Assets/Scripts/Core/GameSession.cs','public bool SaveBeforeLeaving()')
 with tempfile.TemporaryDirectory(prefix='room-free-seals-') as temporary:
  p=Path(temporary)
- files=['Core/RoomChainState','Core/RoomTactics','Core/RoomTacticalRegion','Core/DeferredRoomChoice','Core/EscapePostPolicy','Core/GameSession.RoomTactics','World/WorldTraversal','World/TacticalRoomGeometry','World/EscapeRoomFormation','UI/ChapterSealPresentation','UI/RoomObjectivePresentation']
+ files=['Core/RoomChainState','Core/RoomTactics','Core/RoomTacticalRegion','Core/DeferredRoomChoice','Core/EscapePostPolicy','Core/GameSession.RoomTactics','World/WorldTraversal','World/TacticalRoomGeometry','World/EscapeRoomFormation','World/RoomBranchGeometry','UI/ChapterSealPresentation','UI/RoomObjectivePresentation']
  for f in files:(p/(Path(f).name+'.cs')).write_text((root/('Assets/Scripts/'+f+'.cs')).read_text())
  math=(root/'Tests/DestructibleTraversalTests.cs').read_text();math='using System;using UnityEngine;'+math[math.index('namespace Emberfall'):];math=math.replace('public static float time=0;','public static float time=0,deltaTime=.25f;public static int frameCount;')
  (p/'Math.cs').write_text(math)

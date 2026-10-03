@@ -1,0 +1,21 @@
+/tmp/inventory-back-4uw00t74/project/Program.cs(19,16): error CS0103: The name 'presetSaleOpen' does not exist in the current context [/tmp/inventory-back-4uw00t74/project/Validation.csproj]
+/tmp/inventory-back-4uw00t74/project/Program.cs(19,32): error CS0103: The name 'CancelPresetSale' does not exist in the current context [/tmp/inventory-back-4uw00t74/project/Validation.csproj]
+/tmp/inventory-back-4uw00t74/project/Program.cs(11,31): warning CS0649: Field 'GameUI.bindingReturnPanel' is never assigned to, and will always have its default value [/tmp/inventory-back-4uw00t74/project/Validation.csproj]
+/tmp/inventory-back-4uw00t74/project/Program.cs(13,26): warning CS0414: The field 'GameUI.rebindingSlot' is assigned but its value is never used [/tmp/inventory-back-4uw00t74/project/Validation.csproj]
+
+Build FAILED.
+
+/tmp/inventory-back-4uw00t74/project/Program.cs(11,31): warning CS0649: Field 'GameUI.bindingReturnPanel' is never assigned to, and will always have its default value [/tmp/inventory-back-4uw00t74/project/Validation.csproj]
+/tmp/inventory-back-4uw00t74/project/Program.cs(13,26): warning CS0414: The field 'GameUI.rebindingSlot' is assigned but its value is never used [/tmp/inventory-back-4uw00t74/project/Validation.csproj]
+/tmp/inventory-back-4uw00t74/project/Program.cs(19,16): error CS0103: The name 'presetSaleOpen' does not exist in the current context [/tmp/inventory-back-4uw00t74/project/Validation.csproj]
+/tmp/inventory-back-4uw00t74/project/Program.cs(19,32): error CS0103: The name 'CancelPresetSale' does not exist in the current context [/tmp/inventory-back-4uw00t74/project/Validation.csproj]
+    2 Warning(s)
+    2 Error(s)
+
+Time Elapsed 00:00:00.84
+Traceback (most recent call last):
+  File "/workspace/scratch/planning-round3/validation-v2/Tests/MobileInventoryBackProductionTests.py", line 67, in <module>
+    subprocess.run([dotnet,'build',str(p),'--configfile',str(config),'-v:q'],env=env,check=True)
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/workspace/shared/emberfall-tools/dotnet/dotnet', 'build', '/tmp/inventory-back-4uw00t74/project/Validation.csproj', '--configfile', '/tmp/inventory-back-4uw00t74/NuGet.Config', '-v:q']' returned non-zero exit status 1.

@@ -60,7 +60,7 @@ namespace Emberfall
             Fill(w,new Color(.045f,.064f,.095f,.99f));Border(w,new Color(.52f,.60f,.67f,.3f));
             Text(new Rect(w.x+28,w.y+20,w.width-56,18),"F A L L E N   S T A R",10,gold,true);
             Text(new Rect(w.x+28,w.y+45,w.width-248,42),revealed?(complete?"星光已归你所有":"封印正在苏醒"):"遗迹馈赠",28,pale,true);
-            Text(new Rect(w.x+28,w.y+92,w.width-56,24),revealed?(complete?ChestRevealPresentation.Outcome(reward):"已保存奖励 · 可以跳过揭晓动画"):"兵装 / 羽翼 / 补给 · 三选一",14,muted);
+            Text(new Rect(w.x+28,w.y+92,w.width-56,24),revealed?(complete?ChestRevealPresentation.Outcome(reward):"已保存奖励 · 可以跳过揭晓动画"):ChestRevealPresentation.ChoiceDisclosure,14,muted);
             if(Button(new Rect(w.xMax-200,w.y+43,78,36),"菜单",jade)){session.SetPaused(true);BlockUITransition();return;}
             if(Button(new Rect(w.xMax-110,w.y+43,82,36),chestDetails?"收起规则":"奖励规则",muted))chestDetails=!chestDetails;
             Rect body=new Rect(w.x+28,w.y+132,w.width-56,w.height-208);
@@ -74,14 +74,12 @@ namespace Emberfall
                 {
                     Rect r=new Rect(body.x+i*(cardWidth+12),body.y,cardWidth,body.height);
                     bool hover=r.Contains(Mouse)&&GUI.enabled;
-                    Fill(r,new Color(.07f,.09f,.125f));Border(r,hover?gold:new Color(.32f,.42f,.49f,.65f));
-                    Text(new Rect(r.x+14,r.y+12,r.width-28,20),ProgressionService.ChestChoiceName(i),12,muted);
-                    DrawRewardChest(new Rect(r.x+12,r.y+30,r.width-24,r.height-98),false,1,0);
+                    DrawChestChoiceCard(r,i,progression.Profile,1);
                     if(Button(new Rect(r.x+12,r.yMax-54,r.width-24,42),"开启",gold,!chestOpening&&progression.Profile.pendingFashionChest&&!progression.Profile.pendingChestReveal,null,hover))
                     {
                         chestOpening=true;string result=progression.OpenDungeonChest(i);
                         if(result==null){chestOpening=false;Feedback(false,"宝箱暂时无法开启");}
-                        else {chestRevealOrigin=new Rect(r.x+12,r.y+30,r.width-24,r.height-98);revealedChest=i;chestRevealResult=result;chestRevealedAt=Time.unscaledTime;chestDetails=false;rewardSoundPlayed=false;chestReceiptId=progression.LastChestReward.Id;desktopChestResultScroll=Vector2.zero;GameAudio.Play(SoundCue.Cast);}
+                        else {chestRevealOrigin=ChestChoiceArt(r,1);revealedChest=i;chestRevealResult=result;chestRevealedAt=Time.unscaledTime;chestDetails=false;rewardSoundPlayed=false;chestReceiptId=progression.LastChestReward.Id;desktopChestResultScroll=Vector2.zero;GameAudio.Play(SoundCue.Cast);}
                         BlockUITransition();return;
                     }
                 }
@@ -105,9 +103,9 @@ namespace Emberfall
         {
             float size=ChestRevealPresentation.DesktopArtSize(r.height);
             Rect art=new Rect(r.x,r.y,size,size);Fill(art,new Color(.025f,.045f,.07f));Border(art,accent);
-            if(!DrawChestRewardModel(art,reward))DrawChestGold(art,accent);
+            if(!DrawChestRewardModel(art,reward))DrawChestGoldReward(art,reward,accent);
             Rect details=new Rect(art.xMax+24,r.y,r.width-size-24,r.height);
-            string result=ChestRevealPresentation.Result(reward,session.Progression.Profile.fashionThreads);
+            string result=ChestRevealPresentation.ResultWithCollection(reward,session.Progression.Profile);
             string error=session.Progression.LastError;
             string copy=(string.IsNullOrEmpty(error)?"":error+"\n\n")+result;
             float total=Mathf.Max(details.height,Style(18,true,true).CalcHeight(new GUIContent(copy),details.width-26)+20);

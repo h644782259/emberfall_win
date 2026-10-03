@@ -21,7 +21,7 @@ check('CombatSight.Melee(transform.position, enemy.transform.position)' in p and
 check('BoundaryPoint' in preview and 'WorldTraversal.Revision' in preview and 'renderedTarget-TargetPoint' in preview,'cover-aware preview caches only unchanged geometry')
 check('=>' not in read('Combat/CombatSight.cs'),'runtime boundary clipping allocates no per-ray closures')
 check('EnemyController selected=AimTarget;' in p and 'HeroClass==HeroClass.Summoner&&skill==9&&ValidAimTarget(selected)' in p,'summon ultimate selection survives ground confirmation into charge snapshot')
-check('masteryCore.BasicHit()' in p and 'masteryCore.SkillSpent(' in p and 'masteryCore.DamageTaken(' in p and 'masteryCore.PerfectDodge()' in p,'four cores have distinct actual combat triggers')
+check('SettleMasteryCombo(enemy);' in p and 'masteryCore.BasicHit()' in read('Combat/PlayerController.MasteryCombo.cs') and 'masteryCore.SkillSpent(' in p and 'masteryCore.DamageTaken(' in p and 'masteryCore.PerfectDodge()' in p,'four cores have distinct actual combat triggers')
 check('masteryCore.Reset();coreWardTime=0' in p and 'oldCore!=masteryCore.Core||oldTier!=masteryCore.Tier' in p,'runtime core and ward state reset on epoch or configuration change')
 check('!session.CombatEnded' in p and 'session.CombatEnded' in fx,'terminal ordinary/mode callbacks cannot rearm core or deal late projectile damage')
 check('QueueDungeonCompletion();' in s and 'TrySettleDungeonReward();' in s and 'Progression.Profile.clearedRuns++' not in s,'ordinary clear uses one pending atomic settlement')

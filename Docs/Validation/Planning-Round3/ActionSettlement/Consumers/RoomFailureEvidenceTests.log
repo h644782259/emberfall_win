@@ -1,0 +1,11 @@
+  Determining projects to restore...
+  Restored /tmp/room-failure-evidence-3n59lawe/Test.csproj (in 104 ms).
+PASS: 26 production room failure snapshot/actual evidence/side-event membership assertions
+PASS: 654 recap presentation/layout assertions
+PASS: compiled collapsed B-result evidence mutation fails
+PASS: old room-failure-to-Abandoned production snapshot mutation fails
+Traceback (most recent call last):
+  File "/workspace/scratch/planning-round3/practice-copy-fix/Tests/RoomFailureEvidenceTests.py", line 37, in <module>
+    assert main.index('if (!loadingSaveSnapshot && !enteringChapter && !SaveBeforeLeaving()) return false;')<main.index('LastRunSummary=BuildRunSummary(false, "Abandoned")')<main.index('int previousCombatEpoch = Player.CombatEpoch;',main.index('private bool ChangeZone'))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: substring not found

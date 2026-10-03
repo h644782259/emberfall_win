@@ -1,0 +1,16 @@
+/tmp/mechanism-evidence-g75bj003/ActualDamage.cs(59,52): error CS1061: 'PlayerController' does not contain a definition for 'CaptureCastReceipt' and no accessible extension method 'CaptureCastReceipt' accepting a first argument of type 'PlayerController' could be found (are you missing a using directive or an assembly reference?) [/tmp/mechanism-evidence-g75bj003/Test.csproj]
+
+Build FAILED.
+
+/tmp/mechanism-evidence-g75bj003/ActualDamage.cs(59,52): error CS1061: 'PlayerController' does not contain a definition for 'CaptureCastReceipt' and no accessible extension method 'CaptureCastReceipt' accepting a first argument of type 'PlayerController' could be found (are you missing a using directive or an assembly reference?) [/tmp/mechanism-evidence-g75bj003/Test.csproj]
+    0 Warning(s)
+    1 Error(s)
+
+Time Elapsed 00:00:01.08
+Traceback (most recent call last):
+  File "/workspace/scratch/planning-round3/core/Tests/MechanismEvidenceProductionTests.py", line 45, in <module>
+    subprocess.run([dotnet,'build',str(project),'--configfile',str(p/'NuGet.Config'),'-v:q'],env=env,check=True);cmd=[dotnet,str(p/'bin/Debug/net8.0/Test.dll')];subprocess.run(cmd,env=env,check=True)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/workspace/shared/emberfall-tools/dotnet/dotnet', 'build', '/tmp/mechanism-evidence-g75bj003/Test.csproj', '--configfile', '/tmp/mechanism-evidence-g75bj003/NuGet.Config', '-v:q']' returned non-zero exit status 1.

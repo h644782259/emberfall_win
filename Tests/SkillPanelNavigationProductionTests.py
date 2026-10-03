@@ -7,7 +7,7 @@ def member(file,signature):
  while depth:
   depth+=(s[b]=='{')-(s[b]=='}');b+=1
  return s[a:b]
-methods='\n'.join(member(f,s) for f,s in [('GameUI.cs','private void ClosePanel()'),('GameUI.cs','private void TogglePanel('),('GameUI.MobileSkillNavigation.cs','private bool CloseMobileSkillDetail()'),('GameUI.MobileSkillNavigation.cs','private void ResetMobileSkillNavigation()')])
+methods='\n'.join(member(f,s) for f,s in [('GameUI.BuildPlans.cs','private void CancelPresetSale()'),('GameUI.cs','private void ClosePanel()'),('GameUI.cs','private void TogglePanel('),('GameUI.MobileSkillNavigation.cs','private bool CloseMobileSkillDetail()'),('GameUI.MobileSkillNavigation.cs','private void ResetMobileSkillNavigation()')])
 shell=r'''
 using System;
 namespace UnityEngine {public static class Time{public static float unscaledTime;}}
@@ -17,7 +17,7 @@ public class Session{public bool HasStarted=true,IsDead,Paused,Blocked=true;publ
 public class Progression{public Profile Profile=new Profile();}public class Profile{public bool pendingFashionChest,pendingChestReveal;}
 public partial class GameUI {
 enum Panel{None,Skills,Inventory,SaveSelection,Chests,Fashion,PotionAssignment,Bindings,SaveLocation,Controls}
-Panel panel=Panel.Skills,bindingReturnPanel;Session session=new Session();bool mobileSkillDetail=true,saveSelectionFromPause,chestDetails,bindingReturnPause,saveReturnPause,controlsReturnPause;int rebindingSlot,blocks,cancels;float chestRevealedAt,ChestDuration=1;bool ChestAnimationDone=true;float listScroll=173,detailScroll=81;
+Panel panel=Panel.Skills,bindingReturnPanel;Session session=new Session();bool presetSaleOpen;bool mobileSkillDetail=true,saveSelectionFromPause,chestDetails,bindingReturnPause,saveReturnPause,controlsReturnPause;int rebindingSlot,blocks,cancels;float chestRevealedAt,ChestDuration=1;bool ChestAnimationDone=true;float listScroll=173,detailScroll=81;
 object routeSkillOwner;string routeSkillSlot;bool CloseMobileInventoryDetail()=>false;bool CloseChapterSelection()=>false;bool CloseRouteSkill()=>false;bool CloseProgressionGoalSurface()=>false;bool CloseBuildPlanSurface()=>false;bool CloseTravelMap()=>false;bool CancelSaveDeletion()=>false;bool CancelActiveSaveFlow()=>false;
 void CancelMobileScroll(){cancels++;}void BlockUITransition(){blocks++;}void FinishChestReveal(){}void ReturnToInventory(){}
 METHODS
@@ -30,6 +30,9 @@ check(ui.listScroll==173&&ui.detailScroll==81,"Back preserves scroll positions")
 ui.ClosePanel();check(ui.panel==Panel.None&&!ui.session.Blocked,"second Back exits list and releases gameplay");
 ui.mobileSkillDetail=true;ui.TogglePanel(Panel.Skills);check(ui.panel==Panel.Skills&&!ui.mobileSkillDetail&&ui.session.Blocked&&ui.listScroll==173,"reopen enters list retaining scroll");
 ui.TogglePanel(Panel.Skills);check(ui.panel==Panel.None&&!ui.session.Blocked,"toggle closes skills");}
+MobileControls.Layout.Width=568;var sale=new GameUI{presetSaleOpen=true};sale.ClosePanel();
+check(!sale.presetSaleOpen&&sale.panel==Panel.Skills&&sale.mobileSkillDetail&&sale.session.Blocked&&sale.blocks==1,"actual preset cancellation consumes first Back without closing skill detail");
+sale.ClosePanel();check(sale.panel==Panel.Skills&&!sale.mobileSkillDetail&&sale.session.Blocked,"next Back returns narrow skill detail to list");
 MobileControls.Active=false;var desktop=new GameUI();desktop.ClosePanel();check(desktop.panel==Panel.None&&!desktop.session.Blocked,"desktop ClosePanel unaffected");
 return n;}
 }}

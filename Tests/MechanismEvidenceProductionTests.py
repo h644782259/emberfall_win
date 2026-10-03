@@ -1,4 +1,5 @@
 """Actual health mutation ordering + per-instance ledger. Engine and reward callback are explicit doubles."""
+from CastReceiptFixtureSources import include_cast_receipt_source
 import importlib.util,os,re,subprocess,sys,tempfile
 from pathlib import Path
 root=Path(__file__).resolve().parents[1];dotnet=sys.argv[1] if len(sys.argv)>1 else 'dotnet'
@@ -39,7 +40,7 @@ with tempfile.TemporaryDirectory(prefix='mechanism-evidence-') as temp:
   s=(root/'Tests'/(name+'.cs')).read_text().replace('public void OnEnemyKilled(EnemyController e){}','public System.Action KilledEvidence;public void OnEnemyKilled(EnemyController e){KilledEvidence?.Invoke();}')
   (p/(name+'.cs')).write_text(s)
  (p/'ActualDamage.cs').write_text('using UnityEngine;namespace Emberfall{public partial class EnemyController{'+damage+chapter.member(source,'internal bool TrySkillInterrupt(')+'}}');(p/'Program.cs').write_text(program)
- project=p/'Test.csproj';project.write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net8.0</TargetFramework><OutputType>Exe</OutputType><NuGetAudit>false</NuGetAudit><NoWarn>0649;0414</NoWarn></PropertyGroup></Project>');(p/'NuGet.Config').write_text('<configuration><packageSources><clear /></packageSources></configuration>')
+ project=p/'Test.csproj';project.write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net8.0</TargetFramework><OutputType>Exe</OutputType><NuGetAudit>false</NuGetAudit><NoWarn>0649;0414</NoWarn></PropertyGroup></Project>');include_cast_receipt_source(project);(p/'NuGet.Config').write_text('<configuration><packageSources><clear /></packageSources></configuration>')
  env=dict(os.environ,DOTNET_CLI_HOME=str(p/'cli'),DOTNET_NOLOGO='1')
  subprocess.run([dotnet,'build',str(project),'--configfile',str(p/'NuGet.Config'),'-v:q'],env=env,check=True);cmd=[dotnet,str(p/'bin/Debug/net8.0/Test.dll')];subprocess.run(cmd,env=env,check=True)
  file=p/'ActualDamage.cs';original=file.read_text();callback='if(actualHealthLoss!=null&&Health<previousHealth)actualHealthLoss(previousHealth-Health);';file.write_text(original.replace(callback,'').replace('session.OnEnemyKilled(this);','session.OnEnemyKilled(this);'+callback))

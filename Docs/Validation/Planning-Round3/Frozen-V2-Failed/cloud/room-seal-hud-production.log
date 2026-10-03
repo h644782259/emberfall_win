@@ -1,0 +1,11 @@
+PASS: 1085 actual room HUD Draw/rectangle/state assertions; managed UI recorder, not Unity/font screenshots
+
+Traceback (most recent call last):
+  File "/workspace/scratch/planning-round3/validation-v2/Tests/RoomSealHudProductionTests.py", line 27, in <module>
+    build();q=subprocess.run([args.dotnet,str(t/'bin/Debug/net8.0/Tests.dll')],env=env,capture_output=True,text=True);print(q.stdout);assert q.returncode==0,q.stderr
+                                                                                                                                             ^^^^^^^^^^^^^^^
+AssertionError: Unhandled exception. System.Exception: registered enemy defeat accepted
+   at RoomObjectivePresentationTests.Check(Boolean value, String why) in /tmp/room-seal-hud-4etmjyil/PresentationTests.cs:line 6
+   at RoomObjectivePresentationTests.Run() in /tmp/room-seal-hud-4etmjyil/PresentationTests.cs:line 59
+   at Program.<Main>$(String[] args) in /tmp/room-seal-hud-4etmjyil/Program.cs:line 1
+

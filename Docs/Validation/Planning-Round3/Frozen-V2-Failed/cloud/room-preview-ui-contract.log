@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/workspace/scratch/planning-round3/validation-v2/Tests/RoomBlessingPreviewSourceTests.py", line 21, in <module>
+    assert 'Boss ? 3 : 6' in read('Core/RoomChainState.cs'),'two guard caption matches current authoritative plan count'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: two guard caption matches current authoritative plan count

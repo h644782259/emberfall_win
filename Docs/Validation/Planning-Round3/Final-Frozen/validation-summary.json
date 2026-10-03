@@ -1,0 +1,36 @@
+{
+  "passed": true,
+  "windowsSourceHead": "8ca0e530d9645e042ff4116234960d98a36203fc",
+  "iosSourceHead": "b602809ef054586d78f81f0ded966148cc6dcb41",
+  "fullSuiteChecks": 268,
+  "passedChecks": 268,
+  "failedChecks": [],
+  "startedUtc": "20261003T164551943650Z",
+  "completedUtc": "2026-10-03T17:05:11.204447+00:00",
+  "trackedInputCount": 7020,
+  "referenceInputCount": 204,
+  "inputStable": true,
+  "platformApiChecks": [
+    {
+      "platform": "win",
+      "restore": 0,
+      "build": 0
+    },
+    {
+      "platform": "ios",
+      "restore": 0,
+      "build": 0
+    },
+    {
+      "platform": "android",
+      "restore": 0,
+      "build": 0
+    }
+  ],
+  "sharedFilesAudited": 1836,
+  "guidMetadataCount": 471,
+  "androidSourcePath": "/workspace/scratch/planning-round3/android-source",
+  "androidRepositoryCreated": false,
+  "engineExecuted": false,
+  "scope": "Managed production paths and pinned Unity API compilation; no Unity player/editor, physics, rendering, GPU or device acceptance."
+}

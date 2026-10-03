@@ -15,7 +15,7 @@ methods='\n'.join(member(model,k) for k in ['public void PlayAction(', 'private 
 with tempfile.TemporaryDirectory(prefix='blender-adapter-') as tmp:
  p=Path(tmp)
  (p/'BuildCatalogDamage.cs').write_text('namespace Emberfall{public static class BuildCatalog{'+member((source/'Assets/Scripts/Core/GameTypes.cs').read_text(),'public static float CinderTrailTickMultiplier(')+'}}')
- for f in ['Combat/BlenderPilotVisual','Combat/CombatModel.BlenderPilot','Combat/CombatModel.WeaponRig','Core/RendererGroupCache','Core/BlenderPilotPosePolicy','Core/BasicActionTimeline','Core/SkillDamageBudgets','Core/CombatBalance','Core/WeaponStructure']:(p/(Path(f).name+'.cs')).write_text((source/('Assets/Scripts/'+f+'.cs')).read_text())
+ for f in ['Combat/BlenderPilotVisual','Combat/CombatModel.BlenderPilot','Combat/CombatModel.WeaponRig','Core/RendererGroupCache','Core/BlenderPilotPosePolicy','Core/BasicActionTimeline','Core/SkillDamageBudgets','Core/CombatImpactBatch','Core/CombatBalance','Core/WeaponStructure']:(p/(Path(f).name+'.cs')).write_text((source/('Assets/Scripts/'+f+'.cs')).read_text())
  (p/'Layers.cs').write_text((r/'Tests/BlenderPilotLayerProductionFixture.cs').read_text())
  (p/'Readiness.cs').write_text((r/'Tests/BlenderPilotReadinessTests.cs').read_text())
  (p/'Methods.cs').write_text('using UnityEngine;namespace Emberfall{'+''.join(member((source/'Assets/Scripts/Core/GameTypes.cs').read_text(),signature) for signature in ['public enum EnemyKind','public enum FashionSlot','public enum ItemSlot','public enum Rarity','public enum EquipmentMechanic','public class ItemData'])+'public sealed partial class CombatModel{'+methods+'}}');(p/'Fixture.cs').write_text((r/'Tests/BlenderPilotAdapterProductionFixture.cs').read_text())

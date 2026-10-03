@@ -1,0 +1,10 @@
+Unhandled exception. System.Exception: legacy fashion not reinterpreted
+   at ChestChoicePresentationTests.Check(Boolean value, String why) in /tmp/h03-chest-ui-3xjoauqm/ChestChoicePresentationTests.cs:line 10
+   at ChestChoicePresentationTests.Run(String root) in /tmp/h03-chest-ui-3xjoauqm/ChestChoicePresentationTests.cs:line 76
+   at Program.Main(String[] args) in /tmp/h03-chest-ui-3xjoauqm/Program.cs:line 37
+Traceback (most recent call last):
+  File "/workspace/scratch/planning-round3/rewards/Tests/ChestChoicePresentationTests.py", line 52, in <module>
+    subprocess.run(cmd,env=env,check=True)
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/workspace/shared/emberfall-tools/dotnet/dotnet', 'run', '--project', '/tmp/h03-chest-ui-3xjoauqm/Test.csproj', '--', '/tmp/h03-chest-ui-3xjoauqm/saves']' returned non-zero exit status 134.

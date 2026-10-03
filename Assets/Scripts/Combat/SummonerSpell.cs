@@ -4,6 +4,7 @@ namespace Emberfall
 {
     internal sealed class SummonerSpell : MonoBehaviour
     {
+        private CastFirstHitReceipt castReceipt;
         private PlayerController owner;
         private GameSession session;
         private int rank, epoch, castId;
@@ -52,7 +53,7 @@ namespace Emberfall
             {
                 var obj = new GameObject("引力印记"); obj.transform.position = target;
                 var spell = obj.AddComponent<SummonerSpell>();
-                spell.owner = player; spell.session = game; spell.rank = rank; spell.damage = damage; spell.epoch = player.CombatEpoch; spell.castId=propCast;
+                spell.owner = player; spell.session = game; spell.rank = rank; spell.damage = damage; spell.epoch = player.CombatEpoch; spell.castId=propCast;spell.castReceipt=player.RetainCastReceipt(propCast);
                 spell.finisherDamage = player.RollDirectDamage(damage * SummonerDamageRules.MarkFinisherCoefficient);
                 AdvancedSkillVfx.Rune(player, target, 4.4f * range, color, 3.3f, rank + 1);
             }
@@ -114,7 +115,7 @@ namespace Emberfall
             }
         }
         private void Retire() { pendingTargets.Clear(); Destroy(gameObject); }
-        private void OnDisable() { pendingTargets.Clear(); }
-        private void OnDestroy() { pendingTargets.Clear(); }
+        private void OnDisable() { castReceipt?.Release();castReceipt=null;pendingTargets.Clear(); }
+        private void OnDestroy() { OnDisable(); }
     }
 }

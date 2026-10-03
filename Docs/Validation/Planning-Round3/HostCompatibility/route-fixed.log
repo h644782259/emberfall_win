@@ -1,0 +1,7 @@
+/tmp/route-skill-cejprk1m/Program.cs(11,24): warning CS0649: Field 'GameUI.bindingReturnPanel' is never assigned to, and will always have its default value [/tmp/route-skill-cejprk1m/Test.csproj]
+/tmp/route-skill-cejprk1m/Program.cs(11,123): warning CS0414: The field 'GameUI.rebindingSlot' is assigned but its value is never used [/tmp/route-skill-cejprk1m/Test.csproj]
+PASS: 13 actual route navigation/ClosePanel owner and scroll checks
+PASS: 8 actual feedback block/cross-skill route checks
+PASS: old list-only and missing-route-Back mutations fail their exact navigation oracles
+PASS: old cross-skill success feedback mutation fails exact STALE_SKILL_STATUS oracle
+PASS: old cross-skill failure feedback mutation fails exact STALE_SKILL_STATUS oracle

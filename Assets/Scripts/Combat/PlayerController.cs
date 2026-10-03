@@ -212,6 +212,9 @@ namespace Emberfall
 
         public void TakeDamageFrom(float amount, string source)
         {
+            CombatImpactBatch.BeginAction();
+            try
+            {
             if (session == null || IsDead || session.CombatEnded || invulnerability > 0 || !session.HasStarted || amount <= 0 || float.IsNaN(amount) || float.IsInfinity(amount)) return;
             float damage = Mathf.Max(1, amount * CombatBalance.ArmorDamageMultiplier(stats.Armor, session.Progression.Profile.level));
             if (chargedWardTime > 0) damage *= .75f;
@@ -262,6 +265,9 @@ namespace Emberfall
                 model.transform.localRotation = Quaternion.Euler(0,0,75f);
                 session.OnPlayerDied();
             }
+
+            }
+            finally { CombatImpactBatch.EndAction(); }
         }
 
         public float CooldownRemaining(int slot) { return SkillCooldownRemaining(HotbarSkill(slot)); }
@@ -604,6 +610,9 @@ namespace Emberfall
 
         private void BasicAttack()
         {
+            CombatImpactBatch.BeginAction();
+            try
+            {
             if (TraversalStartedThisFrame || skillBasicRecovery.Blocked) return;
             if(!MobilePinnedActionAllowed(-1,true))return;
             if (charge != null && (charge.IsCharging || charge.ConsumedThisFrame)) return;
@@ -656,6 +665,9 @@ namespace Emberfall
                 Vector3 muzzle=transform.position+Vector3.up*1.15f+transform.forward*Mathf.Min(.55f,distance*.3f);
                 CombatProjectile.BasicShot(this,session,muzzle,target,Damage(SkillDamageBudgets.BasicCoefficient(HeroClass)*(mobilityTime>0?1f+.12f*mobilityRank:1f)),color,ranger,AimTarget);
             }
+
+            }
+            finally { CombatImpactBatch.EndAction(); }
         }
 
         private bool Melee(float range, float arc, CombatDamage damage, float knockback, float stun, float knockdown = 0, bool basic = false, int skillIndex = -1, int castId = 0, bool counterThrust = false)
@@ -757,6 +769,7 @@ namespace Emberfall
                     AdvancedSkillVfx.Beam(this, position + Vector3.up, bounce.transform.position + Vector3.up, GameBalance.ClassColor(HeroClass), .25f, .14f);
                     // A returned blade strengthens a deliberate next heavy attack,
                     // while a kill carries the blade to a fresh target.
+                    if(counterTime<=1.8f)counterWindowDuration=1.8f;
                     counterTime = Mathf.Max(counterTime, 1.8f);
                     if (bounce.IsDead)
                     {
@@ -811,6 +824,7 @@ namespace Emberfall
                 float bonus;
                 if (status.ConsumePoison(this, castId, out bonus))
                 {
+                    VenomSkillVfx.Contact(this,EnemyBodyPoint(enemy),true);
                     bool spread = HasMechanic(EquipmentMechanic.VenomSpread) && !ConcentratedVenom;
                     baseDamage += bonus * (spread ? .8f : 1f);
                     session.SpawnMechanismText(enemy.transform.position + Vector3.up * 2f, "三毒引爆！", new Color(.6f, 1f, .3f));
@@ -860,8 +874,8 @@ namespace Emberfall
             ItemData item = session.Progression.Equipped(BuildCatalog.MechanicSlot(mechanic));
             return item != null && item.mechanic == mechanic ? item.mechanicVariant : 0;
         }
-        internal int NewCastId() { return ++nextCastId; }
-        internal void RegisterSkillHit(int castId){if(session!=null&&!session.InputBlocked&&!session.CombatEnded&&!IsDead)masteryCore.SkillHit(castId);}
+        internal int NewCastId() { return IssueCastId(); }
+        internal void RegisterSkillHit(int castId){if(session!=null&&session.Player==this&&session.HasStarted&&!session.InputBlocked&&!session.CombatEnded&&!IsDead)masteryCore.SkillHit(CaptureCastReceipt(castId));}
         internal void ElementalAdvancedArea(Vector3 at, float radius, CombatDamage direct, int castId, bool final)
         {
             CombatImpactBatch.Begin();
@@ -910,7 +924,7 @@ namespace Emberfall
             perfectDodgeAwarded = true;
             float previousEnergy = Energy;
             skillRuntime.RestoreEnergy(PlayerUpgradeRules.PerfectDodgeEnergy);
-            if (HeroClass == HeroClass.Vanguard) counterTime = perfectDodgeCounterTime = ReturningCounterVariant ? 3f : PlayerUpgradeRules.CounterWindow;
+            if (HeroClass == HeroClass.Vanguard) counterWindowDuration = counterTime = perfectDodgeCounterTime = ReturningCounterVariant ? 3f : PlayerUpgradeRules.CounterWindow;
             else classDodgeTime = 3f;
             if (HeroClass == HeroClass.Summoner) { SummonedCompanion.OnPerfectDodge(this); }
             float ward=masteryCore.PerfectDodge();if(ward>0){coreWardTime=ward;session.RecordCombatAction("守御核心");}
@@ -1042,6 +1056,8 @@ namespace Emberfall
         }
 
         internal void CancelCombatPose() { skillBasicRecovery.Clear(); if (model != null) model.CancelAction(); }
+        private float counterWindowDuration;
+        internal float CounterOpportunityDuration {get{return counterWindowDuration;}}
         internal float CounterOpportunityRemaining { get { return IsDead ? 0 : counterTime; } }
         internal EnemyController CurrentOpportunityTarget { get { return ValidAimTarget(AimTarget) ? AimTarget : null; } }
 
@@ -1225,6 +1241,9 @@ namespace Emberfall
 
         private void CastSkillCore(int slot)
         {
+            CombatImpactBatch.BeginAction();
+            try
+            {
             if (slot < 0 || slot >= GameBalance.SkillCount || GameBalance.IsPassive(slot)) return;
             int rank = session.Progression.Profile.skillRanks[slot];
             if (rank <= 0)
@@ -1254,7 +1273,7 @@ namespace Emberfall
             }
             MasteryResourceProc resourceProc=masteryCore.SkillSpent(GameBalance.SkillEnergyCost(HeroClass,slot));
             if(resourceProc.Energy>0){skillRuntime.RestoreEnergy(resourceProc.Energy);skillRuntime.ReduceCooldowns(resourceProc.CooldownReduction);session.RecordCombatAction("循能核心");}
-            int castId = ++nextCastId;
+            int castId = NewCastId();HoldCastReceipt(ref skillCastReceipt,castId);
             session.RecordPracticeCast(castId,slot);
             session.RecordCombatAction("职业能力");
             if (executingChargedSkill && session.HasBlessing(RunBlessing.ChargedWard)) chargedWardTime = Mathf.Max(chargedWardTime, 2f);
@@ -1274,7 +1293,7 @@ namespace Emberfall
                 if (slot == 5)
                 {
                     guardTime = 6f + (rank - 1) * 2f;
-                    guardRank = rank;guardCastId=castId; guardReduction = .25f + rank * .1f;
+                    guardRank = rank;guardCastId=castId;HoldCastReceipt(ref guardCastReceipt,castId); guardReduction = .25f + rank * .1f;
                     AdvancedSkillVfx.Protection(this, transform.position, 2.8f * range, color, guardTime, rank + 1, ()=>guardTime>0);
                 }
                 else
@@ -1296,12 +1315,12 @@ namespace Emberfall
                 if (HeroClass == HeroClass.Vanguard && slot == 4)
                 {
                     guardTime = 6f+(rank-1)*2f; guardPower = 1.2f * power;
-                    guardReduction=.55f+rank*.05f; guardRadius=3.2f*range; guardRank=rank;guardCastId=castId;
+                    guardReduction=.55f+rank*.05f; guardRadius=3.2f*range; guardRank=rank;guardCastId=castId;HoldCastReceipt(ref guardCastReceipt,castId);
                     AdvancedSkillVfx.Protection(this,transform.position,2.1f*range,new Color(1f,.84f,.4f),guardTime,rank,()=>guardTime>0);
                 }
                 else if (HeroClass == HeroClass.Arcanist && slot == 5)
                 {
-                    guardTime=6f+(rank-1)*2f; guardRank=rank;guardCastId=castId; guardReduction=.25f+rank*.1f;
+                    guardTime=6f+(rank-1)*2f; guardRank=rank;guardCastId=castId;HoldCastReceipt(ref guardCastReceipt,castId); guardReduction=.25f+rank*.1f;
                     guardRadius=2.8f*range; guardPulseTimer=0;
                     if (Specialization == ElementalistSpecialization.Burn) { guardReduction=.3f; burnStrideTime=guardTime; }
                     AdvancedSkillVfx.Protection(this,transform.position,guardRadius,Specialization==ElementalistSpecialization.Burn?new Color(1f,.55f,.25f):new Color(.55f,.92f,1f),guardTime,rank+1,()=>guardTime>0);
@@ -1399,6 +1418,9 @@ namespace Emberfall
                 }
                 else {var field=SkillDamageBudgets.EarlyField(HeroClass,rank);CombatArea.Spawn(this,session,target,4.3f*range,Damage(field.TickCoefficient),.08f,field.Startup,field.Duration,field.Interval,new Color(.7f,1f,.59f),false,false,0,Damage(field.FinisherCoefficient),castId:castId,visual:SkillVisualRecipe.ArrowRain);}
             }
+
+            }
+            finally { CombatImpactBatch.EndAction(); }
         }
 
     }

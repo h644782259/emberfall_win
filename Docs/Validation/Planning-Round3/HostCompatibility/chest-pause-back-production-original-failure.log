@@ -1,0 +1,17 @@
+/tmp/emberfall-chest-back-roncegww/Replay.cs(52,24): error CS1061: 'SessionStub' does not contain a definition for 'RoomBranchChoiceOpen' and no accessible extension method 'RoomBranchChoiceOpen' accepting a first argument of type 'SessionStub' could be found (are you missing a using directive or an assembly reference?) [/tmp/emberfall-chest-back-roncegww/project/Validation.csproj]
+/tmp/emberfall-chest-back-roncegww/Replay.cs(52,108): error CS1061: 'SessionStub' does not contain a definition for 'CancelRoomBranchChoice' and no accessible extension method 'CancelRoomBranchChoice' accepting a first argument of type 'SessionStub' could be found (are you missing a using directive or an assembly reference?) [/tmp/emberfall-chest-back-roncegww/project/Validation.csproj]
+
+Build FAILED.
+
+/tmp/emberfall-chest-back-roncegww/Replay.cs(52,24): error CS1061: 'SessionStub' does not contain a definition for 'RoomBranchChoiceOpen' and no accessible extension method 'RoomBranchChoiceOpen' accepting a first argument of type 'SessionStub' could be found (are you missing a using directive or an assembly reference?) [/tmp/emberfall-chest-back-roncegww/project/Validation.csproj]
+/tmp/emberfall-chest-back-roncegww/Replay.cs(52,108): error CS1061: 'SessionStub' does not contain a definition for 'CancelRoomBranchChoice' and no accessible extension method 'CancelRoomBranchChoice' accepting a first argument of type 'SessionStub' could be found (are you missing a using directive or an assembly reference?) [/tmp/emberfall-chest-back-roncegww/project/Validation.csproj]
+    0 Warning(s)
+    2 Error(s)
+
+Time Elapsed 00:00:00.82
+Traceback (most recent call last):
+  File "/workspace/scratch/planning-round3/validation-v2/Tests/ChestPauseBackProductionTests.py", line 101, in <module>
+    subprocess.run([dotnet,'build',str(project),'--configfile',str(config),'-v:q'],check=True,env=env)
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/workspace/shared/emberfall-tools/dotnet/dotnet', 'build', '/tmp/emberfall-chest-back-roncegww/project/Validation.csproj', '--configfile', '/tmp/emberfall-chest-back-roncegww/NuGet.Config', '-v:q']' returned non-zero exit status 1.

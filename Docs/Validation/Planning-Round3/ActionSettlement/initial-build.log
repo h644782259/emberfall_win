@@ -1,0 +1,13 @@
+/tmp/practice-settlement-iqr38bm9/Math.cs(29,134): error CS0101: The namespace 'UnityEngine' already contains a definition for 'Time' [/tmp/practice-settlement-iqr38bm9/Test.csproj]
+/tmp/practice-settlement-iqr38bm9/Tests.cs(20,76): error CS0246: The type or namespace name 'ThreatTier' could not be found (are you missing a using directive or an assembly reference?) [/tmp/practice-settlement-iqr38bm9/Test.csproj]
+/tmp/practice-settlement-iqr38bm9/EnemyControlPolicy.cs(50,34): error CS0246: The type or namespace name 'CastFirstHitReceipt' could not be found (are you missing a using directive or an assembly reference?) [/tmp/practice-settlement-iqr38bm9/Test.csproj]
+/tmp/practice-settlement-iqr38bm9/EnemyControlPolicy.cs(16,26): error CS0246: The type or namespace name 'CastFirstHitHistory' could not be found (are you missing a using directive or an assembly reference?) [/tmp/practice-settlement-iqr38bm9/Test.csproj]
+/tmp/practice-settlement-iqr38bm9/Tests.cs(6,27): error CS0246: The type or namespace name 'RunBlessing' could not be found (are you missing a using directive or an assembly reference?) [/tmp/practice-settlement-iqr38bm9/Test.csproj]
+
+The build failed. Fix the build errors and run again.
+
+Traceback (most recent call last):
+  File "/workspace/scratch/planning-round3/practice-copy-fix/Tests/PracticeActionSettlementProductionTests.py", line 71, in <module>
+    assert run(['run','--project',str(p/'Test.csproj')]).returncode==0
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError

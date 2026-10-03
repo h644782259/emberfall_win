@@ -2,10 +2,11 @@ using System;using System.Collections.Generic;using System.Linq;using System.Ref
 namespace UnityEngine{
 public class Object{public static void Destroy(Object value){}}
 public class Component:Object{public GameObject gameObject;public Transform transform=>gameObject.transform;public T GetComponent<T>()where T:Component=>gameObject.GetComponent<T>();}
-public class MonoBehaviour:Component{}
-public class GameObject:Object{public string name;public bool activeSelf=true;public Transform transform=new Transform();readonly Dictionary<Type,Component> parts=new Dictionary<Type,Component>();public static List<GameObject> All=new List<GameObject>();public GameObject(string name=""){this.name=name;All.Add(this);}public T AddComponent<T>()where T:Component,new(){var value=new T{gameObject=this};parts[typeof(T)]=value;return value;}public T GetComponent<T>()where T:Component=>parts.TryGetValue(typeof(T),out var value)?(T)value:null;public void SetActive(bool value){activeSelf=value;}}
-public class Transform{public Transform parent;public Vector3 localPosition,localScale;public Quaternion localRotation;public void SetParent(Transform value,bool stay){parent=value;}}
-public struct Vector3{public float x,y,z;public Vector3(float x,float y,float z){this.x=x;this.y=y;this.z=z;}public static Vector3 operator *(Vector3 p,float s)=>new Vector3(p.x*s,p.y*s,p.z*s);}
+public class MonoBehaviour:Component{public T GetComponentInChildren<T>()where T:Component=>null;}
+public class GameObject:Object{public string name;public bool activeSelf=true;public Transform transform=new Transform();public bool activeInHierarchy=>activeSelf;readonly Dictionary<Type,Component> parts=new Dictionary<Type,Component>();public static List<GameObject> All=new List<GameObject>();public GameObject(string name=""){this.name=name;All.Add(this);}public T AddComponent<T>()where T:Component,new(){var value=new T{gameObject=this};parts[typeof(T)]=value;return value;}public T GetComponent<T>()where T:Component=>parts.TryGetValue(typeof(T),out var value)?(T)value:null;public void SetActive(bool value){activeSelf=value;}}
+public class Transform{public Vector3 position;public Vector3 TransformPoint(Vector3 point)=>position+point;public Transform parent;public Vector3 localPosition,localScale;public Quaternion localRotation;public void SetParent(Transform value,bool stay){parent=value;}}
+public static class Mathf{public static float Max(float a,float b)=>Math.Max(a,b);}
+public struct Vector3{public static Vector3 right=>new Vector3(1,0,0);public static Vector3 up=>new Vector3(0,1,0);public static Vector3 forward=>new Vector3(0,0,1);public float magnitude=>(float)Math.Sqrt(x*x+y*y+z*z);public static Vector3 operator +(Vector3 a,Vector3 b)=>new Vector3(a.x+b.x,a.y+b.y,a.z+b.z);public static Vector3 operator -(Vector3 a,Vector3 b)=>new Vector3(a.x-b.x,a.y-b.y,a.z-b.z);public float x,y,z;public Vector3(float x,float y,float z){this.x=x;this.y=y;this.z=z;}public static Vector3 operator *(Vector3 p,float s)=>new Vector3(p.x*s,p.y*s,p.z*s);}
 public struct Color{public Color(float r,float g,float b){}}
 public struct Quaternion{public static Quaternion Euler(float x,float y,float z)=>new Quaternion();}
 public class Shader{public static Shader Find(string name)=>new Shader();}public class Material:Object{public Color color;public Material(Shader s){}}
@@ -13,6 +14,7 @@ public class MeshRenderer:Component{public UnityEngine.Rendering.ShadowCastingMo
 }
 namespace UnityEngine.Rendering{public enum ShadowCastingMode{Off,On}}
 namespace Emberfall{
+public class CombatModel:MonoBehaviour{public bool TryStatusAttachment(out Transform anchor,out Vector3 frost,out Vector3 vulnerability){throw new Exception("legacy view test has no model; real models covered by status anchor suite");}}
 public class EnemyStatusEffects{public bool IsFrozen,HasFrostMark,IsMarked;internal event Action VisualStateChanged;public void Refresh(){VisualStateChanged?.Invoke();}}
 public class EnemyController:MonoBehaviour{public enum ThreatTier{Normal,Elite}public bool IsDead,IsBoss;public ThreatTier Tier;public EnemyStatusEffects StatusEffects=new EnemyStatusEffects();}
 public class PlayerController{public EnemyController AimTarget;}public class GameSession{public static GameSession Instance=new GameSession();public PlayerController Player=new PlayerController();}

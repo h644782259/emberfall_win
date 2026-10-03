@@ -17,6 +17,6 @@ with tempfile.TemporaryDirectory(prefix='draft-variant-effects-') as directory:
  for index,(old,new,expected) in enumerate([
   ('owner.SkillEffectSummary(index,before)','GameBalance.SkillEvolution(source.heroClass,index,before)','before uses actual equipped current mechanism'),
   ('preview.SkillEffectSummary(index,after)','GameBalance.SkillEvolution(source.heroClass,index,after)','B both before and after replace fan descriptions'),
-  ('item!=null&&item.mechanicVariantUnlocked&&item.mechanicVariant==1','item!=null&&item.mechanicVariant==1','locked forged B cannot override preview')]):
+  ('HasVariant(item)&&item.mechanicVariantUnlocked&&item.mechanicVariant==1','HasVariant(item)&&item.mechanicVariant==1','locked forged B cannot override preview')]):
   assert old in original;service.write_text(original.replace(old,new));assert run(['build',str(project),'--no-restore','-v:q']).returncode==0
   q=run([str(project.parent/'bin/Debug/net8.0/Validation.dll'),str(p/('negative-'+str(index)))]);assert q.returncode!=0 and expected in q.stdout+q.stderr;print('PASS compiled behavioral mutation rejected:',expected);service.write_text(original)

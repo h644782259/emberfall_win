@@ -49,10 +49,10 @@ public static class AdventureProgressionTests
         Check(p.ApplyBuildPreset(0,true)&&p.Profile.inventory.Find(x=>x.id==id).mechanicVariant==1,"restore B again");
         grown=p.Profile.inventory.Find(x=>x.id==id);Check(grown.rarity==Rarity.Legendary&&grown.attack==atk&&grown.health==hp&&p.Profile.slotUpgradeRanks[2]==6,"preset preserves current ascension stats and slot upgrades");
         Check(p.LoadSlot(p.CurrentSlotId)&&p.ApplyBuildPreset(1,true)&&p.Profile.inventory.Find(x=>x.id==id).mechanicVariant==0,"variants persist after restart");
-        p.Profile.inventory.Find(x=>x.id==id).mechanicVariantUnlocked=false;p.Save();string before=State(p);
+        p.Profile.variantKnowledge.Clear();p.Profile.inventory.Find(x=>x.id==id).mechanicVariantUnlocked=false;p.Save();string before=State(p);
         Check(!p.ApplyBuildPreset(0,true)&&State(p)==before,"invalid locked variant cannot unlock or spend");
         p.Profile.buildPresets[0].equipmentVariants=null;Check(p.ApplyBuildPreset(0,true),"legacy preset keeps current variant");
-        p.Profile.inventory.Find(x=>x.id==id).mechanicVariantUnlocked=true;p.Save();before=State(p);
+        p.Profile.variantKnowledge.Add(EquipmentMechanic.FrostEcho);p.Profile.inventory.Find(x=>x.id==id).mechanicVariantUnlocked=true;p.Save();before=State(p);
         Directory.CreateDirectory(p.SaveFilePath+".tmp");Check(!p.ApplyBuildPreset(1,true)&&State(p)==before,"failed apply leaves entire current build intact");Directory.Delete(p.SaveFilePath+".tmp");
     }
     static void GoalsAndTutorial(string root)

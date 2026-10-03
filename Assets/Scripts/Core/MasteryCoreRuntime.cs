@@ -15,12 +15,13 @@ namespace Emberfall
     /// during combat, and Reset on owner/room epochs. No permanent profile mutations.</summary>
     public sealed class MasteryCoreRuntime
     {
+        public const float ComboDuration=6f;
         public int Core { get; private set; } = -1;
         public int Tier { get; private set; }
         public float WardReduction { get { return Core == (int)MasteryType.Guard && Tier > 0 ? Tier == 1 ? .15f : .25f : 0; } }
         public float ComboRemaining { get { return Core == (int)MasteryType.Offense && Tier > 0 && cooldown <= 0 ? comboRemaining : 0; } }
         private float cooldown, comboRemaining, energySpent;
-        private int lastCast;
+        private readonly CastFirstHitHistory standaloneCasts=new CastFirstHitHistory();
         public void Configure(int core, int invested)
         {
             int tier = core >= 0 && core < 4 ? MasteryCoreRules.Tier(invested) : 0;
@@ -28,19 +29,18 @@ namespace Emberfall
             if (Core == core && Tier == tier) return;
             Core = core; Tier = tier; Reset();
         }
-        public void Reset() { cooldown = comboRemaining = energySpent = 0; lastCast = 0; }
+        public void Reset() { cooldown = comboRemaining = energySpent = 0; standaloneCasts.Clear(); }
         public void Advance(float dt)
         {
             if (!Finite(dt) || dt <= 0) return;
             cooldown = Math.Max(0, cooldown - dt); comboRemaining = Math.Max(0, comboRemaining - dt);
         }
-        public void SkillHit(int castId)
+        public void SkillHit(int castId) { SkillHit(standaloneCasts.Get(castId)); }
+        public void SkillHit(CastFirstHitReceipt cast)
         {
-            if (Core != (int)MasteryType.Offense || Tier == 0 || castId <= lastCast || castId <= 0) return;
-            // Consume even an ineligible first hit: a lingering field cannot re-arm
-            // itself once the cooldown ends. One scalar bounds cast history storage.
-            lastCast = castId;
-            if (cooldown <= 0) comboRemaining = 6f;
+            if(Core!=(int)MasteryType.Offense||Tier==0||cast==null||!cast.FirstCoreHit())return;
+            // First impact during cooldown is consumed; later ticks cannot bank it.
+            if(cooldown<=0)comboRemaining = ComboDuration;
         }
         public float BasicHit()
         {

@@ -1,4 +1,5 @@
 """Execute extracted production attack/lifecycle methods with explicit host shims."""
+from CastReceiptFixtureSources import include_cast_receipt_source
 from pathlib import Path
 import tempfile, subprocess, os
 root=Path(__file__).resolve().parents[1]
@@ -34,7 +35,7 @@ class Host {
  BossAttackPolicy.Move ToMove(AttackType t)=>BossAttackPolicy.Move.Slam;
  public bool Start()=>PrepareAttack(AttackType.Slam,false,new Vector3());public void Cancel()=>CancelAttack(true);public void Finish()=>FinishAttack();
 '''+''.join(member(enemy,k) for k in ['private bool AdmitThreatAttack()','private bool PrepareAttack(','private void CancelAttack(','private void FinishAttack()'])+'''}
-class Bolt {System.Action hostileEnded;public Bolt(Action callback){hostileEnded=callback;}public void End()=>OnDisable();'''+member(projectile,'private void OnDisable()')+'''}
+class Bolt {CastFirstHitReceipt castReceipt;System.Action hostileEnded;public Bolt(Action callback){hostileEnded=callback;}public void End()=>OnDisable();'''+member(projectile,'private void OnDisable()')+'''}
 static class Program {static void C(bool b,string m){if(!b)throw new Exception(m);}static void Main(){
  var p=new ThreatAdmissionPolicy(12);var a=new Host{threatAdmission=p,threatMember=1};var b=new Host{threatAdmission=p,threatMember=2};
  C(a.Start(),"first actual prepare");C(a.preparing&&a.warnings==1&&a.attackNumber==1,"real warning started");
@@ -51,6 +52,6 @@ if os.environ.get('THREAT_MUTATE_SKIP_ADMISSION')=='1':
 with tempfile.TemporaryDirectory(prefix='threat-lifecycle-') as tmp:
  p=Path(tmp);(p/'Fixture.cs').write_text(fixture);(p/'ThreatAdmissionPolicy.cs').write_bytes((root/'Assets/Scripts/Core/ThreatAdmissionPolicy.cs').read_bytes())
  (p/'NuGet.Config').write_text('<configuration><packageSources><clear /></packageSources></configuration>')
- (p/'Test.csproj').write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net8.0</TargetFramework><NoWarn>0649;0169;0414</NoWarn></PropertyGroup></Project>')
+ (p/'Test.csproj').write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net8.0</TargetFramework><NoWarn>0649;0169;0414</NoWarn></PropertyGroup></Project>');include_cast_receipt_source(p/'Test.csproj')
  env=os.environ.copy();env.update(DOTNET_CLI_HOME=str(p/'home'),DOTNET_SKIP_FIRST_TIME_EXPERIENCE='1',DOTNET_CLI_TELEMETRY_OPTOUT='1',DOTNET_GENERATE_ASPNET_CERTIFICATE='false')
  subprocess.run([os.environ.get('DOTNET','dotnet'),'run','--project',str(p/'Test.csproj')],env=env,check=True)

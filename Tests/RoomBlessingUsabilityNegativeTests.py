@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """The old broad compatibility must fail an independent real-cast usefulness oracle."""
+from CastReceiptFixtureSources import include_cast_receipt_source
 import os
 from pathlib import Path
 import subprocess
@@ -17,7 +18,7 @@ with tempfile.TemporaryDirectory(prefix='blessing-usability-negative-') as folde
     for name in ['SkillRuntimeTests','RoomBlessingUsabilityTests']:(folder/(name+'.cs')).write_text((root/('Tests/'+name+'.cs')).read_text())
     (folder/'RunChoices.cs').write_text(source[:start]+source[end:])
     (folder/'Program.cs').write_text('System.Console.WriteLine(RoomBlessingUsabilityTests.Run());')
-    project=folder/'Validation.csproj';project.write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net8.0</TargetFramework><OutputType>Exe</OutputType></PropertyGroup></Project>')
+    project=folder/'Validation.csproj';project.write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net8.0</TargetFramework><OutputType>Exe</OutputType></PropertyGroup></Project>');include_cast_receipt_source(project)
     config=folder/'NuGet.Config';config.write_text('<configuration><packageSources><clear /></packageSources></configuration>')
     env=dict(os.environ,DOTNET_CLI_HOME=str(folder/'cli'),DOTNET_CLI_TELEMETRY_OPTOUT='1')
     subprocess.run([dotnet,'restore',str(project),'--configfile',str(config),'--verbosity','quiet'],env=env,check=True)

@@ -6,6 +6,7 @@ namespace Emberfall
     {
         private EnemyController enemy;
         private EnemyStatusEffects status;
+        private CombatModel bodyModel;
         private GameObject[] ice = new GameObject[3];
         private GameObject frost;
         private GameObject[] vulnerability = new GameObject[2];
@@ -32,22 +33,39 @@ namespace Emberfall
             bool marked=alive&&status.HasFrostMark;
             bool vulnerable=alive&&status.IsMarked;
             if(count>0||marked||vulnerable)EnsureMaterials();
+            if(bodyModel==null||!bodyModel.gameObject.activeInHierarchy)
+                bodyModel=enemy==null?null:enemy.GetComponentInChildren<CombatModel>();
+            Transform bodyAnchor=transform;Vector3 frostPoint=new Vector3(-.6f,.7f,0),vulnerablePoint=new Vector3(.6f,.7f,0);
+            if(bodyModel!=null)bodyModel.TryStatusAttachment(out bodyAnchor,out frostPoint,out vulnerablePoint);
+            if(bodyAnchor==null)bodyAnchor=transform;
             for(int i=0;i<ice.Length;i++)
             {
                 if(i<count&&ice[i]==null)ice[i]=Piece("Frozen ankle crystal",iceMaterial,new Vector3((i-1)*.22f,.3f,.12f),new Vector3(.12f,.5f,.14f),new Vector3(0,0,(i-1)*18));
                 Set(ice[i],i<count);
             }
-            if(marked&&frost==null)frost=Piece("Frost mark diamond",iceMaterial,new Vector3(-.6f,enemy.IsBoss?2.3f:1.4f,.05f),new Vector3(.14f,.14f,.06f),new Vector3(0,0,45));
+            if(marked&&frost==null)frost=Piece("Frost mark diamond",iceMaterial,frostPoint,new Vector3(.14f,.14f,.06f),new Vector3(0,0,45));
+            if(frost!=null)AttachBody(frost,bodyAnchor,frostPoint,new Vector3(.14f,.14f,.06f));
             Set(frost,marked);
             for(int i=0;i<vulnerability.Length;i++)
             {
-                if(vulnerable&&vulnerability[i]==null)vulnerability[i]=Piece("Vulnerability slash",markMaterial,new Vector3(.5f+i*.12f,enemy.IsBoss?2.1f:1.2f,.08f),new Vector3(.045f,.23f,.045f),new Vector3(0,0,-25));
+                if(vulnerable&&vulnerability[i]==null)vulnerability[i]=Piece("Vulnerability slash",markMaterial,vulnerablePoint,new Vector3(.045f,.23f,.045f),new Vector3(0,0,-25));
+                if(vulnerability[i]!=null)AttachBody(vulnerability[i],bodyAnchor,vulnerablePoint+new Vector3(i*.12f,0,0),new Vector3(.045f,.23f,.045f));
                 Set(vulnerability[i],vulnerable);
             }
             float emphasis=EnemyStatusVisualRules.Emphasis(selected,alive&&enemy.IsBoss,alive&&enemy.Tier==EnemyController.ThreatTier.Elite,EffectPreferences.ReducedEffects);
-            if(frost!=null)frost.transform.localScale=new Vector3(.14f,.14f,.06f)*emphasis;
+            if(frost!=null)AttachBody(frost,bodyAnchor,frostPoint,new Vector3(.14f,.14f,.06f)*emphasis);
             if(iceMaterial!=null)iceMaterial.color=new Color(.38f,.83f,1f);
             if(markMaterial!=null)markMaterial.color=new Color(1f,.63f,.22f);
+        }
+        private static void AttachBody(GameObject piece,Transform anchor,Vector3 point,Vector3 worldSize)
+        {
+            if(piece.transform.parent!=anchor)piece.transform.SetParent(anchor,false);
+            piece.transform.localPosition=point;
+            // Preserve a legible small world size across goblin, squash and boss scales.
+            float x=(anchor.TransformPoint(Vector3.right)-anchor.position).magnitude;
+            float y=(anchor.TransformPoint(Vector3.up)-anchor.position).magnitude;
+            float z=(anchor.TransformPoint(Vector3.forward)-anchor.position).magnitude;
+            piece.transform.localScale=new Vector3(worldSize.x/Mathf.Max(.01f,x),worldSize.y/Mathf.Max(.01f,y),worldSize.z/Mathf.Max(.01f,z));
         }
         private void EnsureMaterials()
         {

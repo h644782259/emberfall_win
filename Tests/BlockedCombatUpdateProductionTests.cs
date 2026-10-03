@@ -152,3 +152,5 @@ public static class BlockedCombatUpdateProductionTests
  }
 
 }
+
+namespace Emberfall{internal static class VenomSkillVfx{internal static void Contact(PlayerController p,Vector3 point,bool consumed){}}}

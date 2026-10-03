@@ -13,6 +13,11 @@ namespace Emberfall
         public bool IsMarked { get { return markTime > 0; } }
         public bool IsBurning { get { return burnTime > 0; } }
         public float FrostRemaining {get{return Mathf.Max(frozenTime,frostMarkTime);}}
+        // Presentation metadata follows the timer that supplies the observed window.
+        private float frozenWindowDuration, frostWindowDuration, poisonWindowDuration, burnWindowDuration;
+        public float FrostWindowDuration {get{return frozenTime>=frostMarkTime?frozenWindowDuration:frostWindowDuration;}}
+        public float PoisonWindowDuration {get{return poisonWindowDuration;}}
+        public float BurnWindowDuration {get{return burnWindowDuration;}}
         public float OwnPoisonOpportunityRemaining(PlayerController source)
         {return source!=null&&poisonSource==source&&sourceEpoch==source.CombatEpoch&&PoisonStacks>=3?poisonTime:0;}
         public float PoisonRemaining {get{return poisonTime;}}
@@ -65,15 +70,17 @@ namespace Emberfall
             if (enemy == null || enemy.IsDead || duration <= 0 || float.IsNaN(duration) || float.IsInfinity(duration)) return;
             float granted = enemy.ApplyControl(duration);
             if (!enemy.IsBoss && granted <= 0) granted = Mathf.Min(duration, enemy.ControlStunRemaining);
+            if(granted>=frozenTime)frozenWindowDuration=granted;
             frozenTime = Mathf.Max(frozenTime, granted);
             // Boss armor blocks hard freeze, not the frost-mark/shatter opportunity.
-            if (enemy.IsBoss) frostMarkTime = Mathf.Max(frostMarkTime, duration + 2f);
+            if (enemy.IsBoss) {if(duration+2f>=frostMarkTime)frostWindowDuration=duration+2f;frostMarkTime = Mathf.Max(frostMarkTime, duration + 2f);}
             Slow(duration + 2, .4f);
             NotifyVisualState();
         }
         public void FrostMark(float duration)
         {
             if (enemy == null || enemy.IsDead || duration <= 0) return;
+            if(duration>=frostMarkTime)frostWindowDuration=duration;
             frostMarkTime = Mathf.Max(frostMarkTime, duration);
             Slow(duration, .15f);
             NotifyVisualState();
@@ -117,8 +124,8 @@ namespace Emberfall
         {
             if (source == null || source.IsDead || enemy == null || enemy.IsDead || !FinitePositive(duration) || !FinitePositive(damagePerTick)) return;
             if (poisonSchedule == null || poisonSchedule.Complete || poisonSource != source || sourceEpoch != source.CombatEpoch)
-            { poisonStacks = 0; poisonDamage = 0; poisonSchedule = new ScheduledTickWindow(duration,StatusTickRates.Poison,StatusTickRates.Poison); }
-            else poisonSchedule.Refresh(duration);
+            { poisonWindowDuration=duration;poisonStacks = 0; poisonDamage = 0; poisonSchedule = new ScheduledTickWindow(duration,StatusTickRates.Poison,StatusTickRates.Poison); }
+            else {if(duration>=poisonSchedule.Remaining)poisonWindowDuration=duration;poisonSchedule.Refresh(duration);}
             poisonTime = poisonSchedule.Remaining;
             poisonStacks = Mathf.Min(3, poisonStacks + 1);
             poisonDamage = Mathf.Max(poisonDamage, damagePerTick);
@@ -167,8 +174,8 @@ namespace Emberfall
             float previousRemaining = refresh ? burnSchedule.Remaining : 0;
             float previousBudget = refresh ? burnDamage * previousRemaining : 0;
             if (burnSchedule == null || burnSchedule.Complete || burnSource != source || burnEpoch != source.CombatEpoch)
-            { burnDamage = 0; burnSchedule = new ScheduledTickWindow(duration,StatusTickRates.Burn,StatusTickRates.Burn);burnClockFrame=Time.frameCount; }
-            else burnSchedule.Refresh(duration);
+            { burnWindowDuration=duration;burnDamage = 0; burnSchedule = new ScheduledTickWindow(duration,StatusTickRates.Burn,StatusTickRates.Burn);burnClockFrame=Time.frameCount; }
+            else {if(duration>=burnSchedule.Remaining)burnWindowDuration=duration;burnSchedule.Refresh(duration);}
             burnTime = burnSchedule.Remaining;
             burnDamage = Mathf.Max(burnDamage, totalDamage / duration);
             burnSource = source; burnEpoch = source.CombatEpoch;

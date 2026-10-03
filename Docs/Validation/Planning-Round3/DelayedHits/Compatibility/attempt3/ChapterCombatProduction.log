@@ -1,0 +1,30 @@
+/tmp/chapter-combat-zw7h2pip/current/ActualEnemyAttack.cs(59,52): error CS1061: 'PlayerController' does not contain a definition for 'CaptureCastReceipt' and no accessible extension method 'CaptureCastReceipt' accepting a first argument of type 'PlayerController' could be found (are you missing a using directive or an assembly reference?) [/tmp/chapter-combat-zw7h2pip/current/Validation.csproj]
+/tmp/chapter-combat-zw7h2pip/current/ChapterCombatProductionAttackFixture.cs(19,85): warning CS0649: Field 'EnemyController.guardArmorVisual' is never assigned to, and will always have its default value null [/tmp/chapter-combat-zw7h2pip/current/Validation.csproj]
+/tmp/chapter-combat-zw7h2pip/current/ChapterCombatProductionAttackFixture.cs(18,62): warning CS0649: Field 'EnemyController.chargeTime' is never assigned to, and will always have its default value 0 [/tmp/chapter-combat-zw7h2pip/current/Validation.csproj]
+/tmp/chapter-combat-zw7h2pip/current/ChapterCombatProductionAttackFixture.cs(17,72): warning CS0649: Field 'EnemyController.preparing' is never assigned to, and will always have its default value false [/tmp/chapter-combat-zw7h2pip/current/Validation.csproj]
+/tmp/chapter-combat-zw7h2pip/current/ChapterCombatProductionAttackFixture.cs(17,82): warning CS0414: The field 'EnemyController.aggro' is assigned but its value is never used [/tmp/chapter-combat-zw7h2pip/current/Validation.csproj]
+/tmp/chapter-combat-zw7h2pip/current/ChapterCombatProductionAttackFixture.cs(18,8): warning CS0414: The field 'EnemyController.hurtTime' is assigned but its value is never used [/tmp/chapter-combat-zw7h2pip/current/Validation.csproj]
+
+Build FAILED.
+
+/tmp/chapter-combat-zw7h2pip/current/ChapterCombatProductionAttackFixture.cs(19,85): warning CS0649: Field 'EnemyController.guardArmorVisual' is never assigned to, and will always have its default value null [/tmp/chapter-combat-zw7h2pip/current/Validation.csproj]
+/tmp/chapter-combat-zw7h2pip/current/ChapterCombatProductionAttackFixture.cs(18,62): warning CS0649: Field 'EnemyController.chargeTime' is never assigned to, and will always have its default value 0 [/tmp/chapter-combat-zw7h2pip/current/Validation.csproj]
+/tmp/chapter-combat-zw7h2pip/current/ChapterCombatProductionAttackFixture.cs(17,72): warning CS0649: Field 'EnemyController.preparing' is never assigned to, and will always have its default value false [/tmp/chapter-combat-zw7h2pip/current/Validation.csproj]
+/tmp/chapter-combat-zw7h2pip/current/ChapterCombatProductionAttackFixture.cs(17,82): warning CS0414: The field 'EnemyController.aggro' is assigned but its value is never used [/tmp/chapter-combat-zw7h2pip/current/Validation.csproj]
+/tmp/chapter-combat-zw7h2pip/current/ChapterCombatProductionAttackFixture.cs(18,8): warning CS0414: The field 'EnemyController.hurtTime' is assigned but its value is never used [/tmp/chapter-combat-zw7h2pip/current/Validation.csproj]
+/tmp/chapter-combat-zw7h2pip/current/ActualEnemyAttack.cs(59,52): error CS1061: 'PlayerController' does not contain a definition for 'CaptureCastReceipt' and no accessible extension method 'CaptureCastReceipt' accepting a first argument of type 'PlayerController' could be found (are you missing a using directive or an assembly reference?) [/tmp/chapter-combat-zw7h2pip/current/Validation.csproj]
+    5 Warning(s)
+    1 Error(s)
+
+Time Elapsed 00:00:00.55
+
+Traceback (most recent call last):
+  File "/workspace/scratch/planning-round3/core/Tests/ChapterCombatProductionTests.py", line 73, in <module>
+    if __name__=='__main__':main()
+                            ^^^^^^
+  File "/workspace/scratch/planning-round3/core/Tests/ChapterCombatProductionTests.py", line 67, in main
+    if build.returncode:print(build.stdout);build.check_returncode()
+                                            ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 502, in check_returncode
+    raise CalledProcessError(self.returncode, self.args, self.stdout,
+subprocess.CalledProcessError: Command '['/workspace/shared/emberfall-tools/dotnet/dotnet', 'build', '/tmp/chapter-combat-zw7h2pip/current/Validation.csproj', '--no-restore', '-c', 'Release']' returned non-zero exit status 1.

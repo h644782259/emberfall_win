@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Execute production chapter host with real saves and managed scene boundary doubles."""
+from CastReceiptFixtureSources import include_cast_receipt_source
 import os,sys,tempfile,subprocess
 from pathlib import Path
 root=Path(__file__).resolve().parents[1]
@@ -11,7 +12,7 @@ def method(file,signature):
         elif text[end]=='}':depth-=1
         end+=1
     return text[start:end]
-core=['ThreatAdmissionPolicy','GameTypes', 'ProgressionService', 'ProgressionService.Chapter', 'ProgressionService.Reforge', 'ReforgeQuote', 'ChapterProgression', 'ChapterResultSnapshot', 'ChapterCombatRun', 'RoomTactics', 'RoomChainState', 'ExpeditionModeState', 'RoomTacticalRegion', 'CombatBalance', 'HubTravelRules', 'MasteryCoreRuntime', 'TierRewardRules', 'TierRewardBand', 'ProgressionGoalState', 'AdventureResultPolicy', 'GameSession.Chapter', 'GameSession.ChapterSeals', 'EscapePostPolicy', 'RunChoices', 'RunChoices.Rooms', 'RunChoices.Chapter', 'RunMechanismEvidence']
+core=['CombatImpactBatch','CampPracticeRecord','ThreatAdmissionPolicy','GameTypes', 'ProgressionService', 'ProgressionService.Chapter', 'ProgressionService.Reforge', 'ReforgeQuote', 'ChapterProgression', 'ChapterResultSnapshot', 'ChapterCombatRun', 'RoomTactics', 'RoomChainState', 'ExpeditionModeState', 'RoomTacticalRegion', 'CombatBalance', 'HubTravelRules', 'MasteryCoreRuntime', 'TierRewardRules', 'TierRewardBand', 'ProgressionGoalState', 'AdventureResultPolicy', 'GameSession.Chapter', 'GameSession.ChapterSeals', 'EscapePostPolicy', 'RunChoices', 'RunChoices.Rooms', 'RunChoices.Chapter', 'RunMechanismEvidence']
 with tempfile.TemporaryDirectory(prefix='chapter-host-production-') as temp:
     folder=Path(temp)
     for name in core:(folder/(name+'.cs')).write_text((root/'Assets/Scripts/Core'/(name+'.cs')).read_text())
@@ -31,7 +32,7 @@ with tempfile.TemporaryDirectory(prefix='chapter-host-production-') as temp:
     stats='using UnityEngine;namespace Emberfall {public sealed partial class EnemyController {public float MaxHealth,Health,damage;void ApplySpawnStats(GameSession game,int level,bool boss){var kind=Kind;'+enemy[stat_start:stat_end]+'}}}'
     (folder/'EnemyStats.cs').write_text(stats)
     (folder/'Program.cs').write_text('System.Console.WriteLine(ChapterHostProductionTests.Run(args[0]));System.Console.WriteLine(Emberfall.GameSession.VerifyChapterResult(args[0]));')
-    project=folder/'Tests.csproj';project.write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net8.0</TargetFramework><OutputType>Exe</OutputType><NuGetAudit>false</NuGetAudit><NoWarn>0649;0414</NoWarn></PropertyGroup></Project>')
+    project=folder/'Tests.csproj';project.write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net8.0</TargetFramework><OutputType>Exe</OutputType><NuGetAudit>false</NuGetAudit><NoWarn>0649;0414</NoWarn></PropertyGroup></Project>');include_cast_receipt_source(project)
     config=folder/'NuGet.Config';config.write_text('<configuration><packageSources><clear /></packageSources></configuration>')
     env=dict(os.environ,DOTNET_CLI_HOME=str(folder/'cli'),DOTNET_CLI_TELEMETRY_OPTOUT='1',DOTNET_NOLOGO='1')
     subprocess.run([dotnet,'restore',str(project),'--configfile',str(config),'-v:q'],env=env,check=True)

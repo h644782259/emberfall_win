@@ -117,7 +117,7 @@ public static class BuildPresetTests
             p.Profile.inventory.Select(x => x.id).OrderBy(x => x).SequenceEqual(ids), "build switching never restores older currency, XP, consumables or item copies");
         Check(p.ApplyBuildPreset(1, true) && p.Profile.weaponId == newWeapon.id && p.Equipped(ItemSlot.Weapon).upgradeLevel == 8,
             "second preset switches to exactly its referenced item without retraining cost");
-        Check(p.ApplyBuildPreset(0, true) && p.Sell(newWeapon.id), "a no-longer-equipped preset reference may be explicitly sold");
+        Check(p.ApplyBuildPreset(0, true) && p.Sell(newWeapon.id,true), "a no-longer-equipped preset reference may be explicitly sold");
         before = State(p); files = Files(p);
         Check(!p.ApplyBuildPreset(1, true) && State(p) == before && Files(p) == files && p.HasBuildPreset(1),
             "missing sold item blocks application while retaining the preset for inspection or overwrite");

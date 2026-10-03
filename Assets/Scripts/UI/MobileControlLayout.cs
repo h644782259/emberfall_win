@@ -17,6 +17,8 @@ namespace Emberfall
         public readonly Area Joystick, MoveZone, Attack, Dodge, Potion, Jump, Cancel, Menu, Inventory, SkillsMenu, Interact;
         public readonly Area EncounterText, BossHealth, Notice, AdventureStatus, FocusCommand, RecallCommand, CombatView;
         public readonly Area[] Skills = new Area[10];
+        public readonly Area[] SkillOpportunities = new Area[10];
+        public readonly Area CounterOpportunity, ComboOpportunity;
         public MobileControlLayout(float pixelWidth,float pixelHeight,float dpi,int positionPreset=0)
         {
             pixelWidth=Math.Max(1,pixelWidth);pixelHeight=Math.Max(1,pixelHeight);
@@ -35,9 +37,12 @@ namespace Emberfall
             Cancel=Jump; // Same thumb position, mutually exclusive with jump.
             Potion=Centered(50,Height-211,54);
             Interact=new Area(78,Height-244,108,48);
-            float groupShift=positionPreset<0?-Math.Min(16,Height-316):positionPreset>0?8:0;
+            float groupShift=positionPreset<0?-Math.Min(16,Height-316):positionPreset>0?2:0;
             for(int i=0;i<Skills.Length;i++)
                 Skills[i]=Centered(Width-252+(i%5)*54,Height-(i<5?204:140)+groupShift,48);
+            for(int i=0;i<Skills.Length;i++)SkillOpportunities[i]=new Area(Skills[i].X,Skills[i].Y+Skills[i].Height+1,Skills[i].Width,14);
+            CounterOpportunity=new Area(Attack.X,Attack.Y+Attack.Height+1,Attack.Width/2,13);
+            ComboOpportunity=new Area(Attack.X+Attack.Width/2,Attack.Y+Attack.Height+1,Attack.Width/2,13);
             FocusCommand=new Area(Skills[0].X-102,Skills[0].Y+1,48,48);
             RecallCommand=new Area(Skills[0].X-50,Skills[0].Y+1,48,48);
             Menu=Centered(Width-32,32,48);
@@ -76,6 +81,8 @@ namespace Emberfall
             foreach(var control in new[]{MoveZone,Attack,Dodge,Potion,Jump,Menu,Inventory,SkillsMenu,Interact,FocusCommand,RecallCommand,Notice,BossHealth,EncounterText,AdventureStatus,new Area(12,12,175,58)})
                 if(area.Overlaps(control))return false;
             foreach(var skill in Skills)if(area.Overlaps(skill))return false;
+            foreach(var hint in SkillOpportunities)if(area.Overlaps(hint))return false;
+            if(area.Overlaps(CounterOpportunity)||area.Overlaps(ComboOpportunity))return false;
             return true;
         }
         private static Area Centered(float x,float y,float size) { return new Area(x-size/2,y-size/2,size,size); }

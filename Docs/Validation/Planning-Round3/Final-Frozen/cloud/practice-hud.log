@@ -1,0 +1,75 @@
+PIXEL EVIDENCE 568x320 dpi0 safeOffset=23,41 touchScale=0.82051283 action=65.64103x48
+PASS 1502 actual practice HUD/presentation/frozen baseline/layout assertions; GUI/font boundaries managed, not Unity rendering
+
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.49
+
+Unhandled exception. System.Exception: skill ratio explicitly names actual health loss casts
+   at Program.C(Boolean value, String s) in /tmp/practice-hud-zn3bi083/Test.cs:line 47
+   at Program.Main() in /tmp/practice-hud-zn3bi083/Test.cs:line 55
+
+PASS compiled negative: skill ratio explicitly names actual health loss casts
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.49
+
+Unhandled exception. System.Exception: actual result GUI explains supportive cast accounting without false failure
+   at Program.C(Boolean value, String s) in /tmp/practice-hud-zn3bi083/Test.cs:line 47
+   at Program.Main() in /tmp/practice-hud-zn3bi083/Test.cs:line 69
+
+PASS compiled negative: actual result GUI explains supportive cast accounting without false failure
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.50
+
+Unhandled exception. System.Exception: physical practice actions remain at least 48 pixels after production transforms
+   at Program.C(Boolean value, String s) in /tmp/practice-hud-zn3bi083/Test.cs:line 47
+   at Program.Main() in /tmp/practice-hud-zn3bi083/Test.cs:line 75
+
+PASS compiled negative: physical practice actions remain at least 48 pixels after production transforms
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.57
+
+Unhandled exception. System.Exception: record freezes incoming skill labels
+   at Program.C(Boolean value, String s) in /tmp/practice-hud-zn3bi083/Test.cs:line 47
+   at Program.Main() in /tmp/practice-hud-zn3bi083/Test.cs:line 50
+
+PASS compiled negative: record freezes incoming skill labels
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.52
+
+Unhandled exception. System.Exception: changed target rules cannot compare
+   at Program.C(Boolean value, String s) in /tmp/practice-hud-zn3bi083/Test.cs:line 47
+   at Program.Main() in /tmp/practice-hud-zn3bi083/Test.cs:line 58
+
+PASS compiled negative: changed target rules cannot compare
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.51
+
+Unhandled exception. System.Exception: DPS uses actual completion time not configured cap
+   at Program.C(Boolean value, String s) in /tmp/practice-hud-zn3bi083/Test.cs:line 47
+   at Program.Main() in /tmp/practice-hud-zn3bi083/Test.cs:line 55
+
+PASS compiled negative: DPS uses actual completion time not configured cap

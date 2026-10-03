@@ -33,7 +33,12 @@ namespace Emberfall
 {
     public partial class GameSession
     {public static GameSession Instance;public bool HasStarted=true,ChapterActive=true,ChapterFinished,InputBlocked,IsDead,ModeFinished;public PlayerController Player=new PlayerController();public int ChapterRoomIndex,ChapterSeed,MasteryAnchorEvents,MasteryInterruptEvents;public void RecordChapterInterrupt(EnemyController e){MasteryInterruptEvents++;}public void RecordChapterAnchorExposure(EnemyController e){MasteryAnchorEvents++;}public ChapterNode ActiveChapterNode;public ProgressionService Progression=new ProgressionService();public List<string> Logs=new List<string>();public void LogSystem(string s){Logs.Add(s);}public void SpawnMechanismText(Vector3 p,string s,Color c){} }
-    public class PlayerController:MonoBehaviour {public HeroClass HeroClass=HeroClass.Vanguard;public bool IsDead;public int CombatEpoch=1,DamageCalls;public float MaxHealth=100,Health=100;public void TakeDamageFrom(float value,string reason){Health-=value;DamageCalls++;}}
+    public class PlayerController:MonoBehaviour {
+        // Explicit cast birth in this scheduler host; contact lookup never mints a receipt.
+        readonly CastFirstHitRegistry casts=new CastFirstHitRegistry();CastFirstHitReceipt liveCast;
+        public void PrimeSkillCast(int id){casts.SetEpoch(CombatEpoch);liveCast=casts.Issue(id);}
+        public CastFirstHitReceipt CaptureCastReceipt(int id){casts.SetEpoch(CombatEpoch);return casts.Find(id);}
+public HeroClass HeroClass=HeroClass.Vanguard;public bool IsDead;public int CombatEpoch=1,DamageCalls;public float MaxHealth=100,Health=100;public void TakeDamageFrom(float value,string reason){Health-=value;DamageCalls++;}}
     public partial class EnemyController:MonoBehaviour{public bool IsBoss=true,IsDead,IsStunned;public bool CanBeSkillInterrupted=true;public float Health=70,MaxHealth=100,AttackDamage=20;public int BeginCalls;public void ConfigureLargeExpedition(LargeExpeditionBoss boss){largeBoss=boss;session=GameSession.Instance;}public void BeginLargeBossMechanic(){BeginCalls++;attackNumber++;}}
     public partial class ProgressionService{public Profile Profile=new Profile();}public class Profile{public int level=1;}
     public enum VisualSurface{Metal,Crystal}public enum DestructibleKind{Crate}public enum PropRecovery{None}
@@ -122,6 +127,7 @@ public static class ChapterCombatProductionTests
             actualAnchors[0].Broken=true;actualAnchors[1].Broken=true;atomic.Tick(.05f);
             Check(atomic.State.LiveAnchorMask==4,"two prior broken anchors leave exactly the last anchor");
             CombatImpactBatch.Begin();try {
+                game.Player.PrimeSkillCast(91);
                 if(bossFirst){Check(enemy.TrySkillInterrupt(game.Player,1,91),"real hard heroic attack qualifies before anchor target");enemy.TakeDamage(10,Vector3.forward,impact:false);}
                 for(int i=0;i<3;i++)actualAnchors[i].Broken=true;
                 if(!bossFirst){Check(enemy.TrySkillInterrupt(game.Player,1,91),"real hard heroic attack qualifies after anchor target");enemy.TakeDamage(10,Vector3.forward,impact:false);}
@@ -189,6 +195,7 @@ public static class ChapterCombatProductionTests
             var combat=Game();var victim=new EnemyController();var encounter=mode==0?LargeExpeditionBoss.Configure(victim,1,0):LargeExpeditionBoss.ConfigureChapter(victim,1,0,(ChapterDifficulty)(mode-1));encounter.Tick(.05f);
             float before=victim.Health;
             CombatImpactBatch.Begin();try {
+                combat.Player.PrimeSkillCast(101);
                 Check(victim.TrySkillInterrupt(combat.Player,1,101),"actual qualifying controller skill interrupts windup");
                 victim.TakeDamage(10,Vector3.forward,impact:false);
                 Check(Math.Abs(before-victim.Health-(mode<2?13.5f:10f))<.001f,"legacy and normal triggering hit retain immediate 1.35 multiplier; hard heroic defer without vulnerability");

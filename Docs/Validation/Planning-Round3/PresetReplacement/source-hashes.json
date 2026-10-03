@@ -1,0 +1,19 @@
+{
+  "Assets/Scripts/Core/GameTypes.cs": "675fa28bffbb20ff9383e4eb592700fefbf31877357c0e44c0393cd420e5814f",
+  "Assets/Scripts/Core/ProgressionService.cs": "1bd28037a6ba3deb5f678025132a768973775fd974b09a272b3da98d52a5d5a8",
+  "Assets/Scripts/UI/GameUI.BuildPlans.cs": "065b6debaecbaba3b918eae7b57300b0dcbf04aa98ee1b8ed679b971107ea599",
+  "Assets/Scripts/UI/GameUI.Expedition.cs": "f5d7216f6681f10167d4600fb032f66cf90f4b727c952fbd22fa713ae124025d",
+  "Assets/Scripts/UI/GameUI.MobileInventory.cs": "72d154bfb51d09a4e47b8f9702b7551b3e67f213a4f04c86b3531f6567a94469",
+  "Assets/Scripts/UI/GameUI.MobileWorkshop.cs": "f42e345163f38b9127e40363f89641fec9b11406dee5fcd4640cb2d338d95c32",
+  "Assets/Scripts/UI/GameUI.cs": "d37d6fd4e75c19fc32c927f5b716e2fa36c3a3dd832ab7f0bfb94a083a42f37d",
+  "Tests/AdventureProgressionTests.cs": "fb88daddc841256b3549aff2ebbee16d9bb4e73d97e58b834193fc0ec689e254",
+  "Tests/BuildDraftVariantEffectsProductionTests.py": "123a1b52070a47eec16870c29193e9205e6afd5b98451e6a24e9e77acc59bcfe",
+  "Tests/BuildPresetTests.cs": "e2f89eaf388f7dbeb954c72db48e06057b7b1a7026ddb8107e45e18f7cc2dc08",
+  "Tests/CampBuildDraftUIBoundary.cs": "5e091589d6ca6644b1b4d1ca0e0d15290da788fd59a9970e70e00214dcd2aa23",
+  "Tests/EconomyGrowthTests.cs": "8dae30d4bab9e48bda663ecb582bf3169c4a0b88d70d193b1dfce8edd801bbf3",
+  "Tests/HubTravelSourceTests.py": "5dcb8eb14ebdac23f32ef000ea4191afb50294571be5aa5dcbcd88c27a1949ef",
+  "Tests/ProgressionGrowthTests.cs": "0bb6737cf10832e7883b638890b086a2e9397ce583549bbb2ed15dd1cb80ec3e",
+  "Tests/ReforgeSelectionTests.cs": "9e7fa20c2ecac56f6e213f6e1d9e496a678453f568393e75a14284f3f4f40bbe",
+  "Tests/PresetReplacementProductionTests.py": "58f0126e4a5b2433d6f6d14dfa98d2d01c33b215ac42e76a063df59de6481e9f",
+  "Tests/PresetReplacementTests.cs": "1b9b16e3f7ffc09adcdd8a4c977181e665889108c3bc6e8b37713fa891ac97da"
+}

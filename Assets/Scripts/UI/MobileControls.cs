@@ -83,7 +83,7 @@ namespace Emberfall
         {
             if (!Active || instance == null || instance.session == null || instance.session.InputBlocked) return false;
             Vector2 point = instance.ToUI(screen);
-            return (instance.ui!=null&&instance.ui.CompanionCommandsVisible&&(Area(Layout.FocusCommand).Contains(point)||Area(Layout.RecallCommand).Contains(point))) || Area(Layout.MoveZone).Contains(point) || instance.Attack.Contains(point) || instance.Dodge.Contains(point) || instance.Potion.Contains(point) || Area(Layout.Interact).Contains(point) || instance.Jump.Contains(point) || instance.Cancel.Contains(point);
+            return instance.IsOpportunityPoint(point) || (instance.ui!=null&&instance.ui.CompanionCommandsVisible&&(Area(Layout.FocusCommand).Contains(point)||Area(Layout.RecallCommand).Contains(point))) || Area(Layout.MoveZone).Contains(point) || instance.Attack.Contains(point) || instance.Dodge.Contains(point) || instance.Potion.Contains(point) || Area(Layout.Interact).Contains(point) || instance.Jump.Contains(point) || instance.Cancel.Contains(point);
         }
         private void Update()
         {
@@ -135,6 +135,7 @@ namespace Emberfall
                 if(fingers.ContainsKey(finger))return true;
                 if (ui != null && ui.TryBeginTouchSkill(finger, screen)) role = Role.Skill;
                 else if (session.InputBlocked) return false;
+                else if (IsOpportunityPoint(point)) role = Role.Consumed;
                 else if (Area(Layout.MoveZone).Contains(point) && moveFinger == -1000) { role = Role.Move; moveFinger = finger; joystickOrigin=new Vector2(Mathf.Clamp(point.x,64,123),Mathf.Clamp(point.y,Layout.Height-108,Layout.Height-64));hasJoystickOrigin=true; }
                 else if (Attack.Contains(point))
                 {

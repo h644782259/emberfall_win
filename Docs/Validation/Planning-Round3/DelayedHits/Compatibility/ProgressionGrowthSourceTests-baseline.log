@@ -1,0 +1,8 @@
+BASELINE fce5efc4361614aed3eca070ed2574b7d7204a8e
+Traceback (most recent call last):
+  File "/tmp/round3-baseline-contracts-nm6cqmmn/Tests/ProgressionGrowthSourceTests.py", line 34, in <module>
+    check('TierRewardRules.ChestGoldMinimum(candidate.pendingChestTier)' in p and 'profile.pendingChestTier = TierRewardRules.ClampTier' in p,'chest uses earned tier and old saves get bounded migration')
+  File "/tmp/round3-baseline-contracts-nm6cqmmn/Tests/ProgressionGrowthSourceTests.py", line 8, in check
+    if not ok:raise AssertionError(label)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: chest uses earned tier and old saves get bounded migration

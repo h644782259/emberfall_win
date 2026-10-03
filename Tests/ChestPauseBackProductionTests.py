@@ -36,6 +36,8 @@ namespace Emberfall {
  public sealed class SessionStub {
   public bool PracticeActive=>false;public void EndPractice(string reason){throw new System.InvalidOperationException("ordinary chest replay cannot exit practice");}
   public bool BackgroundPaused,Paused=true,HasStarted=true,IsDead,DungeonSelectionOpen,Blocked=true;
+  // Room-choice session behavior is an explicit boundary; Update routing is production.
+  public bool RoomBranchChoiceOpen;public int BranchCancels;public void CancelRoomBranchChoice(){RoomBranchChoiceOpen=false;BranchCancels++;}
   public bool InputBlocked=>Paused||Blocked;public ProgressionStub Progression=new ProgressionStub();
   public ChoiceStub RunChoices=new ChoiceStub();public PlayerStub Player;
   public void SetPaused(bool value){Paused=value;}public void SetUIBlocking(bool value){Blocked=value;}
@@ -84,6 +86,10 @@ namespace Emberfall {
    check(dialog.closeCalls==0&&dialog.resetCalls==0,"exit cancellation does not alter chest context");
    Time.frameCount++;dialog.Update();
    check(dialog.mobilePausePage==0&&dialog.session.Paused&&dialog.panel==Panel.Chests,"after cancelling exit, next Back returns only the subpage");
+   var branch=new GameUI();branch.session.Paused=false;branch.session.RoomBranchChoiceOpen=true;
+   Time.frameCount++;branch.Update();
+   check(!branch.session.RoomBranchChoiceOpen&&branch.session.BranchCancels==1,"room branch owns Back before chest navigation");
+   check(branch.panel==Panel.Chests&&branch.closeCalls==0&&branch.resetCalls==0&&branch.transitionBlocks==1,"branch cancel preserves chest context and gates release");
    return n;
   }
  }

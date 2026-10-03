@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """Real entry/factory methods and bytes; Unity APIs doubled. Not a GPU/physics run."""
+from CastReceiptFixtureSources import include_cast_receipt_source
 from pathlib import Path
 import os,subprocess,sys,tempfile
 root=Path(__file__).resolve().parents[1]
 ns={'__file__':str(root/'Tests/AuthoredSpellIntegrationTests.py')};exec((root/'Tests/AuthoredSpellIntegrationTests.py').read_text().split('with tempfile.TemporaryDirectory',1)[0],ns)
 s=ns['s']
-s=s.replace('public bool IsDead;public int CombatEpoch;','public bool IsDead;public int CombatEpoch;public HeroClass HeroClass;public int NewCastId()=>17;')
+s=s.replace('public bool IsDead;public int CombatEpoch;','public bool IsDead;public int CombatEpoch;public HeroClass HeroClass;public int NewCastId()=>17;public CastFirstHitReceipt RetainCastReceipt(int id)=>null;')
 s=s.replace('public static Material NewGlow()', 'public static GameObject Ring(params object[] a)=>new GameObject("marker");public static Material NewGlow()')
 s=s.replace('public T GetComponent<T>()where T:Component=>gameObject.GetComponent<T>();','public T GetComponent<T>()where T:Component=>gameObject.GetComponent<T>();public T GetComponentInChildren<T>()where T:Component=>gameObject.GetComponent<T>();')
 s=s.replace('public Vector3 right=>','public Vector3 forward=>localRotation.Rotate(Vector3.forward);public Vector3 right=>')
@@ -33,6 +34,16 @@ legacy=simulation.replace(steering+'\n','').replace('                EnemyContro
 practice_identity=',practiceCastId:!basicAttack&&companionSource==null?castId:0'
 assert legacy.count(practice_identity)==1,'practice attribution must occur once on the actual accepted hit'
 legacy=legacy.replace(practice_identity,'',1)
+visual_contact='                    if(concentrated&&enemy.Health<healthBefore)VenomSkillVfx.Contact(owner,owner.EnemyBodyPoint(enemy),false);\n'
+assert legacy.count(visual_contact)==1
+legacy=legacy.replace(visual_contact,'',1)
+assert legacy.count('if(!concentrated)CombatFx.Ring(hitPosition, .7f, color, .2f);')==1
+legacy=legacy.replace('if(!concentrated)CombatFx.Ring(hitPosition, .7f, color, .2f);','CombatFx.Ring(hitPosition, .7f, color, .2f);',1)
+# Only the reviewed synchronous settlement wrapper is excluded; every simulation byte stays checked.
+opening='\n            CombatImpactBatch.BeginAction();\n            try\n            {'
+closing='\n\n            }\n            finally { CombatImpactBatch.EndAction(); }'
+assert legacy.count(opening)==1 and legacy.count(closing)==1
+legacy=legacy.replace(opening,'',1).replace(closing,'',1)
 assert hashlib.sha256(legacy.encode()).hexdigest()=='8d83dce7d455676baea8b32bf87ee0dc0f32547b42de1e19289e4524d89feab1','non-variant simulation changed outside reviewed venom opt-in blocks'
 print('PASS original projectile Update SHA preserved after excluding only explicit B-only steering/selection/filter.')
 # Execute exactly the changed area cosmetic setup and age gate; gameplay scheduling is not duplicated.
@@ -46,8 +57,8 @@ area_fixture='''using UnityEngine;namespace Emberfall{internal sealed class Area
 s=s.replace('public void SetParent(Transform value,bool worldPositionStays)', 'public void Rotate(float x,float y,float z,Space space){localRotation=localRotation*Quaternion.Euler(x,y,z);}public void SetParent(Transform value,bool worldPositionStays)').replace('public enum PrimitiveType','public enum Space{Self}public enum PrimitiveType')
 with tempfile.TemporaryDirectory(prefix='projectile-art-') as d:
  p=Path(d);(p/'Stubs.cs').write_text(s);(p/'Projectile.cs').write_text(projectile);(p/'Area.cs').write_text(area_fixture)
- for f in ['Combat/ConcentratedVenomRules','Combat/AuthoredProjectileMeshes','Combat/AuthoredActorMeshes','Combat/VisualMeshRecipes','Combat/AnchoredImpactMesh','Combat/CombatVisualLease','Core/CombatVisualBudget']:(p/(Path(f).name+'.cs')).write_text((root/('Assets/Scripts/'+f+'.cs')).read_text())
- (p/'Test.cs').write_text((root/'Tests/AuthoredProjectileProductionTests.cs').read_text());(p/'test.csproj').write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net8.0</TargetFramework><OutputType>Exe</OutputType><NoWarn>0649;0414</NoWarn></PropertyGroup></Project>');(p/'NuGet.Config').write_text('<configuration><packageSources><clear /></packageSources></configuration>')
+ for f in ['Core/CombatImpactBatch','Combat/ConcentratedVenomRules','Combat/AuthoredProjectileMeshes','Combat/AuthoredActorMeshes','Combat/VisualMeshRecipes','Combat/AnchoredImpactMesh','Combat/CombatVisualLease','Core/CombatVisualBudget']:(p/(Path(f).name+'.cs')).write_text((root/('Assets/Scripts/'+f+'.cs')).read_text())
+ (p/'Test.cs').write_text((root/'Tests/AuthoredProjectileProductionTests.cs').read_text());(p/'test.csproj').write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net8.0</TargetFramework><OutputType>Exe</OutputType><NoWarn>0649;0414</NoWarn></PropertyGroup></Project>');include_cast_receipt_source(p/'test.csproj');(p/'NuGet.Config').write_text('<configuration><packageSources><clear /></packageSources></configuration>')
  command=[sys.argv[1] if len(sys.argv)>1 else 'dotnet','run','--project',str(p/'test.csproj'),'--',str(root/'Assets/Resources'),str(root/'ArtSource/BlenderProjectiles/factory-samples.json')];env=dict(os.environ,DOTNET_CLI_HOME=str(p/'cli'),DOTNET_NOLOGO='1')
  subprocess.run(command,env=env,check=True)
  for file,old,new,reason in [('AuthoredProjectileMeshes.cs','if(!Enabled)return null;','if(true)return null;','real resource identity'),('Projectile.cs','false,"HostileBolt"','false,"CasterBolt"','hostile identity')]:

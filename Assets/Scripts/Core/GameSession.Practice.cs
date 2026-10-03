@@ -19,7 +19,7 @@ namespace Emberfall
         private bool practiceBusy, practiceOriginalUI, practiceOriginalPaused;
         public bool BeginPractice(CampPracticeScenario scenario,int seconds,ProgressionService.BuildDraft draft=null)
         {
-            if(practiceBusy||PracticeActive||!IsInCamp||IsDead||seconds!=10&&seconds!=60||(int)scenario<0||(int)scenario>2)return false;
+            if(practiceBusy||PracticeActive||!IsInCamp||IsDead||seconds!=10&&seconds!=60||(int)scenario<0||(int)scenario>4)return false;
             try{if(!PracticeEntrySafe())return false;}catch(Exception exception){Debug.LogException(exception);return false;}
             var charging=Player.GetComponent<SkillChargeController>();if(charging!=null&&charging.IsCharging)return false;
             ProgressionService copy=draft==null?Progression.CreatePracticeCopy():draft.CreatePracticeCopy();
@@ -30,8 +30,9 @@ namespace Emberfall
                 practiceOriginalRoots.Clear();practiceSuspendedRoots.Clear();
                 GameObject[] originalRoots=gameObject.scene.GetRootGameObjects();
                 foreach(GameObject root in originalRoots)practiceOriginalRoots.Add(root);
-                PreviousPracticeRecord=PracticeRecord;
-                PracticeRecord=new CampPracticeRecord(scenario,seconds,JsonUtility.ToJson(copy.Profile,true),configurationSummary:copy.PracticeConfigurationSummary());
+                var skillNames=new string[GameBalance.SkillCount];for(int skill=0;skill<skillNames.Length;skill++)skillNames[skill]=GameBalance.SkillName(copy.Profile.heroClass,skill);
+                PracticeRecord=new CampPracticeRecord(scenario,seconds,JsonUtility.ToJson(copy.Profile,true),configurationSummary:copy.PracticeConfigurationSummary(),heroIdentity:copy.Profile.heroClass.ToString(),level:copy.Profile.level,skillNames:skillNames);
+                PracticeRecord.Prepare();
                 practiceDraft=draft;practiceOwner=Progression;practiceOriginalPlayer=Player;practiceOriginalEnemies=Enemies;
                 practiceOriginalUI=uiBlocking;practiceOriginalPaused=Paused;practiceRandom=UnityEngine.Random.state;
                 foreach(GameObject root in originalRoots)
@@ -39,11 +40,11 @@ namespace Emberfall
                     if(root==gameObject||root==world||root.GetComponentInChildren<Camera>()!=null||root.GetComponentInChildren<Light>()!=null||!root.activeSelf)continue;
                     practiceSuspendedRoots.Add(root);root.SetActive(false);
                 }
-                Progression=copy;Enemies=new List<EnemyController>();Paused=false;uiBlocking=false;UnityEngine.Random.InitState(PracticeRecord.Seed);
+                Progression=copy;Enemies=new List<EnemyController>();Paused=false;uiBlocking=true;UnityEngine.Random.InitState(PracticeRecord.Seed);
                 var hero=new GameObject("营地试招 · 临时角色");Player=hero.AddComponent<PlayerController>();Player.Initialize(this,copy.Profile.heroClass);Player.Teleport(new Vector3(0,0,-10));
                 SpawnEnemy(EnemyKind.Guardian,copy.Profile.level,new Vector3(0,0,-6),false);
                 Enemies[0].ConfigurePracticeTarget();
-                if(scenario==CampPracticeScenario.FrontAndSupplier){SpawnEnemy(EnemyKind.Wisp,copy.Profile.level,new Vector3(0,0,-2),false);practiceSupplier=Enemies[1];practiceSupplier.ConfigurePracticeTarget();}
+                if(PracticeRecord.HasSupplier||PracticeRecord.UsesEnemyAI){SpawnEnemy(EnemyKind.Wisp,copy.Profile.level,new Vector3(0,0,-2),false);if(PracticeRecord.HasSupplier)practiceSupplier=Enemies[1];Enemies[1].ConfigurePracticeTarget();}
                 if(ui!=null)ui.EnterPracticePanel();UpdateTimeScale();return true;
             }
             catch(Exception exception){Debug.LogException(exception);EndPractice("试招异常中止 · 已恢复原角色");return false;}
@@ -62,6 +63,18 @@ namespace Emberfall
                 {Notify("场上仍有飞行弹体；请等战斗结束后再试招。");return false;}
             return true;
         }
+        public bool PinPracticeBaseline()
+        {
+            if(PracticeActive||PracticeRecord==null||!PracticeRecord.Finished)return false;
+            PreviousPracticeRecord=PracticeRecord.FrozenCopy();return true;
+        }
+        public bool StartPractice()
+        {
+            if(!PracticeActive||practiceBusy||!PracticeRecord.Start())return false;
+            uiBlocking=false;
+            if(PracticeRecord.UsesEnemyAI)foreach(var enemy in Enemies)if(enemy!=null&&!enemy.IsDead)enemy.Provoke();
+            UpdateTimeScale();return true;
+        }
         public bool RestartPractice()
         {
             if(!PracticeActive||practiceBusy)return false;
@@ -74,14 +87,16 @@ namespace Emberfall
         private void TickPractice()
         {
             if(Input.GetKeyDown(KeyCode.H)){EndPractice("主动离开 · 记录提前结束");return;}
-            if(InputBlocked)return;
+            if(PracticeRecord.Finished){EndPractice(PracticeRecord.EndReason);return;}
+            if(InputBlocked||!PracticeRecord.Started)return;
             try{PracticeRecord.Advance(Time.deltaTime);if(PracticeRecord.Finished)EndPractice(PracticeRecord.EndReason);}
             catch(Exception exception){Debug.LogException(exception);EndPractice("试招异常中止");}
         }
         public bool MovePracticeTarget(EnemyController enemy)
         {
             if(!PracticeActive||enemy==null||!Enemies.Contains(enemy))return false;
-            if(PracticeRecord.Scenario==CampPracticeScenario.Moving)
+            if(PracticeRecord.UsesEnemyAI&&PracticeRecord.Started&&!PracticeRecord.Finished)return false;
+            if(PracticeRecord.Started&&!PracticeRecord.Finished&&PracticeRecord.Scenario==CampPracticeScenario.Moving)
             {
                 Vector3 desired=new Vector3(Mathf.Sin(PracticeRecord.Elapsed*1.4f)*3,0,-5);
                 var status=enemy.StatusEffects;
@@ -92,13 +107,14 @@ namespace Emberfall
         }
         public float PracticeSupportMultiplier(EnemyController enemy)
         {
-            return PracticeActive&&PracticeRecord.Scenario==CampPracticeScenario.FrontAndSupplier&&practiceSupplier!=null&&!practiceSupplier.IsDead&&enemy!=practiceSupplier&&Enemies.Contains(enemy)&&
+            return PracticeActive&&PracticeRecord.HasSupplier&&practiceSupplier!=null&&!practiceSupplier.IsDead&&enemy!=practiceSupplier&&Enemies.Contains(enemy)&&
                 (enemy.transform.position-practiceSupplier.transform.position).sqrMagnitude<=36&&WorldTraversal.HasLineOfSight(enemy.transform.position,practiceSupplier.transform.position)?.7f:1f;
         }
         public void EndPractice(string reason)
         {
             if(!PracticeActive)return;
             PracticeRecord.Finish(reason);
+            if(PreviousPracticeRecord==null&&PracticeRecord.Started&&PracticeRecord.Survived&&(PracticeRecord.Elapsed==PracticeRecord.Duration||PracticeRecord.ObjectiveCompleted))PreviousPracticeRecord=PracticeRecord.FrozenCopy();
             // Restore ownership even if Unity destruction/reactivation raises an exception.
             try
             {

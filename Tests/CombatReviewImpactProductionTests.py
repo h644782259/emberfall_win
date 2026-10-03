@@ -2,6 +2,7 @@
 """Real friendly projectile contact branch; preserves collision, LOS, prop, volley and pierce guards.
 Update lifecycle/movement/hostile branch and native physics are outside this managed probe.
 """
+from CastReceiptFixtureSources import include_cast_receipt_source
 import os,sys,tempfile,subprocess
 from pathlib import Path
 root=Path(__file__).resolve().parents[1];dotnet=sys.argv[1] if len(sys.argv)>1 else os.environ.get('DOTNET','dotnet')
@@ -20,7 +21,7 @@ with tempfile.TemporaryDirectory(prefix='combat-review-impact-') as d:
  p=Path(d)
  for f in ['Core/GameTypes','Core/CombatBalance','Core/SkillDamageBudgets','Core/DestructiblePropRules','Core/LockedImpactMarkPolicy','Combat/CombatDamage','Combat/ProjectileVolleyBudget']:(p/(Path(f).name+'.cs')).write_text((root/('Assets/Scripts/'+f+'.cs')).read_text())
  (p/'Fixture.cs').write_text((root/'Tests/CombatReviewImpactProductionTests.cs').read_text())
- project=p/'Test.csproj';project.write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net8.0</TargetFramework><OutputType>Exe</OutputType><NuGetAudit>false</NuGetAudit><NoWarn>0649;0414</NoWarn></PropertyGroup></Project>');(p/'NuGet.Config').write_text('<configuration><packageSources><clear /></packageSources></configuration>')
+ project=p/'Test.csproj';project.write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net8.0</TargetFramework><OutputType>Exe</OutputType><NuGetAudit>false</NuGetAudit><NoWarn>0649;0414</NoWarn></PropertyGroup></Project>');include_cast_receipt_source(project);(p/'NuGet.Config').write_text('<configuration><packageSources><clear /></packageSources></configuration>')
  cases=[('current',branch,None),('mark-after-damage',branch.replace(mark,'').replace('                    if (CombatReviewEvents.Enabled)',mark+'                    if (CombatReviewEvents.Enabled)'),'accepted locked hit marks before damage'),('lost-companion-callback',branch.replace('companionSource.OnConfirmedHit(enemy);',''),'companion callback survives expanded block and follows damage'),('bypass-los',branch.replace('if (!CombatSight.Direct(previous, enemy.transform.position)) continue;',''),'occluded candidate cannot mark or damage'),('lost-pierce-stop',branch.replace('if (!pierce) { Destroy(gameObject); return; }',''),'nonpiercing contact stops later candidates')]
  for name,body,expected in cases:
   if expected:assert body!=branch

@@ -48,15 +48,17 @@ namespace Emberfall {
   string PotionTooltip(GameProfile p)=>"potion";string SkillTooltip(GameProfile p,int skill,int rank)=>"skill";void TogglePanel(Panel p){dispatches++;}void SelectSkill(int skill){dispatches++;}void HandleHotbarPointer(Rect[] slots,bool configuring){}
   static int checks;static void Check(bool okay,string why){checks++;if(!okay)throw new Exception(why);}
   void Draw(){labels.Clear();identities.Clear();utilityIcons=0;emphasis.Clear();session.Player.Queries.Clear();session.Player.BasicQueries=0;DrawHotbar();}
+  bool WindowAt(int slot,string text)=>labels.Any(x=>x.Value==text&&x.Rect.x==hotbarSlots[slot].x&&x.Rect.y==hotbarSlots[slot].y-12);
   bool Has(string text)=>labels.Any(x=>x.Value==text);bool At(int slot,string text)=>labels.Any(x=>x.Value==text&&x.Rect.x>=hotbarSlots[slot].x&&x.Rect.x<hotbarSlots[slot].xMax&&x.Rect.y>=hotbarSlots[slot].y&&x.Rect.y<hotbarSlots[slot].yMax);
   public static void Run(){var view=new GameUI();var p=view.session.Progression.Profile;var hero=view.session.Player;Array.Fill(p.equippedSkills,-1);Array.Fill(p.skillRanks,1);p.heroClass=HeroClass.Arcanist;p.potions=3;
    for(int i=0;i<10;i++)view.hotbarSlots[i]=new Rect(10+(i%5)*53,27+(1-i/5)*50,48,46);
    p.equippedSkills[0]=1;p.equippedSkills[2]=GameBalance.HotbarPotion;p.equippedSkills[3]=3;hero.Observations[1]=new CombatOpportunityState(CombatOpportunityKind.Shatter,1.25f);
-   view.Draw();Check(view.At(0,"碎冰 1.3")&&hero.Queries.SequenceEqual(new[]{1}),"actual remapped meteor slot reads skill identity not slot index");
+   view.Draw();Check(view.WindowAt(0,"碎冰 1.3")&&hero.Queries.SequenceEqual(new[]{1}),"actual remapped meteor slot reads skill identity not slot index");
+   Check(!view.At(0,"碎冰 1.3")&&view.labels.Count(x=>x.Value=="碎冰 1.3")==1,"ready window caption renders once outside the slot");
    Check(view.emphasis.Count==1&&view.emphasis[0].x==view.hotbarSlots[0].x&&view.identities.SequenceEqual(new[]{1}),"opportunity border and skill icon stay on remapped actual slot");
    Check(view.utilityIcons==1&&view.At(2,"3")&&!hero.Queries.Contains(-2)&&!hero.Queries.Contains(3),"potion and passive/empty slots never query actionable skill identity");
    Check(Enumerable.Range(0,10).All(i=>view.At(i,GameBalance.KeyName(p.hotbarKeys[i]))),"opportunity preserves all ten configured key labels");
-   Check(view.labels.Where(x=>x.Value=="碎冰 1.3"&&x.Rect.y>=view.hotbarSlots[0].y).All(x=>x.Rect.y>=view.hotbarSlots[0].y+30),"opportunity caption reserves lower strip below key labels");
+   Check(view.WindowAt(0,"碎冰 1.3")&&!view.At(0,"碎冰 1.3"),"opportunity clock stays in dedicated outer row");
    hero.Observations[1]=default;view.Draw();Check(!view.Has("碎冰 1.3")&&view.emphasis.Count==0,"expired observation removes actual hotbar emphasis");
    hero.Observations[1]=new CombatOpportunityState(CombatOpportunityKind.Shatter,2);hero.Cooldowns[0]=1.5f;view.Draw();Check(view.At(0,"1.5")&&!view.At(0,"碎冰 2.0"),"slot cooldown overlay wins before opportunity query");
    hero.Cooldowns[0]=0;hero.Energy=0;view.Draw();Check(view.At(0,"缺能")&&!view.At(0,"碎冰 2.0"),"energy shortage wins before opportunity query");hero.Energy=100;
@@ -66,9 +68,9 @@ namespace Emberfall {
    view.session.InputBlocked=true;view.Draw();Check(hero.BasicQueries==0&&!view.At(0,"碎冰 2.0"),"blocked UI does not publish active opportunities");view.session.InputBlocked=false;
    hero.IsDead=true;view.Draw();Check(hero.BasicQueries==0,"death hides opportunities before querying host");hero.IsDead=false;
    p.skillRanks[1]=0;view.Draw();Check(hero.Queries.Count==0&&!view.identities.Contains(1),"unlearned remapped skill remains empty");p.skillRanks[1]=1;
-   p.heroClass=HeroClass.Summoner;p.equippedSkills[0]=-1;p.equippedSkills[7]=4;hero.Observations[4]=new CombatOpportunityState(CombatOpportunityKind.EmpoweredContract,7.5f);view.Draw();Check(view.At(7,"强化 7.5")&&hero.Queries.SequenceEqual(new[]{4}),"actual remapped contract reads skill four in slot seven");
-   hero.SkillWindow=new CombatOpportunityState(CombatOpportunityKind.EmpoweredContract,7.5f,blockReason:"无目标");view.Draw();Check(view.Has("强化 7.5")&&!view.At(7,"强化 7.5")&&view.emphasis.Count==0,"summoner no target keeps real clock without executable caption or green border");
-   hero.SkillWindow=new CombatOpportunityState(CombatOpportunityKind.EmpoweredContract,6.2f);view.Draw();Check(view.At(7,"强化 6.2")&&view.emphasis.Count==1,"summoner legal target restores executable emphasis and current time");hero.SkillWindow=default;
+   p.heroClass=HeroClass.Summoner;p.equippedSkills[0]=-1;p.equippedSkills[7]=4;hero.Observations[4]=new CombatOpportunityState(CombatOpportunityKind.EmpoweredContract,7.5f);view.Draw();Check(view.WindowAt(7,"强化 7.5")&&!view.At(7,"强化 7.5")&&hero.Queries.SequenceEqual(new[]{4}),"actual remapped contract reads skill four in slot seven");
+   hero.SkillWindow=new CombatOpportunityState(CombatOpportunityKind.EmpoweredContract,7.5f,blockReason:"无目标");view.Draw();Check(view.WindowAt(7,"强化 7.5")&&!view.At(7,"强化 7.5")&&view.At(7,"无目标")&&view.emphasis.Count==0,"summoner no target keeps real clock without executable caption or green border");
+   hero.SkillWindow=new CombatOpportunityState(CombatOpportunityKind.EmpoweredContract,6.2f);view.Draw();Check(view.WindowAt(7,"强化 6.2")&&!view.At(7,"强化 6.2")&&!view.At(7,"无目标")&&view.emphasis.Count==1,"summoner legal target restores executable emphasis and current time");hero.SkillWindow=default;
    p.heroClass=HeroClass.Vanguard;hero.Basic=new CombatOpportunityState(CombatOpportunityKind.Counter,.8f);view.Draw();Check(view.Has("左键普攻 · 反击 0.8"),"desktop basic control names left click and actual counter window");hero.Basic=default;view.Draw();Check(view.Has("技能快捷栏")&&!view.Has("左键普攻 · 反击 0.8"),"expired counter restores ordinary hotbar heading");
    hero.MasteryComboReady=true;view.Draw();Check(view.Has("左键普攻 · 连击 6.0"),"actual core readiness appears near basic action");hero.MasteryComboReady=false;
    hero.Basic=new CombatOpportunityState(CombatOpportunityKind.Counter,1);view.session.Failures["attack"]="距离不足";view.Draw();Check(view.Has("左键普攻 · 距离不足")&&hero.BasicQueries==0,"basic rejection takes priority over opportunity");
@@ -90,10 +92,11 @@ with tempfile.TemporaryDirectory(prefix='desktop-opportunity-') as t:
   if result.returncode:print(result.stdout);result.check_returncode()
  command=[dotnet,str(p/'bin/Debug/net8.0/Test.dll')];build();subprocess.run(command,check=True)
  for before,after,oracle in [
+  ('return opportunity.Window?opportunity.BlockReason:"";','return actionable?opportunity.Caption:"";','ready window caption renders once outside the slot'),
   ('var opportunity=hero.SkillOpportunityWindow(skill);actionable=opportunity.Actionable;','var opportunity=hero.SkillOpportunity(skill);actionable=opportunity.Actionable;','summoner no target keeps real clock without executable caption or green border'),
-  ('if(window.Window)Text','if(false)Text','summoner no target keeps real clock without executable caption or green border'),
+  ('if(window.Window)Text','if(false)Text','actual remapped meteor slot reads skill identity not slot index'),
   ('float identitySize=mobile?44:32;','float identitySize=mobile?44:actionCaption.Length>0?24:32;','fixed desktop icon footprint across status changes'),
-  ('DesktopSkillOpportunityCaption(skill,locked,lacksEnergy,cooldown,out actionable)','""','actual remapped meteor slot reads skill identity not slot index'),
+  ('DesktopSkillOpportunityCaption(skill,locked,lacksEnergy,cooldown,out actionable)','""','opportunity border and skill icon stay on remapped actual slot'),
   ('DesktopSkillOpportunityCaption(skill,locked,lacksEnergy,cooldown,out actionable)','DesktopSkillOpportunityCaption(slotIndex,locked,lacksEnergy,cooldown,out actionable)','actual remapped meteor slot reads skill identity not slot index'),
   ('mobile?"技能快捷栏":DesktopBasicOpportunityCaption()','"技能快捷栏"','desktop basic control names left click and actual counter window')]:
   assert before in original;method.write_text(original.replace(before,after));build();result=subprocess.run(command,text=True,capture_output=True)

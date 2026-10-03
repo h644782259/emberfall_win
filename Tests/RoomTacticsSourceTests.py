@@ -6,7 +6,7 @@ t=read('Assets/Scripts/Core/GameSession.RoomTactics.cs')
 e=read('Assets/Scripts/Combat/EnemyController.cs')
 w=read('Assets/Scripts/World/WorldBuilder.TacticalRooms.cs')
 assert 'RoomTactics.NextSeed(runSeed,previousRoomSeed,beforePreviousRoomSeed)' in s
-assert 'RoomChainRun=new RoomChainState(runSeed)' in s
+assert 'RoomChainRun=new RoomChainState(runSeed,retryingRoomChain?roomRetryBranch:RoomBranch.None)' in s
 assert 'RoomTactics.EventRoom(runSeed)' in s
 assert 'WorldTraversal.CanReach' in s and 'WorldTraversal.CanReach' in t
 assert 'if(!SaveBeforeLeaving())return false;' in s

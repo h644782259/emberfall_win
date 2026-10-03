@@ -1,0 +1,14 @@
+/tmp/status-anchors-6smgzp5l/export/EnemyStatusVisual.cs(79,106): error CS0117: 'ShadowCastingMode' does not contain a definition for 'Off' [/tmp/status-anchors-6smgzp5l/export/Export.csproj]
+/tmp/status-anchors-6smgzp5l/export/Motion.cs(1,202): warning CS0414: The field 'CombatModel.pilotCharging' is assigned but its value is never used [/tmp/status-anchors-6smgzp5l/export/Export.csproj]
+
+The build failed. Fix the build errors and run again.
+
+Traceback (most recent call last):
+  File "/workspace/scratch/planning-round3/status-venom/Tests/EnemyStatusAnchorProductionTests.py", line 19, in <module>
+    run()
+  File "/workspace/scratch/planning-round3/status-venom/Tests/EnemyStatusAnchorProductionTests.py", line 18, in run
+    else:result.check_returncode()
+         ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 502, in check_returncode
+    raise CalledProcessError(self.returncode, self.args, self.stdout,
+subprocess.CalledProcessError: Command '['/workspace/shared/emberfall-tools/dotnet/dotnet', 'run', '--project', '/tmp/status-anchors-6smgzp5l/export/Export.csproj']' returned non-zero exit status 1.

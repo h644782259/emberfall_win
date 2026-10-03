@@ -62,6 +62,13 @@ namespace Emberfall
                 if(Button(new Rect(primary.x,primary.y,menuWidth,primary.height),"菜单 / 存档",jade))session.SetPaused(true);
                 primary.x+=menuWidth+12*unit;primary.width-=menuWidth+12*unit;
             }
+            if(session.CanRetryRoomChain)
+            {
+                float retryWidth=primary.width*.48f;
+                if(Button(new Rect(primary.x,primary.y,retryWidth,primary.height),"原条件重试",gold))
+                {session.RetryFailedRoomChain();BlockUITransition();return false;}
+                primary.x+=retryWidth+8*unit;primary.width-=retryWidth+8*unit;
+            }
             return Button(primary,death?"回营整备":session.ModeFinished?session.ModeRewardPending?"结算奖励并回营":"返回营地":"返回冒险",accent,true,null,true);
         }
 

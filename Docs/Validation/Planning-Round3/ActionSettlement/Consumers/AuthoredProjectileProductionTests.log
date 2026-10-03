@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/workspace/scratch/planning-round3/practice-copy-fix/Tests/AuthoredProjectileProductionTests.py", line 42, in <module>
+    assert hashlib.sha256(legacy.encode()).hexdigest()=='8d83dce7d455676baea8b32bf87ee0dc0f32547b42de1e19289e4524d89feab1','non-variant simulation changed outside reviewed venom opt-in blocks'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: non-variant simulation changed outside reviewed venom opt-in blocks

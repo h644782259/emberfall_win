@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "/workspace/scratch/planning-round3/core/Tests/CombatTimingSourceTests.py", line 30, in <module>
+    check('private void Retire() { '+batch+'.Clear(); Destroy(gameObject); }' in component and 'private void OnDisable() { '+batch+'.Clear(); }' in component,'epoch/death/terminal retirement and scene disable clear retained targets immediately')
+  File "/workspace/scratch/planning-round3/core/Tests/CombatTimingSourceTests.py", line 8, in check
+    if not value:raise AssertionError(message)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: epoch/death/terminal retirement and scene disable clear retained targets immediately

@@ -26,7 +26,7 @@ f=f.replace('public static Quaternion identity=>','public static Quaternion Sler
 f=f.replace('public const float PI=', 'public static float Exp(float x)=>(float)Math.Exp(x);public static float SmoothStep(float a,float b,float t){t=Clamp01(t);return a+(b-a)*t*t*(3-2*t);}public static float MoveTowards(float a,float b,float d)=>Math.Abs(b-a)<=d?b:a+Math.Sign(b-a)*d;public const float PI=')
 with tempfile.TemporaryDirectory(prefix='enemy-knockdown-production-') as directory:
     p=Path(directory)
-    for path in ['Assets/Scripts/Combat/CombatModel.Knockdown.cs','Assets/Scripts/Core/LocomotionPoseState.cs','Assets/Scripts/Core/ThreatAdmissionPolicy.cs','Assets/Scripts/Core/CampPracticeRecord.cs','Tests/EnemyKnockdownProductionTests.cs','Tests/EnemyKnockdownDeathTests.cs']:
+    for path in ['Assets/Scripts/Combat/CombatModel.Knockdown.cs','Assets/Scripts/Core/LocomotionPoseState.cs','Assets/Scripts/Core/ThreatAdmissionPolicy.cs','Assets/Scripts/Core/CombatImpactBatch.cs','Assets/Scripts/Core/CampPracticeRecord.cs','Tests/EnemyKnockdownProductionTests.cs','Tests/EnemyKnockdownDeathTests.cs']:
         (p/Path(path).name).write_text((root/path).read_text())
     f=f.replace('public sealed class Material:Object{','public sealed class Material:Object{public void SetFloat(string n,float v){}public void SetInt(string n,int v){}public void DisableKeyword(string n){}public void EnableKeyword(string n){}')
     f=f.replace('public enum ShadowCastingMode{Off}', 'public enum ShadowCastingMode{Off}public enum BlendMode{SrcAlpha,OneMinusSrcAlpha}')

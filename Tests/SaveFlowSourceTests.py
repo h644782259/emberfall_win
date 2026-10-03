@@ -22,7 +22,7 @@ expedition=read('Assets/Scripts/Core/GameSession.Expedition.cs')
 modes=read('Assets/Scripts/Core/GameSession.Modes.cs')
 rooms=read('Assets/Scripts/Core/GameSession.RoomChain.cs')
 check('ResetArenaMode(dungeon);' in expedition and 'ModeRun.Dispose();ModeRun=null' in modes and 'ResetRoomChain(dungeon);' in modes and 'RoomChainRun.Dispose();RoomChainRun=null' in rooms,'reset chain discards BOTH unclaimed arena and room-chain rewards')
-check('if(!loadingSaveSnapshot&&!enteringChapter&&!SaveBeforeLeaving())returnfalse;' in ''.join(session.split()),'camp construction for a staged load skips the checked transition preflight')
+check('if(!loadingSaveSnapshot&&!enteringChapter&&!retryingRoomChain&&!SaveBeforeLeaving())returnfalse;' in ''.join(session.split()),'camp construction for a staged load skips the checked transition preflight')
 chapter=read('Assets/Scripts/Core/GameSession.Chapter.cs')
 entry=chapter[chapter.index('public bool ConfirmChapterEnter()'):chapter.index('private void ResetChapterRun()')]
 check(entry.index('if(!SaveBeforeLeaving())return false;')<entry.index('enteringChapter=true;') and 'finally {enteringChapter=false;' in entry,

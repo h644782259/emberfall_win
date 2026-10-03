@@ -23,11 +23,11 @@ public static class BuildDraftVariantEffectsTests
   foreach(var ranks in new[]{new[]{2,3},new[]{3,2}})
   {
    string text=Change(venom,0,ranks[0],ranks[1]);
-   Check(text.Contains("原 "+ranks[0]+"阶：收束毒矢")&&text.Contains("新 "+ranks[1]+"阶：收束毒矢"),"B both before and after replace fan descriptions");
+   Check(text.Contains("原 "+ranks[0]+"阶："+GameBalance.SkillName(HeroClass.Ranger,0)+" · "+BuildCatalog.VenomModifier(true))&&text.Contains("新 "+ranks[1]+"阶："+GameBalance.SkillName(HeroClass.Ranger,0)+" · "+BuildCatalog.VenomModifier(true)),"B both before and after replace fan descriptions");
    Check(text.Contains("360%攻击")&&text.Contains("480%攻击")&&!text.Contains("支箭矢")&&!text.Contains("穿透箭")&&!text.Contains("爆裂"),"B 2-3 actual coefficients and no obsolete fan/piercing/explosion upgrade");
    Check(text.Contains("普通三毒引爆，独立且一次")&&text.Contains("首个实际拦截目标"),"B preserves single poison detonation and collision constraint");
   }
-  for(int rank=1;rank<=3;rank++)Check(venom.SkillEffectSummary(0,rank).Contains((100*ConcentratedVenomRules.DirectCoefficient(rank)).ToString("0.##")+"%攻击"),"summary agrees with actual projectile coefficient rule");
+  for(int rank=1;rank<=3;rank++){Check(BuildCatalog.VenomSkillOverride(venom.Profile,0,rank)==venom.SkillEffectSummary(0,rank)&&BuildCatalog.ConcentratedVenomEquipped(venom.Profile),"equipped skill and draft descriptions share identity and budget");Check(venom.SkillEffectSummary(0,rank).Contains((100*ConcentratedVenomRules.DirectCoefficient(rank)).ToString("0.##")+"%攻击"),"summary agrees with actual projectile coefficient rule");}
   Check(venom.ToggleMechanicVariant(id,true),"switch back to real A");string a=Change(venom,0,2,3);Check(a.Contains(GameBalance.SkillEvolution(HeroClass.Ranger,0,3))&&a.Contains("变体A：")&&!a.Contains("收束毒矢"),"A keeps fan advancement and propagation only");
   var item=venom.Equipped(ItemSlot.Relic);item.mechanicVariant=1;item.mechanicVariantUnlocked=false;Check(!venom.SkillEffectSummary(0,3).Contains("收束毒矢"),"locked forged B cannot override preview");item.mechanicVariantUnlocked=true;venom.Profile.relicId=null;Check(venom.SkillEffectSummary(0,3)==GameBalance.SkillEvolution(HeroClass.Ranger,0,3),"owned unequipped B has no effect");venom.Profile.relicId=id;venom.Profile.heroClass=HeroClass.Arcanist;Check(!venom.SkillEffectSummary(0,3).Contains("收束毒矢"),"wrong class worn mechanism does not override");
   foreach(var mechanic in new[]{EquipmentMechanic.FrostEcho,EquipmentMechanic.CinderTrail})

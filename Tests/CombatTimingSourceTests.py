@@ -27,7 +27,7 @@ check('SummonerDamageRules.MarkInterval, 1)' in spell and 'pendingTargets.Begin(
 check('if (session.InputBlocked) return;' in area and 'if (session.InputBlocked) return;' in spell and 'session.InputBlocked) { Destroy' not in area and 'session.InputBlocked) { Destroy' not in spell,'opening a choice during a spell pauses it instead of destroying its finite remaining budget')
 for component,batch in [(area,'pendingTickTargets'),(spell,'pendingTargets')]:
  check('session.Player == owner && !owner.IsDead && session.HasStarted && !session.CombatEnded && owner.CombatEpoch == epoch' in component and component.count('if (!IsCurrentCast)')>=3,'pending area targets are guarded at entry, each scheduled event, and each individual impact')
- check('private void Retire() { '+batch+'.Clear(); Destroy(gameObject); }' in component and 'private void OnDisable() { '+batch+'.Clear(); }' in component,'epoch/death/terminal retirement and scene disable clear retained targets immediately')
+ check('private void Retire() { '+batch+'.Clear(); Destroy(gameObject); }' in component and 'private void OnDisable() { castReceipt?.Release();castReceipt=null;'+batch+'.Clear(); }' in component,'epoch/death/terminal retirement and scene disable clear retained targets immediately')
 advanced=read('Combat/AdvancedSkillSequence.cs')
 check('if (session.InputBlocked || Time.deltaTime <= 0) return;' in advanced and 'if (session.InputBlocked) return;' in advanced,'advanced multi-event catch-up stops at pause boundaries without consuming the next event')
 check('CombatSight.Area(transform.position,enemy.transform.position)' in area,'area tick and pull use shared wall visibility')

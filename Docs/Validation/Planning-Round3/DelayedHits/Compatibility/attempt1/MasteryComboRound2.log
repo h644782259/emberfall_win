@@ -1,0 +1,15 @@
+current BUILD /tmp/core-round2-jumz0gaj/Area.cs(27,187): error CS0103: The name 'CaptureCastReceipt' does not exist in the current context [/tmp/core-round2-jumz0gaj/Test.csproj]
+
+Build FAILED.
+
+/tmp/core-round2-jumz0gaj/Area.cs(27,187): error CS0103: The name 'CaptureCastReceipt' does not exist in the current context [/tmp/core-round2-jumz0gaj/Test.csproj]
+    0 Warning(s)
+    1 Error(s)
+
+Time Elapsed 00:00:00.92
+ 
+Traceback (most recent call last):
+  File "/workspace/scratch/planning-round3/core/Tests/MasteryComboRound2Tests.py", line 60, in <module>
+    q=subprocess.run([dotnet,'build',str(proj),'--configfile',str(p/'NuGet.Config'),'-v:q'],env=env,capture_output=True,text=True);print(mode,'BUILD',q.stdout,q.stderr);assert q.returncode==0
+                                                                                                                                                                                ^^^^^^^^^^^^^^^
+AssertionError

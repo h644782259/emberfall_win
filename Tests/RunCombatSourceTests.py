@@ -15,7 +15,7 @@ check('ActiveRunBonuses.IncomingDamageMultiplier' in p,'survival bonus affects a
 check('skillRuntime.ResetCooldowns();' in p and 'public void ResetCooldownsForDungeonEntry()' in p,'successful-entry reset API reaches actual skill timers')
 check('skillIndex:slot,castId:castId' in p and 'statusSkill:1,statusRank:rank,castId:castId' in p,'melee and trap pass real cast identity')
 e=read('Assets/Scripts/Combat/EnemyController.cs')
-check('controlPolicy.TryInterrupt(castId, attackNumber, IsPreparingAttack' in e,'enemy requires current windup and per-cast budget')
+check('controlPolicy.TryInterrupt(source.CaptureCastReceipt(castId), attackNumber, IsPreparingAttack' in e,'enemy requires current windup and per-cast budget')
 check('source != session.Player' in e and 'WorldTraversal.HasLineOfSight' in e,'interrupt rejects stale owner and occluded target')
 check('windup = chargeTime = comboDelay = sidestepTime = 0;' in e and 'StopAllCoroutines();' in e and 'CancelInvoke();' in e,'interrupt cancels every scheduled attack stage')
 check('if (!preparing || IsDead' in e,'stale attack resolution is guarded')

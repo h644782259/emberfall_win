@@ -24,16 +24,18 @@ namespace Emberfall
             if (passive && new Rect(r.x + 18, r.y + 15, 550, 60).Contains(Mouse))
                 tooltip = SkillTooltip(p, skill, rank);
             if (desktopDetailSkill != skill) { desktopDetailSkill=skill; desktopDetailScroll=Vector2.zero; }
-            string description=GameBalance.SkillDescription(p.heroClass,skill);
+            string description=BuildCatalog.VenomSkillOverride(p,skill,rank);
+            if(description.Length==0)description=GameBalance.SkillDescription(p.heroClass,skill);
             string prerequisite=GameBalance.PrerequisiteDescription(p.heroClass,skill);
             float descriptionHeight=DesktopParagraphHeight(description,530,13);
             float prerequisiteHeight=DesktopParagraphHeight(prerequisite,530,12);
             string[] evolutions=new string[3];
             float evolutionHeight=0;
-            bool scaleLine=showOffenseScale && !(skill==2&&p.heroClass!=HeroClass.Summoner);
+            bool scaleLine=showOffenseScale && !(skill==2&&p.heroClass!=HeroClass.Summoner)&&!(p.heroClass==HeroClass.Ranger&&skill==0&&BuildCatalog.ConcentratedVenomEquipped(p));
             for(int stage=1;stage<=3;stage++)
             {
                 evolutions[stage-1]=skill==2&&p.heroClass!=HeroClass.Summoner?SkillBudgetHint(p.heroClass,skill,stage):GameBalance.SkillEvolution(p.heroClass,skill,stage);
+                string venom=BuildCatalog.VenomSkillOverride(p,skill,stage);if(venom.Length>0)evolutions[stage-1]=venom;
                 evolutionHeight=Mathf.Max(evolutionHeight,DesktopParagraphHeight(evolutions[stage-1],154,scaleLine?10:11));
             }
             float statsY=descriptionHeight+10,prerequisiteY=statsY+73;

@@ -4,6 +4,7 @@ namespace Emberfall
     public sealed partial class MobileControls
     {
         private GUIStyle controlLabel;
+        private readonly MobileOpportunityMeter counterMeter=new MobileOpportunityMeter(),comboMeter=new MobileOpportunityMeter();
         private bool LimitedHealing {get{return session.ChallengeRun&&session.InDungeon;}}
         private int PotionCount {get{return LimitedHealing?session.HealingCharges:session.Progression.Profile.potions;}}
         private void CheckPotionFeedback()
@@ -31,10 +32,14 @@ namespace Emberfall
             if(dodgeState.Length>0)LabelControl(Dodge,hero.DodgeCooldown>.01f?hero.DodgeCooldown.ToString("0.0"):dodgeState,true);
             string failure=session.ControlFailure("potion");if(!string.IsNullOrEmpty(failure))LabelControl(Potion,failure,true);
             else if(potionState=="满血")LabelControl(Potion,potionState,true);
-            var combo=hero.BasicOpportunityWindow(true);if(combo.Window)LabelControl(Attack,combo.Caption,false,combo.Actionable);
-            var counter=hero.BasicOpportunityWindow();if(counter.Window)LabelControl(new Rect(Attack.x,Attack.y,Attack.width,18),counter.Caption,true,counter.Actionable);
-            string basicReason=hero.MobilePinnedActionReason(-1);if(basicReason.Length>0)LabelControl(Attack,basicReason,true);
-            failure=session.ControlFailure("attack");if(!string.IsNullOrEmpty(failure))LabelControl(Attack,failure,true);
+            var combo=hero.BasicOpportunityWindow(true);var ca=Layout.ComboOpportunity;
+            comboMeter.Draw(new Rect(ca.X,ca.Y,ca.Width,ca.Height),combo,hero,hero.CombatEpoch,1,EffectPreferences.TouchOpacity);
+            var counter=hero.BasicOpportunityWindow();var co=Layout.CounterOpportunity;
+            counterMeter.Draw(new Rect(co.X,co.Y,co.Width,co.Height),counter,hero,hero.CombatEpoch,1,EffectPreferences.TouchOpacity);
+            string basicReason=hero.MobilePinnedActionReason(-1);
+            failure=session.ControlFailure("attack");if(!string.IsNullOrEmpty(failure))basicReason=failure;
+            if(basicReason.Length==0)basicReason=counter.Window?counter.BlockReason:combo.Window?combo.BlockReason:"";
+            if(basicReason.Length>0)LabelControl(Attack,basicReason,true);
             var pinned=hero.MobilePinnedTarget;
             if(pinned!=null&&Camera.main!=null)
             {

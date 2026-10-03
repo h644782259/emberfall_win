@@ -1,0 +1,18 @@
+Traceback (most recent call last):
+  File "/workspace/scratch/planning-round3/practice-copy-fix/Tests/PilotFacingCommitProductionTests.py", line 40, in <module>
+    run=subprocess.run([dotnet,'build',str(p/'Test.csproj'),'--configfile',str(p/'NuGet.Config'),'-v:q'],capture_output=True,text=True);assert run.returncode==0,run.stdout+run.stderr
+                                                                                                                                               ^^^^^^^^^^^^^^^^^
+AssertionError: /tmp/pilot-facing-gm4c_f8s/Player.cs(105,1): error CS1524: Expected catch or finally [/tmp/pilot-facing-gm4c_f8s/Test.csproj]
+/tmp/pilot-facing-gm4c_f8s/Player.cs(105,2): error CS0106: The modifier 'public' is not valid for this item [/tmp/pilot-facing-gm4c_f8s/Test.csproj]
+/tmp/pilot-facing-gm4c_f8s/Player.cs(144,80): error CS1513: } expected [/tmp/pilot-facing-gm4c_f8s/Test.csproj]
+
+Build FAILED.
+
+/tmp/pilot-facing-gm4c_f8s/Player.cs(105,1): error CS1524: Expected catch or finally [/tmp/pilot-facing-gm4c_f8s/Test.csproj]
+/tmp/pilot-facing-gm4c_f8s/Player.cs(105,2): error CS0106: The modifier 'public' is not valid for this item [/tmp/pilot-facing-gm4c_f8s/Test.csproj]
+/tmp/pilot-facing-gm4c_f8s/Player.cs(144,80): error CS1513: } expected [/tmp/pilot-facing-gm4c_f8s/Test.csproj]
+    0 Warning(s)
+    3 Error(s)
+
+Time Elapsed 00:00:00.99
+

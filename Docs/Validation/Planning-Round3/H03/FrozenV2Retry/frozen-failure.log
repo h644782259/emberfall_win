@@ -1,0 +1,10 @@
+/tmp/h03-chest-ui-_7_ge_im/MasteryCoreRuntime.cs(39,30): error CS0246: The type or namespace name 'CastFirstHitReceipt' could not be found (are you missing a using directive or an assembly reference?) [/tmp/h03-chest-ui-_7_ge_im/Test.csproj]
+/tmp/h03-chest-ui-_7_ge_im/MasteryCoreRuntime.cs(24,26): error CS0246: The type or namespace name 'CastFirstHitHistory' could not be found (are you missing a using directive or an assembly reference?) [/tmp/h03-chest-ui-_7_ge_im/Test.csproj]
+
+The build failed. Fix the build errors and run again.
+Traceback (most recent call last):
+  File "/workspace/scratch/planning-round3/validation-v2/Tests/ChestChoicePresentationTests.py", line 52, in <module>
+    subprocess.run(cmd,env=env,check=True)
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/workspace/shared/emberfall-tools/dotnet/dotnet', 'run', '--project', '/tmp/h03-chest-ui-_7_ge_im/Test.csproj', '--', '/tmp/h03-chest-ui-_7_ge_im/saves']' returned non-zero exit status 1.

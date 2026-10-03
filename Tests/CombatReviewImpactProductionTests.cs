@@ -12,7 +12,7 @@ namespace Emberfall {
  public static class Trace {public static List<string> Events=new List<string>();}
  internal class Status {public void Mark(float seconds,float strength){Trace.Events.Add("mark");}}
  internal class EnemyController {public GameObject gameObject=new GameObject();public float Health=10,ProjectileHitRadius=.5f;public bool IsDead=>Health<=0;public Transform transform=new Transform();public Status StatusEffects=new Status();public bool Visible=true;public void TakeDamage(float amount,Vector3 d,float stagger,bool critical=false,int practiceCastId=0){Trace.Events.Add("damage");Health=Math.Max(0,Health-amount);}}
- internal class PlayerController {public void RegisterSkillHit(int id){Trace.Events.Add("skillhit");}public float ResolveSkillImpact(EnemyController e,int skill,int id,float damage,bool critical,float multiplier)=>damage;public void OnBasicAttackHitTarget(Vector3 p,EnemyController e,bool hit){}public void HitArea(Vector3 p,float r,CombatDamage d,float a,float b,int cast,ProjectileVolleyBudget<EnemyController> volley){}}
+ internal class PlayerController {public Vector3 EnemyBodyPoint(EnemyController e)=>e.transform.position;public void RegisterSkillHit(int id){Trace.Events.Add("skillhit");}public float ResolveSkillImpact(EnemyController e,int skill,int id,float damage,bool critical,float multiplier)=>damage;public void OnBasicAttackHitTarget(Vector3 p,EnemyController e,bool hit){}public void HitArea(Vector3 p,float r,CombatDamage d,float a,float b,int cast,ProjectileVolleyBudget<EnemyController> volley){}}
  internal class SummonedCompanion {public float Loss;public void OnConfirmedHit(EnemyController e){Trace.Events.Add("companion");}public void RecordEmpoweredHit(EnemyController e,float loss,bool empowered){Loss=loss;Trace.Events.Add("feedback");}}
  internal class GameSession {public List<EnemyController> Enemies=new List<EnemyController>();}
  public static class CombatSight {public static HashSet<float> Blocked=new HashSet<float>();public static bool Direct(Vector3 a,Vector3 b)=>!Blocked.Contains(b.x);}
@@ -42,3 +42,5 @@ namespace Emberfall {
  }
 }
 class Program {static void Main(){Emberfall.CombatReviewImpactProductionTests.Run();}}
+
+namespace Emberfall{internal static class VenomSkillVfx{internal static void Contact(PlayerController p,Vector3 point,bool consumed){}}}

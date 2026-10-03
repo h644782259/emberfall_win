@@ -1,0 +1,18 @@
+Traceback (most recent call last):
+  File "/workspace/scratch/planning-round3/core/Tests/PlayerFinaleTailProductionTests.py", line 80, in <module>
+    q=subprocess.run([dotnet,'build',str(project),'--configfile',str(p/'NuGet.Config'),'-v:q'],env=env,capture_output=True,text=True);assert q.returncode==0,q.stdout+q.stderr
+                                                                                                                                             ^^^^^^^^^^^^^^^
+AssertionError: /tmp/player-finale-tail-ik5uvwts/Producers.cs(73,10): error CS0103: The name 'castReceipt' does not exist in the current context [/tmp/player-finale-tail-ik5uvwts/Test.csproj]
+/tmp/player-finale-tail-ik5uvwts/Producers.cs(73,33): error CS0103: The name 'castReceipt' does not exist in the current context [/tmp/player-finale-tail-ik5uvwts/Test.csproj]
+/tmp/player-finale-tail-ik5uvwts/Producers.cs(74,63): warning CS0169: The field 'AreaFinalFixture.position' is never used [/tmp/player-finale-tail-ik5uvwts/Test.csproj]
+
+Build FAILED.
+
+/tmp/player-finale-tail-ik5uvwts/Producers.cs(74,63): warning CS0169: The field 'AreaFinalFixture.position' is never used [/tmp/player-finale-tail-ik5uvwts/Test.csproj]
+/tmp/player-finale-tail-ik5uvwts/Producers.cs(73,10): error CS0103: The name 'castReceipt' does not exist in the current context [/tmp/player-finale-tail-ik5uvwts/Test.csproj]
+/tmp/player-finale-tail-ik5uvwts/Producers.cs(73,33): error CS0103: The name 'castReceipt' does not exist in the current context [/tmp/player-finale-tail-ik5uvwts/Test.csproj]
+    1 Warning(s)
+    2 Error(s)
+
+Time Elapsed 00:00:00.93
+

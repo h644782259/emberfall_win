@@ -61,7 +61,7 @@ namespace Emberfall
             foreach(ItemData item in p.Profile.inventory)
             {
                 if(item==null||item.mechanic==EquipmentMechanic.None||BuildCatalog.MechanicClass(item.mechanic)!=p.Profile.heroClass)continue;
-                if(!item.mechanicVariantUnlocked&&string.IsNullOrEmpty(p.MechanicGoalEligibility(item.id,ProgressionGoalKind.Variant)))
+                if(!p.HasVariant(item)&&string.IsNullOrEmpty(p.MechanicGoalEligibility(item.id,ProgressionGoalKind.Variant)))
                 {variants=true;GoalOption(ref y,w,u,"解锁变体 · "+GoalItemTitle(item),ProgressionGoalKind.Variant,item.id,0,draw);}
             }
             if(!variants)GoalUnavailable(ref y,w,u,"变体目标 · 需要尚未解锁变体的元素机制装备",draw);

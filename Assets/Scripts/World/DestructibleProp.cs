@@ -52,7 +52,7 @@ namespace Emberfall
             visual.localRotation=Quaternion.Euler(kick*4f,0,kick*3f);
         }
         private static bool CanAffect(PlayerController owner)
-        {var game=GameSession.Instance;return owner!=null&&game!=null&&game.Player==owner&&game.HasStarted&&!owner.IsDead&&!game.InputBlocked;}
+        {var game=GameSession.Instance;return owner!=null&&game!=null&&game.Player==owner&&!game.PracticeActive&&game.HasStarted&&!owner.IsDead&&!game.InputBlocked;}
         private bool Reachable(Vector3 origin)
         {return WorldTraversal.HasLineOfSightIgnoringObstacle(origin,transform.position,obstacle);}
         internal void Impact(PlayerController owner,int castId,CombatDamage damage)

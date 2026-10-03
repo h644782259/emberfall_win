@@ -51,6 +51,7 @@ namespace Emberfall
  public class AdvancedSkillVfx:MonoBehaviour{public static void Beam(params object[] a){}public static AdvancedSkillVfx Protection(PlayerController owner,Vector3 at,float radius,Color color,float lifetime,int detail,Func<bool> active,bool passive=false)=>new AdvancedSkillVfx();public static AdvancedSkillVfx Rune(params object[] a)=>new AdvancedSkillVfx();}
  public sealed partial class PlayerController:MonoBehaviour
  {
+  public CombatOpportunityState[] OpportunityWindows=new CombatOpportunityState[10];public CombatOpportunityState CounterWindow,ComboWindow;public CombatOpportunityState SkillOpportunityWindow(int skill)=>session.InputBlocked?default:OpportunityWindows[skill];public CombatOpportunityState BasicOpportunityWindow(bool mastery=false)=>session.InputBlocked?default:mastery?ComboWindow:CounterWindow;
   // Mechanism-free equipment in this fixture: the full production B branch remains compiled.
   private bool ConcentratedVenom=>false;
   private void CastConcentratedVenom(int rank,float range,Color color,int castId){throw new InvalidOperationException("unexpected venom B dispatch with mechanism-free equipment");}
@@ -76,7 +77,7 @@ namespace Emberfall
  {
   enum Role{Move,Attack,Skill,Aim,Camera,Consumed}readonly Dictionary<int,Role> fingers=new Dictionary<int,Role>();readonly MobileCameraGesture cameraGesture=new MobileCameraGesture();readonly List<int> staleFingers=new List<int>();static MobileControls instance;GameSession session;GameUI ui;int moveFinger=-1000;Vector2 joystickOrigin;bool hasJoystickOrigin;PlayerController worldPointerOwner;EnemyController worldPointerTarget;int worldPointerEpoch;Rect lastSafe;
   public static bool Active=true,SimulationEnabled;public static Vector2 Move;public static bool AttackHeld;static bool dodge,potion,jump;public static MobileControlLayout Layout=new MobileControlLayout(568,320,160);public static Rect SafeArea=new Rect(0,0,568,320);float Scale=>Layout.Scale;Vector2 ToUI(Vector2 p)=>new Vector2(p.x,320-p.y)/Scale;static Rect Area(MobileControlLayout.Area a)=>new Rect(a.X,a.Y,a.Width,a.Height);Rect Attack=>Area(Layout.Attack);Rect Dodge=>Area(Layout.Dodge);Rect Potion=>Area(Layout.Potion);Rect Jump=>Area(Layout.Jump);Rect Cancel=>Area(Layout.Cancel);bool CanCancel=>session.Player.charge.IsCharging;
-  public MobileControls(GameSession s,GameUI u){session=s;ui=u;instance=this;lastSafe=SafeArea;}void CheckDodgeFeedback(){}void CheckPotionFeedback(){}public static bool IsScreenPointOverControls(Vector2 p){var v=instance.ToUI(p);return Area(Layout.MoveZone).Contains(v)||instance.Attack.Contains(v)||instance.Dodge.Contains(v)||instance.Potion.Contains(v)||instance.Jump.Contains(v)||instance.Cancel.Contains(v);}
+  public MobileControls(GameSession s,GameUI u){session=s;ui=u;instance=this;lastSafe=SafeArea;}void CheckDodgeFeedback(){}void CheckPotionFeedback(){}
   public void Tick()=>Update();public Vector2 Control(MobileControlLayout.Area a)=>new Vector2((a.X+a.Width/2)*Scale,320-(a.Y+a.Height/2)*Scale);
  }
 }

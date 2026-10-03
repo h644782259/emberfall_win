@@ -14,6 +14,7 @@ namespace Emberfall
         private CombatDamage damage;
         private float range, interval, age, nextEvent;
         private int castId;
+        private CastFirstHitReceipt castReceipt;
         private Vector3 target, forward, origin;
         private Color color;
         private EnemyController lockedTarget;
@@ -27,7 +28,7 @@ namespace Emberfall
             AdvancedSkillSequence sequence = obj.AddComponent<AdvancedSkillSequence>();
             sequence.owner = hero; sequence.session = game; sequence.heroClass = hero.HeroClass;
             sequence.skill = index; sequence.rank = skillRank; sequence.epoch = hero.CombatEpoch;
-            sequence.damage = strength; sequence.castId = castId==0?hero.NewCastId():castId; sequence.range = GameBalance.SkillRangeMultiplier(skillRank);
+            sequence.damage = strength; sequence.castId = castId==0?hero.NewCastId():castId; sequence.castReceipt=hero.RetainCastReceipt(sequence.castId); sequence.range = GameBalance.SkillRangeMultiplier(skillRank);
             sequence.target = aim; sequence.origin = hero.transform.position; sequence.forward = CombatFx.Flat(direction).normalized;
             sequence.color = tint;
             sequence.restrictedHealing = game.ChallengeRun && game.InDungeon;
@@ -66,11 +67,16 @@ namespace Emberfall
             {
                 if (owner == null || owner.IsDead || owner.CombatEpoch != epoch || session.CombatEnded) { Destroy(gameObject); return; }
                 if (session.InputBlocked) return;
+                CombatImpactBatch.BeginAction();
+                try
+                {
                 if (skill==6) Healing();
                 else if (heroClass == HeroClass.Vanguard) Vanguard();
                 else if (heroClass == HeroClass.Arcanist) Arcanist();
                 else Ranger();
                 step++; nextEvent += interval;
+                }
+                finally { CombatImpactBatch.EndAction(); }
             }
             if (step >= steps) Destroy(gameObject);
         }
@@ -309,8 +315,9 @@ namespace Emberfall
             owner.HitArea(at,radius,amount,1.1f,.7f,castId:castId);
         }
 
+        private void OnDestroy(){OnDisable();}
         private void OnDisable()
-        {if(healingAura!=null){healingAura.Stop();healingAura=null;}if(step<steps&&arrowBatch.IsValid)arrowBatch.Retire();}
+        {castReceipt?.Release();castReceipt=null;if(healingAura!=null){healingAura.Stop();healingAura=null;}if(step<steps&&arrowBatch.IsValid)arrowBatch.Retire();}
         private Vector3 Clamp(Vector3 point) { return CombatSight.GroundPoint(origin,Vector3.ClampMagnitude(CombatFx.Flat(point),session.ArenaRadius-.7f)); }
         private static Vector3 Circle(float angle,float radius) { return new Vector3(Mathf.Cos(angle),0,Mathf.Sin(angle))*radius; }
     }

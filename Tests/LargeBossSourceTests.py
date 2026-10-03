@@ -7,7 +7,7 @@ def check(value,why):
     if not value: raise AssertionError(why)
 e=read('Combat/EnemyController.cs');m=read('Combat/LargeExpeditionBoss.cs');rig=read('Combat/LargeBossRig.cs');model=read('Combat/CombatModel.cs')
 check('largeBoss.Tick(dt)' in e and e.index('largeBoss.Tick(dt)')<e.index('if (chargeTime <= 0) transform.position'),'mechanic owns update before movement/attacks')
-check('controlPolicy.TryInterrupt(castId, attackNumber, IsPreparingAttack' in e and 'if (specialWindup) largeBoss.InterruptWindup();' in e,'existing cast/control policy authorizes special interruption')
+check('controlPolicy.TryInterrupt(source.CaptureCastReceipt(castId), attackNumber, IsPreparingAttack' in e and 'if (specialWindup) largeBoss.InterruptWindup();' in e,'existing cast/control policy authorizes special interruption')
 check('CancelAttack(); attackNumber++;' in e,'mechanic gets unique windup identity and cancels earlier scheduled attacks')
 check('largeBoss.State.IncomingMultiplier' in e,'core exposure modifies actual incoming damage')
 check('largeBoss != null ? 1.25f' in e and 'largeBoss != null ? 1.3f' in e,'opt-in navigation and projectile footprints')

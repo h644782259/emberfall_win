@@ -12,7 +12,7 @@ update=member(player,'private void Update(')
 walk=update[update.index('                Vector3 walkingStart'):update.index('\n            }\n            // Readiness')]
 tail=update[update.index('            Vector3 beforeBoundary'):update.index('\n            if (charge != null && charge.IsCharging) model.AnimateCharge')]
 assert tail.index('model.SetLocomotion(')<tail.index('aimPoint =')<tail.index('FaceAim();')<tail.index('BasicAttack();')<tail.index('model.Animate(')
-basic=member(player,'private void BasicAttack(');basic=basic[:basic.index('            Color color =')]+'}'
+basic=member(player,'private void BasicAttack(');basic=basic[:basic.index('            Color color =')]+'}finally{CombatImpactBatch.EndAction();}}'
 assert basic.index('FaceAim();')<basic.index('model.PlayAction(')
 fixture=(r/'Tests/BlenderPilotAdapterProductionFixture.cs').read_text();fixture=fixture.replace(member(fixture,'static void Main()'),'static void Main(){PilotFacingFixture.Run();}')
 fixture=fixture.replace(member(fixture,'public class Motion{'),'''public class Motion{public float Landing,Side,Forward,Phase,Speed;public int Advances;private LocomotionPoseState actual=new LocomotionPoseState();public void Advance(float x,float z,float dt,float speed,bool walk,bool air,float jump){Advances++;actual.Advance(x,z,dt,speed,walk,air,jump);Landing=actual.Landing;Side=actual.Side;Forward=actual.Forward;Phase=actual.Phase;Speed=actual.Speed;}public void Reset(){actual.Reset();Landing=Side=Forward=Phase=Speed=0;}}''')
@@ -27,7 +27,7 @@ fixture=fixture.replace('public static Quaternion Inverse(', 'public static Quat
 with tempfile.TemporaryDirectory(prefix='pilot-facing-') as tmp:
  p=Path(tmp)
  (p/'BuildCatalogDamage.cs').write_text('namespace Emberfall{public static class BuildCatalog{'+member((r/'Assets/Scripts/Core/GameTypes.cs').read_text(),'public static float CinderTrailTickMultiplier(')+'}}')
- for f in ['Combat/BlenderPilotVisual','Combat/CombatModel.BlenderPilot','Combat/CombatModel.WeaponRig','Core/RendererGroupCache','Core/BlenderPilotPosePolicy','Core/BasicActionTimeline','Core/SkillDamageBudgets','Core/CombatBalance','Core/WeaponStructure','Core/LocomotionPoseState']:(p/(Path(f).name+'.cs')).write_text((r/('Assets/Scripts/'+f+'.cs')).read_text())
+ for f in ['Combat/BlenderPilotVisual','Combat/CombatModel.BlenderPilot','Combat/CombatModel.WeaponRig','Core/RendererGroupCache','Core/BlenderPilotPosePolicy','Core/BasicActionTimeline','Core/SkillDamageBudgets','Core/CombatImpactBatch','Core/CombatBalance','Core/WeaponStructure','Core/LocomotionPoseState']:(p/(Path(f).name+'.cs')).write_text((r/('Assets/Scripts/'+f+'.cs')).read_text())
  for name in ['BlenderPilotLayerProductionFixture.cs','BlenderPilotReadinessTests.cs','PilotFacingCommitProductionFixture.cs']:(p/name).write_text((r/'Tests'/name).read_text())
  (p/'Fixture.cs').write_text(fixture)
  types=''.join(member((r/'Assets/Scripts/Core/GameTypes.cs').read_text(),s) for s in ['public enum EnemyKind','public enum FashionSlot','public enum ItemSlot','public enum Rarity','public enum EquipmentMechanic','public class ItemData'])

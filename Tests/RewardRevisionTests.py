@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Actual production save transactions with managed JSON/filesystem and regression mutations."""
+from CastReceiptFixtureSources import include_cast_receipt_source
 import os,sys,tempfile,subprocess
 from pathlib import Path
 root=Path(__file__).resolve().parents[1]
@@ -12,7 +13,7 @@ with tempfile.TemporaryDirectory(prefix='chapter-transactions-') as folder:
     for name in core:(folder/(name+'.cs')).write_text((root/'Assets/Scripts/Core'/(name+'.cs')).read_text())
     for name in ['ProgressionTests','RewardRevisionTests','RewardLoadTransitionTests']:(folder/(name+'.cs')).write_text((root/'Tests'/(name+'.cs')).read_text())
     (folder/'Program.cs').write_text('System.Console.WriteLine(RewardRevisionTests.Run(args[0]));System.Console.WriteLine(RewardLoadTransitionTests.Run(args[0]));')
-    project=folder/'Test.csproj';project.write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net8.0</TargetFramework><OutputType>Exe</OutputType></PropertyGroup></Project>')
+    project=folder/'Test.csproj';project.write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net8.0</TargetFramework><OutputType>Exe</OutputType></PropertyGroup></Project>');include_cast_receipt_source(project)
     config=folder/'NuGet.Config';config.write_text('<configuration><packageSources><clear /></packageSources></configuration>')
     subprocess.run([dotnet,'restore',str(project),'--configfile',str(config)],check=True)
     command=[dotnet,'run','--project',str(project),'--no-restore','--',str(folder/'saves')]

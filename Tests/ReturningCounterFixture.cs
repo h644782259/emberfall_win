@@ -7,7 +7,7 @@ namespace Emberfall{
  public class GameSession{public PlayerController Player;public string Failure;public void ReportControlFailure(string key,string reason){Failure=reason;}public bool InputBlocked;public bool Paused,IsDead;public bool HasStarted=true;public List<EnemyController> Enemies=new List<EnemyController>();public Progress Progression=new Progress();public void RecordCombatAction(string s){}public void RecordClassTutorial(HeroClass h){}public void SpawnMechanismText(params object[] a){}}
  public class Progress{public GameProfile Profile=new GameProfile();public ItemData item=new ItemData{mechanic=EquipmentMechanic.ReturningBlade};public ItemData Equipped(ItemSlot s)=>item;}
  public struct CombatDamage{public float Amount;public bool IsCritical;}
- public static class CombatImpactBatch{public static void Begin(){}public static void End(){}}
+
  public static class DestructibleProp{public static void StrikeCone(params object[] a){}public static void StrikeLine(params object[] a){}}
  public static class CombatReviewEvents{public static bool Enabled;public static void Emit(string a,string b,int skill=0,string detail=""){}}
  public static class CombatReviewObjectId{public static string Get(object a)=>"test";}
@@ -19,6 +19,7 @@ namespace Emberfall{
  public class Model{public int Skill,Count;public void PlayAction(int skill,bool basic,float interval){Skill=skill;Count++;}}
  public class Bonus{public float AttackSpeedMultiplier=1;}public class Runtime{public float Energy;public void RestoreEnergy(float f){Energy+=f;}}public class Mastery{public float PerfectDodge()=>0;}
  public partial class PlayerController{
+  private float counterWindowDuration;
   public HeroClass HeroClass=HeroClass.Vanguard;public Transform transform=new Transform();GameSession session=new GameSession();public EnemyController AimTarget;
   public bool IsDead;public int CombatEpoch;bool TraversalStartedThisFrame,lastMeleeDamagedEnemy,perfectDodgeAwarded;Recovery skillBasicRecovery=new Recovery();Charge charge;Model model=new Model();Bonus ActiveRunBonuses;float attackCooldown,mobilityTime,attackAnimation,counterTime,perfectDodgeCounterTime,perfectDodgeWindow,coreWardTime,classDodgeTime;int mobilityRank;
   Runtime skillRuntime=new Runtime();Mastery masteryCore=new Mastery();float Energy=>skillRuntime.Energy;ElementalistSpecialization Specialization;Vector3 aimPoint;float CombatAttack=>100;CombatProcCooldown returningBladeProc=new CombatProcCooldown();

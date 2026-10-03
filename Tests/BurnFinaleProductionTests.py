@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Actual EnemyStatusEffects plus Player.ElementalAdvancedArea; final damage recipients are managed recorders."""
+from CastReceiptFixtureSources import include_cast_receipt_source
 import argparse,os,subprocess,tempfile
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
@@ -45,7 +46,7 @@ def main():
                     if name=='cash-without-own-burn':source=once(source,'            if(!plan.HadOwnBurn)return null;','')
                     if name=='double-frame-advance':source=once(source,'            if(burnClockFrame==Time.frameCount)return;','')
                 (folder/Path(path).name).write_text(source)
-            (folder/'Program.cs').write_text('System.Console.WriteLine(ScheduledTickWindowTests.Run());System.Console.WriteLine(BurnFinaleProductionTests.Run());');config=folder/'NuGet.Config';config.write_text('<configuration><packageSources><clear /></packageSources></configuration>');project=folder/'Validation.csproj';project.write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net8.0</TargetFramework><OutputType>Exe</OutputType></PropertyGroup></Project>')
+            (folder/'Program.cs').write_text('System.Console.WriteLine(ScheduledTickWindowTests.Run());System.Console.WriteLine(BurnFinaleProductionTests.Run());');config=folder/'NuGet.Config';config.write_text('<configuration><packageSources><clear /></packageSources></configuration>');project=folder/'Validation.csproj';project.write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net8.0</TargetFramework><OutputType>Exe</OutputType></PropertyGroup></Project>');include_cast_receipt_source(project)
             build=subprocess.run([dotnet,'build',str(project),'--configfile',str(config),'-v:q'],text=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
             if build.returncode:print(build.stdout);build.check_returncode()
             result=subprocess.run([dotnet,str(folder/'bin/Debug/net8.0/Validation.dll')],text=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)

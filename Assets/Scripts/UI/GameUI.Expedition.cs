@@ -24,6 +24,27 @@ namespace Emberfall
 
         private void DrawDungeonSelection(){DrawArenaSelection();}
 
+        private Vector2 branchScroll;
+        private void DrawRoomBranchChoice()
+        {
+            float u=MobileControls.Active?TouchRatio:1;
+            Rect w=Modal(Mathf.Min(width-24,900*u),Mathf.Min(height-24,520*u),"第三房 · 选择侧廊","只进入所选路线；第四房星泉汇合，第五房首领。无额外材料奖励。");
+            Rect viewport=new Rect(w.x+20*u,w.y+105*u,w.width-40*u,Mathf.Max(60*u,w.height-175*u));
+            float cw=(viewport.width-16*u)*.5f;
+            branchScroll=BeginTouchScroll("room-branch",viewport,branchScroll,new Rect(0,0,viewport.width,280*u));
+            for(int i=0;i<2;i++)
+            {
+                RoomBranch branch=i==0?RoomBranch.Seal:RoomBranch.Supply;
+                Rect c=new Rect(i*(cw+16*u),0,cw,270*u);Fill(c,card);Border(c,jade);
+                Text(new Rect(c.x+12*u,c.y+12*u,c.width-24*u,196*u),GameSession.RoomBranchDescription(branch),Mathf.RoundToInt(16*u),pale,false,true);
+                if(Button(new Rect(c.x+12*u,c.y+218*u,c.width-24*u,42*u),"进入这条侧廊",gold))
+                {session.ConfirmRoomBranch(branch);BlockUITransition();}
+            }
+            EndTouchScroll();
+            if(Button(new Rect(w.x+20*u,w.yMax-58*u,w.width-40*u,40*u),"返回第二房 · 暂不选择",jade))
+            {session.CancelRoomBranchChoice();BlockUITransition();}
+        }
+
         private void DrawBlessingChoice()
         {
             if(MobileControls.Active){DrawMobileBlessingChoice();return;}
@@ -100,7 +121,7 @@ namespace Emberfall
                     if(equipped!=null&&equipped.mechanic==mechanic)
                     {
                         if(Button(new Rect(c.x+660,c.y+55,99,36),"重铸档位",jade,session.IsInCamp&&p.QuoteReforge(equipped.id)!=null,"选择提升5级、金币可达或追平等级"))OpenReforgeSurface(equipped.id);
-                        if(BuildCatalog.HasMechanicVariant(mechanic)&&Button(new Rect(c.x+766,c.y+55,99,36),equipped.mechanicVariantUnlocked?(equipped.mechanicVariant==0?"变体 A":"变体 B"):"变体 · 4",jade,string.IsNullOrEmpty(p.VariantLockReason(equipped.id,session.IsInCamp)),"首次解锁4碎片，之后免费切换互斥效果"))Feedback(p.ToggleMechanicVariant(equipped.id,session.IsInCamp),"装备变体已切换");
+                        if(BuildCatalog.HasMechanicVariant(mechanic)&&Button(new Rect(c.x+766,c.y+55,99,36),p.HasVariant(equipped)?(equipped.mechanicVariant==0?"变体 A":"变体 B"):"变体 · 4",jade,string.IsNullOrEmpty(p.VariantLockReason(equipped.id,session.IsInCamp)),"本角色首次学习4碎片，同机制装备免费选已学变体"))Feedback(p.ToggleMechanicVariant(equipped.id,session.IsInCamp),"装备变体已切换");
                         string ascension = p.AscensionLockReason(equipped.id,session.IsInCamp);
                         if(Button(new Rect(c.x+660,c.y+101,205,36),equipped.rarity==Rarity.Legendary?"已是传说品质":"传说升华 · 24碎片",gold,string.IsNullOrEmpty(ascension),string.IsNullOrEmpty(ascension)?"保留物品编号、等级、机制变体和部位强化；基础属性按25/18提升，无随机重抽。":ascension))Feedback(p.AscendMechanic(equipped.id,session.IsInCamp),"机制装备已升华为传说；身份、变体与部位强化保留");
                     }
@@ -112,7 +133,7 @@ namespace Emberfall
             {
                 if(Button(new Rect(w.x+32,w.y+165,278,38),"普通自动卖："+(p.Profile.autoSellCommon?"开":"关"),jade))p.SetAutoSell(Rarity.Common,!p.Profile.autoSellCommon);
                 if(Button(new Rect(w.x+322,w.y+165,278,38),"稀有自动卖："+(p.Profile.autoSellRare?"开":"关"),jade))p.SetAutoSell(Rarity.Rare,!p.Profile.autoSellRare);
-                if(Button(new Rect(w.x+612,w.y+165,304,38),"批量出售低品质",gold,true,"穿戴、锁定及机制装备受保护")){int sold=p.BulkSellLowQuality();if(sold>0)Feedback(true,"已出售 "+sold+" 件");else if(!string.IsNullOrEmpty(p.LastError))Feedback(false,"");else session.Notify("没有可出售的低品质装备。");}
+                if(Button(new Rect(w.x+612,w.y+165,304,38),"批量出售低品质",gold,true,"穿戴、锁定及机制装备受保护")){RequestPresetSale(null,true);}
                 Text(new Rect(w.x+32,w.y+216,884,24),"待领取 "+p.Profile.pendingLoot.Count+"/24 · 恢复栏 "+p.RecoveryLootCount+" · 锁定、穿戴和机制装备受保护",14,muted);
                 var mailbox=new System.Collections.Generic.List<ItemData>(p.Profile.pendingLoot); mailbox.AddRange(p.Profile.recoveryLoot);
                 Rect viewport=new Rect(w.x+32,w.y+254,884,280);

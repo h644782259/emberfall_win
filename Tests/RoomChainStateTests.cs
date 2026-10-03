@@ -15,7 +15,7 @@ public static class RoomChainStateTests
             Check(!run.Next(true,false),"locked door");
             for(int room=0;room<5;room++)
             {
-                var plan=run.Room;var repeat=new RoomChainPlan(room,seed);
+                var plan=run.Room;var repeat=new RoomChainPlan(room,seed,run.SelectedBranch);
                 Check(plan.Index==room && plan.Layout==repeat.Layout && plan.Objective==repeat.Objective,"reproducible identity");
                 Check(plan.EnemyCount<=6,"finite six-enemy budget");
                 if(room<3){goals.Add(plan.Objective);terrain.Add((plan.Layout-20)/2);}
@@ -50,10 +50,11 @@ public static class RoomChainStateTests
                 if(room<4)
                 {
                     Check(run.DoorUnlocked&&!run.Next(false,false)&&!run.Next(true,true),"gate proximity and block guards");
+                    if(room==1){Check(!run.Next(true,false)&&run.OpenBranchChoice(),"third room requires explicit branch");Check(run.SelectBranch(seed%2==0?RoomBranch.Seal:RoomBranch.Supply),"select branch once");}
                     Check(run.Next(true,false)&&!run.Defeat(plan,0),"transition rejects stale callbacks");
                 }
             }
-            Check(goals.Count==3&&terrain.Count==3,"each expedition covers all three goals and terrains");
+            Check(goals.Count>=2&&terrain.Count>=2,"opening rotation retained; selected third objective and terrain may repeat");
             Check(run.Finished&&!run.Failed&&!run.Next(true,false),"boss terminates");
             Check(!run.ClaimReward(false)&&run.ClaimReward(true)&&!run.ClaimReward(true),"durable reward once");
             run.Dispose();Check(!run.Register(first,0)&&!run.ChooseInterlude(),"disposed inert");

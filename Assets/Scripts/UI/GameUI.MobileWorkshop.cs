@@ -150,7 +150,7 @@ namespace Emberfall
                 if (BuildCatalog.HasMechanicVariant(mechanic))
                 {
                     MobileWorkshopParagraph(ref y, width, "当前变体 " + (item.mechanicVariant == 0 ? "A" : "B") + "；首次解锁4碎片，此后免费切换互斥效果。", muted, draw);
-                    MobileWorkshopAction(ref y, width, item.mechanicVariantUnlocked ? "切换到变体 " + (item.mechanicVariant == 0 ? "B" : "A") : "解锁变体 B · 4碎片", jade,
+                    MobileWorkshopAction(ref y, width, p.HasVariant(item) ? "切换到变体 " + (item.mechanicVariant == 0 ? "B" : "A") : "解锁变体 B · 4碎片", jade,
                         string.IsNullOrEmpty(p.VariantLockReason(id,session.IsInCamp)), draw,
                         () => MobileWorkshopResult(p.ToggleMechanicVariant(id, session.IsInCamp), "装备变体已切换"));
                 }
@@ -173,8 +173,7 @@ namespace Emberfall
                 () => MobileWorkshopResult(p.SetAutoSell(Rarity.Rare, !p.Profile.autoSellRare), "稀有装备自动出售设置已更新"));
             MobileWorkshopAction(ref y, width, "批量出售背包低品质装备", gold, true, draw, () =>
             {
-                int sold = p.BulkSellLowQuality();
-                MobileWorkshopResult(sold > 0 || string.IsNullOrEmpty(p.LastError), sold > 0 ? "已出售 " + sold + " 件" : "没有可出售的低品质装备");
+                RequestPresetSale(null,true);
             });
             var mailbox = new List<ItemData>(p.Profile.pendingLoot);
             mailbox.AddRange(p.Profile.recoveryLoot);

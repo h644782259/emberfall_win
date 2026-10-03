@@ -622,8 +622,11 @@ namespace Emberfall
 
         private void Update()
         {
+            CombatImpactBatch.BeginAction();
+            try
+            {
             if (Owner == null || Owner.IsDead || session == null || session.Player != Owner || !session.HasStarted || Owner.CombatEpoch != epoch) { Dismiss(); return; }
-            if (session.InputBlocked) return;
+            if (session.InputBlocked || session.CombatEnded) return;
             float dt = Time.deltaTime;
             if (dt <= 0) return;
             AdvanceCommand(dt);
@@ -702,6 +705,9 @@ namespace Emberfall
             {recallVisualPending=false;recallVisualTime=.4f;}
             recallVisualTime=Mathf.Max(0,recallVisualTime-dt);
             model.SetCompanionRecall(recallVisualTime>0?1-recallVisualTime/.4f:0);
+
+            }
+            finally { CombatImpactBatch.EndAction(); }
         }
 
         private float AttackPreparation(float range)

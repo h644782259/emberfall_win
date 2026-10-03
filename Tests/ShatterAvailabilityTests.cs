@@ -53,7 +53,8 @@ namespace Emberfall
  public class FakeRuntime {public float Cooldown;public float Remaining(int skill)=>Cooldown;}
  public class FakeProgression {public GameProfile Profile=new GameProfile();}
  public class GameSession {public PlayerController Player;public bool HasStarted=true,InputBlocked;public float ArenaRadius=25;public List<EnemyController> Enemies=new List<EnemyController>();public FakeProgression Progression=new FakeProgression();}
- public class Status {public float FrostTime=4,BurnTime=3;public float FrostRemaining=>HasFrostMark?FrostTime:0;public float BurnRemaining=>IsBurning?BurnTime:0;public bool OwnedBurn=true;public float OwnBurnRemaining(PlayerController source)=>OwnedBurn?BurnRemaining:0;public float OwnPoisonOpportunityRemaining(PlayerController source)=>PoisonStacks>=3?2:0;public bool HasFrostMark,IsBurning,IsMarked;public int PoisonStacks;}
+ public static class CompanionRules {public const float CommandOpportunityDuration=16f;}
+ public class Status {public float FrostWindowDuration=4,BurnWindowDuration=3,PoisonWindowDuration=2;public float FrostTime=4,BurnTime=3;public float FrostRemaining=>HasFrostMark?FrostTime:0;public float BurnRemaining=>IsBurning?BurnTime:0;public bool OwnedBurn=true;public float OwnBurnRemaining(PlayerController source)=>OwnedBurn?BurnRemaining:0;public float OwnPoisonOpportunityRemaining(PlayerController source)=>PoisonStacks>=3?2:0;public bool HasFrostMark,IsBurning,IsMarked;public int PoisonStacks;}
  public class EnemyController {public bool IsDead,IsBoss;public float HitFootprintBonus;public Transform transform=new Transform();public GameObject gameObject=new GameObject();public Status StatusEffects=new Status();public EnemyController(float distance,bool frost){transform.position=new Vector3(0,0,distance);StatusEffects.HasFrostMark=frost;}}
  public static class CombatFx {public static Vector3 Flat(Vector3 p)=>new Vector3(p.x,0,p.z);}
  public static class CombatSight
@@ -68,7 +69,7 @@ namespace Emberfall
   public float attackCooldown;public class Recovery{public bool Blocked;}public Recovery skillBasicRecovery=new Recovery();
   public SkillTargetingController targeting=new SkillTargetingController();
   public EnemyController MobilePinnedTarget=>null;internal bool MobilePinAppliesToSkill(int skill)=>false;
-  public int CombatEpoch=1;public float CounterOpportunityRemaining;public bool IsJumping=>jumping;
+  public int CombatEpoch=1;public float CounterOpportunityRemaining;public float CounterOpportunityDuration=2;public bool IsJumping=>jumping;
   public T GetComponent<T>() where T:class {return charge as T;}
   public float SkillCooldownRemaining(int skill)=>skillRuntime.Remaining(skill);
   public HeroClass HeroClass=HeroClass.Arcanist;public ElementalistSpecialization Specialization=ElementalistSpecialization.Shatter;

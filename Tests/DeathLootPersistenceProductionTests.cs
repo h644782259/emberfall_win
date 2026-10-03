@@ -5,6 +5,9 @@ public class FakeRun{public void Fail(object x){}}public class FakeChoice{public
 public class GroundLootPickup{public bool Retired;public void Retire(){Retired=true;}}
 public partial class GameSession{
  // These death/receipt cases are ordinary runs; practice isolation has its own suite.
+ // Any accidental practice path in an ordinary-run persistence test must fail loudly.
+ public sealed class PracticeBoundary{public void PlayerDefeated(){throw new InvalidOperationException("ordinary loot fixture cannot record practice defeat");}}
+ public PracticeBoundary PracticeRecord=>throw new InvalidOperationException("ordinary loot fixture cannot access practice record");
  public bool PracticeActive=>false;public void EndPractice(string reason){throw new InvalidOperationException("ordinary loot fixture cannot end practice");}
  public ProgressionService Progression;public bool IsDead,ChapterActive,DungeonSelectionOpen,Paused,uiBlocking;public FakeRun ModeRun,RoomChainRun;FakeChoice pendingRoomChoice=new FakeChoice();public string LastRunSummary,Notification;public int TimescaleUpdates,Transitions;
  class PendingLoot{public ItemData Item;public GroundLootPickup Pickup;public bool Collecting;}readonly Dictionary<string,PendingLoot> pendingLoot=new Dictionary<string,PendingLoot>();readonly HashSet<string> collectedGroundLoot=new HashSet<string>();

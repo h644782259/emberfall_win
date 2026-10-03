@@ -52,7 +52,9 @@ namespace Emberfall
             if(cooldown>.01f)return ""; // Preserve the existing central cooldown overlay.
             if(lacksEnergy)return "缺能";
             var opportunity=hero.SkillOpportunityWindow(skill);actionable=opportunity.Actionable;
-            return actionable?opportunity.Caption:"";
+            // The dedicated row owns the live window label and clock. This
+            // in-slot channel only explains why the action cannot run now.
+            return opportunity.Window?opportunity.BlockReason:"";
         }
         private string DesktopBasicOpportunityCaption()
         {

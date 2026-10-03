@@ -27,7 +27,7 @@ namespace Emberfall
         private string lastDamageSource = "未记录";
         private float lastDamageAmount, lastInterruptAt = -10;
         private float runDamageTaken,runHealingReceived;
-        public void RecordActualHealing(float amount){if(InDungeon&&HasStarted&&!IsDead&&amount>0&&!float.IsNaN(amount)&&!float.IsInfinity(amount))runHealingReceived+=amount;}
+        public void RecordActualHealing(float amount){if(PracticeActive){PracticeRecord.Healing(amount);return;}if(InDungeon&&HasStarted&&!IsDead&&amount>0&&!float.IsNaN(amount)&&!float.IsInfinity(amount))runHealingReceived+=amount;}
         private bool objectiveHealedThisWave, sideEventStarted;
         private GameObject sideCrystal;
 
@@ -55,7 +55,7 @@ namespace Emberfall
             if (dungeon)
             {
                 DungeonEntryLevel = Mathf.Clamp(Progression.Profile.level,2,100);
-                runSeed = Random.Range(0, 1000000);
+                runSeed = retryingRoomChain ? roomRetrySeed : Random.Range(0, 1000000);
                 DungeonLayout = runSeed % 2;
                 HealingCharges = 3;
 
@@ -114,6 +114,7 @@ namespace Emberfall
         public void RecordIncomingDamage(string source, float amount)
         {
             if (amount <= 0||float.IsNaN(amount)||float.IsInfinity(amount)) return;
+            if(PracticeActive){PracticeRecord.IncomingDamage(amount);return;}
             if(InDungeon)runDamageTaken+=amount;
             lastDamageSource = source; lastDamageAmount = amount;
             // Death may be signalled inside TakeDamage before this telemetry callback.
@@ -122,6 +123,7 @@ namespace Emberfall
         public void OnEnemyInterrupted(EnemyController enemy)
         {
             if (enemy == null || Player == null) return;
+            if(PracticeActive){PracticeRecord.Mechanism("打断");return;}
             if(!enemy.IsLargeBossCounterWindow)RecordChapterInterrupt(enemy);
             RecordCombatAction("打断");
             if (HasBlessing(RunBlessing.InterruptFlow) && Time.time - lastInterruptAt >= 1f)

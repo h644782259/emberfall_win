@@ -4,6 +4,7 @@
 The damage recipient and rendering/math APIs are managed substitutes. Production
 Update, enemy damage dispatch and WorldTraversal run unchanged. This is not Unity.
 """
+from CastReceiptFixtureSources import include_cast_receipt_source
 import argparse
 import os
 from pathlib import Path
@@ -66,12 +67,12 @@ def main():
             (directory / 'ExistingMathSubstitutes.cs').write_text(fixture)
             catalog=(ROOT/'Assets/Scripts/Core/GameTypes.cs').read_text();start=catalog.index('public static float ConcentratedVenomCoefficient(');end=catalog.index('\n',start)
             (directory/'ActualVenomBudget.cs').write_text('namespace Emberfall{public static class BuildCatalog{'+catalog[start:end]+'}}')
-            for source in ['Assets/Scripts/Core/ThreatAdmissionPolicy.cs', 'Assets/Scripts/Core/DestructiblePropRules.cs', 'Assets/Scripts/Combat/ConcentratedVenomRules.cs', 'Assets/Scripts/World/WorldTraversal.cs', 'Assets/Scripts/Combat/EnemyImpactRegion.cs', 'Tests/BlockedCombatUpdateProductionTests.cs']:
+            for source in ['Assets/Scripts/Core/CombatImpactBatch.cs','Assets/Scripts/Core/ThreatAdmissionPolicy.cs', 'Assets/Scripts/Core/DestructiblePropRules.cs', 'Assets/Scripts/Combat/ConcentratedVenomRules.cs', 'Assets/Scripts/World/WorldTraversal.cs', 'Assets/Scripts/Combat/EnemyImpactRegion.cs', 'Tests/BlockedCombatUpdateProductionTests.cs']:
                 (directory / Path(source).name).write_text((ROOT / source).read_text())
             (directory / 'Program.cs').write_text('System.Console.WriteLine(BlockedCombatUpdateProductionTests.Run());')
             (directory / 'NuGet.Config').write_text('<configuration><packageSources><clear /></packageSources></configuration>')
             project = directory / 'Validation.csproj'
-            project.write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net8.0</TargetFramework><OutputType>Exe</OutputType><NoWarn>CS0649;CS0414</NoWarn></PropertyGroup></Project>')
+            project.write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net8.0</TargetFramework><OutputType>Exe</OutputType><NoWarn>CS0649;CS0414</NoWarn></PropertyGroup></Project>');include_cast_receipt_source(project)
             subprocess.run([args.dotnet, 'restore', str(project), '--configfile', str(directory / 'NuGet.Config')], check=True, stdout=subprocess.DEVNULL)
             # Both negative controls must compile successfully before a runtime failure is admissible.
             build = subprocess.run([args.dotnet, 'build', str(project), '--no-restore', '-c', 'Release'], text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Production Slash dispatch and endpoint ribbon identity with controlled Unity doubles."""
+from CastReceiptFixtureSources import include_cast_receipt_source
 import os,sys,tempfile,subprocess
 from pathlib import Path
 root=Path(__file__).resolve().parents[1];dotnet=sys.argv[1] if len(sys.argv)>1 else os.environ.get('DOTNET','dotnet')
@@ -22,7 +23,7 @@ if(GameObject.All.Count(x=>x.GetComponent<WeaponSlashRibbon>()!=null)!=before+1)
 model.WeaponActionId++;CombatFx.WeaponSlash(owner,model,Vector3.zero,Vector3.forward,2,new Color(1,1,1));
 if(GameObject.All.Count(x=>x.GetComponent<WeaponSlashRibbon>()!=null)!=before+2)throw new Exception("a new physical swing gets its own identity");
 System.Console.WriteLine("PASS: production decorative/physical Slash dispatch and per-swing identity");''')
- project=p/'Test.csproj';project.write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net8.0</TargetFramework><OutputType>Exe</OutputType></PropertyGroup></Project>');(p/'NuGet.Config').write_text('<configuration><packageSources><clear /></packageSources></configuration>')
+ project=p/'Test.csproj';project.write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net8.0</TargetFramework><OutputType>Exe</OutputType></PropertyGroup></Project>');include_cast_receipt_source(project);(p/'NuGet.Config').write_text('<configuration><packageSources><clear /></packageSources></configuration>')
  env=dict(os.environ,DOTNET_CLI_HOME=str(p/'cli'),DOTNET_NOLOGO='1',DOTNET_CLI_TELEMETRY_OPTOUT='1')
  subprocess.run([dotnet,'restore',str(project),'--configfile',str(p/'NuGet.Config'),'-v:q'],env=env,check=True)
  command=[dotnet,'run','--project',str(project),'--no-restore'];subprocess.run(command,env=env,check=True)

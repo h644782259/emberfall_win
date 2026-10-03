@@ -3,6 +3,7 @@ namespace Emberfall
 {
     public sealed partial class GameUI
     {
+        private readonly MobileOpportunityMeter[] mobileOpportunityMeters=new MobileOpportunityMeter[10];
         private string MobileSkillState(int skill)
         {
             var p=session.Progression.Profile;var hero=session.Player;
@@ -15,35 +16,28 @@ namespace Emberfall
         {
             string state=MobileSkillState(skill);
             var window=session.Player==null?default(CombatOpportunityState):session.Player.SkillOpportunityWindow(skill);
-            if(window.Window)
-            {
-                Rect clock=new Rect(r.x,r.yMax+2*TouchRatio,r.width,11*TouchRatio);
-                Fill(clock,new Color(.025f,.045f,.06f,.95f));
-                Text(clock,window.Caption,TouchFont(8),window.Actionable?jade:new Color(.58f,.61f,.65f),true,false,TextAnchor.MiddleCenter);
-            }
+            var meter=mobileOpportunityMeters[skill]??(mobileOpportunityMeters[skill]=new MobileOpportunityMeter());
+            // Pause hides observation without treating a still-live timer as expired.
+            if(!session.InputBlocked)meter.Draw(TouchRect(MobileControls.Layout.SkillOpportunities[skill]),window,session.Player,
+                session.Player==null?-1:session.Player.CombatEpoch,TouchRatio,EffectPreferences.TouchOpacity);
 
             string targetReason=state.Length==0&&session.Player!=null?session.Player.MobilePinnedActionReason(skill):"";
             Rect caption=new Rect(r.x,r.yMax-15*TouchRatio,r.width,15*TouchRatio);
+            string rejected=session.ControlFailure("skill"+skill);
+            string reason=!string.IsNullOrEmpty(rejected)?rejected:targetReason.Length>0?targetReason:
+                state=="缺能"||state=="限疗空"||state=="蓄力"||state=="冷却"?state:
+                state.Length==0&&window.Window&&!window.Actionable?window.BlockReason:"";
+            if(reason.Length>0)
+            {
+                Fill(caption,new Color(.035f,.06f,.12f,.9f));
+                if(reason=="冷却"){float seconds=session.Player.SkillCooldownRemaining(skill);reason=seconds.ToString(seconds>=10?"0":"0.0");}
+                Text(caption,MobileCombatPresentation.SkillRejectionCaption(reason),TouchFont(11),gold,true,false,TextAnchor.MiddleCenter);
+            }
             if(state=="蓄力")
             {
                 var charge=session.Player.GetComponent<SkillChargeController>();
-                Fill(caption,new Color(.10f,.07f,.025f,.75f));Text(caption,"蓄力",TouchFont(12),gold,true,false,TextAnchor.MiddleCenter);
                 Bar(new Rect(r.x+3*TouchRatio,r.yMax-6*TouchRatio,r.width-6*TouchRatio,3*TouchRatio),charge.Progress,gold);
             }
-            else if(state.Length==0&&targetReason.Length==0&&(!window.Window||window.Actionable))Fill(new Rect(r.xMax-7*TouchRatio,r.yMax-7*TouchRatio,4*TouchRatio,4*TouchRatio),jade);
-            if(state=="缺能"||state=="限疗空")
-            {
-                Fill(caption,new Color(.035f,.06f,.12f,.65f));
-                Text(caption,state,TouchFont(12),state=="缺能"?new Color(.5f,.72f,1):gold,true,false,TextAnchor.MiddleCenter);
-            }
-            var opportunity=window;
-            if(state.Length==0&&targetReason.Length==0&&opportunity.Actionable)
-            {Fill(caption,new Color(.055f,.16f,.12f,.95f));Text(caption,opportunity.Caption,TouchFont(10),jade,true,false,TextAnchor.MiddleCenter);}
-            if(targetReason.Length>0)
-            {Fill(caption,new Color(.08f,.025f,.015f,.92f));Text(caption,MobileCombatPresentation.SkillRejectionCaption(targetReason),TouchFont(11),gold,true,false,TextAnchor.MiddleCenter);}
-            string rejected=session.ControlFailure("skill"+skill);
-            if(!string.IsNullOrEmpty(rejected))
-            {Fill(caption,new Color(.08f,.025f,.015f,.92f));Text(caption,MobileCombatPresentation.SkillRejectionCaption(rejected),TouchFont(11),gold,true,false,TextAnchor.MiddleCenter);}
         }
     }
 }

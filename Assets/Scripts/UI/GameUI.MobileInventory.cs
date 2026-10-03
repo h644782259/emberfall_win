@@ -215,6 +215,7 @@ namespace Emberfall
             else
             {
                 SellInventoryItem(id);
+                if(presetSaleOpen)return true;
                 bool sold = !session.Progression.Profile.inventory.Exists(value => value != null && value.id == id);
                 MobileInventoryResult(sold, "已出售 " + item.name, false, false);
             }
@@ -236,7 +237,7 @@ namespace Emberfall
             float available = width - 16;
             bool worn = IsEquipped(item), eligible = ProgressionAttention.LevelEligible(progression.Profile, item);
             Color rarity = GameBalance.RarityColor(item.rarity);
-            y += MobileDetailParagraph(draw, 8, y, available, ItemTitle(preview), 18, eligible ? rarity : muted, true) + 4;
+            y += MobileDetailParagraph(draw, 8, y, available, ItemTitle(preview)+" · "+progression.PresetReferences(item.id), 18, eligible ? rarity : muted, true) + 4;
             y += MobileDetailParagraph(draw, 8, y, available, GameBalance.RarityName(item.rarity) + " · " + GameBalance.SlotName(item.slot) + " · " + (eligible ? "Lv." + item.level : "需 " + item.level + " 级") + " · 部位 +" + progression.SlotUpgradeRank(item.slot), 14, eligible ? muted : gold) + 8;
             if (draw) DrawMobileEquipmentScores(8, y, available, current, preview);
             y += MobileCollectionLayout.ScoreHeight + 8;

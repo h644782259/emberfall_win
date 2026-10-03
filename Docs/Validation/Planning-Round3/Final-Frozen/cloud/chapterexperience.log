@@ -1,0 +1,37 @@
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.03
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.84
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.91
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.84
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.85
+ACCOUNTING: level1 forest fixed full288; zero-kill completion204; one-kill minimum211; old live-level full 320; direct star full160.
+PASS: 12484 chapter fixed XP registration, floor shares, atomic receipt and shared first-core assertions
+
+PASS compiled negative: completion subtracts every registered floor share including rounding
+PASS compiled negative: only completed Star chapter enables unclaimed shared core
+PASS compiled negative: forest alone does not enable shared first core
+PASS compiled negative: fresh character entry XP level is1 not combat clamp2

@@ -135,18 +135,18 @@ namespace Emberfall
         private bool DrawMobileChestChoices(MobilePanelLayout layout)
         {
             float width = layout.Body.Width - 18;
-            float errorHeight = string.IsNullOrEmpty(mobileChestError) ? 0 : MeasureMobileParagraph(mobileChestError, width - 16, 14) + 12;
+            float disclosureHeight=MeasureMobileParagraph(ChestRevealPresentation.ChoiceDisclosure,width-16,14)+12;
+            float errorHeight = disclosureHeight+(string.IsNullOrEmpty(mobileChestError) ? 0 : MeasureMobileParagraph(mobileChestError, width - 16, 14) + 12);
             mobileChestScroll = BeginTouchScroll("mobile-chest-choice", MobilePanelRect(layout.Body), mobileChestScroll,
                 new Rect(0, 0, width * TouchRatio, Mathf.Max(layout.Body.Height, errorHeight + MobileCollectionLayout.ChestHeight + 8) * TouchRatio));
-            if (errorHeight > 0) DrawMobileParagraph(8, 0, width - 16, mobileChestError, 14, new Color(1, .55f, .45f));
+            DrawMobileParagraph(8,0,width-16,ChestRevealPresentation.ChoiceDisclosure,14,pale);
+            if (!string.IsNullOrEmpty(mobileChestError)) DrawMobileParagraph(8, disclosureHeight, width - 16, mobileChestError, 14, new Color(1, .55f, .45f));
             int choice = -1;
             for (int i = 0; i < 3; i++)
             {
                 var tile = MobileCollectionLayout.ChestCard(width, i);
                 Rect cardRect = TouchRect(tile.X, tile.Y + errorHeight, tile.Width, tile.Height);
-                Fill(cardRect, new Color(.055f, .08f, .11f)); Border(cardRect, new Color(.36f, .48f, .53f));
-                Text(TouchRect(tile.X + 10, errorHeight + 7, tile.Width - 20, 20), ProgressionService.ChestChoiceName(i), TouchFont(14), muted);
-                DrawRewardChest(TouchRect(tile.X + 8, errorHeight + 19, tile.Width - 16, 100), false, 1, 0);
+                DrawChestChoiceCard(cardRect,i,session.Progression.Profile,TouchRatio);
                 var action = MobileCollectionLayout.ChestAction(width, i);
                 if (Button(TouchRect(action.X, action.Y + errorHeight, action.Width, action.Height), "开启", gold,
                     !chestOpening && session.Progression.Profile.pendingFashionChest && !session.Progression.Profile.pendingChestReveal)) choice = i;
@@ -164,7 +164,7 @@ namespace Emberfall
             else
             {
                 var chosen=MobileCollectionLayout.ChestCard(width,choice);
-                chestRevealOrigin=TouchRect(layout.Body.X+chosen.X+8,layout.Body.Y+chosen.Y+errorHeight+19-mobileChestScroll.y/TouchRatio,chosen.Width-16,100);
+                chestRevealOrigin=ChestChoiceArt(TouchRect(layout.Body.X+chosen.X,layout.Body.Y+chosen.Y+errorHeight-mobileChestScroll.y/TouchRatio,chosen.Width,chosen.Height),TouchRatio);
                 revealedChest = choice; chestRevealResult = result; chestRevealedAt = Time.unscaledTime;
                 chestDetails = false; rewardSoundPlayed = false; chestReceiptId = session.Progression.LastChestReward.Id;
                 mobileChestError = null; mobileChestScroll = Vector2.zero; GameAudio.Play(SoundCue.Cast);
@@ -179,7 +179,7 @@ namespace Emberfall
             var art = layout.BodyLeft;
             Fill(MobilePanelRect(art), new Color(.055f, .08f, .11f)); Border(MobilePanelRect(art), accent);
             if(!DrawChestRewardModel(TouchRect(art.X+8,art.Y+8,art.Width-16,art.Height-16),reward))
-                DrawChestGold(TouchRect(art.X+8,art.Y+8,art.Width-16,art.Height-16),accent);
+                DrawChestGoldReward(TouchRect(art.X+8,art.Y+8,art.Width-16,art.Height-16),reward,accent);
             if (progress > .35f)
             {
                 Rect clip = TouchRect(art.X + 8, art.Y + 8, art.Width - 16, art.Height - 16);
@@ -187,7 +187,7 @@ namespace Emberfall
                 DrawRewardRadiance(new Rect(0, 0, clip.width, clip.height), accent, progress);
                 GUI.EndGroup();
             }
-            string result = ChestRevealPresentation.Result(reward,session.Progression.Profile.fashionThreads);
+            string result = ChestRevealPresentation.ResultWithCollection(reward,session.Progression.Profile);
             var viewport = layout.BodyRight;
             float width = viewport.Width - 34;
             string error = string.IsNullOrEmpty(mobileChestError) ? session.Progression.LastError : mobileChestError;

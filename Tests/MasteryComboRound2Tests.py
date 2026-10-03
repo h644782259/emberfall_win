@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Production core/payoff tests; Unity/game edges are explicit shims."""
+from CastReceiptFixtureSources import include_cast_receipt_source
 import os,sys,tempfile,subprocess
 from pathlib import Path
 root=Path(__file__).resolve().parents[1]
@@ -25,9 +26,10 @@ namespace Emberfall {
  public static class CombatSight{public static bool Area(Vector3 a,Vector3 b)=>true;}
  public static class FilledSkillVfx{public static void ConfirmFinale(PlayerController p,int id){}}
  public sealed partial class PlayerController {
+ readonly CastFirstHitRegistry fixtureCasts=new CastFirstHitRegistry();CastFirstHitReceipt liveCast;public void PrimeCast(int castId){liveCast=fixtureCasts.Issue(castId);}internal CastFirstHitReceipt CaptureCastReceipt(int castId)=>fixtureCasts.Find(castId);
  public MasteryCoreRuntime masteryCore=new MasteryCoreRuntime();public GameSession session;public bool IsDead;public float CombatAttack=100;int id;
  public PlayerController(){session=new GameSession{Player=this};masteryCore.Configure(0,10);}
- bool ValidAimTarget(EnemyController e)=>e!=null&&!e.IsDead;int NewCastId()=>++id;void ApplySpellDodgeBoon(EnemyController e){}
+ bool ValidAimTarget(EnemyController e)=>e!=null&&!e.IsDead;int NewCastId(){int castId=++id;PrimeCast(castId);return castId;}void ApplySpellDodgeBoon(EnemyController e){}
  public void Pay(EnemyController e)=>SettleMasteryCombo(e);
  }
 }
@@ -46,13 +48,13 @@ class Program{
  c.Configure(2,rank);c.SkillHit(100);C(c.BasicHit()==0&&N(c.PerfectDodge(),rank==10?2:3),"guard isolated unchanged");c.Configure(3,rank);c.SkillHit(101);C(c.BasicHit()==0&&N(c.SkillSpent(rank==10?60:45).Energy,rank==10?8:12),"technique isolated unchanged");}
  var h=new Emberfall.PlayerController();var e=new Emberfall.EnemyController();h.masteryCore.SkillHit(1);h.Pay(e);C(N(e.Health,940)&&e.Hits==1&&!e.LastCritical&&!e.LastImpact,"separate noncritical low-impact payoff");C(h.session.Records==1&&h.session.Feedback==1,"one actual payoff feedback");h.Pay(e);C(e.Hits==1,"no recursive payoff");
  h.masteryCore.Advance(6);h.masteryCore.SkillHit(2);e.IsDead=true;h.Pay(e);C(h.MasteryComboReady,"dead target cannot waste ready charge");e.IsDead=false;e.Ignore=true;h.Pay(e);C(h.session.Feedback==1,"no false feedback on ignored damage");
- h.masteryCore.Reset();h.session.Enemies.Add(e);e.Ignore=false;h.HitArea(Vector3.zero,2,new Emberfall.CombatDamage(1));C(!h.MasteryComboReady,"passive area cannot arm combo");h.HitArea(Vector3.zero,2,new Emberfall.CombatDamage(1),castId:200);C(h.MasteryComboReady,"actual skill area arms combo");h.session.InputBlocked=true;C(!h.MasteryComboReady,"blocked feedback hidden");h.session.InputBlocked=false;h.IsDead=true;C(!h.MasteryComboReady,"dead feedback hidden");
+ h.masteryCore.Reset();h.session.Enemies.Add(e);e.Ignore=false;h.HitArea(Vector3.zero,2,new Emberfall.CombatDamage(1));C(!h.MasteryComboReady,"passive area cannot arm combo");h.PrimeCast(200);h.HitArea(Vector3.zero,2,new Emberfall.CombatDamage(1),castId:200);C(h.MasteryComboReady,"actual skill area arms combo");h.session.InputBlocked=true;C(!h.MasteryComboReady,"blocked feedback hidden");h.session.InputBlocked=false;h.IsDead=true;C(!h.MasteryComboReady,"dead feedback hidden");
  Console.WriteLine("PASS "+n+" actual core/payoff/area assertions (managed shims, not Unity)");}}
 '''
 player=(root/'Assets/Scripts/Combat/PlayerController.cs').read_text()
 with tempfile.TemporaryDirectory(prefix='core-round2-') as tmp:
  p=Path(tmp);core=p/'Core.cs';core.write_text((root/'Assets/Scripts/Core/MasteryCoreRuntime.cs').read_text());(p/'Pay.cs').write_text((root/'Assets/Scripts/Combat/PlayerController.MasteryCombo.cs').read_text());area=p/'Area.cs';area.write_text('using UnityEngine;namespace Emberfall{public sealed partial class PlayerController{'+member(player,'internal void HitArea(')+member(player,'internal void RegisterSkillHit(')+'}}');(p/'Tests.cs').write_text(shell)
- (p/'NuGet.Config').write_text('<configuration><packageSources><clear /></packageSources></configuration>');proj=p/'Test.csproj';proj.write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net8.0</TargetFramework><OutputType>Exe</OutputType></PropertyGroup></Project>')
+ (p/'NuGet.Config').write_text('<configuration><packageSources><clear /></packageSources></configuration>');proj=p/'Test.csproj';proj.write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net8.0</TargetFramework><OutputType>Exe</OutputType></PropertyGroup></Project>');include_cast_receipt_source(proj)
  env=dict(os.environ,DOTNET_CLI_HOME=str(p/'cli'),DOTNET_NOLOGO='1');dotnet=sys.argv[1] if len(sys.argv)>1 else 'dotnet';originals={core:core.read_text(),area:area.read_text()}
  for mode in ['current','baseline-coefficient','baseline-reaction']:
   core.write_text(originals[core].replace('return Tier == 1 ? .60f : 1.00f;','return Tier == 1 ? .20f : .35f;') if mode=='baseline-coefficient' else originals[core]);area.write_text(originals[area].replace('if(confirmedSkillCast)RegisterSkillHit(castId);','RegisterSkillHit(castId);') if mode=='baseline-reaction' else originals[area])

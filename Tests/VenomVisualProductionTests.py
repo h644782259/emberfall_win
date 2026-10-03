@@ -1,0 +1,18 @@
+"""Full production contact visual lifecycle; managed Unity boundaries, not rendered frames."""
+from pathlib import Path
+import sys,os,tempfile,subprocess
+r=Path(__file__).resolve().parents[1];ns={'__file__':str(r/'Tests/AuthoredProjectileProductionTests.py')};exec((r/'Tests/AuthoredProjectileProductionTests.py').read_text().split('\nwith tempfile.TemporaryDirectory',1)[0],ns)
+s=ns['s'].replace('HasStarted,ModeFinished,InputBlocked','HasStarted,ModeFinished,InputBlocked,CombatEnded')
+fixture=(r/'Tests/AuthoredProjectileProductionTests.cs').read_text().split('class Program{')[0]
+fixture+='''class Program{static int n;static void C(bool b,string m){n++;if(!b)throw new Exception(m);}static GameObject Contact(PlayerController p,bool consumed){VenomSkillVfx.Contact(p,new Vector3(2,3,4),consumed);return GameObject.All.Last(x=>x.GetComponent<VenomContactVisual>()!=null);}static void Main(){var p=new GameObject().AddComponent<PlayerController>();GameSession.Instance=new GameSession{Player=p,HasStarted=true};foreach(bool consumed in new[]{false,true}){var v=Contact(p,consumed);var parts=GameObject.All.Where(x=>x.transform.parent==v.transform).ToArray();C(parts.Length==(consumed?3:1),"physical nick distinct from three consumed seeds");C(parts.All(x=>x.transform.localScale.x<=.08f),"contact cannot imply broad area");Time.deltaTime=.04f;GameSession.Instance.InputBlocked=true;v.Call("Update");C(v.transform.localScale.x==1,"pause freezes visual");GameSession.Instance.InputBlocked=false;v.Call("Update");C(v.transform.localScale.x<1,"consumption shrinks rather than expanding splash");Time.deltaTime=1;v.Call("Update");C(v.Destroyed,"finite contact lifetime");}var retired=Contact(p,true);p.CombatEpoch++;retired.Call("Update");C(retired.Destroyed,"epoch retires contact");var replaced=Contact(p,true);GameSession.Instance.Player=new GameObject().AddComponent<PlayerController>();replaced.Call("Update");C(replaced.Destroyed,"replaced owner retires contact");GameSession.Instance.Player=p;var dead=Contact(p,true);p.IsDead=true;dead.Call("Update");C(dead.Destroyed,"death clears contact");Console.WriteLine("PASS "+n+" real venom visual lifecycle assertions");}}
+'''
+with tempfile.TemporaryDirectory(prefix='venom-visual-') as t:
+ p=Path(t);(p/'Stubs.cs').write_text(s);(p/'Test.cs').write_text(fixture)
+ files=['Combat/VenomSkillVfx','Combat/AuthoredProjectileMeshes','Combat/AuthoredActorMeshes','Combat/VisualMeshRecipes','Combat/AnchoredImpactMesh','Combat/CombatVisualLease','Core/CombatVisualBudget','Core/CastFirstHitReceipt']
+ for f in files:(p/(Path(f).name+'.cs')).write_text((r/'Assets/Scripts'/(f+'.cs')).read_text())
+ (p/'Test.csproj').write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net8.0</TargetFramework><OutputType>Exe</OutputType><NoWarn>0649;0414</NoWarn></PropertyGroup></Project>');(p/'NuGet.Config').write_text('<configuration><packageSources><clear/></packageSources></configuration>');env=dict(os.environ,DOTNET_CLI_HOME=str(p/'cli'),DOTNET_NOLOGO='1')
+ def run(expected=None):
+  subprocess.run([sys.argv[1],'build',str(p/'Test.csproj'),'--configfile',str(p/'NuGet.Config'),'-v:q'],env=env,check=True);q=subprocess.run([sys.argv[1],str(p/'bin/Debug/net8.0/Test.dll')],env=env,capture_output=True,text=True);print(q.stdout+q.stderr)
+  if expected:assert q.returncode and expected in q.stdout+q.stderr
+  else:q.check_returncode()
+ run();src=(p/'VenomSkillVfx.cs').read_text();(p/'VenomSkillVfx.cs').write_text(src.replace('consumed?3:1','3'));run('physical nick distinct');(p/'VenomSkillVfx.cs').write_text(src.replace('1f-age/duration','1f+age/duration'));run('consumption shrinks');print('PASS compiled nick/success confusion and expanding splash negatives rejected')

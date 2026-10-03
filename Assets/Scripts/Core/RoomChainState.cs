@@ -1,17 +1,21 @@
 using System;
 namespace Emberfall
 {
+    public enum RoomBranch { None, Seal, Supply }
     public enum RoomFailureReason { None, Death, Timeout, Abandoned, GenerationOrPathFailure }
     public sealed class RoomChainPlan
     {
         public readonly int Index, EnemyCount, Layout, Seed;
         public readonly bool Interlude, Boss;
         public readonly RoomObjective Objective;
-        public RoomChainPlan(int index, int seed = 0)
+        public readonly RoomBranch Branch;
+        public RoomChainPlan(int index, int seed = 0, RoomBranch branch = RoomBranch.None)
         {
-            Index = index; Seed = seed; Objective = RoomTactics.Objective(seed,index);
+            Index = index; Seed = seed; Branch = index==2?branch:RoomBranch.None;
+            Objective = Branch==RoomBranch.Seal?RoomObjective.Purify:Branch==RoomBranch.Supply?RoomObjective.Hunt:RoomTactics.Objective(seed,index);
             Layout = index < 3 ? 20 + RoomTactics.Terrain(seed,index)*2 + (RoomTactics.Mirror(seed)<0?1:0) : 10+index;
-            Interlude = index == 3; Boss = index == 4; EnemyCount = Interlude ? 0 : Boss ? 3 : 6;
+            if(Branch!=RoomBranch.None)Layout=20+(Branch==RoomBranch.Seal?0:4)+(RoomTactics.Mirror(seed)<0?1:0);
+            Interlude = index == 3; Boss = index == 4; EnemyCount = Interlude ? 0 : Boss ? 3 : Branch==RoomBranch.Seal?4:6;
         }
     }
     public sealed class RoomChainState
@@ -31,7 +35,12 @@ namespace Emberfall
         public float CaptureFraction {get{return Room!=null&&Room.Objective==RoomObjective.Purify?(sealProgress[0]+sealProgress[1])/6f:progress/4f;}}
         private bool[] spawned, defeated;
         private int spawnedCount, kills;
-        public RoomChainState(int seed=0) { SetRoom(new RoomChainPlan(0,seed)); }
+        public RoomBranch SelectedBranch {get;private set;}
+        public bool BranchChoiceOpen {get;private set;}
+        public RoomChainState(int seed=0,RoomBranch branch=RoomBranch.None) { SelectedBranch=branch==RoomBranch.Seal||branch==RoomBranch.Supply?branch:RoomBranch.None;SetRoom(new RoomChainPlan(0,seed)); }
+        public bool OpenBranchChoice(){if(Finished||Room==null||Room.Index!=1||!DoorUnlocked||SelectedBranch!=RoomBranch.None||BranchChoiceOpen)return false;BranchChoiceOpen=true;return true;}
+        public void CancelBranchChoice(){BranchChoiceOpen=false;}
+        public bool SelectBranch(RoomBranch branch){if(!BranchChoiceOpen||Finished||(branch!=RoomBranch.Seal&&branch!=RoomBranch.Supply))return false;SelectedBranch=branch;BranchChoiceOpen=false;return true;}
         private void SetRoom(RoomChainPlan plan)
         {
             Room=plan; spawned=new bool[plan.EnemyCount]; defeated=new bool[plan.EnemyCount];
@@ -70,9 +79,9 @@ namespace Emberfall
         }
         public bool ChooseInterlude(){if(Finished||!Room.Interlude||DoorUnlocked)return false;DoorUnlocked=true;return true;}
         public bool Next(bool nearDoor,bool blocked)
-        {if(Finished||!DoorUnlocked||!nearDoor||blocked||Room.Index>=4)return false;SetRoom(new RoomChainPlan(Room.Index+1,Room.Seed));return true;}
+        {if(Finished||!DoorUnlocked||!nearDoor||blocked||Room.Index>=4||BranchChoiceOpen||Room.Index==1&&SelectedBranch==RoomBranch.None)return false;SetRoom(new RoomChainPlan(Room.Index+1,Room.Seed,SelectedBranch));return true;}
         public bool ClaimReward(bool durable){if(!Finished||Failed||RewardClaimed||!durable)return false;RewardClaimed=true;return true;}
-        public void Fail(RoomFailureReason reason=RoomFailureReason.Abandoned){if(Finished)return;Failure=reason==RoomFailureReason.None?RoomFailureReason.Abandoned:reason;Failed=Finished=true;DoorUnlocked=false;}
-        public void Dispose(){if(!Finished)Failure=RoomFailureReason.Abandoned;Failed=Finished=true;DoorUnlocked=false;Room=null;spawned=defeated=new bool[0];}
+        public void Fail(RoomFailureReason reason=RoomFailureReason.Abandoned){if(Finished)return;Failure=reason==RoomFailureReason.None?RoomFailureReason.Abandoned:reason;Failed=Finished=true;DoorUnlocked=false;BranchChoiceOpen=false;}
+        public void Dispose(){if(!Finished)Failure=RoomFailureReason.Abandoned;Failed=Finished=true;DoorUnlocked=false;BranchChoiceOpen=false;Room=null;spawned=defeated=new bool[0];}
     }
 }

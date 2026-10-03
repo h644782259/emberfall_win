@@ -20,7 +20,7 @@ if(ui.AcceptChestForTrial()||ui.trials!=1)throw new Exception("repeated button c
 }}
 class Program{static void Main(string[] args){GameUI.Verify(args[0]);}}
 '''.replace('CAN',member('private static bool CanTrialChestReward(')).replace('ACCEPT',member('private bool AcceptChestForTrial()'))
-core=['GameTypes','ProgressionService','ProgressionService.Chapter','ProgressionService.Reforge','ReforgeQuote','ChapterProgression','RoomTactics','CombatBalance','HubTravelRules','MasteryCoreRuntime','TierRewardRules','TierRewardBand','ProgressionGoalState']
+core=['GameTypes','ProgressionService','ProgressionService.Chapter','ProgressionService.Reforge','ReforgeQuote','ChapterProgression','RoomTactics','CombatBalance','HubTravelRules','MasteryCoreRuntime','CastFirstHitReceipt','TierRewardRules','TierRewardBand','ProgressionGoalState']
 with tempfile.TemporaryDirectory(prefix='chest-trial-') as t:
  p=Path(t);(p/'Program.cs').write_text(shell)
  files=[r/'Assets/Scripts/Core'/f'{n}.cs' for n in core]+[r/'Tests/ProgressionTests.cs',r/'Assets/Scripts/UI/CollectionViewingState.cs',r/'Assets/Scripts/UI/CollectionPreviewComposition.cs']

@@ -26,6 +26,10 @@ public static class RoomBlessingPreviewTests
     }
     static void TestSeed(int seed)
     {
+        foreach(var branch in new[]{RoomBranch.Seal,RoomBranch.Supply})TestSeed(seed,branch);
+    }
+    static void TestSeed(int seed,RoomBranch branch)
+    {
         var run=new RoomChainState(seed);RoomChainPlan p;
         Check(!RoomBlessingPreview.TryNext(run,1,out p),"locked first room cannot forecast a blessing");
         Open(run);var current=run.Room;float progress=run.Progress;
@@ -35,7 +39,10 @@ public static class RoomBlessingPreviewTests
         for(int i=0;i<5;i++){RoomChainPlan again;Check(RoomBlessingPreview.TryNext(run,1,out again)&&again.Layout==p.Layout&&ReferenceEquals(current,run.Room)&&run.Progress==progress&&run.DoorUnlocked,"repeated GUI reads do not change run or plan");}
         Check(run.Next(true,false),"production next succeeds");Match(p,run.Room);
         Check(!RoomBlessingPreview.TryNext(run,1,out p),"no blessing forecast in second room");
-        Open(run);run.Next(true,false);Open(run);run.Next(true,false);
+        Open(run);Check(!run.Next(true,false),"second room waits for an explicit branch");
+        Check(run.OpenBranchChoice()&&run.SelectBranch(branch)&&run.Next(true,false),"selected third room entered through production choice");
+        Check(run.Room.Branch==branch,"only selected branch becomes the current plan");
+        Open(run);Check(run.Next(true,false),"both selected third rooms converge at rest");
         Check(run.Room.Interlude&&!run.DoorUnlocked,"real interlude reached");
         Check(!RoomBlessingPreview.TryNext(run,1,out p),"wrong rest choice stage rejected");
         Check(RoomBlessingPreview.TryNext(run,2,out p)&&p.Boss&&p.EnemyCount==3,"rest previews actual three-enemy boss plan");

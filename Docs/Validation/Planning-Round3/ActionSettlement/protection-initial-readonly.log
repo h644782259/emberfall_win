@@ -1,0 +1,16 @@
+/tmp/protection-presentation-dht4yplc/Sequence.cs(63,17): error CS0103: The name 'CombatImpactBatch' does not exist in the current context [/tmp/protection-presentation-dht4yplc/Test.csproj]
+/tmp/protection-presentation-dht4yplc/Sequence.cs(72,27): error CS0103: The name 'CombatImpactBatch' does not exist in the current context [/tmp/protection-presentation-dht4yplc/Test.csproj]
+/tmp/protection-presentation-dht4yplc/Sequence.cs(19,21): warning CS0649: Field 'HealingProbe.castId' is never assigned to, and will always have its default value 0 [/tmp/protection-presentation-dht4yplc/Test.csproj]
+/tmp/protection-presentation-dht4yplc/Sequence.cs(21,33): warning CS0169: The field 'HealingProbe.forward' is never used [/tmp/protection-presentation-dht4yplc/Test.csproj]
+/tmp/protection-presentation-dht4yplc/Sequence.cs(17,30): warning CS0169: The field 'HealingProbe.damage' is never used [/tmp/protection-presentation-dht4yplc/Test.csproj]
+/tmp/protection-presentation-dht4yplc/Player.cs(20,101): warning CS0649: Field 'PlayerController.Specialization' is never assigned to, and will always have its default value [/tmp/protection-presentation-dht4yplc/Test.csproj]
+/tmp/protection-presentation-dht4yplc/Sequence.cs(21,42): warning CS0649: Field 'HealingProbe.origin' is never assigned to, and will always have its default value [/tmp/protection-presentation-dht4yplc/Test.csproj]
+/tmp/protection-presentation-dht4yplc/Sequence.cs(21,25): warning CS0649: Field 'HealingProbe.target' is never assigned to, and will always have its default value [/tmp/protection-presentation-dht4yplc/Test.csproj]
+
+The build failed. Fix the build errors and run again.
+Traceback (most recent call last):
+  File "/workspace/scratch/planning-round3/practice-copy-fix/Tests/ProtectionPresentationProductionTests.py", line 38, in <module>
+    subprocess.run(cmd,env=env,check=True)
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/workspace/shared/emberfall-tools/dotnet/dotnet', 'run', '--project', '/tmp/protection-presentation-dht4yplc/Test.csproj', '--', '/workspace/scratch/planning-round3/practice-copy-fix/Assets/Resources']' returned non-zero exit status 1.

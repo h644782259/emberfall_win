@@ -11,7 +11,7 @@ namespace Emberfall
                 case EquipmentMechanic.FrostEcho:return "回响伤害与二次控制"+(VariantB(item)?" · 范围 +35%":"");
                 case EquipmentMechanic.CinderTrail:return "落点留下2秒火场"+(VariantB(item)?" · 每跳伤害提高":"");
                 case EquipmentMechanic.ReturningBlade:return VariantB(item)?"完美闪避反击3秒 · 175%窄刺 · 最多前进2米":"回刃弹射 · 回收强化下一刀";
-                case EquipmentMechanic.VenomSpread:return VariantB(item)?"收束毒矢 · 240%/360%/480%直伤 · 普通三毒引爆":"向附近目标传播毒素";
+                case EquipmentMechanic.VenomSpread:return BuildCatalog.VenomModifier(VariantB(item))+(VariantB(item)?" · 240%/360%/480%直伤 · 普通三毒引爆":" · 向附近目标传播毒素");
                 case EquipmentMechanic.TwinSummonResonance:return "伙伴伤害 +60% / 生命 +20% · 异种共鸣";
                 default:return "无生效机制收益";
             }

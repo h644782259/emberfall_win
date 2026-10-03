@@ -45,9 +45,12 @@ public static class RoomObjectivePresentationTests
         var hunt=new RoomChainState(1);Register(hunt);
         Check(View(hunt).ProgressText=="击败金环魔灵","hunt identifies actual priority target");
         hunt.Defeat(hunt.Room,0);Check(View(hunt,support:false).ProgressText=="北门已开","hunt updates on actual supplier death");
+        foreach(var branch in new[]{RoomBranch.Seal,RoomBranch.Supply})
+        {
         var complete=new RoomChainState(0);
         while(!complete.Finished)
         {
+            if(complete.Room.Index==2)Check(complete.Room.Branch==branch&&complete.Room.Objective==(branch==RoomBranch.Seal?RoomObjective.Purify:RoomObjective.Hunt),"selected third-room objective drives presentation");
             Register(complete);
             if(complete.Room.Interlude)Check(View(complete).ProgressText=="选择一项祝福","rest instruction");
             if(complete.Room.Boss)Check(View(complete).ProgressText=="击败首领与护卫"&&View(complete).SupportHint=="","boss does not show obsolete supplier hint");
@@ -65,9 +68,19 @@ public static class RoomObjectivePresentationTests
                 }
                 for(int i=0;i<24;i++)complete.Advance(.25f,true,true,false);
             }
-            View(complete);if(!complete.Finished)complete.Next(true,false);
+            View(complete);
+            if(!complete.Finished)
+            {
+                if(complete.Room.Index==1)
+                {
+                    Check(!complete.Next(true,false),"unselected branch cannot silently advance third room");
+                    Check(complete.OpenBranchChoice()&&complete.SelectBranch(branch),"second-room completion explicitly selects third-room branch");
+                }
+                Check(complete.Next(true,false),"completed room advances exactly once after any required branch selection");
+            }
         }
         Check(View(complete).ProgressText=="远征完成","final victory wording");
+        }
         return "PASS: "+n+" mobile room-objective presentation assertions (text/state/layout, not rendered UI)";
     }
 }

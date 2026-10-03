@@ -1,0 +1,12 @@
+{
+  "Assets/Scripts/Combat/EnemyStatusEffects.cs": "0c3f8c59e1e43aea14788c6df11c23c64e8ba1f78a3de749cbf18671f2384fca",
+  "Assets/Scripts/Combat/PlayerController.Opportunities.cs": "11c4b40964a99d733c4cdd5862a26402d9b22e2a1d4a6a6b92a414dd72cf186c",
+  "Assets/Scripts/Combat/PlayerController.OpportunityWindows.cs": "c3eab76ccb7b05f6abfdd8ff639e91352773a49278f1d0727f057cfee372e70e",
+  "Assets/Scripts/Combat/PlayerController.cs": "109fad431021298220f327c08957589063ccd5be2f6ea34d36eae6ef496579ec",
+  "Assets/Scripts/Core/CombatOpportunityState.cs": "9cf116d381dff50541eae6cef563f12e17fa11afdf0887b19b18ee4938f0f40b",
+  "Assets/Scripts/UI/GameUI.Mobile.cs": "4991fcd4537183d6d411a060f92a95ec5c9992fb0f5bf9e673c9cc53195a29b4",
+  "Assets/Scripts/UI/GameUI.MobileFeedback.cs": "3af310f97ef976d6b7d8eb3e2bd81c609e192f74759ed679c193a11a39121bdc",
+  "Assets/Scripts/UI/MobileControlLayout.cs": "f61e6ff2e83ea18f2cfc8178fcd5ea6bf2fc15f4d330ede9fca48a649bdf30a8",
+  "Assets/Scripts/UI/MobileControls.Feedback.cs": "21beb55bc8bd48eed3264134a35875267475b70e7586cdece285ae18e42385bb",
+  "Assets/Scripts/UI/MobileOpportunityMeter.cs": "8899b4ae6ff0edf185817f84be45714173bff89afdc3c30bab632ab9902f1ef7"
+}

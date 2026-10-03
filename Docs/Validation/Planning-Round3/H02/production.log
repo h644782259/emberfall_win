@@ -1,0 +1,38 @@
+PASS 858 actual practice HUD/presentation/frozen baseline/layout assertions; GUI/font boundaries managed, not Unity rendering
+
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.47
+
+Unhandled exception. System.Exception: record freezes incoming skill labels
+   at Program.C(Boolean value, String s) in /tmp/practice-hud-zomsg3aj/Test.cs:line 41
+   at Program.Main() in /tmp/practice-hud-zomsg3aj/Test.cs:line 44
+
+PASS compiled negative: record freezes incoming skill labels
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.51
+
+Unhandled exception. System.Exception: changed target rules cannot compare
+   at Program.C(Boolean value, String s) in /tmp/practice-hud-zomsg3aj/Test.cs:line 41
+   at Program.Main() in /tmp/practice-hud-zomsg3aj/Test.cs:line 51
+
+PASS compiled negative: changed target rules cannot compare
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.50
+
+Unhandled exception. System.Exception: DPS uses actual completion time not configured cap
+   at Program.C(Boolean value, String s) in /tmp/practice-hud-zomsg3aj/Test.cs:line 41
+   at Program.Main() in /tmp/practice-hud-zomsg3aj/Test.cs:line 49
+
+PASS compiled negative: DPS uses actual completion time not configured cap

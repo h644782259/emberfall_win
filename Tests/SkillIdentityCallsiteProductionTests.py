@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Execute Healing/Charge with loaded identities and actual hit methods with observable rendering boundaries."""
+from CastReceiptFixtureSources import include_cast_receipt_source
 from pathlib import Path
 import tempfile,subprocess,os,sys
 root=Path(__file__).resolve().parents[1]
@@ -20,7 +21,7 @@ class Program{static void Main(string[] args){Resources.Root=args[0];foreach(boo
 with tempfile.TemporaryDirectory(prefix='identity-callsite-') as d:
  p=Path(d);(p/'Stubs.cs').write_text(stubs);(p/'Test.cs').write_text(fixture)
  for f in ['Core/FilledVfxRecipes','Core/FilledVfxPlacement','Core/CombatVisualBudget','Combat/CombatVisualLease','Combat/AnchoredImpactMesh','Combat/FilledSkillVfx','Combat/AuthoredActorMeshes','Combat/AuthoredSpellBases']:(p/(Path(f).name+'.cs')).write_text((root/('Assets/Scripts/'+f+'.cs')).read_text())
- (p/'Test.csproj').write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net8.0</TargetFramework><OutputType>Exe</OutputType></PropertyGroup></Project>');(p/'NuGet.Config').write_text('<configuration><packageSources><clear /></packageSources></configuration>')
+ (p/'Test.csproj').write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net8.0</TargetFramework><OutputType>Exe</OutputType></PropertyGroup></Project>');include_cast_receipt_source(p/'Test.csproj');(p/'NuGet.Config').write_text('<configuration><packageSources><clear /></packageSources></configuration>')
  subprocess.run([sys.argv[1] if len(sys.argv)>1 else os.environ.get('DOTNET','dotnet'),'run','--project',str(p/'Test.csproj'),'--',str(root/'Assets/Resources')],check=True,env=dict(os.environ,DOTNET_CLI_HOME=str(p/'cli'),DOTNET_NOLOGO='1'))
 summon=(root/'Assets/Scripts/Combat/SummonerSpell.cs').read_text()
 assert summon.index('enemy.TakeDamage(impact.Amount')<summon.index('if(enemy.Health<contactHealth)FilledSkillVfx.IdentityContact')
@@ -33,7 +34,7 @@ def run_probe(name,files,body,shell,mutations=()):
  with tempfile.TemporaryDirectory(prefix='identity-'+name+'-') as d:
   p=Path(d);(p/'Stubs.cs').write_text(shell);(p/'Test.cs').write_text(body)
   for dest,text in files.items():(p/dest).write_text(text)
-  (p/'Test.csproj').write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net8.0</TargetFramework><OutputType>Exe</OutputType></PropertyGroup></Project>');(p/'NuGet.Config').write_text('<configuration><packageSources><clear /></packageSources></configuration>')
+  (p/'Test.csproj').write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net8.0</TargetFramework><OutputType>Exe</OutputType></PropertyGroup></Project>');include_cast_receipt_source(p/'Test.csproj');(p/'NuGet.Config').write_text('<configuration><packageSources><clear /></packageSources></configuration>')
   command=[sys.argv[1] if len(sys.argv)>1 else os.environ.get('DOTNET','dotnet'),'run','--project',str(p/'Test.csproj'),'--',str(root/'Assets/Resources')];env=dict(os.environ,DOTNET_CLI_HOME=str(p/'cli'),DOTNET_NOLOGO='1')
   subprocess.run(command,env=env,check=True)
   for file,old,new,reason in mutations:

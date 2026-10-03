@@ -1,0 +1,12 @@
+/tmp/route-skill-xfxqkuw3/Program.cs(36,16): error CS0103: The name 'presetSaleOpen' does not exist in the current context [/tmp/route-skill-xfxqkuw3/Test.csproj]
+/tmp/route-skill-xfxqkuw3/Program.cs(36,32): error CS0103: The name 'CancelPresetSale' does not exist in the current context [/tmp/route-skill-xfxqkuw3/Test.csproj]
+/tmp/route-skill-xfxqkuw3/Program.cs(11,24): warning CS0649: Field 'GameUI.bindingReturnPanel' is never assigned to, and will always have its default value [/tmp/route-skill-xfxqkuw3/Test.csproj]
+/tmp/route-skill-xfxqkuw3/Program.cs(11,123): warning CS0414: The field 'GameUI.rebindingSlot' is assigned but its value is never used [/tmp/route-skill-xfxqkuw3/Test.csproj]
+
+The build failed. Fix the build errors and run again.
+Traceback (most recent call last):
+  File "/workspace/scratch/planning-round3/validation-v2/Tests/RouteSkillNavigationProductionTests.py", line 60, in <module>
+    subprocess.run(cmd,env=env,check=True)
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/workspace/shared/emberfall-tools/dotnet/dotnet', 'run', '--project', '/tmp/route-skill-xfxqkuw3/Test.csproj']' returned non-zero exit status 1.

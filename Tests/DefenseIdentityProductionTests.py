@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Actual guard/passive blocks -> nonpooled anchor -> real loaded pooled mesh, with deferred Unity destruction doubles. Args: dotnet [evidence.json]. Default evidence is temporary."""
+from CastReceiptFixtureSources import include_cast_receipt_source
 from pathlib import Path
 import tempfile,subprocess,os,sys
 root=Path(__file__).resolve().parents[1]
@@ -28,6 +29,8 @@ public static class SkillDamageBudgets{public const float BasicEnergyOnHit=1;}
 public class SkillRuntime{public float Energy;public void RestoreEnergy(float n){Energy+=n;}}
 public sealed partial class PlayerController {
 private GameSession session=>GameSession.Instance;internal float guardTime,guardPower,guardReduction,guardRadius,burnStrideTime,guardPulseTimer,passiveTime,passiveCooldown,passiveReduction,passiveSpeed,invulnerability;
+// Cast ownership is an explicit neutral boundary in these guard presentation tests.
+private CastFirstHitReceipt guardCastReceipt;private void HoldCastReceipt(ref CastFirstHitReceipt receipt,int id){}
 internal int guardRank,guardCastId;internal HeroClass HeroClass;internal ElementalistSpecialization Specialization;internal float Health=10,MaxHealth=100,CombatAttack=100;internal SkillRuntime skillRuntime=new SkillRuntime();internal int AreaHits,Controls;
 private void HitArea(Vector3 p,float radius,float damage,float knock,float stun){AreaHits++;}private void ControlArea(Vector3 p,float radius,float duration){Controls++;}
 GUARDS
@@ -39,7 +42,7 @@ evidence_path=Path(sys.argv[2]).expanduser().resolve() if len(sys.argv)>2 else N
 with tempfile.TemporaryDirectory(prefix='defense-identity-') as d:
  p=Path(d);(p/'Stubs.cs').write_text(stubs);(p/'Player.cs').write_text(fixture);(p/'Test.cs').write_text((root/'Tests/DefenseIdentityProductionTests.cs').read_text())
  for f in ['Core/FilledVfxRecipes','Core/FilledVfxPlacement','Core/CombatVisualBudget','Combat/CombatVisualLease','Combat/AnchoredImpactMesh','Combat/FilledSkillVfx','Combat/AuthoredActorMeshes','Combat/AuthoredSpellBases','Combat/AdvancedSkillVfx']:(p/(Path(f).name+'.cs')).write_text((root/('Assets/Scripts/'+f+'.cs')).read_text())
- (p/'Test.csproj').write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net8.0</TargetFramework><OutputType>Exe</OutputType></PropertyGroup></Project>');(p/'NuGet.Config').write_text('<configuration><packageSources><clear /></packageSources></configuration>')
+ (p/'Test.csproj').write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net8.0</TargetFramework><OutputType>Exe</OutputType></PropertyGroup></Project>');include_cast_receipt_source(p/'Test.csproj');(p/'NuGet.Config').write_text('<configuration><packageSources><clear /></packageSources></configuration>')
  cmd=[sys.argv[1] if len(sys.argv)>1 else 'dotnet','run','--project',str(p/'Test.csproj'),'--',str(root/'Assets/Resources'),str(evidence_path if evidence_path is not None else p/'Runtime-Samples.json')]
  env=dict(os.environ,DOTNET_CLI_HOME=str(p/'cli'),DOTNET_NOLOGO='1')
  subprocess.run(cmd,env=env,check=True)

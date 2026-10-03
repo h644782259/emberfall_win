@@ -132,6 +132,7 @@ namespace Emberfall
 
     internal sealed class CombatProjectile : MonoBehaviour
     {
+        private CastFirstHitReceipt castReceipt;
         private static readonly List<CombatProjectile> hostileProjectiles = new List<CombatProjectile>();
         private Vector3 dodgeOrigin;
         private float dodgeDeadline;
@@ -188,10 +189,19 @@ namespace Emberfall
             projectile.arrowShape = arrow;
             projectile.explosionDamage = blastDamage;
             projectile.explosionRadius = blastRadius;
-            projectile.skillIndex = skillIndex; projectile.castId = castId==0?player.NewCastId():castId;
+            projectile.skillIndex = skillIndex; projectile.castId = castId==0?player.NewCastId():castId;projectile.castReceipt=player.RetainCastReceipt(projectile.castId);
             projectile.transform.localScale *= size;
             projectile.radius *= Mathf.Min(2f,size);
-            if(concentrated) projectile.radius = ConcentratedVenomRules.Radius;
+            if(concentrated)
+            {
+                projectile.radius = ConcentratedVenomRules.Radius;
+                // Body/trail only: the simulation root, hit radius and speed retain their budgets.
+                projectile.visualBody.localScale=new Vector3(.68f,1.12f,.68f);
+                projectile.visualBody.gameObject.name="Concentrated venom arrow";
+                projectile.visualTrail.startWidth=.045f;
+                projectile.visualTrail.endWidth=0;
+                projectile.visualTrail.time=EffectPreferences.ReducedEffects?.06f:.1f;
+            }
             projectile.BindVisualOrigin(companionSource==null?player:null);
             if (velocity > 0) projectile.speed = velocity;
             if (tracking != null) projectile.lifetime = 2.5f;
@@ -226,7 +236,7 @@ namespace Emberfall
             projectile.lifetime=1.15f;
             projectile.radius=.22f;
             projectile.basicAttack=true;
-            projectile.castId=attackId;
+            projectile.castId=attackId;projectile.castReceipt=player.RetainCastReceipt(attackId);
             projectile.arrowShape=arrow;
             projectile.basicAimTarget=selected;
             projectile.homingTarget=arrow?null:selected;
@@ -308,6 +318,9 @@ namespace Emberfall
 
         private void Update()
         {
+            CombatImpactBatch.BeginAction();
+            try
+            {
             if (session == null || session.Player == null || session.Player != playerGeneration || !session.HasStarted || session.IsDead || session.CombatEnded || session.Player.CombatEpoch != epoch || (!hostile && owner == null))
             { terminationReason = "retired"; Destroy(gameObject); return; }
             if (session.InputBlocked) return;
@@ -413,9 +426,10 @@ namespace Emberfall
                     if (LockedImpactMarkPolicy.ShouldApply(impactMarkTarget, enemy, !enemy.IsDead, impact.Amount, impactMarkStrength) && enemy.StatusEffects != null)
                         enemy.StatusEffects.Mark(4f, impactMarkStrength);
                     if(impact.Amount>0){if(!basicAttack&&companionSource==null)owner.RegisterSkillHit(castId);enemy.TakeDamage(owner.ResolveSkillImpact(enemy, skillIndex, castId, impact.Amount, impact.IsCritical, impact.CriticalMultiplier), direction, .18f, critical:impact.IsCritical,practiceCastId:!basicAttack&&companionSource==null?castId:0);}
+                    if(concentrated&&enemy.Health<healthBefore)VenomSkillVfx.Contact(owner,owner.EnemyBodyPoint(enemy),false);
                     if (CombatReviewEvents.Enabled) CombatReviewEvents.Emit("projectilehit",CombatReviewObjectId.Get(owner),CombatReviewObjectId.Get(enemy),Mathf.Max(0,healthBefore-enemy.Health),skillIndex,CombatReviewObjectId.Get(this).ToString());
                     if (companionSource != null) {companionSource.OnConfirmedHit(enemy);companionSource.RecordEmpoweredHit(enemy,Mathf.Max(0,healthBefore-enemy.Health),empoweredCompanionShot);}
-                    CombatFx.Ring(hitPosition, .7f, color, .2f);
+                    if(!concentrated)CombatFx.Ring(hitPosition, .7f, color, .2f);
                     if (basicAttack && !energyAwarded)
                     {
                         energyAwarded = true;
@@ -440,10 +454,13 @@ namespace Emberfall
             if (terrainHit) { terminationReason = "terrain"; CombatFx.Ring(transform.position, .4f, color, .15f); Destroy(gameObject); return; }
             float bound = session.ArenaRadius + 3f;
             if (Mathf.Abs(transform.position.x) > bound || Mathf.Abs(transform.position.z) > bound) Destroy(gameObject);
+
+            }
+            finally { CombatImpactBatch.EndAction(); }
         }
 
         private void OnDisable()
-        {var ended=hostileEnded;hostileEnded=null;if(ended!=null)ended();}
+        {castReceipt?.Release();castReceipt=null;var ended=hostileEnded;hostileEnded=null;if(ended!=null)ended();}
 
         private void OnDestroy()
         {
@@ -470,6 +487,7 @@ namespace Emberfall
 
     internal sealed class CombatArea : MonoBehaviour
     {
+        private CastFirstHitReceipt castReceipt;
         private RunMechanismEvidence.Instance mechanismInstance;
         private void RecordMechanismHealthLoss(float amount)
         {if(IsCurrentCast&&mechanismInstance!=null)mechanismInstance.Record(session.Player,owner.CombatEpoch,amount);}
@@ -499,7 +517,7 @@ namespace Emberfall
             area.delay = startup; area.duration = activeTime; area.interval = Mathf.Max(.1f,tickInterval);
             area.color = tint; area.follow = followPlayer; area.meteor = fallingMeteor;
             area.pullStrength = pulling; area.finalDamage = finisher;
-            area.statusSkill = statusSkill; area.statusRank = statusRank; area.castId = castId==0?player.NewCastId():castId;
+            area.statusSkill = statusSkill; area.statusRank = statusRank; area.castId = castId==0?player.NewCastId():castId;area.castReceipt=player.RetainCastReceipt(area.castId);
             area.nextTick = startup;
             if(area.IsCurrentCast&&game.InDungeon&&trackedMechanic>=0)area.mechanismInstance=game.MechanismEvidence.Register(player,area.epoch,trackedMechanic);
             if (startup > 0) FilledSkillVfx.Charge(obj.transform, player, obj.transform.position, size, tint, startup);
@@ -638,10 +656,11 @@ namespace Emberfall
         }
 
         private void Retire() { pendingTickTargets.Clear(); Destroy(gameObject); }
-        private void OnDisable() { pendingTickTargets.Clear(); }
+        private void OnDisable() { castReceipt?.Release();castReceipt=null;pendingTickTargets.Clear(); }
 
         private void OnDestroy()
         {
+            OnDisable();
             pendingTickTargets.Clear();
             if (marker != null) Destroy(marker);
             if (orbMaterial != null) Destroy(orbMaterial);

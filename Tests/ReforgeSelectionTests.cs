@@ -7,7 +7,7 @@ namespace Emberfall
   {
    int n=0;Action<bool,string> check=(ok,why)=>{n++;if(!ok)throw new Exception(why);};
    var p=new ProgressionService(Path.Combine(root,"selection"));check(p.CreateNewSlot(HeroClass.Arcanist),"create actual character");
-   p.Profile.level=10;p.Profile.gold=500;p.Save();var gear=p.CreateMechanicItem(EquipmentMechanic.FrostEcho);gear.mechanicVariantUnlocked=true;gear.mechanicVariant=1;
+   p.Profile.level=10;p.Profile.gold=500;p.Save();var gear=p.CreateMechanicItem(EquipmentMechanic.FrostEcho);gear.mechanicVariantUnlocked=true;p.Profile.variantKnowledge.Add(EquipmentMechanic.FrostEcho);gear.mechanicVariant=1;
    check(p.CollectLoot(gear)&&p.Equip(gear.id),"collect equip mechanic");p.Profile.level=50;p.Profile.slotUpgradeRanks[(int)gear.slot]=4;p.Save();
    var choices=p.ReforgeChoices(gear.id);check(choices.Length==3,"three distinct actual choices");
    check(choices[0].Quote.TargetLevel==15&&choices[0].Quote.GoldCost==230,"plus5 uses real fixed230 quote");

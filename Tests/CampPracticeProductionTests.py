@@ -5,10 +5,10 @@ from pathlib import Path
 root=Path(__file__).resolve().parents[1]
 spec=importlib.util.spec_from_file_location('validation',root/'Tools/cloud-validation.py');m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
 with tempfile.TemporaryDirectory(prefix='camp-practice-') as directory:
- p=Path(directory);sources=[root/('Assets/Scripts/Core/'+f+'.cs') for f in ['SkillRuntime','GameTypes','ProgressionService','CombatBalance','SkillDamageBudgets','HubTravelRules','MasteryCoreRuntime','TierRewardRules','TierRewardBand','ProgressionGoalState','ChapterProgression','ProgressionService.Chapter','ProgressionService.Reforge','ReforgeQuote','RoomTactics','CampPracticeRecord','SafeSaveFlow']]
+ p=Path(directory);sources=[root/('Assets/Scripts/Core/'+f+'.cs') for f in ['SkillRuntime','GameTypes','ProgressionService','CombatBalance','SkillDamageBudgets','HubTravelRules','MasteryCoreRuntime','TierRewardRules','TierRewardBand','ProgressionGoalState','ChapterProgression','ProgressionService.Chapter','ProgressionService.Reforge','ReforgeQuote','RoomTactics','CombatImpactBatch','CampPracticeRecord','SafeSaveFlow']]
  sources += [root/'Tests/ProgressionTests.cs',root/'Tests/CampPracticeTests.cs']
  copies={}
- for name in ['ProgressionService','CampPracticeRecord','SkillRuntime','SafeSaveFlow']:
+ for name in ['ProgressionService','CombatImpactBatch','CampPracticeRecord','SkillRuntime','SafeSaveFlow']:
   old=root/('Assets/Scripts/Core/'+name+'.cs');new=p/(name+'.cs');new.write_text(old.read_text());sources=[new if f==old else f for f in sources];copies[new]=new.read_text()
  project=m.write_project(p/'project',sources,'using System;class Program{static void Main(string[] args){Console.WriteLine(CampPracticeTests.Run(args[0]));}}')
  config=p/'NuGet.Config';config.write_text('<configuration><packageSources><clear /></packageSources></configuration>')

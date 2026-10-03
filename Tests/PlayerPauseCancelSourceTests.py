@@ -7,7 +7,10 @@ u=p[p.index('private void Update()'):p.index('// Kept independent of Input')]
 line=next(x.strip() for x in u.splitlines() if 'KeyCode.Escape' in x)
 assert line.startswith('if (GameplayCancelAllowed && charge != null && charge.IsCharging && '), 'Back and camera cancel must both be gameplay gated'
 assert '(Input.GetKeyDown(KeyCode.Escape) || AdventureCamera.CancelSkillRequested)) charge.Cancel();' in line
-blocked=g[g.index('public bool InputBlocked'):g.index('public bool InputBlocked')+300]
+start=g.index('public bool InputBlocked');end=g.index('{',start)+1;depth=1
+while depth:
+    depth+=(g[end]=='{')-(g[end]=='}');end+=1
+blocked=g[start:end]
 for reason in ['Paused','uiBlocking','DungeonSelectionOpen','RunChoices.AwaitingChoice','pauseState.BackgroundPaused']:
     assert reason in blocked, reason+' must suppress player cancellation'
 assert 'if (session.InputBlocked || deltaTime <= 0' in c, 'blocked charge retains its elapsed budget'

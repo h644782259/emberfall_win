@@ -1,0 +1,48 @@
+[
+  {
+    "command": [
+      "git",
+      "-C",
+      "/workspace/emberfall_win",
+      "rev-parse",
+      "origin/main"
+    ],
+    "code": 0,
+    "stdout": "fce5efc4361614aed3eca070ed2574b7d7204a8e\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "git",
+      "-C",
+      "/workspace/emberfall_ios",
+      "rev-parse",
+      "origin/main"
+    ],
+    "code": 0,
+    "stdout": "fd3fe241fd65d3d6ca1a577bef296412094c5af9\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "/workspace/shared/emberfall-tools/dotnet/dotnet",
+      "--version"
+    ],
+    "code": 0,
+    "stdout": "8.0.425\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "blender",
+      "--version"
+    ],
+    "code": 0,
+    "stdout": "Blender 4.3.2\n",
+    "stderr": ""
+  },
+  {
+    "unity_editor": "/workspace/shared/emberfall-tools/unity-6000.6.3f1/Editor/Unity",
+    "exists": false
+  }
+]

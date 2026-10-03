@@ -13,7 +13,7 @@ def member(text,signature):
 late=member(source,'private void LateUpdate()')
 with tempfile.TemporaryDirectory(prefix='live-tactics-') as directory:
  path=Path(directory)
- for name in ['Combat/TacticalEnemyVisual','Combat/TacticalCaptureVisual','Combat/GuardArmorVisual','Core/GuardArmorRules','Core/CampPracticeRecord']:(path/(name.split('/')[-1]+'.cs')).write_text((root/'Assets/Scripts'/(name+'.cs')).read_text())
+ for name in ['Combat/TacticalEnemyVisual','Combat/TacticalCaptureVisual','Combat/GuardArmorVisual','Core/GuardArmorRules','Core/CombatImpactBatch','Core/CampPracticeRecord']:(path/(name.split('/')[-1]+'.cs')).write_text((root/'Assets/Scripts'/(name+'.cs')).read_text())
  (path/'AttachmentFallback.cs').write_text('namespace Emberfall{internal class TacticalAttachmentArt{internal static TacticalAttachmentArt Create(EnemyController e)=>new TacticalAttachmentArt();internal bool Set(int i,bool a)=>false;internal void Hide(){}internal void Destroy(){}}}')
  (path/'Fixture.cs').write_text((root/'Tests/TacticalLiveVisualTests.cs').read_text())
  unity=(root/'Tests/FilledVfxAllocationTests.cs').read_text().split('namespace UnityEngine',1)[1]

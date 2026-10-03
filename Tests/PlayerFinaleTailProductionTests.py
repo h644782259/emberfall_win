@@ -2,6 +2,7 @@
 """Real Ranger final event / generic Burst / area finisher / HitArea + full visual lease lifecycle.
 Unity and enemy HP terminal callback are explicit managed boundaries; no rendered-frame claim.
 """
+from CastReceiptFixtureSources import include_cast_receipt_source
 import os,sys,tempfile,subprocess
 from pathlib import Path
 r=Path(__file__).resolve().parents[1];dotnet=sys.argv[1] if len(sys.argv)>1 else os.environ.get('DOTNET','dotnet')
@@ -27,6 +28,7 @@ public class AdvancedSkillVfx{public static void Rune(params object[] values){}p
 public sealed partial class PlayerController{GameSession session=>GameSession.Instance;int id;int NewCastId()=>++id;void RegisterSkillHit(int castId){}void ApplySpellDodgeBoon(EnemyController enemy){}
 '''+hit+'''}
 public class FinaleProducer {
+private CastFirstHitReceipt castReceipt; // Neutral lifetime boundary; dedicated delayed-hit suite tests live receipts.
 private AdvancedSkillVfx healingAura; // Actual OnDisable dependency; always null for tested non-healing routes.
 PlayerController owner;GameSession session;FilledSkillVfx.ArrowBatchHandle arrowBatch;int step=8,steps=9,rank=1,skill=9,castId=73;HeroClass heroClass=HeroClass.Ranger;Vector3 target,forward=Vector3.forward;float range=1;Color color=new Color(1,1,1);CombatDamage damage=new CombatDamage(10,false);
 public FinaleProducer(PlayerController hero){owner=hero;session=GameSession.Instance;arrowBatch=FilledSkillVfx.BeginArrowBatch(owner,target,6f*range,color,priority:CombatVisualPriority.ActionBody,castId:castId);}
@@ -68,7 +70,7 @@ with tempfile.TemporaryDirectory(prefix='player-finale-tail-') as tmp:
  (p/'BuildCatalogDamage.cs').write_text('namespace Emberfall{public static class BuildCatalog{'+member((r/'Assets/Scripts/Core/GameTypes.cs').read_text(),'public static float CinderTrailTickMultiplier(')+'}}')
  for f in ['Core/CombatImpactBatch','Core/CombatVisualBudget','Core/FilledVfxRecipes','Core/FilledVfxPlacement','Core/SkillVisualRecipe','Core/SkillDamageBudgets','Combat/CombatDamage','Combat/CombatVisualLease','Combat/FilledSkillVfx','Combat/AnchoredImpactMesh']:(p/(Path(f).name+'.cs')).write_text((r/('Assets/Scripts/'+f+'.cs')).read_text())
  (p/'Shell.cs').write_text(s);(p/'Producers.cs').write_text('using System;using UnityEngine;'+extra);(p/'Tests.cs').write_text(test)
- (p/'NuGet.Config').write_text('<configuration><packageSources><clear /></packageSources></configuration>');project=p/'Test.csproj';project.write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net8.0</TargetFramework><OutputType>Exe</OutputType><NoWarn>0649;0414</NoWarn></PropertyGroup></Project>')
+ (p/'NuGet.Config').write_text('<configuration><packageSources><clear /></packageSources></configuration>');project=p/'Test.csproj';project.write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net8.0</TargetFramework><OutputType>Exe</OutputType><NoWarn>0649;0414</NoWarn></PropertyGroup></Project>');include_cast_receipt_source(project)
  env=dict(os.environ,DOTNET_CLI_HOME=str(p/'cli'),DOTNET_NOLOGO='1')
  original=(p/'Producers.cs').read_text()
  for mode in ['current','old-unconfirmed','old-empty-confirmed']:

@@ -1,0 +1,31 @@
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.91
+PASS: 828 actual ProcessPointer/IsScreenPointOverControls assertions, 12 areas x 3 presets; opportunity observations and Unity are explicit boundaries
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.79
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.78
+Unhandled exception. System.Exception: visible hint never changes pin or combat state
+   at MobileOpportunityInputProductionTests.C(Boolean value, String text) in /tmp/opportunity-input-5iq4kj7p/OpportunityProbe.cs:line 4
+   at MobileOpportunityInputProductionTests.Run() in /tmp/opportunity-input-5iq4kj7p/OpportunityProbe.cs:line 21
+   at Program.<Main>$(String[] args) in /tmp/opportunity-input-5iq4kj7p/Program.cs:line 1
+
+PASS compiled negative: visible hint never changes pin or combat state
+Unhandled exception. System.Exception: visible hint is reported as UI control
+   at MobileOpportunityInputProductionTests.C(Boolean value, String text) in /tmp/opportunity-input-5iq4kj7p/OpportunityProbe.cs:line 4
+   at MobileOpportunityInputProductionTests.Run() in /tmp/opportunity-input-5iq4kj7p/OpportunityProbe.cs:line 17
+   at Program.<Main>$(String[] args) in /tmp/opportunity-input-5iq4kj7p/Program.cs:line 1
+
+PASS compiled negative: visible hint is reported as UI control

@@ -4,6 +4,7 @@
 Actual phase policy, world geometry, traversal, cover and component methods are compiled.
 Default legacy phase tests and precise compiled negative controls remain mandatory.
 """
+from CastReceiptFixtureSources import include_cast_receipt_source
 import argparse
 import os
 from pathlib import Path
@@ -60,7 +61,7 @@ def main():
             (directory/'ActualEnemyAttack.cs').write_text('using UnityEngine;namespace Emberfall{public partial class EnemyController{'+member(enemy,'public void TakeDamage(')+member(enemy,'internal bool TrySkillInterrupt(')+'}}')
             (directory/'Program.cs').write_text('System.Console.WriteLine(LargeBossPhaseTests.Run());System.Console.WriteLine(ChapterCombatProductionTests.Run());')
             (directory/'NuGet.Config').write_text('<configuration><packageSources><clear /></packageSources></configuration>')
-            project=directory/'Validation.csproj';project.write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net8.0</TargetFramework><OutputType>Exe</OutputType></PropertyGroup></Project>')
+            project=directory/'Validation.csproj';project.write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net8.0</TargetFramework><OutputType>Exe</OutputType></PropertyGroup></Project>');include_cast_receipt_source(project)
             subprocess.run([dotnet,'restore',str(project),'--configfile',str(directory/'NuGet.Config')],check=True,stdout=subprocess.DEVNULL)
             build=subprocess.run([dotnet,'build',str(project),'--no-restore','-c','Release'],text=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
             if build.returncode:print(build.stdout);build.check_returncode()

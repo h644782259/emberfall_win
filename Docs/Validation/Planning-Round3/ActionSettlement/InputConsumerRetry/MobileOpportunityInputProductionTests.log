@@ -1,0 +1,22 @@
+/tmp/opportunity-input-mvjjtrg4/PlayerMethods.cs(79,13): error CS0103: The name 'CombatImpactBatch' does not exist in the current context [/tmp/opportunity-input-mvjjtrg4/Test.csproj]
+/tmp/opportunity-input-mvjjtrg4/PlayerMethods.cs(136,23): error CS0103: The name 'CombatImpactBatch' does not exist in the current context [/tmp/opportunity-input-mvjjtrg4/Test.csproj]
+/tmp/opportunity-input-mvjjtrg4/PlayerMethods.cs(219,13): error CS0103: The name 'CombatImpactBatch' does not exist in the current context [/tmp/opportunity-input-mvjjtrg4/Test.csproj]
+/tmp/opportunity-input-mvjjtrg4/PlayerMethods.cs(398,23): error CS0103: The name 'CombatImpactBatch' does not exist in the current context [/tmp/opportunity-input-mvjjtrg4/Test.csproj]
+
+Build FAILED.
+
+/tmp/opportunity-input-mvjjtrg4/PlayerMethods.cs(79,13): error CS0103: The name 'CombatImpactBatch' does not exist in the current context [/tmp/opportunity-input-mvjjtrg4/Test.csproj]
+/tmp/opportunity-input-mvjjtrg4/PlayerMethods.cs(136,23): error CS0103: The name 'CombatImpactBatch' does not exist in the current context [/tmp/opportunity-input-mvjjtrg4/Test.csproj]
+/tmp/opportunity-input-mvjjtrg4/PlayerMethods.cs(219,13): error CS0103: The name 'CombatImpactBatch' does not exist in the current context [/tmp/opportunity-input-mvjjtrg4/Test.csproj]
+/tmp/opportunity-input-mvjjtrg4/PlayerMethods.cs(398,23): error CS0103: The name 'CombatImpactBatch' does not exist in the current context [/tmp/opportunity-input-mvjjtrg4/Test.csproj]
+    0 Warning(s)
+    4 Error(s)
+
+Time Elapsed 00:00:01.19
+Traceback (most recent call last):
+  File "/workspace/scratch/planning-round3/practice-copy-fix/Tests/MobileOpportunityInputProductionTests.py", line 28, in <module>
+    subprocess.run(build,env=env,check=True);subprocess.run(run,env=env,check=True)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/workspace/shared/emberfall-tools/dotnet/dotnet', 'build', '/tmp/opportunity-input-mvjjtrg4/Test.csproj', '--configfile', '/tmp/opportunity-input-mvjjtrg4/NuGet.Config', '-v:q']' returned non-zero exit status 1.

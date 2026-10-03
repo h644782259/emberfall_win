@@ -12,7 +12,7 @@ def check(ok, why):
 
 session = read("Assets/Scripts/Core/GameSession.cs")
 zone = session[session.index("private bool ChangeZone("):session.index("private void SpawnWildernessEnemy(")]
-preflight = zone.index("if (!loadingSaveSnapshot && !enteringChapter && !SaveBeforeLeaving()) return false;")
+preflight = zone.index("if (!loadingSaveSnapshot && !enteringChapter && !retryingRoomChain && !SaveBeforeLeaving()) return false;")
 for mutation in ["changingZone = true;", "StopCoroutine(waveRoutine)", "Enemies.Clear();",
                  "Destroy(world)", "InDungeon = dungeon;", "ResetExpedition(dungeon);",
                  "WorldBuilder.Build(", "Player.Teleport(", "Player.RefreshStats(true);",

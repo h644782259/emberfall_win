@@ -35,7 +35,7 @@ namespace Emberfall
  public sealed partial class GameSession:MonoBehaviour
  {
   // Practice is outside these chapter lifecycle tests.
-  public bool PracticeActive=>false;public void EndPractice(string reason=""){}
+  private bool retryingRoomChain=false;private int roomRetrySeed=0;public bool RoomBranchChoiceOpen=>false;public bool PracticeActive=>false;public CampPracticeRecord PracticeRecord=>throw new System.InvalidOperationException("ordinary chapter cannot access practice result");public void EndPractice(string reason=""){}
   public ProgressionService Progression;public PlayerController Player=new PlayerController();public bool HasStarted=true,InDungeon,IsDead,Paused,BackgroundPaused,IsInCamp=true;
   public bool InputBlocked=>Paused||BackgroundPaused||IsDead||ChapterFinished;public bool CombatEnded=>ChapterFinished||DungeonCleared;
   public int CurrentHub,DungeonTier=1,DungeonWave,DungeonLayout,DungeonEntryLevel=2,SelectedDungeonTier=1,HealingCharges;public int MaximumDungeonTier=>100;

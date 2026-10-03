@@ -1,4 +1,5 @@
 """Integrated real service/session journey with real temp IO; Unity/JSON/loot boundaries remain explicit."""
+from CastReceiptFixtureSources import include_cast_receipt_source
 from pathlib import Path
 from IntegratedJourneyNegativeControls import run_negative_controls
 import os,sys,tempfile,subprocess,argparse,json,hashlib,datetime
@@ -17,7 +18,7 @@ def member(file,signature):
  s=(root/file).read_text();a=s.index(signature);b=s.index('{',a)+1;d=1
  while d:d+=(s[b]=='{')-(s[b]=='}');b+=1
  return s[a:b]
-core=['ThreatAdmissionPolicy','RunMechanismEvidence','RunChoices','RunChoices.Rooms','RunChoices.Chapter','GameTypes','ProgressionService','ProgressionService.Chapter','ProgressionService.Reforge','ReforgeQuote','ChapterProgression','ChapterResultSnapshot','ChapterCombatRun','RoomTactics','RoomTacticalRegion','CombatBalance','HubTravelRules','MasteryCoreRuntime','TierRewardRules','TierRewardBand','ProgressionGoalState','AdventureResultPolicy','GameSession.Chapter','GameSession.ChapterSeals','EscapePostPolicy','ApplicationPauseState','SafeSaveFlow','SaveLifecycleGate','RoomChainState','ExpeditionModeState']
+core=['CombatImpactBatch','CampPracticeRecord','ThreatAdmissionPolicy','RunMechanismEvidence','RunChoices','RunChoices.Rooms','RunChoices.Chapter','GameTypes','ProgressionService','ProgressionService.Chapter','ProgressionService.Reforge','ReforgeQuote','ChapterProgression','ChapterResultSnapshot','ChapterCombatRun','RoomTactics','RoomTacticalRegion','CombatBalance','HubTravelRules','MasteryCoreRuntime','TierRewardRules','TierRewardBand','ProgressionGoalState','AdventureResultPolicy','GameSession.Chapter','GameSession.ChapterSeals','EscapePostPolicy','ApplicationPauseState','SafeSaveFlow','SaveLifecycleGate','RoomChainState','ExpeditionModeState']
 with tempfile.TemporaryDirectory(prefix='integrated-player-journey-') as t:
  p=Path(t)
  for n in core:(p/(n+'.cs')).write_text((root/'Assets/Scripts/Core'/(n+'.cs')).read_text())
@@ -53,7 +54,7 @@ with tempfile.TemporaryDirectory(prefix='integrated-player-journey-') as t:
   assert not (p/extra.name).exists(),'Duplicate host source name: '+extra.name
   (p/extra.name).write_text(extra.read_text())
  (p/'Program.cs').write_text('System.Console.WriteLine(Emberfall.GameSession.VerifyIntegratedJourney(args[0]));')
- project=p/'Test.csproj';project.write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net8.0</TargetFramework><OutputType>Exe</OutputType><NuGetAudit>false</NuGetAudit><NoWarn>0649;0414</NoWarn></PropertyGroup></Project>')
+ project=p/'Test.csproj';project.write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net8.0</TargetFramework><OutputType>Exe</OutputType><NuGetAudit>false</NuGetAudit><NoWarn>0649;0414</NoWarn></PropertyGroup></Project>');include_cast_receipt_source(project)
  (p/'NuGet.Config').write_text('<configuration><packageSources><clear/></packageSources></configuration>')
  env=dict(os.environ,DOTNET_CLI_HOME=str(p/'cli'),DOTNET_NOLOGO='1',DOTNET_CLI_TELEMETRY_OPTOUT='1')
  build=[dotnet,'build',str(project),'--configfile',str(p/'NuGet.Config'),'-v:q'];run=[dotnet,str(p/'bin/Debug/net8.0/Test.dll')]

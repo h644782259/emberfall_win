@@ -15,7 +15,7 @@ namespace Emberfall
   {
    pendingRoomChoice.Cancel();
    if(RoomChainRun!=null)RoomChainRun.Dispose();RoomChainRun=null;roomEnemies.Clear();roomExitMarker=null;roomObjectiveMarker=null;roomSealMarkers[0]=roomSealMarkers[1]=null;roomSupplier=null;roomResultRecorded=false;
-   if(dungeon&&!ChapterActive&&SelectedArenaMode==3){runSeed=RoomTactics.NextSeed(runSeed,previousRoomSeed,beforePreviousRoomSeed);beforePreviousRoomSeed=previousRoomSeed;previousRoomSeed=runSeed;RoomChainRun=new RoomChainState(runSeed);DungeonLayout=RoomChainRun.Room.Layout;modeReceipt=System.Guid.NewGuid().ToString("N");}
+   if(dungeon&&!ChapterActive&&SelectedArenaMode==3){if(retryingRoomChain)runSeed=roomRetrySeed;else{runSeed=RoomTactics.NextSeed(runSeed,previousRoomSeed,beforePreviousRoomSeed);beforePreviousRoomSeed=previousRoomSeed;previousRoomSeed=runSeed;}RoomChainRun=new RoomChainState(runSeed,retryingRoomChain?roomRetryBranch:RoomBranch.None);roomRetryTier=DungeonTier;roomRetryLimited=ChallengeRun;DungeonLayout=RoomChainRun.Room.Layout;modeReceipt=System.Guid.NewGuid().ToString("N");}
   }
   private void BeginRoomChainScene()
   {
@@ -30,15 +30,18 @@ namespace Emberfall
    {
     bool boss=plan.Boss&&index==0;EnemyKind kind=plan.Boss?(boss?EnemyKind.Guardian:index%3==1?EnemyKind.Goblin:EnemyKind.Guardian):index==0?EnemyKind.Wisp:index%3==1?EnemyKind.Guardian:index%3==2?EnemyKind.Goblin:EnemyKind.Slime;
     bool escape=plan.Objective==RoomObjective.Escape;
+    if(plan.Branch==RoomBranch.Seal)kind=index%2==0?EnemyKind.Guardian:EnemyKind.Goblin;
+    if(plan.Branch==RoomBranch.Supply)kind=index==0||index>=4?EnemyKind.Wisp:index<=2?EnemyKind.Guardian:EnemyKind.Goblin;
     if(escape)kind=index==0?EnemyKind.Wisp:index==1||index==3?EnemyKind.Guardian:index==2||index==4?EnemyKind.Goblin:EnemyKind.Slime;
     float angle=index*2.39996f+plan.Index*.42f;Vector3 desired=new Vector3(Mathf.Sin(angle)*10,0,Mathf.Cos(angle)*9+2),point;
-    bool safe=plan.Boss?TrySafeSpawn(desired,boss?1.3f:.65f,5.5f,out point):escape?EscapeRoomFormation.TrySpawn(runSeed,index,occupied,out point):TacticalRoomGeometry.TrySpawn(runSeed,plan.Index,index,occupied,out point);
+    bool safe=plan.Boss?TrySafeSpawn(desired,boss?1.3f:.65f,5.5f,out point):plan.Branch!=RoomBranch.None?RoomBranchGeometry.TrySpawn(plan, index,occupied,out point):escape?EscapeRoomFormation.TrySpawn(runSeed,index,occupied,out point):TacticalRoomGeometry.TrySpawn(runSeed,plan.Index,index,occupied,out point);
     if(!safe||!WorldTraversal.CanReach(TacticalRoomGeometry.Entrance,point,boss?1.3f:.65f)||!RoomChainRun.Register(plan,index)){RoomChainRun.Fail(RoomFailureReason.GenerationOrPathFailure);FinalizeRoomChain();return;}
     try
     {
      occupied.Add(point);SpawnEnemy(kind,DungeonEntryLevel,point,boss);EnemyController enemy=Enemies[Enemies.Count-1];
+     if(plan.Branch!=RoomBranch.None)enemy.ConfigureEscapePost(plan.Branch==RoomBranch.Supply&&kind==EnemyKind.Wisp?EscapeRole.GateSupplier:EscapeRole.GateGuard,point);
      if(escape)enemy.ConfigureEscapePost(EscapeRoomFormation.Role(index),point);
-     if(index==0&&!plan.Boss){roomSupplier=enemy;Notify(RoomTactics.Name(plan.Objective)+" · 金环魔灵为6米内可见同伴减伤30%，引开或优先击败");}
+     if(index==0&&!plan.Boss&&plan.Branch!=RoomBranch.Seal){roomSupplier=enemy;Notify(RoomTactics.Name(plan.Objective)+" · 金环魔灵为6米内可见同伴减伤30%，引开或优先击败");}
      if(boss)LargeExpeditionBoss.Configure(enemy,DungeonTier,runSeed+plan.Index*911);
      TacticalEnemyVisual.Attach(enemy,this);
      roomEnemies.Add(enemy,new RoomEnemyReceipt{Plan=plan,Index=index});
@@ -55,9 +58,18 @@ namespace Emberfall
   public bool EnterNextRoom()
   {
    if(RoomChainRun==null||!NearRoomExit||InputBlocked||pendingRoomChoice.Pending)return false;
+   if(RoomChainRun.OpenBranchChoice()){SuspendInputs();UpdateTimeScale();return false;}
    if(!SaveBeforeLeaving())return false;
+   return EnterNextRoomAfterSave();
+  }
+  // Both ordinary travel and branch confirmation arrive with one successful preflight.
+  private bool EnterNextRoomAfterSave()
+  {
    if(!RoomChainRun.Next(true,false))return false;
-   SuspendInputs();changingZone=true;AbandonSideEvent();
+   SuspendInputs();changingZone=true;
+   try
+   {
+   AbandonSideEvent();
    int previousCombatEpoch=Player.CombatEpoch;
    foreach(var enemy in Enemies)if(enemy!=null){enemy.gameObject.SetActive(false);Destroy(enemy.gameObject);}Enemies.Clear();roomEnemies.Clear();
    foreach(var obj in transientObjects)if(obj!=null){obj.SetActive(false);Destroy(obj);}transientObjects.Clear();
@@ -66,7 +78,10 @@ namespace Emberfall
    DungeonLayout=RoomChainRun.Room.Layout;world=WorldBuilder.Build(ZoneKind.Dungeon,DungeonLayout,Progression.HighestAdventureTier);
    // Room travel cancels stale effects but deliberately keeps every skill cooldown.
    Player.Teleport(TacticalRoomGeometry.Entrance);Camera.main.GetComponent<AdventureCamera>().Snap();BeginRoomChainScene();
-   changingZone=false;UpdateTimeScale();Notify(RoomTactics.Name(RoomChainRun.Room.Objective)+" · 房间 "+(RoomChainRun.Room.Index+1)+" / 5");return true;
+   Notify(RoomTactics.Name(RoomChainRun.Room.Objective)+" · 房间 "+(RoomChainRun.Room.Index+1)+" / 5");return !RoomChainRun.Failed;
+   }
+   catch(System.Exception error){RoomChainRun.Fail(RoomFailureReason.GenerationOrPathFailure);FinalizeRoomChain();Notify("房间生成失败："+error.Message);return false;}
+   finally{changingZone=false;UpdateTimeScale();}
   }
   private bool ConfirmRoomInterlude(int index)
   {

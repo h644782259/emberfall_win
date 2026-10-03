@@ -41,10 +41,10 @@ check('unlocked && !current && session.CanOpenTravelMap && !UITransitionBlocked'
 check('if (session.TravelToHub(hub))' in travel and travel.index('if (session.TravelToHub(hub))') < travel.index('CloseTravelMap();') and 'travelError =' in travel, 'failed travel retains modal and shows error')
 check('BlockUITransition();' in method(hubs, 'private void OpenTravelMap()') and 'BlockUITransition();' in method(hubs, 'private bool CloseTravelMap()'), 'opening and closing consume repeat input')
 check('HubTravelRules.CanTravel(HasStarted,InDungeon,IsDead,nearby,changingZone)' in session and 'Progression.TravelToHub(hub)' in session, 'runtime rechecks challenge/death/enemy guard and persists chosen hub')
-for signature in ['public bool Sell(string id)', 'public bool BuyPotion()', 'public int BulkSellLowQuality()']:
+for signature in ['public bool Sell(string id,bool confirmPresetReferences=false)', 'public bool BuyPotion()', 'public int BulkSellLowQuality(bool confirmPresetReferences=false)']:
     body = method(progression, signature)
     check('Snapshot()' in body and 'CommitCandidate(candidate)' in body and 'Commit();' not in body and 'Profile.gold =' not in body and 'Profile.inventory.Remove' not in body,
           signature + ' publishes a candidate only on successful persistence')
-check('IsEquipped(candidate, item.id)' in method(progression, 'public int BulkSellLowQuality()') and 'IsProtectedLoot(item)' in method(progression, 'public int BulkSellLowQuality()'), 'bulk retains equip/lock/mechanic/upgrade/rarity protections')
+check('IsEquipped(candidate, item.id)' in method(progression, 'public int BulkSellLowQuality(bool confirmPresetReferences=false)') and 'IsProtectedLoot(item)' in method(progression, 'public int BulkSellLowQuality(bool confirmPresetReferences=false)'), 'bulk retains equip/lock/mechanic/upgrade/rarity protections')
 check('HubTravelRules.UnlockedMask(profile.unlockedHubMask,profile.level,profile.clearedRuns)' in progression and 'HubTravelRules.SafeCurrent(profile.currentHub,profile.unlockedHubMask)' in progression, 'load migration bounds unlocks and restores valid hub')
 print('PASS:', len(checks), 'hub travel and economy source contracts (not Unity execution)')

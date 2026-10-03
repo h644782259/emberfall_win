@@ -1,0 +1,10 @@
+/tmp/practice-pressure-qiz3rogx/Actual.cs(248,16): warning CS0472: The result of the expression is always 'true' since a value of type 'bool' is never equal to 'null' of type 'bool?' [/tmp/practice-pressure-qiz3rogx/Test.csproj]
+Unhandled exception. System.Exception: actual hostile projectile sweep reaches recipient
+   at Program.C(Boolean v, String s) in /tmp/practice-pressure-qiz3rogx/Program.cs:line 1
+   at Program.Main() in /tmp/practice-pressure-qiz3rogx/Program.cs:line 9
+
+Traceback (most recent call last):
+  File "/workspace/scratch/planning-round3/practice/Tests/PracticePressureCombatProductionTests.py", line 42, in <module>
+    assert run(['run','--project',str(project)]).returncode==0
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError

@@ -1,0 +1,11 @@
+Unhandled exception. System.Exception: first blessing remains
+   at RoomBranchProductionTests.C(Boolean b, String m) in /tmp/room-first-choice-7458i7sa/current/Probe.cs:line 3
+   at RoomBranchProductionTests.Main() in /tmp/room-first-choice-7458i7sa/current/Probe.cs:line 8
+
+Traceback (most recent call last):
+  File "/workspace/scratch/planning-round3/expedition/Tests/RoomBranchProductionTests.py", line 59, in <module>
+    else:print(run.stdout+run.stderr);run.check_returncode()
+                                      ^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 502, in check_returncode
+    raise CalledProcessError(self.returncode, self.args, self.stdout,
+subprocess.CalledProcessError: Command '['/workspace/shared/emberfall-tools/dotnet/dotnet', '/tmp/room-first-choice-7458i7sa/current/bin/Debug/net8.0/Probe.dll']' died with <Signals.SIGABRT: 6>.
