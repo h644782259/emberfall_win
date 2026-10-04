@@ -85,6 +85,15 @@ namespace Emberfall
         private readonly Dictionary<T, Hits> targets = new Dictionary<T, Hits>();
         private readonly List<T> expired = new List<T>();
         private float nextProc, latestTime;
+        // Observation only: practice must not age a live mark or cooldown while
+        // its original actor is suspended and the shared game clock keeps running.
+        public bool HasPending(float combatTime)
+        {
+            if (combatTime < nextProc) return true;
+            foreach (var pair in targets)
+                if (combatTime - pair.Value.Last <= CompanionRules.CooperationWindow) return true;
+            return false;
+        }
         public void Clear() { targets.Clear(); nextProc = latestTime = 0; }
         public bool RegisterHit(T target, int form, float combatTime)
         {

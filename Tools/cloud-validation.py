@@ -96,6 +96,7 @@ def main():
                         help=".NET 8 SDK executable (or set DOTNET)")
     parser.add_argument("--compile", action="store_true", help="also compile all runtime sources against Unity references")
     parser.add_argument("--compile-android", action="store_true", help="compile the UNITY_ANDROID runtime branch against pinned references; does not build an APK")
+    parser.add_argument("--compile-ios", action="store_true", help="compile the UNITY_IOS runtime branch against pinned references; does not build an IPA")
     parser.add_argument("--download-references", action="store_true", help="download pinned Unity reference DLLs if missing; implies --compile")
     parser.add_argument("--unity-editor", type=Path, help="also compile Windows/iOS/Android runtime, Editor, and visual-validation source using installed Unity 6000.6 DLLs (does not launch Unity)")
     args = parser.parse_args()
@@ -414,13 +415,28 @@ def main():
         for name, script in [('mastery-combo-round2', 'MasteryComboRound2Tests.py'), ('concentrated-venom-production', 'ConcentratedVenomProductionTests.py'), ('concentrated-venom-launch', 'ConcentratedVenomLaunchTests.py'), ('concentrated-venom-poison', 'ConcentratedVenomPoisonTests.py'), ('reward-revision', 'RewardRevisionTests.py'), ('threat-admission', 'ThreatAdmissionTests.py'), ('threat-admission-lifecycle', 'ThreatAdmissionLifecycleTests.py'), ('camp-practice-production', 'CampPracticeProductionTests.py'), ('camp-practice-session', 'CampPracticeSessionProductionTests.py'), ('camp-practice-wiring', 'CampPracticeWiringTests.py'), ('opportunity-channels-round2', 'OpportunityChannelsRound2Tests.py'), ('mobile-basic-window-draw', 'MobileBasicWindowDrawTests.py'), ('combat-result-pause-receipt', 'CombatResultPauseReceiptTests.py'), ('protection-presentation', 'ProtectionPresentationProductionTests.py'), ('enemy-status-visual', 'EnemyStatusVisualProductionTests.py'), ('hero-motion-style', 'HeroMotionStyleProductionTests.py'), ('hero-motion-factory', 'HeroMotionFactoryProductionTests.py'), ('g07-factory-inventory', 'G07FactoryInventoryTests.py'), ('build-draft-variant-effects', 'BuildDraftVariantEffectsProductionTests.py'), ('threat-admission-fairness', 'ThreatAdmissionFairnessProductionTests.py')]:
             passed = run_check(name, [[sys.executable, str(ROOT/"Tests"/script), dotnet]], dict(env, DOTNET=dotnet), output, report)
             failed = failed or not passed
-        if args.compile or args.download_references or args.compile_android:
+        # Stability round 4: real transaction, input, and lifecycle regressions.
+        for name, script in [
+            ("chest-snapshot-retry", "ChestSnapshotRetryTests.py"),
+            ("arena-reward-exception", "ArenaRewardExceptionTests.py"),
+            ("ground-loot-callback-recovery", "GroundLootCallbackRecoveryTests.py"),
+            ("mobile-pause-transition", "MobilePauseTransitionProductionTests.py"),
+            ("practice-hotbar-navigation", "PracticeHotbarNavigationProductionTests.py"),
+            ("practice-potion-input", "PracticePotionInputProductionTests.py"),
+            ("companion-practice-timed-state", "CompanionPracticeTimedStateTests.py"),
+            ("world-loot-receipt-source", "WorldLootReceiptSourceTests.py"),
+        ]:
+            passed = run_check(name, [[sys.executable, str(ROOT/"Tests"/script), dotnet]], dict(env, DOTNET=dotnet), output, report)
+            failed = failed or not passed
+        if args.compile or args.download_references or args.compile_android or args.compile_ios:
             try:
                 refs = unity_references(args.download_references)
                 sources = sorted((ROOT / "Assets/Scripts").rglob("*.cs"))
-                variants = [("runtime-compile", "")] if args.compile or args.download_references else []
+                variants = [("runtime-compile", "UNITY_STANDALONE;UNITY_STANDALONE_WIN")] if args.compile or args.download_references else []
                 if args.compile_android:
                     variants.append(("android-runtime-compile", "UNITY_ANDROID"))
+                if args.compile_ios:
+                    variants.append(("ios-runtime-compile", "UNITY_IOS"))
                 for name, defines in variants:
                     project = write_project(workspace / name, sources, references=list(refs.glob("*.dll")), defines=defines)
                     commands = [[dotnet, "restore", str(project), "--configfile", str(config), "--verbosity", "quiet"],

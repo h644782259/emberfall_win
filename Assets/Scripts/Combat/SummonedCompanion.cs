@@ -264,6 +264,13 @@ namespace Emberfall
         public static float CommandOpportunityRemaining(PlayerController owner)
         {return owner==null||owner.IsDead?0:State(owner).Commands.Remaining(Time.time);}
 
+        public static bool HasPracticeTimedState(PlayerController owner)
+        {
+            BondState state;
+            if(owner==null||!bonds.TryGetValue(owner,out state)||state.Epoch!=owner.CombatEpoch)return false;
+            return state.Commands.Remaining(Time.time)>0 || state.Commands.IsProtected(Time.time) || state.Cooperation.HasPending(Time.time);
+        }
+
         public bool EmpoweredAttackActive {get{return IsAlive&&commandEmpowered&&commandTime>0;}}
         public void RecordEmpoweredHit(EnemyController enemy,float actualHealthLoss,bool empoweredAtRelease)
         {

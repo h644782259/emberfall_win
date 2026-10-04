@@ -114,10 +114,25 @@ namespace Emberfall
    if(RoomChainRun!=null)return TrySettleRoomReward();
    if(ModeRun==null||!ModeRun.RewardPending)return true;
    ExpeditionRewardTicket ticket;if(!ModeRun.TryReserveReward(out ticket))return false;
-   int beforeGold=Progression.Profile.gold,beforeMaterials=Progression.Profile.mechanicMaterials;long beforeXp=TotalEarnedExperience(Progression.Profile);
-   int goldReward=HasBlessing(RunBlessing.RiskContract)?Mathf.RoundToInt(ticket.Reward.Gold*1.3f):ticket.Reward.Gold;
-   bool saved=Progression.TryGrantModeReward(modeReceipt,goldReward,ticket.Reward.Experience,ticket.Reward.Materials,DungeonTier);
-   ModeRun.CompleteReward(ticket,saved);
+   var rewardRun=ModeRun;var progression=Progression;string rewardSlot=progression.CurrentSlotId,receipt=modeReceipt;
+   int beforeGold=progression.Profile.gold,beforeMaterials=progression.Profile.mechanicMaterials;long beforeXp=TotalEarnedExperience(progression.Profile);
+   bool saved=false;
+   try
+   {
+    int goldReward=HasBlessing(RunBlessing.RiskContract)?Mathf.RoundToInt(ticket.Reward.Gold*1.3f):ticket.Reward.Gold;
+    saved=progression.TryGrantModeReward(receipt,goldReward,ticket.Reward.Experience,ticket.Reward.Materials,DungeonTier);
+   }
+   catch(Exception error)
+   {
+    // Changed/LeveledUp run after persistence and can throw. Reconcile the
+    // original slot's durable receipt before completing its reserved ticket.
+    var verification=new ProgressionService(progression.SaveDirectory);
+    saved=verification.LoadSlot(rewardSlot)&&verification.Profile.lastModeRewardId==receipt;
+    Debug.LogWarning("挑战奖励回调异常，已核对存档回执："+error);
+   }
+   finally {rewardRun.CompleteReward(ticket,saved);}
+   // A callback may replace the active host; never publish the old result there.
+   if(ModeRun!=rewardRun||Progression!=progression||progression.CurrentSlotId!=rewardSlot)return saved;
    if(saved){modeGoldReward=Mathf.Max(0,Progression.Profile.gold-beforeGold);modeXpReward=(int)Math.Max(0,TotalEarnedExperience(Progression.Profile)-beforeXp);modeMaterialReward=Mathf.Max(0,Progression.Profile.mechanicMaterials-beforeMaterials);LogSystem("挑战结算 · +"+modeGoldReward+"金币 · +"+modeXpReward+"经验 · +"+modeMaterialReward+"碎片");LastRunSummary=BuildRunSummary(true);}
    else Notify(Progression.LastError);
    return saved;

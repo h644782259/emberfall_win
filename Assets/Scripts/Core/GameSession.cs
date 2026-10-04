@@ -266,7 +266,7 @@ namespace Emberfall
 
         private void Update()
         {
-            if(PracticeActive){TickPractice();return;}
+            if(PracticeActive){TickPractice();return;} // Practice owns its guarded potion input too.
             if(HasStarted)TickSideEvent();
             if (InputBlocked) return;
             if(ModeRun!=null){TickArenaRun();if(InputBlocked)return;}
@@ -559,6 +559,7 @@ namespace Emberfall
 
         public void DrinkPotion()
         {
+            if(PracticeActive&&(InputBlocked||PracticeRecord==null||!PracticeRecord.Started||PracticeRecord.Finished))return;
             if (!HasStarted || IsDead || Player == null) return;
             if (Player.Health >= Player.MaxHealth - .5f) { Notify("生命已满，无需使用药水。"); return; }
             if (ChallengeRun && InDungeon) { if (!TrySpendHealingCharge()) return; }
@@ -684,12 +685,26 @@ namespace Emberfall
             PendingLoot pending;
             if (string.IsNullOrEmpty(itemId) || !pendingLoot.TryGetValue(itemId, out pending) || pending.Collecting) return false;
             pending.Collecting = true;
-            bool accepted = Progression.CollectLoot(pending.Item);
-            pending.Collecting = false;
+            ProgressionService source = Progression;
+            bool accepted = false;
+            try { accepted = source.CollectLoot(pending.Item); }
+            finally
+            {
+                pending.Collecting = false;
+                // An observer can throw after the write committed. Reconcile the
+                // exact receipt before propagating; a pre-commit fault stays retryable.
+                if (accepted || source.HasCommittedWorldLoot(itemId))
+                {
+                    PendingLoot current;
+                    if (pendingLoot.TryGetValue(itemId, out current) && object.ReferenceEquals(current, pending))
+                    {
+                        pendingLoot.Remove(itemId);
+                        collectedGroundLoot.Add(itemId);
+                    }
+                    if (pending.Pickup != null) pending.Pickup.Retire();
+                }
+            }
             if (!accepted) return false;
-            pendingLoot.Remove(itemId);
-            collectedGroundLoot.Add(itemId);
-            if (pending.Pickup != null) pending.Pickup.Retire();
             if (feedback)
             {
                 GameAudio.Play(SoundCue.Loot);

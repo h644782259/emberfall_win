@@ -1,0 +1,18 @@
+ 
+/workspace/scratch/stability-round4-win/Tests/CampBuildDraftUIBoundary.cs(21,108): warning CS0649: Field 'GameUI.gold' is never assigned to, and will always have its default value [/tmp/camp-draft-g5g_zwj6/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampBuildDraftUIBoundary.cs(21,123): warning CS0649: Field 'GameUI.muted' is never assigned to, and will always have its default value [/tmp/camp-draft-g5g_zwj6/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampBuildDraftUIBoundary.cs(12,51): warning CS0649: Field 'PlayerController.model' is never assigned to, and will always have its default value null [/tmp/camp-draft-g5g_zwj6/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampBuildDraftUIBoundary.cs(21,35): warning CS0649: Field 'GameUI.panel' is never assigned to, and will always have its default value [/tmp/camp-draft-g5g_zwj6/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampBuildDraftUIBoundary.cs(21,113): warning CS0649: Field 'GameUI.jade' is never assigned to, and will always have its default value [/tmp/camp-draft-g5g_zwj6/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampBuildDraftUIBoundary.cs(21,118): warning CS0649: Field 'GameUI.pale' is never assigned to, and will always have its default value [/tmp/camp-draft-g5g_zwj6/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampBuildDraftUIBoundary.cs(12,119): warning CS0414: The field 'PlayerController.coreWardTime' is assigned but its value is never used [/tmp/camp-draft-g5g_zwj6/project/Validation.csproj]
+ Unhandled exception. System.Exception: remaining legal boundary budget can be allocated
+   at CampBuildDraftTests.Check(Boolean ok, String why) in /workspace/scratch/stability-round4-win/Tests/CampBuildDraftTests.cs:line 4
+   at CampBuildDraftTests.Run(String root) in /workspace/scratch/stability-round4-win/Tests/CampBuildDraftTests.cs:line 32
+   at Program.Main(String[] args) in /tmp/camp-draft-g5g_zwj6/project/Program.cs:line 1
+
+Traceback (most recent call last):
+  File "/workspace/scratch/stability-round4-win/Tests/CampBuildDraftProductionTests.py", line 23, in <module>
+    q=subprocess.run([dotnet]+args,env=env,capture_output=True,text=True);print(q.stdout,q.stderr);assert q.returncode==0
+                                                                                                          ^^^^^^^^^^^^^^^
+AssertionError

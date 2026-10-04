@@ -1,0 +1,7 @@
+/tmp/status-feedback-z1vw8nwm/Fixture.cs(46,553): warning CS0414: The field 'PlayerController.focusTime' is assigned but its value is never used [/tmp/status-feedback-z1vw8nwm/Test.csproj]
+/tmp/status-feedback-z1vw8nwm/Fixture.cs(46,17): warning CS0414: The field 'PlayerController.counterWindowDuration' is assigned but its value is never used [/tmp/status-feedback-z1vw8nwm/Test.csproj]
+PASS actual poison->consume->aura clear->same-frame reapply chain; burn/frost basic-hit third-contact feedback. Damage budget, energy and receipt checks retained. Managed only, no Unity GPU validation.
+
+PASS compiled negative control: poison-clear-missing
+PASS compiled negative control: false-frost-feedback
+PASS compiled negative control: lost-counter-variant-exclusion

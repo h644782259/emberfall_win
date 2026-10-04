@@ -1,0 +1,305 @@
+
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(34,207): warning CS0067: The event 'ProgressionService.LeveledUp' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(21,131): warning CS0067: The event 'Application.wantsToQuit' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(34,174): warning CS0067: The event 'ProgressionService.Changed' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(62,125): warning CS0649: Field 'AdvancedSkillSequence.step' is never assigned to, and will always have its default value 0 [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+PASS 160 actual GameSession.Practice lifecycle assertions (Unity boundary doubles, no engine execution)
+
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(62,125): warning CS0649: Field 'AdvancedSkillSequence.step' is never assigned to, and will always have its default value 0 [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(21,131): warning CS0067: The event 'Application.wantsToQuit' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(34,174): warning CS0067: The event 'ProgressionService.Changed' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(34,207): warning CS0067: The event 'ProgressionService.LeveledUp' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+
+Build succeeded.
+
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(62,125): warning CS0649: Field 'AdvancedSkillSequence.step' is never assigned to, and will always have its default value 0 [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(21,131): warning CS0067: The event 'Application.wantsToQuit' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(34,174): warning CS0067: The event 'ProgressionService.Changed' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(34,207): warning CS0067: The event 'ProgressionService.LeveledUp' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+    4 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.53
+
+Unhandled exception. System.Exception: practice must not invoke irreversible producer OnDisable on admission: 0
+   at CampPracticeSessionTests.Check(Boolean value, String text) in /workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs:line 85
+   at CampPracticeSessionTests.Run() in /workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs:line 101
+   at Program.Main() in /tmp/practice-session-skhw4gtf/project/Program.cs:line 1
+
+PASS compiled producer admission negative: CombatArea
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(21,131): warning CS0067: The event 'Application.wantsToQuit' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(34,174): warning CS0067: The event 'ProgressionService.Changed' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(34,207): warning CS0067: The event 'ProgressionService.LeveledUp' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(62,125): warning CS0649: Field 'AdvancedSkillSequence.step' is never assigned to, and will always have its default value 0 [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+
+Build succeeded.
+
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(21,131): warning CS0067: The event 'Application.wantsToQuit' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(34,174): warning CS0067: The event 'ProgressionService.Changed' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(34,207): warning CS0067: The event 'ProgressionService.LeveledUp' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(62,125): warning CS0649: Field 'AdvancedSkillSequence.step' is never assigned to, and will always have its default value 0 [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+    4 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.52
+
+Unhandled exception. System.Exception: practice must not invoke irreversible producer OnDisable on admission: 1
+   at CampPracticeSessionTests.Check(Boolean value, String text) in /workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs:line 85
+   at CampPracticeSessionTests.Run() in /workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs:line 101
+   at Program.Main() in /tmp/practice-session-skhw4gtf/project/Program.cs:line 1
+
+PASS compiled producer admission negative: AdvancedSkillSequence
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(34,174): warning CS0067: The event 'ProgressionService.Changed' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(34,207): warning CS0067: The event 'ProgressionService.LeveledUp' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(62,125): warning CS0649: Field 'AdvancedSkillSequence.step' is never assigned to, and will always have its default value 0 [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(21,131): warning CS0067: The event 'Application.wantsToQuit' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+
+Build succeeded.
+
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(34,174): warning CS0067: The event 'ProgressionService.Changed' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(34,207): warning CS0067: The event 'ProgressionService.LeveledUp' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(62,125): warning CS0649: Field 'AdvancedSkillSequence.step' is never assigned to, and will always have its default value 0 [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(21,131): warning CS0067: The event 'Application.wantsToQuit' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+    4 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.52
+
+Unhandled exception. System.Exception: practice must not invoke irreversible producer OnDisable on admission: 2
+   at CampPracticeSessionTests.Check(Boolean value, String text) in /workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs:line 85
+   at CampPracticeSessionTests.Run() in /workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs:line 101
+   at Program.Main() in /tmp/practice-session-skhw4gtf/project/Program.cs:line 1
+
+PASS compiled producer admission negative: SummonerSpell
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(34,174): warning CS0067: The event 'ProgressionService.Changed' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(62,125): warning CS0649: Field 'AdvancedSkillSequence.step' is never assigned to, and will always have its default value 0 [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(21,131): warning CS0067: The event 'Application.wantsToQuit' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(34,207): warning CS0067: The event 'ProgressionService.LeveledUp' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+
+Build succeeded.
+
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(34,174): warning CS0067: The event 'ProgressionService.Changed' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(62,125): warning CS0649: Field 'AdvancedSkillSequence.step' is never assigned to, and will always have its default value 0 [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(21,131): warning CS0067: The event 'Application.wantsToQuit' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(34,207): warning CS0067: The event 'ProgressionService.LeveledUp' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+    4 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.56
+
+Unhandled exception. System.Exception: actual clipped Heal and damage telemetry stay out of original run
+   at CampPracticeSessionTests.Check(Boolean value, String text) in /workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs:line 85
+   at CampPracticeSessionTests.Run() in /workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs:line 122
+   at Program.Main() in /tmp/practice-session-skhw4gtf/project/Program.cs:line 1
+
+PASS compiled telemetry isolation negative: actual clipped Heal and damage telemetry stay out of original run
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(21,131): warning CS0067: The event 'Application.wantsToQuit' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(34,174): warning CS0067: The event 'ProgressionService.Changed' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(34,207): warning CS0067: The event 'ProgressionService.LeveledUp' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(62,125): warning CS0649: Field 'AdvancedSkillSequence.step' is never assigned to, and will always have its default value 0 [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+
+Build succeeded.
+
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(21,131): warning CS0067: The event 'Application.wantsToQuit' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(34,174): warning CS0067: The event 'ProgressionService.Changed' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(34,207): warning CS0067: The event 'ProgressionService.LeveledUp' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(62,125): warning CS0649: Field 'AdvancedSkillSequence.step' is never assigned to, and will always have its default value 0 [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+    4 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.53
+
+Unhandled exception. System.Exception: actual clipped Heal and damage telemetry stay out of original run
+   at CampPracticeSessionTests.Check(Boolean value, String text) in /workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs:line 85
+   at CampPracticeSessionTests.Run() in /workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs:line 122
+   at Program.Main() in /tmp/practice-session-skhw4gtf/project/Program.cs:line 1
+
+PASS compiled telemetry isolation negative: actual clipped Heal and damage telemetry stay out of original run
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(62,125): warning CS0649: Field 'AdvancedSkillSequence.step' is never assigned to, and will always have its default value 0 [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(34,174): warning CS0067: The event 'ProgressionService.Changed' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(34,207): warning CS0067: The event 'ProgressionService.LeveledUp' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(21,131): warning CS0067: The event 'Application.wantsToQuit' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+
+Build succeeded.
+
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(62,125): warning CS0649: Field 'AdvancedSkillSequence.step' is never assigned to, and will always have its default value 0 [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(34,174): warning CS0067: The event 'ProgressionService.Changed' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(34,207): warning CS0067: The event 'ProgressionService.LeveledUp' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(21,131): warning CS0067: The event 'Application.wantsToQuit' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+    4 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.49
+
+Unhandled exception. System.Exception: actual CanQuitSafely restores owner then saves once
+   at CampPracticeSessionTests.Check(Boolean value, String text) in /workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs:line 85
+   at CampPracticeSessionTests.Run() in /workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs:line 127
+   at Program.Main() in /tmp/practice-session-skhw4gtf/project/Program.cs:line 1
+
+PASS compiled negative control: original OS-close veto
+/tmp/practice-session-skhw4gtf/Session.cs(157,21): warning CS0162: Unreachable code detected [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/tmp/practice-session-skhw4gtf/Session.cs(145,18): warning CS0219: The variable 'rootsRetired' is assigned but its value is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(62,125): warning CS0649: Field 'AdvancedSkillSequence.step' is never assigned to, and will always have its default value 0 [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(34,207): warning CS0067: The event 'ProgressionService.LeveledUp' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(21,131): warning CS0067: The event 'Application.wantsToQuit' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(34,174): warning CS0067: The event 'ProgressionService.Changed' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+
+Build succeeded.
+
+/tmp/practice-session-skhw4gtf/Session.cs(157,21): warning CS0162: Unreachable code detected [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/tmp/practice-session-skhw4gtf/Session.cs(145,18): warning CS0219: The variable 'rootsRetired' is assigned but its value is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(62,125): warning CS0649: Field 'AdvancedSkillSequence.step' is never assigned to, and will always have its default value 0 [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(34,207): warning CS0067: The event 'ProgressionService.LeveledUp' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(21,131): warning CS0067: The event 'Application.wantsToQuit' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(34,174): warning CS0067: The event 'ProgressionService.Changed' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+    6 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.49
+
+Unhandled exception. System.Exception: failed exit snapshot cannot leave temporary combat actors active beside formal owner
+   at CampPracticeSessionTests.Check(Boolean value, String text) in /workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs:line 85
+   at CampPracticeSessionTests.Run() in /workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs:line 133
+   at Program.Main() in /tmp/practice-session-skhw4gtf/project/Program.cs:line 1
+
+PASS compiled negative control: failed exit snapshot cannot leave temporary combat actors active beside formal owner
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(34,207): warning CS0067: The event 'ProgressionService.LeveledUp' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(34,174): warning CS0067: The event 'ProgressionService.Changed' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(21,131): warning CS0067: The event 'Application.wantsToQuit' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(62,125): warning CS0649: Field 'AdvancedSkillSequence.step' is never assigned to, and will always have its default value 0 [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+
+Build succeeded.
+
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(34,207): warning CS0067: The event 'ProgressionService.LeveledUp' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(34,174): warning CS0067: The event 'ProgressionService.Changed' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(21,131): warning CS0067: The event 'Application.wantsToQuit' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(62,125): warning CS0649: Field 'AdvancedSkillSequence.step' is never assigned to, and will always have its default value 0 [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+    4 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.50
+
+Unhandled exception. System.Exception: baseline A is a separate frozen first result across repeated B
+   at CampPracticeSessionTests.Check(Boolean value, String text) in /workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs:line 85
+   at CampPracticeSessionTests.Run() in /workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs:line 115
+   at Program.Main() in /tmp/practice-session-skhw4gtf/project/Program.cs:line 1
+
+PASS compiled negative control: baseline A is a separate frozen first result across repeated B
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(34,207): warning CS0067: The event 'ProgressionService.LeveledUp' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(21,131): warning CS0067: The event 'Application.wantsToQuit' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(34,174): warning CS0067: The event 'ProgressionService.Changed' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(62,125): warning CS0649: Field 'AdvancedSkillSequence.step' is never assigned to, and will always have its default value 0 [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+
+Build succeeded.
+
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(34,207): warning CS0067: The event 'ProgressionService.LeveledUp' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(21,131): warning CS0067: The event 'Application.wantsToQuit' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(34,174): warning CS0067: The event 'ProgressionService.Changed' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(62,125): warning CS0649: Field 'AdvancedSkillSequence.step' is never assigned to, and will always have its default value 0 [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+    4 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.53
+
+Unhandled exception. System.Exception: baseline A is a separate frozen first result across repeated B
+   at CampPracticeSessionTests.Check(Boolean value, String text) in /workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs:line 85
+   at CampPracticeSessionTests.Run() in /workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs:line 115
+   at Program.Main() in /tmp/practice-session-skhw4gtf/project/Program.cs:line 1
+
+PASS compiled negative control: baseline A is a separate frozen first result across repeated B
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(21,131): warning CS0067: The event 'Application.wantsToQuit' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(62,125): warning CS0649: Field 'AdvancedSkillSequence.step' is never assigned to, and will always have its default value 0 [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(34,207): warning CS0067: The event 'ProgressionService.LeveledUp' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(34,174): warning CS0067: The event 'ProgressionService.Changed' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+
+Build succeeded.
+
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(21,131): warning CS0067: The event 'Application.wantsToQuit' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(62,125): warning CS0649: Field 'AdvancedSkillSequence.step' is never assigned to, and will always have its default value 0 [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(34,207): warning CS0067: The event 'ProgressionService.LeveledUp' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(34,174): warning CS0067: The event 'ProgressionService.Changed' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+    4 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.51
+
+Unhandled exception. System.Exception: prepare freezes real session before timer and attacks
+   at CampPracticeSessionTests.Check(Boolean value, String text) in /workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs:line 85
+   at CampPracticeSessionTests.Run() in /workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs:line 112
+   at Program.Main() in /tmp/practice-session-skhw4gtf/project/Program.cs:line 1
+
+PASS compiled negative control: prepare freezes real session before timer and attacks
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(21,131): warning CS0067: The event 'Application.wantsToQuit' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(34,207): warning CS0067: The event 'ProgressionService.LeveledUp' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(34,174): warning CS0067: The event 'ProgressionService.Changed' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(62,125): warning CS0649: Field 'AdvancedSkillSequence.step' is never assigned to, and will always have its default value 0 [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+
+Build succeeded.
+
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(21,131): warning CS0067: The event 'Application.wantsToQuit' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(34,207): warning CS0067: The event 'ProgressionService.LeveledUp' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(34,174): warning CS0067: The event 'ProgressionService.Changed' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(62,125): warning CS0649: Field 'AdvancedSkillSequence.step' is never assigned to, and will always have its default value 0 [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+    4 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.58
+
+Unhandled exception. System.Exception: actual kill removes supply once and records order
+   at CampPracticeSessionTests.Check(Boolean value, String text) in /workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs:line 85
+   at CampPracticeSessionTests.Run() in /workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs:line 124
+   at Program.Main() in /tmp/practice-session-skhw4gtf/project/Program.cs:line 1
+
+PASS compiled negative control: actual kill removes supply once and records order
+/tmp/practice-session-skhw4gtf/Session.cs(23,26): warning CS0162: Unreachable code detected [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(34,174): warning CS0067: The event 'ProgressionService.Changed' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(21,131): warning CS0067: The event 'Application.wantsToQuit' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(62,125): warning CS0649: Field 'AdvancedSkillSequence.step' is never assigned to, and will always have its default value 0 [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(34,207): warning CS0067: The event 'ProgressionService.LeveledUp' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+
+Build succeeded.
+
+/tmp/practice-session-skhw4gtf/Session.cs(23,26): warning CS0162: Unreachable code detected [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(34,174): warning CS0067: The event 'ProgressionService.Changed' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(21,131): warning CS0067: The event 'Application.wantsToQuit' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(62,125): warning CS0649: Field 'AdvancedSkillSequence.step' is never assigned to, and will always have its default value 0 [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(34,207): warning CS0067: The event 'ProgressionService.LeveledUp' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+    5 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.52
+
+Unhandled exception. System.Exception: unsafe entry refused before real enemy OnDisable
+   at CampPracticeSessionTests.Check(Boolean value, String text) in /workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs:line 85
+   at CampPracticeSessionTests.Run() in /workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs:line 91
+   at Program.Main() in /tmp/practice-session-skhw4gtf/project/Program.cs:line 1
+
+PASS compiled negative control: unsafe entry refused before real enemy OnDisable
+/tmp/practice-session-skhw4gtf/Session.cs(161,43): warning CS1717: Assignment made to same variable; did you mean to assign something else? [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(34,174): warning CS0067: The event 'ProgressionService.Changed' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(21,131): warning CS0067: The event 'Application.wantsToQuit' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(62,125): warning CS0649: Field 'AdvancedSkillSequence.step' is never assigned to, and will always have its default value 0 [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(34,207): warning CS0067: The event 'ProgressionService.LeveledUp' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+
+Build succeeded.
+
+/tmp/practice-session-skhw4gtf/Session.cs(161,43): warning CS1717: Assignment made to same variable; did you mean to assign something else? [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(34,174): warning CS0067: The event 'ProgressionService.Changed' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(21,131): warning CS0067: The event 'Application.wantsToQuit' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(62,125): warning CS0649: Field 'AdvancedSkillSequence.step' is never assigned to, and will always have its default value 0 [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs(34,207): warning CS0067: The event 'ProgressionService.LeveledUp' is never used [/tmp/practice-session-skhw4gtf/project/Validation.csproj]
+    5 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.54
+
+Unhandled exception. System.Exception: active sustained producer refuses before original ownership changes: 1
+   at CampPracticeSessionTests.Check(Boolean value, String text) in /workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs:line 85
+   at CampPracticeSessionTests.Run() in /workspace/scratch/stability-round4-win/Tests/CampPracticeSessionBoundary.cs:line 102
+   at Program.Main() in /tmp/practice-session-skhw4gtf/project/Program.cs:line 1
+
+Traceback (most recent call last):
+  File "/workspace/scratch/stability-round4-win/Tests/CampPracticeSessionProductionTests.py", line 45, in <module>
+    q=run([str(project.parent/'bin/Debug/net8.0/Validation.dll')]);assert q.returncode!=0 and message in q.stdout+q.stderr;print('PASS compiled negative control:',message);production.write_text(original)
+                                                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError

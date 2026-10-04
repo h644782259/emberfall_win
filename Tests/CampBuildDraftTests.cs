@@ -25,6 +25,16 @@ public static class CampBuildDraftTests
   }
   {var p=Fresh(root,35);string state=State(p);var d=p.BeginBuildDraft(true);d.ChangeSkill(0,-1);d.Cancel();Check(!d.Apply(true)&&State(p)==state,"cancel invalidates handle and leaves profile intact");d=p.BeginBuildDraft(true);p.Profile.gold++;Check(!d.IsCurrent&&!d.ChangeMastery(0,-1)&&!d.Apply(true),"in-place source mutation invalidates draft");d=p.BeginBuildDraft(true);p.SaveBuildPreset(0,true);Check(!d.IsCurrent&&!d.Apply(true),"external commit invalidates draft");}
   {var p=Fresh(root,35);var d=p.BeginBuildDraft(true);Check(!d.ChangeSkill(1,1),"new unlock excluded from respec");Check(!d.SelectCore(1)&&d.SelectCore(-1),"core gate and explicit off");int cap=ProgressionService.MasteryCap(35);while(d.MasteryRank(0)<cap)Check(d.ChangeMastery(0,1),"up to mastery cap");Check(!d.ChangeMastery(0,1),"per-level cap enforced");while(d.Points>0){bool ok=false;for(int i=1;i<4&&!ok;i++)ok=d.ChangeMastery(i,1);Check(ok,"spend remaining shared budget");}Check(!d.ChangeSkill(0,1)&&!d.ChangeMastery(3,1)&&d.Points==0,"no overspend");}
+  foreach(int level in new[]{1,2,3,10,20,35,100})
+  {
+   var p=new ProgressionService(Path.Combine(root,Guid.NewGuid().ToString("N")));Check(p.CreateNewSlot(HeroClass.Vanguard),"create draft budget boundary fixture");p.Profile.level=level;p.Save();
+   var d=p.BeginBuildDraft(true);int budget=GameBalance.SkillPointBudget(level);Check(d.SkillRank(0)==1&&d.Points==budget-1,"starter consumes one shared point at every boundary level");
+   int allocated=Math.Min(budget-1,4*ProgressionService.MasteryCap(level));
+   for(int point=0;point<allocated;point++){bool moved=false;for(int i=0;i<4&&!moved;i++)moved=d.ChangeMastery(i,1);Check(moved,"legal boundary mastery allocation respects both caps and shared budget");}
+   int remaining=budget-1-allocated;string before=State(p);Check(!d.ChangeMastery(0,1)&&(remaining>0||!d.ChangeSkill(0,1))&&State(p)==before,"exhausted budget or mastery cap rejects extra investment without live mutation");
+   Check(d.Apply(true)&&p.Profile.skillPoints==remaining&&p.Profile.skillRanks[0]==1,"boundary draft preserves unspent points above mastery caps and learned first rank");
+   int spent=0;foreach(int rank in p.Profile.skillRanks)spent+=rank;foreach(int rank in p.Profile.masteryRanks)spent+=rank;Check(spent+remaining==budget&&p.Load()&&p.Profile.skillPoints==remaining,"boundary budget survives durable normalization without minting or losing points");
+  }
   foreach(bool mobile in new[]{false,true}){GameUI.TestDraftFlow(Fresh(root,50),mobile,Check);GameUI.TestDraftVitals(Fresh(root,50),mobile,Check);}
   return "PASS "+n+" actual service + desktop/mobile UI draft assertions";
  }

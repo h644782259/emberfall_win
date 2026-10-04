@@ -403,6 +403,8 @@ namespace Emberfall
                     return Fail("已达到 " + MaximumSaveSlots + " 份存档/临时恢复文件上限。请先备份整个存档目录并处理恢复文件，或手动删除不需要的角色；现有文件不会自动清理。");
                 string id = Guid.NewGuid().ToString("N");
                 string path = SlotPath(id);
+                PendingChestContext snapshotDraw = null;
+                if (!newCharacter) pendingChestContexts.TryGetValue(SaveFilePath, out snapshotDraw);
                 string failure;
                 if (!TryWriteProfile(candidate, path, true, out failure)) return Fail(failure);
                 // Both primary and backup are now durably written. Only then publish
@@ -411,6 +413,13 @@ namespace Emberfall
                 attachedSaveExists = true;
                 CancelChapterRun();
                 Profile = candidate;
+                // Save-as copies this same unopened chest, including an in-process
+                // failed draw. A fresh character must never inherit that context.
+                if (snapshotDraw != null)
+                {
+                    pendingChestContexts[path] = snapshotDraw;
+                    RestorePendingChestRoll();
+                }
                 if (newCharacter) collectedLootIds.Clear();
                 LastError = string.Empty;
                 RaiseChanged();
@@ -2103,6 +2112,10 @@ namespace Emberfall
                 item.health = Round((6 + level * 3) * multiplier);
             }
         }
+
+        // Added only after the attached profile write succeeds, before observers run.
+        // Includes auto-sold drops which no longer have an inventory entry.
+        internal bool HasCommittedWorldLoot(string itemId) { return collectedLootIds.Contains(itemId); }
 
         /// <summary>Protected overflow is persisted for claiming. A full pending queue rejects
         /// acquisition without consuming the drop; the caller must retain it or block departure.</summary>

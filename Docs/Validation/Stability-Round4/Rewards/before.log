@@ -1,0 +1,10 @@
+Unhandled exception. System.Exception: save-as snapshot must preserve failed draw choice
+   at ChestSnapshotRetryTests.Check(Boolean b, String why) in /tmp/chest-saveas-retry-vskh6qeh/ChestSnapshotRetryTests.cs:line 4
+   at ChestSnapshotRetryTests.Run(String directory) in /tmp/chest-saveas-retry-vskh6qeh/ChestSnapshotRetryTests.cs:line 15
+   at Program.<Main>$(String[] args) in /tmp/chest-saveas-retry-vskh6qeh/Program.cs:line 1
+Traceback (most recent call last):
+  File "/workspace/scratch/stability-round4-win/Tests/ChestSnapshotRetryTests.py", line 15, in <module>
+    subprocess.run(command,env=env,check=True)
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/workspace/shared/emberfall-tools/dotnet/dotnet', 'run', '--project', '/tmp/chest-saveas-retry-vskh6qeh/Test.csproj', '--', '/tmp/chest-saveas-retry-vskh6qeh/saves']' returned non-zero exit status 134.

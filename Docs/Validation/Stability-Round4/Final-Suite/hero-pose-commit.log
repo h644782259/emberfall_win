@@ -1,0 +1,4 @@
+/tmp/hero-pose-commit-s_zsrt4_/HeroPoseCommitFixture.cs(34,18): warning CS0414: The field 'CombatModel.blenderPilot' is assigned but its value is never used [/tmp/hero-pose-commit-s_zsrt4_/Test.csproj]
+PASS: 54 production hero commit/pose/recovery checks (managed transforms, not rendered frames)
+PASS: compiled zero-phase pilot mutation fails synchronous contact forwarding assertion
+PASS: 2 compiled old-pose/handoff negative controls hit exact runtime assertions
