@@ -403,6 +403,8 @@ namespace Emberfall
                     return Fail("已达到 " + MaximumSaveSlots + " 份存档/临时恢复文件上限。请先备份整个存档目录并处理恢复文件，或手动删除不需要的角色；现有文件不会自动清理。");
                 string id = Guid.NewGuid().ToString("N");
                 string path = SlotPath(id);
+                PendingChestContext snapshotDraw = null;
+                if (!newCharacter) pendingChestContexts.TryGetValue(SaveFilePath, out snapshotDraw);
                 string failure;
                 if (!TryWriteProfile(candidate, path, true, out failure)) return Fail(failure);
                 // Both primary and backup are now durably written. Only then publish
@@ -411,6 +413,13 @@ namespace Emberfall
                 attachedSaveExists = true;
                 CancelChapterRun();
                 Profile = candidate;
+                // Save-as copies this same unopened chest, including an in-process
+                // failed draw. A fresh character must never inherit that context.
+                if (snapshotDraw != null)
+                {
+                    pendingChestContexts[path] = snapshotDraw;
+                    RestorePendingChestRoll();
+                }
                 if (newCharacter) collectedLootIds.Clear();
                 LastError = string.Empty;
                 RaiseChanged();
@@ -1967,8 +1976,9 @@ namespace Emberfall
             candidate.pendingFashionChest = true; candidate.pendingChestTier = tier;
             candidate.pendingFirstClearReward = !candidate.firstClearRewardClaimed;
             candidate.lastDungeonRewardId = rewardId;
+            candidate.lastDungeonRewardDetails=CaptureRewardPresentation(rewardId,Profile,candidate);
             if (!CommitCandidate(candidate)) return false;
-            for (int level = oldLevel + 1; level <= candidate.level; level++) if (LeveledUp != null) LeveledUp(level);
+            for (int level = oldLevel + 1; level <= candidate.level; level++) RaiseLeveledUp(level);
             return true;
         }
 
@@ -1989,8 +1999,9 @@ namespace Emberfall
                 candidate.chapterPriorAdventureTier=Math.Max(candidate.chapterPriorAdventureTier,completedTier);
                 candidate.pendingFirstClearReward=!candidate.firstClearRewardClaimed;
             }
+            candidate.lastModeRewardDetails=CaptureRewardPresentation(receipt,Profile,candidate);
             if(!CommitCandidate(candidate))return false;
-            for(int level=oldLevel+1;level<=candidate.level;level++)if(LeveledUp!=null)LeveledUp(level);
+            for(int level=oldLevel+1;level<=candidate.level;level++)RaiseLeveledUp(level);
             return true;
         }
 
@@ -2022,7 +2033,7 @@ namespace Emberfall
             // As with GrantExperience, failure keeps live progress and LastError;
             // Changed runs once before level notifications, all seeing final stats.
             for (int level = oldLevel + 1; level <= earnedLevel; level++)
-                if (LeveledUp != null) LeveledUp(level);
+                RaiseLeveledUp(level);
         }
 
         public void GrantExperience(int amount)
@@ -2042,7 +2053,7 @@ namespace Emberfall
             // Earned progress remains live after a storage failure; LastError stays visible.
             // Subscribers observe the final in-memory level, including multiple gains.
             foreach (int level in gainedLevels)
-                if (LeveledUp != null) LeveledUp(level);
+                RaiseLeveledUp(level);
         }
 
         public void AddGold(int amount)
@@ -2103,6 +2114,10 @@ namespace Emberfall
                 item.health = Round((6 + level * 3) * multiplier);
             }
         }
+
+        // Added only after the attached profile write succeeds, before observers run.
+        // Includes auto-sold drops which no longer have an inventory entry.
+        internal bool HasCommittedWorldLoot(string itemId) { return collectedLootIds.Contains(itemId); }
 
         /// <summary>Protected overflow is persisted for claiming. A full pending queue rejects
         /// acquisition without consuming the drop; the caller must retain it or block departure.</summary>
@@ -2531,7 +2546,28 @@ namespace Emberfall
             RaiseChanged();
         }
 
-        private void RaiseChanged() { if (Changed != null) Changed(); }
+        private void RaiseChanged()
+        {
+            var observers=Changed;if(observers==null)return;
+            foreach(Action observer in observers.GetInvocationList())
+                try{observer();}catch(Exception error){Debug.LogWarning("Emberfall: change observer failed: "+error);}
+        }
+        private void RaiseLeveledUp(int level)
+        {
+            var observers=LeveledUp;if(observers==null)return;
+            foreach(Action<int> observer in observers.GetInvocationList())
+                try{observer(level);}catch(Exception error){Debug.LogWarning("Emberfall: level observer failed: "+error);}
+        }
+        private static long RewardExperienceTotal(GameProfile profile)
+        {long total=profile.xp;for(int level=1;level<profile.level;level++)total+=GameBalance.XpToNext(level);return total;}
+        private static RewardPresentationReceipt CaptureRewardPresentation(string id,GameProfile before,GameProfile after)
+        {return new RewardPresentationReceipt{Id=id,Gold=Math.Max(0,after.gold-before.gold),Materials=Math.Max(0,after.mechanicMaterials-before.mechanicMaterials),Experience=(int)Math.Max(0,RewardExperienceTotal(after)-RewardExperienceTotal(before))};}
+        public RewardPresentationReceipt GetRewardPresentation(string id)
+        {
+            if(string.IsNullOrEmpty(id))return null;
+            var detail=Profile.lastModeRewardId==id?Profile.lastModeRewardDetails:Profile.lastDungeonRewardId==id?Profile.lastDungeonRewardDetails:Profile.lastChapterRewardId==id?Profile.lastChapterRewardDetails:null;
+            return detail!=null&&detail.Id==id&&detail.Gold>=0&&detail.Experience>=0&&detail.Materials>=0?detail:null;
+        }
         private bool Fail(string message) { LastError = message; return false; }
 
         private ItemData FindItem(string id)

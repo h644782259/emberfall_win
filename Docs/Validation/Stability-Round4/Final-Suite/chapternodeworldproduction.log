@@ -1,0 +1,3 @@
+PASS: 130 actual chapter generator atmosphere/scenery/traversal/resource checks (primitive render substitutes, not Unity visuals)
+
+PASS: compiled old generic atmosphere rejected at actual generator entry

@@ -9,7 +9,7 @@ assert 'ModeRun==null && RoomChainRun==null && !changingZone' in s
 assert 'RecordRoomDefeat(enemy)' in s and 'RecordArenaDefeat(enemy)' in s
 assert 'if(ModeRewardPending&&!TrySettleArenaReward())return false;' in s
 assert 'ModeRun.Advance(Time.deltaTime,!InputBlocked' in m
-assert 'TryGrantModeReward' in m and 'ModeRun.CompleteReward(ticket,saved)' in m
+assert 'TryGrantModeReward' in m and 'finally {rewardRun.CompleteReward(ticket,saved);}' in m
 assert 'TotalEarnedExperience(Progression.Profile)-beforeXp' in m
 assert 'if(!SaveBeforeLeaving())return false;' in r and r.index('if(!SaveBeforeLeaving())return false;')<r.index('RoomChainRun.Next(true,false)')
 assert 'TrySettleRoomReward' in r and 'roomEnemies.TryGetValue' in r

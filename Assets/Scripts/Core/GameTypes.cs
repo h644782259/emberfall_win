@@ -4,6 +4,15 @@ using UnityEngine;
 
 namespace Emberfall
 {
+    // Written atomically with the matching reward identity. Legacy saves may omit it.
+    [Serializable]
+    public sealed class RewardPresentationReceipt
+    {
+        public string Id;
+        public int Gold,Experience,Materials;
+        public bool FirstCompletion,FirstCoreAvailable;
+        public int UnlockedNode=-1,UnlockedDifficulty=-1,SharedBefore,SharedAfter;
+    }
     public static class MasteryProgressionRules
     {
         public const int MaximumRank=35,InitialInvestment=10,EnhancedInvestment=20;
@@ -316,6 +325,7 @@ namespace Emberfall
         public int bestFloor;
         public string lastModeRewardId;
         public string lastDungeonRewardId;
+        public RewardPresentationReceipt lastModeRewardDetails,lastDungeonRewardDetails,lastChapterRewardDetails;
         public List<string> sideEventRewardReceipts = new List<string>();
         public int currentHub;
         public int unlockedHubMask=1;

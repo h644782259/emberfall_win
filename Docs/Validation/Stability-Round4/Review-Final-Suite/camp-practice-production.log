@@ -1,0 +1,108 @@
+
+PASS 34 practice isolation, draft transaction and measured event assertions
+
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.69
+
+Unhandled exception. System.Exception: practice NewGame refuses without exception or profile and disk mutation
+   at CampPracticeTests.Check(Boolean value, String why) in /workspace/scratch/stability-round4-win/Tests/CampPracticeTests.cs:line 8
+   at CampPracticeTests.Run(String root) in /workspace/scratch/stability-round4-win/Tests/CampPracticeTests.cs:line 18
+   at Program.Main(String[] args) in /tmp/camp-practice-e_bix590/project/Program.cs:line 1
+
+PASS compiled negative rejected: practice NewGame refuses without exception or profile and disk mutation
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.66
+
+Unhandled exception. System.Exception: practice transition rejects before default storage constructor
+   at CampPracticeTests.Check(Boolean value, String why) in /workspace/scratch/stability-round4-win/Tests/CampPracticeTests.cs:line 8
+   at CampPracticeTests.Run(String root) in /workspace/scratch/stability-round4-win/Tests/CampPracticeTests.cs:line 20
+   at Program.Main(String[] args) in /tmp/camp-practice-e_bix590/project/Program.cs:line 1
+
+PASS compiled negative rejected: practice transition rejects before default storage constructor
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.69
+
+Unhandled exception. System.Exception: practice cannot open inherited chest receipt
+   at CampPracticeTests.Check(Boolean value, String why) in /workspace/scratch/stability-round4-win/Tests/CampPracticeTests.cs:line 8
+   at CampPracticeTests.Run(String root) in /workspace/scratch/stability-round4-win/Tests/CampPracticeTests.cs:line 21
+   at Program.Main(String[] args) in /tmp/camp-practice-e_bix590/project/Program.cs:line 1
+
+PASS compiled negative rejected: practice cannot open inherited chest receipt
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.72
+
+Unhandled exception. System.Exception: practice has no storage destination or real slot
+   at CampPracticeTests.Check(Boolean value, String why) in /workspace/scratch/stability-round4-win/Tests/CampPracticeTests.cs:line 8
+   at CampPracticeTests.Run(String root) in /workspace/scratch/stability-round4-win/Tests/CampPracticeTests.cs:line 16
+   at Program.Main(String[] args) in /tmp/camp-practice-e_bix590/project/Program.cs:line 1
+
+PASS compiled negative rejected: practice has no storage destination or real slot
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.70
+
+Emberfall: 试招角色没有持久化目的地。
+Unhandled exception. System.Exception: practice memory save succeeds without persistence
+   at CampPracticeTests.Check(Boolean value, String why) in /workspace/scratch/stability-round4-win/Tests/CampPracticeTests.cs:line 8
+   at CampPracticeTests.Run(String root) in /workspace/scratch/stability-round4-win/Tests/CampPracticeTests.cs:line 24
+   at Program.Main(String[] args) in /tmp/camp-practice-e_bix590/project/Program.cs:line 1
+
+PASS compiled negative rejected: practice memory save succeeds without persistence
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.69
+
+Unhandled exception. System.Exception: deep isolated practice profile
+   at CampPracticeTests.Check(Boolean value, String why) in /workspace/scratch/stability-round4-win/Tests/CampPracticeTests.cs:line 8
+   at CampPracticeTests.Run(String root) in /workspace/scratch/stability-round4-win/Tests/CampPracticeTests.cs:line 15
+   at Program.Main(String[] args) in /tmp/camp-practice-e_bix590/project/Program.cs:line 1
+
+PASS compiled negative rejected: deep isolated practice profile
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.73
+
+Unhandled exception. System.Exception: actual hits deduplicate multihit casts; misses excluded
+   at CampPracticeTests.Check(Boolean value, String why) in /workspace/scratch/stability-round4-win/Tests/CampPracticeTests.cs:line 8
+   at CampPracticeTests.Run(String root) in /workspace/scratch/stability-round4-win/Tests/CampPracticeTests.cs:line 37
+   at Program.Main(String[] args) in /tmp/camp-practice-e_bix590/project/Program.cs:line 1
+
+PASS compiled negative rejected: actual hits deduplicate
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.90
+
+Unhandled exception. System.Exception: energy observer uses actual clipped restoration
+   at CampPracticeTests.Check(Boolean value, String why) in /workspace/scratch/stability-round4-win/Tests/CampPracticeTests.cs:line 8
+   at CampPracticeTests.Run(String root) in /workspace/scratch/stability-round4-win/Tests/CampPracticeTests.cs:line 35
+   at Program.Main(String[] args) in /tmp/camp-practice-e_bix590/project/Program.cs:line 1
+
+PASS compiled negative rejected: actual clipped restoration

@@ -1,0 +1,2 @@
+PASS 124 production water path/clock/topology/lifecycle assertions (Unity API doubles)
+PASS shared water surface consumes flow; navigation remains separate

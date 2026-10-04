@@ -1,0 +1,19 @@
+/tmp/practice-potion-au7hhgei/Fixture.cs(87,374): warning CS0219: The variable 'role' is assigned but its value is never used [/tmp/practice-potion-au7hhgei/project/Validation.csproj]
+/tmp/practice-potion-au7hhgei/Actual.cs(80,40): error CS1061: 'ProgressionService' does not contain a definition for 'HasCommittedWorldLoot' and no accessible extension method 'HasCommittedWorldLoot' accepting a first argument of type 'ProgressionService' could be found (are you missing a using directive or an assembly reference?) [/tmp/practice-potion-au7hhgei/project/Validation.csproj]
+/tmp/practice-potion-au7hhgei/Fixture.cs(38,215): warning CS0067: The event 'ProgressionService.LeveledUp' is never used [/tmp/practice-potion-au7hhgei/project/Validation.csproj]
+/tmp/practice-potion-au7hhgei/Fixture.cs(38,182): warning CS0067: The event 'ProgressionService.Changed' is never used [/tmp/practice-potion-au7hhgei/project/Validation.csproj]
+/tmp/practice-potion-au7hhgei/Fixture.cs(21,131): warning CS0067: The event 'Application.wantsToQuit' is never used [/tmp/practice-potion-au7hhgei/project/Validation.csproj]
+/tmp/practice-potion-au7hhgei/Fixture.cs(66,125): warning CS0169: The field 'AdvancedSkillSequence.step' is never used [/tmp/practice-potion-au7hhgei/project/Validation.csproj]
+/tmp/practice-potion-au7hhgei/Fixture.cs(66,130): warning CS0414: The field 'AdvancedSkillSequence.steps' is assigned but its value is never used [/tmp/practice-potion-au7hhgei/project/Validation.csproj]
+
+The build failed. Fix the build errors and run again.
+
+Traceback (most recent call last):
+  File "/workspace/scratch/stability-round4-win/Tests/PracticePotionInputProductionTests.py", line 38, in <module>
+    run()
+  File "/workspace/scratch/stability-round4-win/Tests/PracticePotionInputProductionTests.py", line 37, in run
+    else:q.check_returncode()
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 502, in check_returncode
+    raise CalledProcessError(self.returncode, self.args, self.stdout,
+subprocess.CalledProcessError: Command '['/workspace/shared/emberfall-tools/dotnet/dotnet', 'run', '--project', '/tmp/practice-potion-au7hhgei/project/Validation.csproj']' returned non-zero exit status 1.

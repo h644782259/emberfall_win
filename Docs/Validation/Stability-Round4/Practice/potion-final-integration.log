@@ -1,0 +1,21 @@
+/tmp/practice-potion-9cqtxqt8/Fixture.cs(54,59): error CS0103: The name 'State' does not exist in the current context [/tmp/practice-potion-9cqtxqt8/project/Validation.csproj]
+/tmp/practice-potion-9cqtxqt8/Fixture.cs(55,95): error CS0103: The name 'State' does not exist in the current context [/tmp/practice-potion-9cqtxqt8/project/Validation.csproj]
+/tmp/practice-potion-9cqtxqt8/Fixture.cs(56,62): error CS0103: The name 'State' does not exist in the current context [/tmp/practice-potion-9cqtxqt8/project/Validation.csproj]
+/tmp/practice-potion-9cqtxqt8/Fixture.cs(93,374): warning CS0219: The variable 'role' is assigned but its value is never used [/tmp/practice-potion-9cqtxqt8/project/Validation.csproj]
+/tmp/practice-potion-9cqtxqt8/Practice.cs(64,34): error CS0117: 'SummonedCompanion' does not contain a definition for 'HasPracticeTimedState' [/tmp/practice-potion-9cqtxqt8/project/Validation.csproj]
+/tmp/practice-potion-9cqtxqt8/Fixture.cs(39,182): warning CS0067: The event 'ProgressionService.Changed' is never used [/tmp/practice-potion-9cqtxqt8/project/Validation.csproj]
+/tmp/practice-potion-9cqtxqt8/Fixture.cs(39,215): warning CS0067: The event 'ProgressionService.LeveledUp' is never used [/tmp/practice-potion-9cqtxqt8/project/Validation.csproj]
+/tmp/practice-potion-9cqtxqt8/Fixture.cs(21,136): warning CS0067: The event 'Application.wantsToQuit' is never used [/tmp/practice-potion-9cqtxqt8/project/Validation.csproj]
+/tmp/practice-potion-9cqtxqt8/Fixture.cs(72,125): warning CS0169: The field 'AdvancedSkillSequence.step' is never used [/tmp/practice-potion-9cqtxqt8/project/Validation.csproj]
+/tmp/practice-potion-9cqtxqt8/Fixture.cs(72,130): warning CS0414: The field 'AdvancedSkillSequence.steps' is assigned but its value is never used [/tmp/practice-potion-9cqtxqt8/project/Validation.csproj]
+
+The build failed. Fix the build errors and run again.
+
+Traceback (most recent call last):
+  File "/workspace/scratch/stability-round4-win/Tests/PracticePotionInputProductionTests.py", line 46, in <module>
+    production.write_text(original.replace(member(original,'private void TickPractice()'),legacy_tick));run('live mobile input reaches actual practice potion once');print('PASS baseline pre-fix TickPractice reproduces lost mobile potion');production.write_text(original)
+                                                                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/stability-round4-win/Tests/PracticePotionInputProductionTests.py", line 36, in run
+    if expected:assert q.returncode and expected in q.stdout+q.stderr
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError

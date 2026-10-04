@@ -970,7 +970,7 @@ namespace Emberfall
                     Border(slot, gold);
                     tooltip = empty ? "未配置" : potion ? PotionTooltip(p) : SkillTooltip(p, skill, rank);
                 }
-                if (!mobile && hover && GUI.enabled && Event.current.type == EventType.MouseDown && Event.current.button == 1)
+                if (!session.PracticeActive && !mobile && hover && GUI.enabled && Event.current.type == EventType.MouseDown && Event.current.button == 1)
                 {
                     Event.current.Use();
                     if (potion) TogglePanel(Panel.Inventory);
@@ -1044,6 +1044,7 @@ namespace Emberfall
                 LearnedSkillAtSlot(session.Progression.Profile, source) == skill;
             CancelHotbarPointer();
             if (!valid) return;
+            if (session.PracticeActive && (configuring || dragged || skill < 0 && skill != GameBalance.HotbarPotion)) return;
             if (dragged)
             {
                 if (source != targetSlot && session.MoveHotbarSkill(source, targetSlot)) GameAudio.Play(SoundCue.UI);

@@ -1,0 +1,9 @@
+Unhandled exception. System.Exception: committed callback failure retires pickup and unlocks pending receipt
+   at CallbackProgram.Check(Boolean ok, String why) in /tmp/loot-callback-1c2njf75/Tests.cs:line 4
+   at CallbackProgram.Main(String[] args) in /tmp/loot-callback-1c2njf75/Tests.cs:line 11
+Traceback (most recent call last):
+  File "/workspace/scratch/stability-round4-win/Tests/GroundLootCallbackRecoveryTests.py", line 20, in <module>
+    subprocess.run(cmd,env=env,check=True)
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/workspace/shared/emberfall-tools/dotnet/dotnet', 'run', '--project', '/tmp/loot-callback-1c2njf75/Test.csproj', '--', '/tmp/loot-callback-1c2njf75/saves']' returned non-zero exit status 134.

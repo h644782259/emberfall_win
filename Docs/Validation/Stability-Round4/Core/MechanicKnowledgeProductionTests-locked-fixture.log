@@ -1,0 +1,11 @@
+
+Unhandled exception. System.Exception: learn then sell last mechanism item
+   at MechanicKnowledgeTests.Check(Boolean v, String m) in /workspace/scratch/stability-round4-win/Tests/MechanicKnowledgeTests.cs:line 3
+   at MechanicKnowledgeTests.Run(String root) in /workspace/scratch/stability-round4-win/Tests/MechanicKnowledgeTests.cs:line 21
+   at Program.Main(String[] args) in /tmp/camp-practice-4crj11a5/project/Program.cs:line 1
+
+Traceback (most recent call last):
+  File "/workspace/scratch/stability-round4-win/Tests/MechanicKnowledgeProductionTests.py", line 19, in <module>
+    assert run(['run','--project',str(project),'--no-restore','--',str(p/'saves')]).returncode==0
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError

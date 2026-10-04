@@ -1,0 +1,7 @@
+{
+  "package": "UnityEngine.Modules 2021.3.33",
+  "archive_sha512": "matched repository PACKAGE_SHA512",
+  "netstandard2_dll_count": 66,
+  "dll_contents": "exactly match pinned archive",
+  "scope": "Compile-only API reference verification, not Unity execution"
+}

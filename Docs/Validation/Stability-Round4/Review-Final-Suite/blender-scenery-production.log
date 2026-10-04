@@ -1,0 +1,4 @@
+PASS: 59 real scenery adapter checks; managed boundaries, no Unity import/render claim
+PASS compiled drawable negative: invalid resource fallback: empty
+PASS compiled drawable negative: invalid resource fallback: disabled
+PASS compiled drawable negative: invalid resource fallback: no-slots

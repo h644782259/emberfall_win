@@ -1,0 +1,256 @@
+PRODUCTION SOURCE 6aeef550c7bfb73bd8abc17eb61c2c7a8ca8cc3a
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.26
+CASE dungeon / none / capped=False throws=0 atomic=150/120/3 display=150/120/3 failures=0
+CASE dungeon / none / capped=True throws=0 atomic=1/0/1 display=1/0/1 failures=0
+CASE dungeon / Changed / capped=False throws=1 atomic=150/120/3 display=0/0/0 failures=4
+  FAIL DISPLAY gold=0 atomic=150
+  FAIL DISPLAY xp=0 atomic=120
+  FAIL DISPLAY materials=0 atomic=3
+  FAIL later subscribed observer still executes
+CASE dungeon / Changed / capped=True throws=1 atomic=1/0/1 display=0/0/0 failures=3
+  FAIL DISPLAY gold=0 atomic=1
+  FAIL DISPLAY materials=0 atomic=1
+  FAIL later subscribed observer still executes
+CASE dungeon / LeveledUp / capped=False throws=1 atomic=150/120/3 display=0/0/0 failures=4
+  FAIL DISPLAY gold=0 atomic=150
+  FAIL DISPLAY xp=0 atomic=120
+  FAIL DISPLAY materials=0 atomic=3
+  FAIL later subscribed observer still executes
+CASE dungeon / mutatingChanged / capped=False throws=1 atomic=150/120/3 display=0/0/0 failures=4
+  FAIL DISPLAY gold=0 atomic=150
+  FAIL DISPLAY xp=0 atomic=120
+  FAIL DISPLAY materials=0 atomic=3
+  FAIL later subscribed observer still executes
+CASE dungeon / mutatingChanged / capped=True throws=1 atomic=1/0/1 display=0/0/0 failures=3
+  FAIL DISPLAY gold=0 atomic=1
+  FAIL DISPLAY materials=0 atomic=1
+  FAIL later subscribed observer still executes
+CASE dungeon / mutatingOnly / capped=False throws=0 atomic=150/120/3 display=143/120/2 failures=2
+  FAIL DISPLAY gold=143 atomic=150
+  FAIL DISPLAY materials=2 atomic=3
+CASE dungeon / mutatingOnly / capped=True throws=0 atomic=1/0/1 display=0/0/0 failures=2
+  FAIL DISPLAY gold=0 atomic=1
+  FAIL DISPLAY materials=0 atomic=1
+CASE dungeon / writeFailure / capped=False throws=0 atomic=150/120/3 display=150/120/3 failures=0
+CASE dungeon / writeFailure / capped=True throws=0 atomic=1/0/1 display=1/0/1 failures=0
+CASE room / none / capped=False throws=0 atomic=235/185/4 display=235/185/4 failures=0
+CASE room / none / capped=True throws=0 atomic=1/0/1 display=1/0/1 failures=0
+CASE room / Changed / capped=False throws=1 atomic=235/185/4 display=0/0/0 failures=4
+  FAIL DISPLAY gold=0 atomic=235
+  FAIL DISPLAY xp=0 atomic=185
+  FAIL DISPLAY materials=0 atomic=4
+  FAIL later subscribed observer still executes
+CASE room / Changed / capped=True throws=1 atomic=1/0/1 display=0/0/0 failures=3
+  FAIL DISPLAY gold=0 atomic=1
+  FAIL DISPLAY materials=0 atomic=1
+  FAIL later subscribed observer still executes
+CASE room / LeveledUp / capped=False throws=1 atomic=235/185/4 display=0/0/0 failures=4
+  FAIL DISPLAY gold=0 atomic=235
+  FAIL DISPLAY xp=0 atomic=185
+  FAIL DISPLAY materials=0 atomic=4
+  FAIL later subscribed observer still executes
+CASE room / mutatingChanged / capped=False throws=1 atomic=235/185/4 display=0/0/0 failures=4
+  FAIL DISPLAY gold=0 atomic=235
+  FAIL DISPLAY xp=0 atomic=185
+  FAIL DISPLAY materials=0 atomic=4
+  FAIL later subscribed observer still executes
+CASE room / mutatingChanged / capped=True throws=1 atomic=1/0/1 display=0/0/0 failures=3
+  FAIL DISPLAY gold=0 atomic=1
+  FAIL DISPLAY materials=0 atomic=1
+  FAIL later subscribed observer still executes
+CASE room / mutatingOnly / capped=False throws=0 atomic=235/185/4 display=228/185/3 failures=2
+  FAIL DISPLAY gold=228 atomic=235
+  FAIL DISPLAY materials=3 atomic=4
+CASE room / mutatingOnly / capped=True throws=0 atomic=1/0/1 display=-6/0/0 failures=2
+  FAIL DISPLAY gold=-6 atomic=1
+  FAIL DISPLAY materials=0 atomic=1
+CASE room / writeFailure / capped=False throws=0 atomic=235/185/4 display=235/185/4 failures=0
+CASE room / writeFailure / capped=True throws=0 atomic=1/0/1 display=1/0/1 failures=0
+CASE arena / none / capped=False throws=0 atomic=125/120/2 display=125/120/2 failures=0
+CASE arena / none / capped=True throws=0 atomic=1/0/1 display=1/0/1 failures=0
+挑战奖励回调异常，已核对存档回执：System.InvalidOperationException: intentional once postcommit observer
+   at RewardPresentationExceptionCases.<>c__DisplayClass8_0.<Run>b__0() in /tmp/reward-presentation-svm2lwud/Cases.cs:line 47
+   at Emberfall.ProgressionService.RaiseChanged() in /tmp/reward-presentation-svm2lwud/ProgressionService.cs:line 2547
+   at Emberfall.ProgressionService.CommitCandidate(GameProfile candidate, Boolean buildDraft) in /tmp/reward-presentation-svm2lwud/ProgressionService.cs:line 1546
+   at Emberfall.ProgressionService.TryGrantModeReward(String receipt, Int32 gold, Int32 experience, Int32 materials, Int32 completedTier) in /tmp/reward-presentation-svm2lwud/ProgressionService.cs:line 2001
+   at Emberfall.GameSession.TrySettleArenaReward() in /tmp/reward-presentation-svm2lwud/Host.cs:line 32
+CASE arena / Changed / capped=False throws=0 atomic=125/120/2 display=125/120/2 failures=1
+  FAIL later subscribed observer still executes
+挑战奖励回调异常，已核对存档回执：System.InvalidOperationException: intentional once postcommit observer
+   at RewardPresentationExceptionCases.<>c__DisplayClass8_0.<Run>b__0() in /tmp/reward-presentation-svm2lwud/Cases.cs:line 47
+   at Emberfall.ProgressionService.RaiseChanged() in /tmp/reward-presentation-svm2lwud/ProgressionService.cs:line 2547
+   at Emberfall.ProgressionService.CommitCandidate(GameProfile candidate, Boolean buildDraft) in /tmp/reward-presentation-svm2lwud/ProgressionService.cs:line 1546
+   at Emberfall.ProgressionService.TryGrantModeReward(String receipt, Int32 gold, Int32 experience, Int32 materials, Int32 completedTier) in /tmp/reward-presentation-svm2lwud/ProgressionService.cs:line 2001
+   at Emberfall.GameSession.TrySettleArenaReward() in /tmp/reward-presentation-svm2lwud/Host.cs:line 32
+CASE arena / Changed / capped=True throws=0 atomic=1/0/1 display=1/0/1 failures=1
+  FAIL later subscribed observer still executes
+挑战奖励回调异常，已核对存档回执：System.InvalidOperationException: intentional once postcommit observer
+   at RewardPresentationExceptionCases.<>c__DisplayClass8_0.<Run>b__0() in /tmp/reward-presentation-svm2lwud/Cases.cs:line 47
+   at RewardPresentationExceptionCases.<>c__DisplayClass8_0.<Run>b__2(Int32 _) in /tmp/reward-presentation-svm2lwud/Cases.cs:line 49
+   at Emberfall.ProgressionService.TryGrantModeReward(String receipt, Int32 gold, Int32 experience, Int32 materials, Int32 completedTier) in /tmp/reward-presentation-svm2lwud/ProgressionService.cs:line 2002
+   at Emberfall.GameSession.TrySettleArenaReward() in /tmp/reward-presentation-svm2lwud/Host.cs:line 32
+CASE arena / LeveledUp / capped=False throws=0 atomic=125/120/2 display=125/120/2 failures=1
+  FAIL later subscribed observer still executes
+挑战奖励回调异常，已核对存档回执：System.InvalidOperationException: intentional once postcommit observer
+   at RewardPresentationExceptionCases.<>c__DisplayClass8_0.<Run>b__0() in /tmp/reward-presentation-svm2lwud/Cases.cs:line 47
+   at Emberfall.ProgressionService.RaiseChanged() in /tmp/reward-presentation-svm2lwud/ProgressionService.cs:line 2547
+   at Emberfall.ProgressionService.CommitCandidate(GameProfile candidate, Boolean buildDraft) in /tmp/reward-presentation-svm2lwud/ProgressionService.cs:line 1546
+   at Emberfall.ProgressionService.TryGrantModeReward(String receipt, Int32 gold, Int32 experience, Int32 materials, Int32 completedTier) in /tmp/reward-presentation-svm2lwud/ProgressionService.cs:line 2001
+   at Emberfall.GameSession.TrySettleArenaReward() in /tmp/reward-presentation-svm2lwud/Host.cs:line 32
+CASE arena / mutatingChanged / capped=False throws=0 atomic=125/120/2 display=118/120/1 failures=3
+  FAIL DISPLAY gold=118 atomic=125
+  FAIL DISPLAY materials=1 atomic=2
+  FAIL later subscribed observer still executes
+挑战奖励回调异常，已核对存档回执：System.InvalidOperationException: intentional once postcommit observer
+   at RewardPresentationExceptionCases.<>c__DisplayClass8_0.<Run>b__0() in /tmp/reward-presentation-svm2lwud/Cases.cs:line 47
+   at Emberfall.ProgressionService.RaiseChanged() in /tmp/reward-presentation-svm2lwud/ProgressionService.cs:line 2547
+   at Emberfall.ProgressionService.CommitCandidate(GameProfile candidate, Boolean buildDraft) in /tmp/reward-presentation-svm2lwud/ProgressionService.cs:line 1546
+   at Emberfall.ProgressionService.TryGrantModeReward(String receipt, Int32 gold, Int32 experience, Int32 materials, Int32 completedTier) in /tmp/reward-presentation-svm2lwud/ProgressionService.cs:line 2001
+   at Emberfall.GameSession.TrySettleArenaReward() in /tmp/reward-presentation-svm2lwud/Host.cs:line 32
+CASE arena / mutatingChanged / capped=True throws=0 atomic=1/0/1 display=0/0/0 failures=3
+  FAIL DISPLAY gold=0 atomic=1
+  FAIL DISPLAY materials=0 atomic=1
+  FAIL later subscribed observer still executes
+CASE arena / mutatingOnly / capped=False throws=0 atomic=125/120/2 display=118/120/1 failures=2
+  FAIL DISPLAY gold=118 atomic=125
+  FAIL DISPLAY materials=1 atomic=2
+CASE arena / mutatingOnly / capped=True throws=0 atomic=1/0/1 display=0/0/0 failures=2
+  FAIL DISPLAY gold=0 atomic=1
+  FAIL DISPLAY materials=0 atomic=1
+CASE arena / writeFailure / capped=False throws=0 atomic=125/120/2 display=125/120/2 failures=0
+CASE arena / writeFailure / capped=True throws=0 atomic=1/0/1 display=1/0/1 failures=0
+CASE forest / none / capped=False throws=0 atomic=0/204/2 display=0/204/2 failures=0
+CASE forest / none / capped=True throws=0 atomic=0/0/1 display=0/1872/1 failures=1
+  FAIL DISPLAY xp=1872 atomic=0
+CASE forest / Changed / capped=False throws=1 atomic=0/204/2 display=0/204/0 failures=5
+  FAIL DISPLAY materials=0 atomic=2
+  FAIL later subscribed observer still executes
+  FAIL DISPLAY first completion preserved
+  FAIL DISPLAY newly unlocked node preserved
+  FAIL DISPLAY hard unlock preserved
+CASE forest / Changed / capped=True throws=1 atomic=0/0/1 display=0/1872/0 failures=6
+  FAIL DISPLAY xp=1872 atomic=0
+  FAIL DISPLAY materials=0 atomic=1
+  FAIL later subscribed observer still executes
+  FAIL DISPLAY first completion preserved
+  FAIL DISPLAY newly unlocked node preserved
+  FAIL DISPLAY hard unlock preserved
+CASE forest / LeveledUp / capped=False throws=1 atomic=0/204/2 display=0/204/0 failures=5
+  FAIL DISPLAY materials=0 atomic=2
+  FAIL later subscribed observer still executes
+  FAIL DISPLAY first completion preserved
+  FAIL DISPLAY newly unlocked node preserved
+  FAIL DISPLAY hard unlock preserved
+CASE forest / mutatingChanged / capped=False throws=1 atomic=0/204/2 display=0/204/0 failures=5
+  FAIL DISPLAY materials=0 atomic=2
+  FAIL later subscribed observer still executes
+  FAIL DISPLAY first completion preserved
+  FAIL DISPLAY newly unlocked node preserved
+  FAIL DISPLAY hard unlock preserved
+CASE forest / mutatingChanged / capped=True throws=1 atomic=0/0/1 display=0/1872/0 failures=6
+  FAIL DISPLAY xp=1872 atomic=0
+  FAIL DISPLAY materials=0 atomic=1
+  FAIL later subscribed observer still executes
+  FAIL DISPLAY first completion preserved
+  FAIL DISPLAY newly unlocked node preserved
+  FAIL DISPLAY hard unlock preserved
+CASE forest / mutatingOnly / capped=False throws=0 atomic=0/204/2 display=0/204/1 failures=1
+  FAIL DISPLAY materials=1 atomic=2
+CASE forest / mutatingOnly / capped=True throws=0 atomic=0/0/1 display=0/1872/0 failures=2
+  FAIL DISPLAY xp=1872 atomic=0
+  FAIL DISPLAY materials=0 atomic=1
+CASE forest / writeFailure / capped=False throws=0 atomic=0/204/2 display=0/204/2 failures=0
+CASE forest / writeFailure / capped=True throws=0 atomic=0/0/1 display=0/1872/1 failures=1
+  FAIL DISPLAY xp=1872 atomic=0
+CASE redrock / none / capped=False throws=0 atomic=0/204/2 display=0/204/2 failures=0
+CASE redrock / none / capped=True throws=0 atomic=0/0/1 display=0/1872/1 failures=1
+  FAIL DISPLAY xp=1872 atomic=0
+CASE redrock / Changed / capped=False throws=1 atomic=0/204/2 display=0/204/0 failures=5
+  FAIL DISPLAY materials=0 atomic=2
+  FAIL later subscribed observer still executes
+  FAIL DISPLAY first completion preserved
+  FAIL DISPLAY newly unlocked node preserved
+  FAIL DISPLAY hard unlock preserved
+CASE redrock / Changed / capped=True throws=1 atomic=0/0/1 display=0/1872/0 failures=6
+  FAIL DISPLAY xp=1872 atomic=0
+  FAIL DISPLAY materials=0 atomic=1
+  FAIL later subscribed observer still executes
+  FAIL DISPLAY first completion preserved
+  FAIL DISPLAY newly unlocked node preserved
+  FAIL DISPLAY hard unlock preserved
+CASE redrock / LeveledUp / capped=False throws=1 atomic=0/204/2 display=0/204/0 failures=5
+  FAIL DISPLAY materials=0 atomic=2
+  FAIL later subscribed observer still executes
+  FAIL DISPLAY first completion preserved
+  FAIL DISPLAY newly unlocked node preserved
+  FAIL DISPLAY hard unlock preserved
+CASE redrock / mutatingChanged / capped=False throws=1 atomic=0/204/2 display=0/204/0 failures=5
+  FAIL DISPLAY materials=0 atomic=2
+  FAIL later subscribed observer still executes
+  FAIL DISPLAY first completion preserved
+  FAIL DISPLAY newly unlocked node preserved
+  FAIL DISPLAY hard unlock preserved
+CASE redrock / mutatingChanged / capped=True throws=1 atomic=0/0/1 display=0/1872/0 failures=6
+  FAIL DISPLAY xp=1872 atomic=0
+  FAIL DISPLAY materials=0 atomic=1
+  FAIL later subscribed observer still executes
+  FAIL DISPLAY first completion preserved
+  FAIL DISPLAY newly unlocked node preserved
+  FAIL DISPLAY hard unlock preserved
+CASE redrock / mutatingOnly / capped=False throws=0 atomic=0/204/2 display=0/204/1 failures=1
+  FAIL DISPLAY materials=1 atomic=2
+CASE redrock / mutatingOnly / capped=True throws=0 atomic=0/0/1 display=0/1872/0 failures=2
+  FAIL DISPLAY xp=1872 atomic=0
+  FAIL DISPLAY materials=0 atomic=1
+CASE redrock / writeFailure / capped=False throws=0 atomic=0/204/2 display=0/204/2 failures=0
+CASE redrock / writeFailure / capped=True throws=0 atomic=0/0/1 display=0/1872/1 failures=1
+  FAIL DISPLAY xp=1872 atomic=0
+CASE star / none / capped=False throws=0 atomic=0/113/3 display=0/113/3 failures=0
+CASE star / none / capped=True throws=0 atomic=0/0/1 display=0/1222/1 failures=1
+  FAIL DISPLAY xp=1222 atomic=0
+CASE star / Changed / capped=False throws=1 atomic=0/113/3 display=0/113/0 failures=5
+  FAIL DISPLAY materials=0 atomic=3
+  FAIL later subscribed observer still executes
+  FAIL DISPLAY first completion preserved
+  FAIL DISPLAY hard unlock preserved
+  FAIL DISPLAY first-core marker matches committed chapter
+CASE star / Changed / capped=True throws=1 atomic=0/0/1 display=0/1222/0 failures=6
+  FAIL DISPLAY xp=1222 atomic=0
+  FAIL DISPLAY materials=0 atomic=1
+  FAIL later subscribed observer still executes
+  FAIL DISPLAY first completion preserved
+  FAIL DISPLAY hard unlock preserved
+  FAIL DISPLAY first-core marker matches committed chapter
+CASE star / LeveledUp / capped=False throws=1 atomic=0/113/3 display=0/113/0 failures=5
+  FAIL DISPLAY materials=0 atomic=3
+  FAIL later subscribed observer still executes
+  FAIL DISPLAY first completion preserved
+  FAIL DISPLAY hard unlock preserved
+  FAIL DISPLAY first-core marker matches committed chapter
+CASE star / mutatingChanged / capped=False throws=1 atomic=0/113/3 display=0/113/0 failures=5
+  FAIL DISPLAY materials=0 atomic=3
+  FAIL later subscribed observer still executes
+  FAIL DISPLAY first completion preserved
+  FAIL DISPLAY hard unlock preserved
+  FAIL DISPLAY first-core marker matches committed chapter
+CASE star / mutatingChanged / capped=True throws=1 atomic=0/0/1 display=0/1222/0 failures=6
+  FAIL DISPLAY xp=1222 atomic=0
+  FAIL DISPLAY materials=0 atomic=1
+  FAIL later subscribed observer still executes
+  FAIL DISPLAY first completion preserved
+  FAIL DISPLAY hard unlock preserved
+  FAIL DISPLAY first-core marker matches committed chapter
+CASE star / mutatingOnly / capped=False throws=0 atomic=0/113/3 display=0/113/2 failures=1
+  FAIL DISPLAY materials=2 atomic=3
+CASE star / mutatingOnly / capped=True throws=0 atomic=0/0/1 display=0/1222/0 failures=2
+  FAIL DISPLAY xp=1222 atomic=0
+  FAIL DISPLAY materials=0 atomic=1
+CASE star / writeFailure / capped=False throws=0 atomic=0/113/3 display=0/113/3 failures=0
+CASE star / writeFailure / capped=True throws=0 atomic=0/0/1 display=0/1222/1 failures=1
+  FAIL DISPLAY xp=1222 atomic=0
+RESULT cases=66 checks=756 failures=153 (actual reward hosts/service; scene-completion shells, not Unity)

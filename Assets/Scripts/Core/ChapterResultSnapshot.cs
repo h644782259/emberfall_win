@@ -13,6 +13,8 @@ namespace Emberfall
         public readonly string Failure,LastHit;
         public bool Saved {get;private set;}
         public int Materials {get;private set;}
+        public bool RewardDetailsUnavailable {get;private set;}
+        public void RecordSavedUnavailable(){if(Saved||Failed)return;RewardDetailsUnavailable=true;Saved=true;}
         public bool FirstCompletion {get;private set;}
         public bool FirstCoreAvailable {get;private set;}
         public int UnlockedNode {get;private set;}=-1;

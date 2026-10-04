@@ -37,7 +37,7 @@ namespace Emberfall {
   public CombatOpportunityState BasicOpportunity(){BasicQueries++;return Basic;}
  }
  public class Progression{public GameProfile Profile=new GameProfile();}
- public class GameSession{public Progression Progression=new Progression();public PlayerController Player=new PlayerController();public bool InputBlocked,ChallengeRun,InDungeon;public bool HasStarted=true;public int HealingCharges=2;public Dictionary<string,string> Failures=new Dictionary<string,string>();public string ControlFailure(string key)=>Failures.TryGetValue(key,out var text)?text:"";}
+ public class GameSession{public Progression Progression=new Progression();public PlayerController Player=new PlayerController();public bool InputBlocked,ChallengeRun,InDungeon,PracticeActive;public bool HasStarted=true;public int HealingCharges=2;public Dictionary<string,string> Failures=new Dictionary<string,string>();public string ControlFailure(string key)=>Failures.TryGetValue(key,out var text)?text:"";}
  public partial class GameUI {
   public enum Panel{Inventory,Skills}
   GameSession session=new GameSession();Rect hotbarBounds=new Rect(0,0,282,129);Rect[] hotbarSlots=new Rect[10];List<Rect> blockedRects=new List<Rect>();bool hotbarDragging,hotbarPointerConfiguring;int hotbarPointerSlot;Vector2 Mouse=new Vector2(-100,-100);Color jade=new Color(),pale=new Color(),muted=new Color(),gold=new Color(),card=new Color();string tooltip;

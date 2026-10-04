@@ -21,16 +21,14 @@ namespace Emberfall
         {
             if(!DungeonRewardPending)return true;
             if(!HasStarted||Progression==null)return false;
-            int gold=Progression.Profile.gold,materials=Progression.Profile.mechanicMaterials;
-            long xp=TotalEarnedExperience(Progression.Profile);
+            var source=Progression;string slot=source.CurrentSlotId,receipt=pendingDungeonRewardId;
             if(!Progression.TryCompleteDungeonRun(pendingDungeonRewardId,pendingDungeonRewardTier,pendingDungeonRewardGold,pendingDungeonRewardExperience))
             {Notify(Progression.LastError);return false;}
+            if(Progression!=source||source.CurrentSlotId!=slot||pendingDungeonRewardId!=receipt)return true;
             pendingDungeonRewardId=null;
-            modeGoldReward=Mathf.Max(0,Progression.Profile.gold-gold);
-            modeXpReward=(int)Math.Max(0,TotalEarnedExperience(Progression.Profile)-xp);
-            modeMaterialReward=Mathf.Max(0,Progression.Profile.mechanicMaterials-materials);
+            ApplyRewardPresentation(receipt);
             LastRunSummary=BuildRunSummary(true);
-            LogSystem("遗迹结算已保存 · +"+modeGoldReward+"金币 · +"+modeXpReward+"经验 · +"+modeMaterialReward+"碎片");
+            LogSystem(RewardPresentationText("遗迹结算已保存"));
             return true;
         }
         private void ClearDungeonSettlement()

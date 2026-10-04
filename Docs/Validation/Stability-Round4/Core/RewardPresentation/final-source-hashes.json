@@ -1,0 +1,13 @@
+{
+  "Tests/RewardPresentationExceptionProductionTests.py": "1059c3b4f226abe539cefcc58a6734e70fd30c387a9e17ae9373dafad6e5a50d",
+  "Tests/RewardPresentationExceptionCases.cs": "400ba4aa4ac528a6a6af14186d493410065face82dab2fd6d8bf6165ed6ae5f1",
+  "Assets/Scripts/Core/GameSession.DungeonRewards.cs": "002837f1a0ba1a5e949e4337e8ab8d59f938dbfe7225253e4b074f370eb9879d",
+  "Assets/Scripts/Core/GameSession.RoomChain.cs": "10a8d3729c13f4b894f366d21be06b462425a1dc3fd4f8b41677f32e99edd110",
+  "Assets/Scripts/Core/GameSession.Chapter.cs": "2f4f72dd4d1d499e0042bbabd3e71d00c5722abf6d7aa76eef28ea33d6df3bd5",
+  "Assets/Scripts/Core/GameSession.Modes.cs": "b1e2157ac803621cba4246dc08fe28ea777353882279f1c5e09e5d29c36b0cd3",
+  "Assets/Scripts/Core/ProgressionService.cs": "a0b0f993944ab839f2074ac63de706bb1a3704f9b6fa370e65f57777ff38d3e2",
+  "Assets/Scripts/Core/ProgressionService.Chapter.cs": "940e6cb9cb7fd815b296878536b097599b5b9ff7505d33992460673e7237bff0",
+  "Assets/Scripts/Core/GameTypes.cs": "28cbaffef8eb0259bfe064cbb47298a5cdc1e2d387654f8961b15f4ff8b7bcaf",
+  "Assets/Scripts/Core/ChapterResultSnapshot.cs": "d12bd2f4b6bdb16ca3f2068aea3298bc984ff389cbbe78725c078c46995df08b",
+  "Assets/Scripts/UI/ChapterEntryPresentation.cs": "3616c137333a3cfb2fc3fa4d95288967b82b6fea4ca7de0ab4e45cb2e7fe048a"
+}

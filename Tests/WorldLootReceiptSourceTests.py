@@ -18,6 +18,9 @@ def check(ok,why):
  checks.append(why)
 for src,signature in [(session,'private bool ChangeZone('),(rooms,'public bool EnterNextRoom()')]:
  transition=body(src,signature)
+ if src is rooms:
+  check(transition.index('if(!SaveBeforeLeaving())return false;')<transition.index('return EnterNextRoomAfterSave();'),'room adapter requires successful save before entering transition helper')
+  transition += body(rooms,'private bool EnterNextRoomAfterSave()')
  sequence=['SaveBeforeLeaving()', 'changingZone', 'previousCombatEpoch', 'Enemies.Clear()', 'transientObjects.Clear()', 'world.SetActive(false)', 'RetireCombatForWorldTransition()', 'RetireWorldLootReceipts(previousCombatEpoch)', 'WorldBuilder.Build(', 'Player.Teleport(']
  positions=[re.search(r"(?<!\w)Enemies.Clear\(\)", transition).start() if token == "Enemies.Clear()" else transition.index(token) for token in sequence]
  check(positions==sorted(positions),signature+' retires old producers and epoch after checked persistence and before construction/spawn')
@@ -51,7 +54,9 @@ update=body(pickup,'private void Update()')
 check('!session.InDungeon' not in update and '!session.IsCurrentGroundLoot(this)' in update,'wilderness pickup update validates live ownership')
 check('session.TryCollectGroundLoot(this)' in update and 'retryTime = RetryDelay' in update and 'retryTime > 0' in update,'failed automatic retries back off and use identity-aware collection')
 collect=body(session,'public bool TryCollectGroundLoot(string itemId')
-check(collect.index('if (!accepted) return false;')<collect.index('pendingLoot.Remove(itemId)')<collect.index('pending.Pickup.Retire()'),'failed persistence retains exact pending item and body')
+check(collect.index('try { accepted = source.CollectLoot(pending.Item); }')<collect.index('finally')<collect.index('pending.Collecting = false;'),'collection always releases its reentrancy guard, including exceptions')
+check(collect.index('if (accepted || source.HasCommittedWorldLoot(itemId))')<collect.index('pendingLoot.Remove(itemId)')<collect.index('pending.Pickup.Retire()'),'only accepted or committed receipt may retire exact pending item and body')
+check('object.ReferenceEquals(current, pending)' in collect,'observer world replacement cannot retire a different pending identity')
 fixture=read('Assets/Editor/GroundLootValidation.cs');blocked=read('Assets/Editor/PersistenceTransitionValidation.cs')
 check('IEnumerator wilderness = ValidateWildernessRetention' in fixture and 'ValidateRoomReceiptBoundary(game, fixture, check)' in fixture,'prepared engine runner dispatches wilderness retention and successful room boundary checks')
 check('automaticCollect.Invoke(game' in fixture and 'ReadPickupRetry(pending) > 0' in fixture,'prepared engine fixture covers stale collector ownership and real retry backoff')

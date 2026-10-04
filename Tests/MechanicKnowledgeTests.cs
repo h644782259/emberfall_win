@@ -16,5 +16,11 @@ public static class MechanicKnowledgeTests{
  Check(arc.Load()&&arc.Profile.variantKnowledgeRevision==1&&arc.Profile.variantKnowledge.Count==2&&arc.Profile.mechanicMaterials==11,"legacy evidence unions pending recovery without refund");
  Check(arc.Load()&&arc.Profile.variantKnowledge.Count==2&&arc.Profile.mechanicMaterials==11,"migration idempotent");
  var alien=arc.CreateMechanicItem(EquipmentMechanic.VenomSpread);alien.mechanicVariantUnlocked=true;Check(!arc.HasVariant(alien),"foreign mechanism never authorized");
+ // Character knowledge must outlive every item that originally taught it.
+ var sold=new ProgressionService(Path.Combine(root,"knowledge-without-items"));Check(sold.CreateNewSlot(HeroClass.Ranger),"create empty-ownership knowledge fixture");sold.Profile.level=30;sold.Profile.mechanicMaterials=4;
+ var teacher=sold.CreateMechanicItem(EquipmentMechanic.VenomSpread);Check(sold.CollectLoot(teacher)&&sold.ToggleMechanicVariant(teacher.id,true)&&sold.SetItemLocked(teacher.id,false)&&sold.Sell(teacher.id),"learn then explicitly unlock and sell last mechanism item");
+ Check(sold.Load()&&sold.Profile.variantKnowledge.Contains(EquipmentMechanic.VenomSpread)&&!sold.Profile.inventory.Exists(i=>i.mechanic==EquipmentMechanic.VenomSpread),"knowledge survives durable reload with zero matching items");
+ var later=sold.CreateMechanicItem(EquipmentMechanic.VenomSpread);Check(sold.CollectLoot(later)&&sold.ToggleMechanicVariant(later.id,true)&&sold.Profile.mechanicMaterials==0,"later copy selects B without charging learning cost again");
+ Check(sold.Load()&&sold.Profile.inventory.Find(i=>i.id==later.id).mechanicVariant==1&&sold.Profile.mechanicMaterials==0,"later free B selection persists without material refund or charge");
  return "PASS "+n+" actual character knowledge transactions";
  }}

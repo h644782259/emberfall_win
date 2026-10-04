@@ -59,6 +59,29 @@ namespace Emberfall
             }
             finally{BlockUITransitionForFinger(triggeringFinger);}
         }
+        private void LeaveMobilePauseForCamp()
+        {
+            bool paused=session.Paused, practice=session.PracticeActive, completed=false;
+            var player=session.Player;
+            int epoch=player==null?0:player.CombatEpoch;
+            try
+            {
+                session.ReturnToCamp();
+                completed=session.Player!=player || player!=null&&player.CombatEpoch!=epoch || practice&&!session.PracticeActive;
+            }
+            finally { session.SetPaused(completed?false:paused); }
+        }
+        private void LeaveMobilePauseForDungeon()
+        {
+            bool paused=session.Paused, completed=false;
+            try
+            {
+                session.SetPaused(false);
+                session.EnterDungeon();
+                completed=session.DungeonSelectionOpen;
+            }
+            finally { if(!completed)session.SetPaused(paused); }
+        }
         private void DrawMobileHUD()
         {
             var l=MobileControls.Layout;GameProfile p=session.Progression.Profile;
@@ -247,8 +270,8 @@ namespace Emberfall
                     case 1: RequestManualSave(); break;
                     case 2: OpenSaveSelection(); break;
                     case 3: RequestExit(true); break;
-                    case 4: session.SetPaused(false); session.ReturnToCamp(); break;
-                    case 5: session.SetPaused(false); session.EnterDungeon(); break;
+                    case 4: LeaveMobilePauseForCamp(); break;
+                    case 5: LeaveMobilePauseForDungeon(); break;
                     case 6: OpenTravelMap(); break;
                     case 7: OpenControls(); break;
                 }

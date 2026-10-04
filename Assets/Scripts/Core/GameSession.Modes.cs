@@ -24,11 +24,12 @@ namespace Emberfall
   private bool arenaAwaitingBlessing,arenaResultRecorded;
   private ArenaHazards arenaHazards;
   private int modeGoldReward,modeXpReward,modeMaterialReward;
+  private bool modeRewardDetailsUnavailable;
 
   private void ResetArenaMode(bool dungeon)
   {
    if(ModeRun!=null)ModeRun.Dispose();ModeRun=null;arenaEnemies.Clear();arenaHazards=null;
-   modeGoldReward=modeXpReward=modeMaterialReward=0;arenaAwaitingBlessing=arenaResultRecorded=false;nextArenaEnemy=0;arenaSpawnDelay=arenaSpawnBlocked=0;
+   modeRewardDetailsUnavailable=false;modeGoldReward=modeXpReward=modeMaterialReward=0;arenaAwaitingBlessing=arenaResultRecorded=false;nextArenaEnemy=0;arenaSpawnDelay=arenaSpawnBlocked=0;
    ResetRoomChain(dungeon);
    if(!dungeon||ChapterActive||SelectedArenaMode<0||RoomChainRun!=null)return;
    SelectedArenaMode=Mathf.Clamp(SelectedArenaMode,0,2);
@@ -108,17 +109,38 @@ namespace Emberfall
   }
   private static long TotalEarnedExperience(GameProfile profile)
   {long result=profile.xp;for(int level=1;level<profile.level;level++)result+=GameBalance.XpToNext(level);return result;}
+  private void ApplyRewardPresentation(string receipt)
+  {
+   var detail=Progression.GetRewardPresentation(receipt);modeRewardDetailsUnavailable=detail==null;
+   modeGoldReward=detail==null?0:detail.Gold;modeXpReward=detail==null?0:detail.Experience;modeMaterialReward=detail==null?0:detail.Materials;
+  }
+  private string RewardPresentationText(string label)
+  {return modeRewardDetailsUnavailable?label+" · 奖励已保存，旧回执缺少奖励明细，无法恢复准确数额（不会重复发放）":label+" · +"+modeGoldReward+"金币 · +"+modeXpReward+"经验 · +"+modeMaterialReward+"碎片";}
   public bool TrySettleArenaReward()
   {
    if(ChapterActive)return TrySettleChapterReward();
    if(RoomChainRun!=null)return TrySettleRoomReward();
    if(ModeRun==null||!ModeRun.RewardPending)return true;
    ExpeditionRewardTicket ticket;if(!ModeRun.TryReserveReward(out ticket))return false;
-   int beforeGold=Progression.Profile.gold,beforeMaterials=Progression.Profile.mechanicMaterials;long beforeXp=TotalEarnedExperience(Progression.Profile);
-   int goldReward=HasBlessing(RunBlessing.RiskContract)?Mathf.RoundToInt(ticket.Reward.Gold*1.3f):ticket.Reward.Gold;
-   bool saved=Progression.TryGrantModeReward(modeReceipt,goldReward,ticket.Reward.Experience,ticket.Reward.Materials,DungeonTier);
-   ModeRun.CompleteReward(ticket,saved);
-   if(saved){modeGoldReward=Mathf.Max(0,Progression.Profile.gold-beforeGold);modeXpReward=(int)Math.Max(0,TotalEarnedExperience(Progression.Profile)-beforeXp);modeMaterialReward=Mathf.Max(0,Progression.Profile.mechanicMaterials-beforeMaterials);LogSystem("挑战结算 · +"+modeGoldReward+"金币 · +"+modeXpReward+"经验 · +"+modeMaterialReward+"碎片");LastRunSummary=BuildRunSummary(true);}
+   var rewardRun=ModeRun;var progression=Progression;string rewardSlot=progression.CurrentSlotId,receipt=modeReceipt;
+   bool saved=false;
+   try
+   {
+    int goldReward=HasBlessing(RunBlessing.RiskContract)?Mathf.RoundToInt(ticket.Reward.Gold*1.3f):ticket.Reward.Gold;
+    saved=progression.TryGrantModeReward(receipt,goldReward,ticket.Reward.Experience,ticket.Reward.Materials,DungeonTier);
+   }
+   catch(Exception error)
+   {
+    // Changed/LeveledUp run after persistence and can throw. Reconcile the
+    // original slot's durable receipt before completing its reserved ticket.
+    var verification=new ProgressionService(progression.SaveDirectory);
+    saved=verification.LoadSlot(rewardSlot)&&verification.Profile.lastModeRewardId==receipt;
+    Debug.LogWarning("挑战奖励回调异常，已核对存档回执："+error);
+   }
+   finally {rewardRun.CompleteReward(ticket,saved);}
+   // A callback may replace the active host; never publish the old result there.
+   if(ModeRun!=rewardRun||Progression!=progression||progression.CurrentSlotId!=rewardSlot)return saved;
+   if(saved){ApplyRewardPresentation(receipt);LogSystem(RewardPresentationText("挑战结算"));LastRunSummary=BuildRunSummary(true);}
    else Notify(Progression.LastError);
    return saved;
   }

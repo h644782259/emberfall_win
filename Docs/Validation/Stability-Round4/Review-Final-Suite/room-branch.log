@@ -1,0 +1,66 @@
+BUILD current
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.90
+
+PASS: 3901 actual branch host assertions, 54 seeds x 2 paths (managed boundary doubles, not Unity)
+
+BUILD old-third-room
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.94
+
+NEGATIVE RAW old-third-room
+Unhandled exception. System.Exception: selected objective replaces old seed objective
+   at RoomBranchProductionTests.C(Boolean b, String m) in /tmp/room-branch-9v0o1vh4/old-third-room/Probe.cs:line 3
+   at RoomBranchProductionTests.Main() in /tmp/room-branch-9v0o1vh4/old-third-room/Probe.cs:line 11
+
+PASS compiled negative: old-third-room
+BUILD reroll-retry
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.94
+
+NEGATIVE RAW reroll-retry
+Unhandled exception. System.Exception: retry retains seed branch and conditions
+   at RoomBranchProductionTests.C(Boolean b, String m) in /tmp/room-branch-9v0o1vh4/reroll-retry/Probe.cs:line 3
+   at RoomBranchProductionTests.Main() in /tmp/room-branch-9v0o1vh4/reroll-retry/Probe.cs:line 13
+
+PASS compiled negative: reroll-retry
+BUILD double-save-branch
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.95
+
+NEGATIVE RAW double-save-branch
+Unhandled exception. System.Exception: single preflight enters selected room despite second-write fault
+   at RoomBranchProductionTests.C(Boolean b, String m) in /tmp/room-branch-9v0o1vh4/double-save-branch/Probe.cs:line 3
+   at RoomBranchProductionTests.Main() in /tmp/room-branch-9v0o1vh4/double-save-branch/Probe.cs:line 22
+
+PASS compiled negative: double-save-branch
+BUILD double-save-retry
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.96
+
+NEGATIVE RAW double-save-retry
+Unhandled exception. System.Exception: retry uses one saved preflight despite second-write fault
+   at RoomBranchProductionTests.C(Boolean b, String m) in /tmp/room-branch-9v0o1vh4/double-save-retry/Probe.cs:line 3
+   at RoomBranchProductionTests.Main() in /tmp/room-branch-9v0o1vh4/double-save-retry/Probe.cs:line 26
+
+PASS compiled negative: double-save-retry

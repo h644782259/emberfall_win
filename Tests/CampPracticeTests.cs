@@ -22,6 +22,7 @@ public static class CampPracticeTests
   var write=typeof(ProgressionService).GetMethod("TryWriteProfile",System.Reflection.BindingFlags.Static|System.Reflection.BindingFlags.NonPublic);object[] args={a.Profile,a.SaveFilePath,false,null};
   Check(!(bool)write.Invoke(null,args)&&Directory.GetFiles(root).Length==2&&File.ReadAllText(p.SaveFilePath)==disk,"low-level missing guard cannot target real saves");
   int files=Directory.GetFiles(root).Length;a.Profile.gold+=100;a.Profile.skillRanks[0]=1;a.Save();Check(string.IsNullOrEmpty(a.LastError),"practice memory save succeeds without persistence");Check(Directory.GetFiles(root).Length==files&&File.ReadAllText(p.SaveFilePath)==disk&&State(p)==original&&draft.IsCurrent,"practice save never persists or invalidates draft");
+  a.Profile.potions=2;Check(a.UsePotion()&&a.Profile.potions==1&&File.ReadAllText(p.SaveFilePath)==disk&&State(p)==original&&draft.IsCurrent,"actual practice potion transaction changes only temporary inventory");
   Check(!a.SaveAsNewSlot()&&!a.CreateNewSlot(HeroClass.Ranger)&&!a.LoadSlot(p.CurrentSlotId),"practice cannot create or load saves");
   SaveDeletionRequest request;p.PrepareSaveDeletion(p.CurrentSlotId,out request);Check(!a.DeleteSaveSlot(request),"practice cannot delete real saves");
   for(int i=0;i<3;i++)Check(draft.ChangeMastery(0,-1)&&draft.ChangeMastery(1,1),"move three legal points");

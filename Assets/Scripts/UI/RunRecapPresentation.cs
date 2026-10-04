@@ -20,6 +20,7 @@ namespace Emberfall
         public readonly int Tier, Wave, TotalWaves, Seed, Materials, ExchangeCost, GoldLost;
         public readonly string LastDamageSource, ModeName, FailureReason;
         public readonly int RewardGold, RewardExperience, RewardMaterials;
+        public readonly bool RewardDetailsUnavailable;
         public readonly float LastDamageAmount;
         public readonly RunFailureEvidence Evidence;
         public readonly ReadOnlyCollection<KeyValuePair<string,int>> Actions;
@@ -28,15 +29,15 @@ namespace Emberfall
             int materials, int exchangeCost, string damageSource, float damageAmount,
             IEnumerable<KeyValuePair<string,int>> actions, IEnumerable<string> mechanics, IEnumerable<string> blessings,
             bool pendingChest, bool firstClearChoice, int goldLost = 0, string modeName = null, string failureReason = null,
-            int rewardGold = 0, int rewardExperience = 0, int rewardMaterials = 0,RunFailureEvidence evidence=null,int[] mechanismCounts=null)
+            int rewardGold = 0, int rewardExperience = 0, int rewardMaterials = 0,RunFailureEvidence evidence=null,int[] mechanismCounts=null,bool rewardDetailsUnavailable=false)
         {
             EmberCreated=mechanismCounts!=null&&mechanismCounts.Length==4?mechanismCounts[0]:0;EmberEffective=mechanismCounts!=null&&mechanismCounts.Length==4?mechanismCounts[1]:0;FrostCreated=mechanismCounts!=null&&mechanismCounts.Length==4?mechanismCounts[2]:0;FrostEffective=mechanismCounts!=null&&mechanismCounts.Length==4?mechanismCounts[3]:0;
-            Evidence=evidence;
+            Evidence=evidence;RewardDetailsUnavailable=rewardDetailsUnavailable;
             Won=won; InDungeon=dungeon; Challenge=challenge; Tier=Math.Max(1,tier);
             TotalWaves=Math.Max(1,totalWaves); Wave=Math.Max(0,Math.Min(TotalWaves,wave)); Seed=seed;
             Materials=Math.Max(0,materials); ExchangeCost=Math.Max(1,exchangeCost); GoldLost=Math.Max(0,goldLost);
             LastDamageSource=damageSource??""; ModeName=modeName??""; FailureReason=failureReason??"";
-            RewardGold=Math.Max(0,rewardGold);RewardExperience=Math.Max(0,rewardExperience);RewardMaterials=Math.Max(0,rewardMaterials);
+            RewardGold=rewardDetailsUnavailable?0:Math.Max(0,rewardGold);RewardExperience=rewardDetailsUnavailable?0:Math.Max(0,rewardExperience);RewardMaterials=rewardDetailsUnavailable?0:Math.Max(0,rewardMaterials);
             LastDamageAmount=float.IsNaN(damageAmount)||float.IsInfinity(damageAmount)?0:Math.Max(0,damageAmount);
             Actions=new List<KeyValuePair<string,int>>(actions??new KeyValuePair<string,int>[0]).AsReadOnly();
             Mechanics=new List<string>(mechanics??new string[0]).AsReadOnly();
@@ -54,7 +55,7 @@ namespace Emberfall
         public readonly string Tip, FailureLabel;
         public bool HasFailureBanner { get { return FailureLabel.Length>0&&Snapshot.FailureReason!="PlayerDefeated"&&Snapshot.FailureReason!="Death"; } }
         public bool HasDamage { get { return !Snapshot.Won && !HasFailureBanner && Snapshot.LastDamageAmount>0 && !string.IsNullOrWhiteSpace(Snapshot.LastDamageSource) && Snapshot.LastDamageSource!="未记录"; } }
-        public bool HasProgress { get { return Snapshot.Materials>0 || Snapshot.PendingChest || Snapshot.FirstClearChoice || Snapshot.GoldLost>0 || Rewards.Length>0; } }
+        public bool HasProgress { get { return Snapshot.RewardDetailsUnavailable || Snapshot.Materials>0 || Snapshot.PendingChest || Snapshot.FirstClearChoice || Snapshot.GoldLost>0 || Rewards.Length>0; } }
         public float ExchangeProgress { get { return Math.Min(1f,Snapshot.Materials/(float)Snapshot.ExchangeCost); } }
         public RunRecapPresentation(RunRecapSnapshot snapshot)
         {

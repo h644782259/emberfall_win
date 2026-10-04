@@ -1,0 +1,14 @@
+/tmp/status-anchors-4o2oa7ld/export/Motion.cs(1,202): warning CS0414: The field 'CombatModel.pilotCharging' is assigned but its value is never used [/tmp/status-anchors-4o2oa7ld/export/Export.csproj]
+PASS 37 actual slime/goblin/wisp/guardian/large-boss factory, airborne and knockdown status attachment assertions; managed TRS not engine rendering
+
+/tmp/status-anchors-4o2oa7ld/export/Motion.cs(1,202): warning CS0414: The field 'CombatModel.pilotCharging' is assigned but its value is never used [/tmp/status-anchors-4o2oa7ld/export/Export.csproj]
+Unhandled exception. System.Exception: status symbol follows actual body parent
+   at Program.Check(Boolean ok, String why) in /tmp/status-anchors-4o2oa7ld/export/Exporter.cs:line 3
+   at Program.Main() in /tmp/status-anchors-4o2oa7ld/export/Exporter.cs:line 13
+
+/tmp/status-anchors-4o2oa7ld/export/Motion.cs(1,202): warning CS0414: The field 'CombatModel.pilotCharging' is assigned but its value is never used [/tmp/status-anchors-4o2oa7ld/export/Export.csproj]
+Unhandled exception. System.Exception: status symbol follows actual body parent
+   at Program.Check(Boolean ok, String why) in /tmp/status-anchors-4o2oa7ld/export/Exporter.cs:line 3
+   at Program.Main() in /tmp/status-anchors-4o2oa7ld/export/Exporter.cs:line 13
+
+PASS compiled root-parent and fake-height regressions rejected

@@ -24,6 +24,7 @@ namespace Emberfall
             var charging=Player.GetComponent<SkillChargeController>();if(charging!=null&&charging.IsCharging)return false;
             ProgressionService copy=draft==null?Progression.CreatePracticeCopy():draft.CreatePracticeCopy();
             if(copy==null||!copy.IsPracticeOnly)return false;
+            MobileControls.ConsumePotion(); // Do not inherit an input queued for the formal owner.
             practiceBusy=true;
             try
             {
@@ -58,9 +59,17 @@ namespace Emberfall
                 if(enemy!=null&&enemy.gameObject.activeInHierarchy&&!enemy.IsDead&&
                     (enemy.IsAggro||enemy.IsPreparingAttack||(enemy.transform.position-Player.transform.position).sqrMagnitude<=144f))
                 {Notify("附近有敌人或仍在交战；请先脱离追击、结束预警后再试招。");return false;}
+            // These windows use absolute combat time; hiding the original owner
+            // cannot pause them. Wait rather than consume, rebuild or extend them.
+            if(SummonedCompanion.HasPracticeTimedState(Player))
+            {Notify("伙伴的契约强化、护契或共鸣计时尚未结束；请稍后再试招。");return false;}
+            // These producers release cast receipts or pending impacts in OnDisable;
+            // reactivation cannot resume their original cast after practice.
             foreach(var root in gameObject.scene.GetRootGameObjects())
-                if(root.activeSelf&&root.GetComponentInChildren<CombatProjectile>()!=null)
-                {Notify("场上仍有飞行弹体；请等战斗结束后再试招。");return false;}
+                if(root.activeSelf&&(root.GetComponentInChildren<CombatProjectile>()!=null||
+                    root.GetComponentInChildren<CombatArea>()!=null||root.GetComponentInChildren<AdvancedSkillSequence>()!=null||
+                    root.GetComponentInChildren<SummonerSpell>()!=null))
+                {Notify("场上仍有飞行弹体或持续技能；请等效果结束后再试招。");return false;}
             return true;
         }
         public bool PinPracticeBaseline()
@@ -71,6 +80,7 @@ namespace Emberfall
         public bool StartPractice()
         {
             if(!PracticeActive||practiceBusy||!PracticeRecord.Start())return false;
+            MobileControls.ConsumePotion(); // Discard pending input at practice start.
             uiBlocking=false;
             if(PracticeRecord.UsesEnemyAI)foreach(var enemy in Enemies)if(enemy!=null&&!enemy.IsDead)enemy.Provoke();
             UpdateTimeScale();return true;
@@ -86,10 +96,19 @@ namespace Emberfall
         public void RecordPracticeSkillHit(int castId){if(PracticeActive)PracticeRecord.Hit(castId);}
         private void TickPractice()
         {
+            // Always drain the touch latch, including prepare/blocked/terminal frames.
+            // Read it before combining keyboard input so F cannot short-circuit it.
+            bool potionRequested=MobileControls.ConsumePotion();
+            potionRequested=Input.GetKeyDown(KeyCode.F)||potionRequested;
             if(Input.GetKeyDown(KeyCode.H)){EndPractice("主动离开 · 记录提前结束");return;}
             if(PracticeRecord.Finished){EndPractice(PracticeRecord.EndReason);return;}
             if(InputBlocked||!PracticeRecord.Started)return;
-            try{PracticeRecord.Advance(Time.deltaTime);if(PracticeRecord.Finished)EndPractice(PracticeRecord.EndReason);}
+            try
+            {
+                PracticeRecord.Advance(Time.deltaTime);
+                if(PracticeRecord.Finished){EndPractice(PracticeRecord.EndReason);return;}
+                if(potionRequested)DrinkPotion();
+            }
             catch(Exception exception){Debug.LogException(exception);EndPractice("试招异常中止");}
         }
         public bool MovePracticeTarget(EnemyController enemy)
@@ -110,18 +129,39 @@ namespace Emberfall
             return PracticeActive&&PracticeRecord.HasSupplier&&practiceSupplier!=null&&!practiceSupplier.IsDead&&enemy!=practiceSupplier&&Enemies.Contains(enemy)&&
                 (enemy.transform.position-practiceSupplier.transform.position).sqrMagnitude<=36&&WorldTraversal.HasLineOfSight(enemy.transform.position,practiceSupplier.transform.position)?.7f:1f;
         }
+        private static void RetirePracticeActor(Component actor)
+        {
+            try
+            {
+                if(actor==null)return;
+                var root=actor.gameObject;
+                try{root.SetActive(false);}finally{Destroy(root);}
+            }
+            catch(Exception exception){Debug.LogException(exception);}
+        }
         public void EndPractice(string reason)
         {
             if(!PracticeActive)return;
+            MobileControls.ConsumePotion(); // Never forward practice input to the restored owner.
             PracticeRecord.Finish(reason);
             if(PreviousPracticeRecord==null&&PracticeRecord.Started&&PracticeRecord.Survived&&(PracticeRecord.Elapsed==PracticeRecord.Duration||PracticeRecord.ObjectiveCompleted))PreviousPracticeRecord=PracticeRecord.FrozenCopy();
             // Restore ownership even if Unity destruction/reactivation raises an exception.
+            bool rootsRetired=false;
             try
             {
                 foreach(GameObject root in gameObject.scene.GetRootGameObjects())if(!practiceOriginalRoots.Contains(root)){root.SetActive(false);Destroy(root);}
+                rootsRetired=true;
             }
             finally
             {
+                // Scene enumeration or one root's cleanup may fail. Never restore the
+                // formal session beside a still-running temporary player or enemy.
+                if(!rootsRetired)
+                {
+                    if(Player!=null&&Player!=practiceOriginalPlayer)RetirePracticeActor(Player);
+                    if(Enemies!=null&&Enemies!=practiceOriginalEnemies)
+                        foreach(var enemy in Enemies.ToArray())if(enemy!=null)RetirePracticeActor(enemy);
+                }
                 Progression=practiceOwner;Player=practiceOriginalPlayer;Enemies=practiceOriginalEnemies;
                 practiceOwner=null;practiceOriginalPlayer=null;practiceOriginalEnemies=null;practiceSupplier=null;
                 UnityEngine.Random.state=practiceRandom;Paused=practiceOriginalPaused;uiBlocking=practiceOriginalUI;IsDead=false;

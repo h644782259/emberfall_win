@@ -9,12 +9,12 @@ def method(source,signature):
   depth+=(source[end]=='{')-(source[end]=='}');end+=1
  return source[start:end]
 feedback=(root/'Assets/Scripts/Core/GameSession.Feedback.cs').read_text();expedition=(root/'Assets/Scripts/Core/GameSession.Expedition.cs').read_text()
-methods='\n'.join([method(feedback,'private string BuildRunSummary('),method(expedition,'public void RecordIncomingDamage('),method(expedition,'public void RecordActualHealing(')])
+methods='\n'.join([method((root/'Assets/Scripts/UI/GameUI.RunRecap.cs').read_text(),'private static float ProgressCardHeight('),method(feedback,'private string BuildRunSummary('),method(expedition,'public void RecordIncomingDamage('),method(expedition,'public void RecordActualHealing(')])
 with tempfile.TemporaryDirectory(prefix='room-failure-evidence-') as temporary:
  path=Path(temporary)
  for relative in ['Assets/Scripts/Core/CombatImpactBatch.cs','Assets/Scripts/Core/CampPracticeRecord.cs','Assets/Scripts/Core/RunMechanismEvidence.cs','Assets/Scripts/Core/RoomChainState.cs','Assets/Scripts/Core/RoomTactics.cs','Assets/Scripts/Core/SideEventRun.cs','Assets/Scripts/UI/RunRecapPresentation.cs','Tests/RoomFailureEvidenceTests.cs','Tests/RunRecapPresentationTests.cs']:
   (path/Path(relative).name).write_text((root/relative).read_text())
- host=path/'Session.cs';host.write_text('using UnityEngine;using System.Collections.Generic;namespace Emberfall {public partial class GameSession { '+'public bool PracticeActive=>false;public CampPracticeRecord PracticeRecord=>throw new System.InvalidOperationException("ordinary room cannot access practice result");public RunMechanismEvidence MechanismEvidence {get;}=new RunMechanismEvidence();'+methods+' }}')
+ host=path/'Session.cs';host.write_text('using UnityEngine;using System.Collections.Generic;namespace Emberfall {public partial class GameSession { '+'public static float RewardCardHeight(RunRecapSnapshot s)=>ProgressCardHeight(s);public bool modeRewardDetailsUnavailable;public bool PracticeActive=>false;public CampPracticeRecord PracticeRecord=>throw new System.InvalidOperationException("ordinary room cannot access practice result");public RunMechanismEvidence MechanismEvidence {get;}=new RunMechanismEvidence();'+methods+' }}')
  (path/'Program.cs').write_text('System.Console.WriteLine(RoomFailureEvidenceTests.Run());System.Console.WriteLine(RunRecapPresentationTests.Run());')
  project=path/'Test.csproj';project.write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net8.0</TargetFramework><OutputType>Exe</OutputType></PropertyGroup></Project>')
  config=path/'NuGet.Config';config.write_text('<configuration><packageSources><clear /></packageSources></configuration>')

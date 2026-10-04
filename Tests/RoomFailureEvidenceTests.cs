@@ -18,6 +18,9 @@ public static class RoomFailureEvidenceTests
    if(reason==RoomFailureReason.Timeout)Check(view.Tip.Contains("当前进度"),"timeout uses actual objective progress");
    session.RoomChainRun.Fail(RoomFailureReason.Abandoned);Check(session.RoomChainRun.Failure==reason,"terminal reason never overwritten by later cleanup");
   }
+  var legacy=new GameSession();legacy.modeRewardDetailsUnavailable=true;legacy.Build(true);
+  Check(legacy.LastRunRecap.RewardDetailsUnavailable&&new RunRecapPresentation(legacy.LastRunRecap).HasProgress,"real summary preserves visible unknown reward receipt state");
+  Check(GameSession.RewardCardHeight(legacy.LastRunRecap)==88,"actual recap card reserves legacy-detail explanation height");
   var partial=new GameSession();partial.RoomChainRun=new RoomChainState(0);for(int i=0;i<6;i++)partial.RoomChainRun.Register(partial.RoomChainRun.Room,i);
   for(int i=0;i<6;i++)partial.RoomChainRun.AdvanceSeal(1,.25f,true,true,false);for(int i=0;i<2;i++)partial.RoomChainRun.AdvanceSeal(0,.25f,true,true,false);
   partial.RoomChainRun.Fail(RoomFailureReason.Abandoned);partial.Build(false);
