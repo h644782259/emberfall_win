@@ -51,7 +51,16 @@ namespace Emberfall
         }
         private void DraftButton(ref float y,float width,float unit,string text,bool enabled,bool draw,System.Action action)
         {
-            if(draw&&Button(new Rect(8*unit,y*unit,(width-16)*unit,48*unit),text,gold,enabled))action();y+=58;
+            int size=MobileControls.Active?TouchFont(15):15;
+            float h=Mathf.Max(48*unit,Style(size,true,true).CalcHeight(new GUIContent(text),(width-16)*unit-16)+16);
+            if(draw)
+            {
+                var rect=new Rect(8*unit,y*unit,(width-16)*unit,h);
+                bool clicked=Button(rect,"",gold,enabled);
+                Text(new Rect(rect.x+8,rect.y+8,rect.width-16,rect.height-16),text,size,enabled&&GUI.enabled?pale:muted*.7f,true,true,TextAnchor.MiddleCenter);
+                if(clicked)action();
+            }
+            y+=h/unit+10;
         }
         private float DrawAllocationDraftContent(float width,float unit,bool draw)
         {

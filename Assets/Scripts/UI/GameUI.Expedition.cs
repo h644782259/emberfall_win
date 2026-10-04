@@ -103,7 +103,7 @@ namespace Emberfall
                 }
                 Text(new Rect(w.x+32,w.y+552,884,22),"可用点数 "+p.Profile.skillPoints+" · "+MasteryProgressionRules.TierSummary+" · "+MasteryProgressionRules.CoreSummary,12,muted);
                 if(Button(new Rect(w.x+32,w.y+580,435,30),"免费重置配点 · "+p.RefundableBuildPoints+"点",muted,session.IsInCamp&&(p.RefundableBuildPoints>0||p.Profile.masteryCore>=0),"先核对技能进阶与精通返还点数；保留已学1阶、快捷栏和装备。"))RequestBuildPlanAction(BuildPlanAction.Reset);
-                if(Button(new Rect(w.x+485,w.y+580,461,30),"配装方案 · 记录 / 应用两套",jade))OpenBuildPlans();
+                if(Button(new Rect(w.x+485,w.y+580,461,30),"配装方案 A / B · 记录 / 应用",jade))OpenBuildPlans();
             }
             else if(campTab==1)
             {

@@ -5,12 +5,13 @@ using UnityEngine;
 using Emberfall;
 namespace UnityEngine
 {
- public struct Color{}
+ public struct Color{public static Color operator *(Color c,float f)=>c;}
+ public enum TextAnchor{MiddleCenter}
  public struct Vector2{public float x,y;public Vector2(float x,float y){this.x=x;this.y=y;}}
  public struct Vector3{public float x,y,z;public Vector3(float x,float y,float z){this.x=x;this.y=y;this.z=z;}}
  public struct Quaternion{public static Quaternion identity=>new Quaternion();}
  public struct Matrix4x4{float x,y,sx,sy;public static Matrix4x4 identity=>new Matrix4x4{sx=1,sy=1};public static Matrix4x4 TRS(Vector2 p,Quaternion q,Vector3 scale)=>new Matrix4x4{x=p.x,y=p.y,sx=scale.x,sy=scale.y};public Rect Apply(Rect r)=>new Rect(x+r.x*sx,y+r.y*sy,r.width*sx,r.height*sy);}
- public static class GUI{public static Matrix4x4 matrix=Matrix4x4.identity;}public static class Screen{public static float height;}
+ public static class GUI{public static bool enabled=true;public static Matrix4x4 matrix=Matrix4x4.identity;}public static class Screen{public static float height;}
 
  public struct Rect{public float x,y,width,height;public float xMax=>x+width;public float yMax=>y+height;public Rect(float a,float b,float c,float d){x=a;y=b;width=c;height=d;}}
  public class GUIContent{public string text;public GUIContent(string value){text=value;}}
@@ -32,13 +33,14 @@ namespace Emberfall
   public enum Panel{None,Skills}private Panel panel=Panel.Skills;private float width=568,height=320;private float scale=1;private Vector2 guiOffset;private Rect hotbarBounds;private Rect[] hotbarSlots=new Rect[10];private void ObserveTouchViewport(Rect safe){}private Color muted,pale,gold,jade;private List<Rect> blockedRects=new List<Rect>();public GameSession session;
   public readonly List<(Rect area,string text)> Labels=new List<(Rect,string)>();public readonly List<(Rect area,string text)> Buttons=new List<(Rect,string)>();public readonly List<Rect> PixelButtons=new List<Rect>();public string Click;public int Hotbars,MobileHotbars,Companions,Charge,Targeting,Cancellations;
   private bool Button(Rect r,string text,Color c,bool enabled=true){Buttons.Add((r,text));PixelButtons.Add(GUI.matrix.Apply(r));if(enabled&&Click==text){Click=null;return true;}return false;}
-  private void Text(Rect r,string text,int size,Color c,bool bold=false,bool wrap=false){Labels.Add((r,text));}
+  private void Text(Rect r,string text,int size,Color c,bool bold=false,bool wrap=false,TextAnchor align=TextAnchor.MiddleCenter){Labels.Add((r,text));}
   // Text measuring is an explicit managed substitute; actual Unity font rendering is not claimed.
-  private sealed class FontBoundary{public float CalcHeight(GUIContent c,float w){return Math.Max(1,c.text.Split('\n').Sum(s=>(int)Math.Ceiling(Math.Max(1,s.Length)*13f/Math.Max(1,w))))*17;}}
-  private FontBoundary Style(int n,bool bold,bool wrap)=>new FontBoundary();private void CancelMobileScroll(){Cancellations++;}private void CancelMobileCast(){Cancellations++;}private void CancelHotbarPointer(){Cancellations++;}
+  public int FontSize=15;private int TouchFont(int n)=>FontSize;private void BlockUITransition(){}
+  private sealed class FontBoundary{public int Size=15;public float CalcHeight(GUIContent c,float w){return Math.Max(1,c.text.Split('\n').Sum(s=>(int)Math.Ceiling(Math.Max(1,s.Length)*Size/Math.Max(1,w))))*(Size+2);}}
+  private FontBoundary Style(int n,bool bold,bool wrap)=>new FontBoundary{Size=n};private void CancelMobileScroll(){Cancellations++;}private void CancelMobileCast(){Cancellations++;}private void CancelHotbarPointer(){Cancellations++;}
   private void DrawMobileHotbar(){MobileHotbars++;}private void DrawHotbar(){Hotbars++;}private void DrawCompanionCommands(){Companions++;}private void DrawChargeProgress(){Charge++;}private void DrawTargetingHint(){Targeting++;}
   public void Frame(float w,float h){width=w;height=h;Labels.Clear();Buttons.Clear();blockedRects.Clear();DrawPracticeCombatHUD();DrawPracticeOverlay();}
-  public float Results(bool draw){Labels.Clear();Buttons.Clear();float y=0;DrawPracticeChoices(ref y,568,1,draw,false,null);return y;}
+  public float Results(bool draw,float bodyWidth=568){Labels.Clear();Buttons.Clear();float y=0;DrawPracticeChoices(ref y,bodyWidth,1,draw,false,null);return y;}
   public bool OriginalPanel=>panel==Panel.Skills;public bool BattlePanel=>panel==Panel.None;
  }
 }
@@ -66,7 +68,23 @@ class Program
   foreach(bool mobile in new[]{false,true})
   {
    MobileControls.Active=mobile;var game=new GameSession{PracticeRecord=Run()};game.PracticeRecord.Prepare();var ui=new GameUI{session=game};ui.EnterPracticePanel();ui.EnterPracticePanel();C(ui.BattlePanel&&ui.Cancellations==3,"panel handoff cancels old pointers once");ui.Frame(568,320);C(ui.Buttons.Count==2&&ui.Buttons.Any(x=>x.text=="开始")&&ui.Buttons.Any(x=>x.text=="结束"),"actual preparation GUI emits only two top actions");C(ui.Labels.Count==2&&ui.Labels.All(x=>x.area.yMax<=70),"actual combat labels stay within compact top band");ui.Click="开始";ui.Frame(568,320);C(game.Starts==1&&game.PracticeRecord.Started,"actual GUI start routes to explicit lifecycle boundary");ui.Click="重开";ui.Frame(568,320);C(game.Restarts==1&&!game.PracticeRecord.Started,"actual GUI restart returns to preparation");ui.Click="结束";ui.Frame(568,320);ui.LeavePracticePanel();ui.LeavePracticePanel();C(game.Ends==1&&ui.OriginalPanel,"actual GUI exit restores prior draft panel once");C(mobile?ui.MobileHotbars==4&&ui.Hotbars==0:ui.Hotbars==4&&ui.MobileHotbars==0,"actual practice GUI reuses platform hotbar helper");
-   game.PracticeRecord=b;game.PreviousPracticeRecord=frozen;float measured=ui.Results(false),drawn=ui.Results(true);C(ui.Labels.Any(x=>x.text.Contains("治疗看有效治疗")&&x.text.Contains("伙伴伤害计入总伤害")&&x.text.Contains("不判断治疗或召唤是否生效")),"actual result GUI explains supportive cast accounting without false failure");C(measured==drawn&&drawn>0,"results table uses same measured and rendered row flow");C(ui.Labels.Any(x=>x.text=="固定基准 A")&&ui.Labels.Any(x=>x.text=="本轮 B")&&!ui.Labels.Any(x=>x.text.Contains("heroClass")),"actual GUI emits structured frozen result columns without profile JSON");
+   game.PracticeRecord=b;game.PreviousPracticeRecord=frozen;
+   ui.Results(true);C(ui.Buttons.Count==1,"practice starts collapsed");
+   for(int cycle=0;cycle<4;cycle++)
+   {
+    ui.Click="";ui.Results(true);ui.Results(true);C(ui.Buttons.Count>5,"disclosure opens all practice choices");
+    ui.Click="";ui.Results(true);ui.Results(true);C(ui.Buttons.Count==1,"disclosure repeatedly closes");
+    C(ReferenceEquals(game.PracticeRecord,b)&&ReferenceEquals(game.PreviousPracticeRecord,frozen)&&game.Pins==0,"disclosure preserves result and fixed baseline identities");
+   }
+   ui.Click="";ui.Results(true);
+   foreach(float bodyWidth in new[]{240f,360f,568f})foreach(int fontSize in new[]{15,24,32})
+   {
+    ui.FontSize=fontSize;float before=ui.Results(false,bodyWidth),after=ui.Results(true,bodyWidth);
+    C(before==after,"narrow and large-font measured height matches rendered flow");
+    foreach(var button in ui.Buttons)C(button.area.x>=0&&button.area.xMax<=bodyWidth&&button.area.height>=48,"wrapped practice buttons stay in narrow viewport with touch height");
+    for(int k=1;k<ui.Buttons.Count;k++)C(ui.Buttons[k].area.y>=ui.Buttons[k-1].area.yMax,"wrapped controls never overlap vertically");
+   }
+   ui.FontSize=15;float measured=ui.Results(false),drawn=ui.Results(true);C(ui.Labels.Any(x=>x.text.Contains("治疗看有效治疗")&&x.text.Contains("伙伴伤害计入总伤害")&&x.text.Contains("不判断治疗或召唤是否生效")),"actual result GUI explains supportive cast accounting without false failure");C(measured==drawn&&drawn>0,"results table uses same measured and rendered row flow");C(ui.Labels.Any(x=>x.text=="固定基准 A")&&ui.Labels.Any(x=>x.text=="本轮 B")&&!ui.Labels.Any(x=>x.text.Contains("heroClass")),"actual GUI emits structured frozen result columns without profile JSON");
   }
   foreach(bool mobile in new[]{true,false})foreach(var shape in new[]{(568f,320f),(640f,360f),(1170f,780f),(2048f,1536f)})foreach(float dpi in new[]{0f,120f,163f,326f,700f})
   {

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Actual production save transactions with managed JSON/filesystem and regression mutations."""
 from CastReceiptFixtureSources import include_cast_receipt_source
-import os,sys,tempfile,subprocess
+import os,sys,tempfile,subprocess,hashlib
 from pathlib import Path
 root=Path(__file__).resolve().parents[1]
 dotnet=sys.argv[1] if len(sys.argv)>1 else os.environ.get('DOTNET','dotnet')
@@ -36,11 +36,16 @@ with tempfile.TemporaryDirectory(prefix='chapter-transactions-') as folder:
         p.write_text(original)
         assert result.returncode and expected in result.stdout+result.stderr,result.stdout+result.stderr
     # Actual immutable pre-change OpenDungeonChest, not a hand-written approximation.
-    baseline_ref='5d85e47b9fab2489d5b06963a0b896ec19112740'
-    baseline=subprocess.check_output(['git','show',baseline_ref+':Assets/Scripts/Core/ProgressionService.cs'],cwd=root,text=True)
     def method(source):
         a=source.index('        public string OpenDungeonChest(int choice)');b=source.index('        public bool AcknowledgeChestReward()',a)
         return source[a:b]
+    # The repositories have distinct history; these immutable pre-change methods are byte-identical.
+    baseline_refs=('5d85e47b9fab2489d5b06963a0b896ec19112740','e8b068cd29721db92fdc5f7b77166c2c9652019e')
+    baseline_ref=next((ref for ref in baseline_refs if subprocess.run(
+        ['git','cat-file','-e',ref+':Assets/Scripts/Core/ProgressionService.cs'],cwd=root,stderr=subprocess.DEVNULL).returncode==0),None)
+    assert baseline_ref is not None,'fetch repository history for the immutable reward baseline'
+    baseline=subprocess.check_output(['git','show',baseline_ref+':Assets/Scripts/Core/ProgressionService.cs'],cwd=root,text=True)
+    assert hashlib.sha256(method(baseline).encode()).hexdigest()=='a2ed81e3d2b2cad7cbce2b6a4aead584bb139e75cdb6c9d6a914e3a2bb04f581','historical baseline method changed'
     p=folder/'ProgressionService.cs';original=p.read_text();program=(folder/'Program.cs').read_text()
     p.write_text(original.replace(method(original),method(baseline)))
     (folder/'Program.cs').write_text('RewardRevisionTests.BaselineSupply(args[0]);')
