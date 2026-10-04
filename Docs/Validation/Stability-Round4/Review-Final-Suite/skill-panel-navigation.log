@@ -1,0 +1,16 @@
+/tmp/skill-panel-navigation-xnyqjs_3/Replay.cs(10,26): warning CS0649: Field 'GameUI.bindingReturnPanel' is never assigned to, and will always have its default value [/tmp/skill-panel-navigation-xnyqjs_3/project/Validation.csproj]
+/tmp/skill-panel-navigation-xnyqjs_3/Replay.cs(11,8): warning CS0414: The field 'GameUI.routeSkillOwner' is assigned but its value is never used [/tmp/skill-panel-navigation-xnyqjs_3/project/Validation.csproj]
+/tmp/skill-panel-navigation-xnyqjs_3/Replay.cs(11,31): warning CS0414: The field 'GameUI.routeSkillSlot' is assigned but its value is never used [/tmp/skill-panel-navigation-xnyqjs_3/project/Validation.csproj]
+/tmp/skill-panel-navigation-xnyqjs_3/Replay.cs(10,218): warning CS0414: The field 'GameUI.rebindingSlot' is assigned but its value is never used [/tmp/skill-panel-navigation-xnyqjs_3/project/Validation.csproj]
+
+Build succeeded.
+
+/tmp/skill-panel-navigation-xnyqjs_3/Replay.cs(10,26): warning CS0649: Field 'GameUI.bindingReturnPanel' is never assigned to, and will always have its default value [/tmp/skill-panel-navigation-xnyqjs_3/project/Validation.csproj]
+/tmp/skill-panel-navigation-xnyqjs_3/Replay.cs(11,8): warning CS0414: The field 'GameUI.routeSkillOwner' is assigned but its value is never used [/tmp/skill-panel-navigation-xnyqjs_3/project/Validation.csproj]
+/tmp/skill-panel-navigation-xnyqjs_3/Replay.cs(11,31): warning CS0414: The field 'GameUI.routeSkillSlot' is assigned but its value is never used [/tmp/skill-panel-navigation-xnyqjs_3/project/Validation.csproj]
+/tmp/skill-panel-navigation-xnyqjs_3/Replay.cs(10,218): warning CS0414: The field 'GameUI.rebindingSlot' is assigned but its value is never used [/tmp/skill-panel-navigation-xnyqjs_3/project/Validation.csproj]
+    4 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.03
+PASS: 33 real ClosePanel/TogglePanel skill navigation checks

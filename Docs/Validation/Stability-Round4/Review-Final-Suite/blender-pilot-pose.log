@@ -1,0 +1,20 @@
+[
+  {
+    "name": "production",
+    "passed": true,
+    "exit": 0,
+    "output": "141 pilot production pose-clock assertions; no Unity rendering claim\n"
+  },
+  {
+    "name": "zero-contact",
+    "passed": true,
+    "exit": 134,
+    "output": "Unhandled exception. System.Exception: no hidden windup at commit\n   at BlenderPilotPoseTests.<>c__DisplayClass0_0.<Run>b__0(Boolean ok, String label) in /workspace/scratch/stability-round4-win/Tests/BlenderPilotPoseTests.cs:line 8\n   at BlenderPilotPoseTests.Run() in /workspace/scratch/stability-round4-win/Tests/BlenderPilotPoseTests.cs:line 16\n   at Program.Main() in /tmp/BlenderPilotTest-dk_6nxhk/zero-contact/Program.cs:line 1\n"
+  },
+  {
+    "name": "wall-clock-action",
+    "passed": true,
+    "exit": 134,
+    "output": "Unhandled exception. System.Exception: no hidden windup at commit\n   at BlenderPilotPoseTests.<>c__DisplayClass0_0.<Run>b__0(Boolean ok, String label) in /workspace/scratch/stability-round4-win/Tests/BlenderPilotPoseTests.cs:line 8\n   at BlenderPilotPoseTests.Run() in /workspace/scratch/stability-round4-win/Tests/BlenderPilotPoseTests.cs:line 16\n   at Program.Main() in /tmp/BlenderPilotTest-dk_6nxhk/wall-clock-action/Program.cs:line 1\n"
+  }
+]

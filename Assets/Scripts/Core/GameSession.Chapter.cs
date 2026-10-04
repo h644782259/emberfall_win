@@ -285,17 +285,15 @@ namespace Emberfall
         public bool TrySettleChapterReward()
         {
             if(!ChapterRewardPending)return true;
-            var before=Progression.Profile;int materials=before.mechanicMaterials,shared=Progression.HighestAdventureTier;
-            bool first=(before.chapterCompletedMask&(1<<(int)ActiveChapterNode))==0;
-            int priorDifficulty=ChapterProgression.HighestCompletedDifficulty(before,ActiveChapterNode);
-            bool nextWasUnlocked=(int)ActiveChapterNode<2&&ChapterProgression.IsUnlocked(before,(ChapterNode)((int)ActiveChapterNode+1));
+            var source=Progression;var run=ChapterRun;var receipt=chapterReceipt;string slot=source.CurrentSlotId;
             if(!Progression.TryCompleteChapterNode(chapterReceipt)){Notify(Progression.LastError);return false;}
+            run.ClaimReward();
+            if(Progression!=source||source.CurrentSlotId!=slot||ChapterRun!=run||chapterReceipt!=receipt)return true;
             if(ChapterResult==null)ChapterResult=CaptureChapterResult(false,null);
-            int highest=ChapterProgression.HighestCompletedDifficulty(Progression.Profile,ActiveChapterNode);
-            int nextNode=(int)ActiveChapterNode<2&&!nextWasUnlocked&&ChapterProgression.IsUnlocked(Progression.Profile,(ChapterNode)((int)ActiveChapterNode+1))?(int)ActiveChapterNode+1:-1;
-            int difficulty=highest>priorDifficulty&&highest<2?highest+1:-1;
-            ChapterResult.RecordSaved(Progression.Profile.mechanicMaterials-materials,first,nextNode,difficulty,shared,Progression.HighestAdventureTier,Progression.ChapterCompletionExperience,!before.pendingFirstClearReward&&Progression.Profile.pendingFirstClearReward);
-            ChapterRun.ClaimReward();Notify("章节节点已保存 · 碎片 +"+ChapterResult.Materials);return true;
+            var detail=source.GetRewardPresentation(receipt.Id);
+            if(detail==null)ChapterResult.RecordSavedUnavailable();
+            else ChapterResult.RecordSaved(detail.Materials,detail.FirstCompletion,detail.UnlockedNode,detail.UnlockedDifficulty,detail.SharedBefore,detail.SharedAfter,detail.Experience,detail.FirstCoreAvailable);
+            Notify(detail==null?"章节节点已保存 · 旧回执缺少奖励明细，无法恢复准确数额（不会重复发放）":"章节节点已保存 · 碎片 +"+ChapterResult.Materials);return true;
         }
         public bool EnterNextChapterRoom()
         {

@@ -34,3 +34,15 @@ The second full suite passed all 277 checks, including Windows, iOS and Android 
 `First-Attempt/` retains the failed restricted-healing fixture log and first full report. That attempt is not acceptance: its fixture lacked the new practice guard dependency and one test file changed while it ran. The corrected fixture throws if a formal-only test accesses practice state; existing assertions remain in place.
 
 Additional reviewed boundaries: companion admission includes the existing cooperation `nextProc` cooldown, with exact-expiry and repeated-read tests (`Core/CompanionClockGuard.md` and the practice lifecycle suite). Ground-loot recovery uses post-write receipts for both inventory and automatic sale, with durable reload and duplicate-retry checks (`GroundLoot/`).
+
+## Independent review followup — frozen validation passed
+
+Review reproduced two omissions in the initial accepted tree. Four settlement hosts could lose or misstate their actual reward presentation after observer failure or observer balance changes; the actual enemy-death host could skip loot/death/finalization after the same post-write observer failure.
+
+Reward transactions now atomically persist optional, identity-bound actual gold/experience/material amounts after caps, plus chapter first-completion/unlock/shared-tier/core facts. All four settlement hosts read those details rather than infer grants from mutable post-callback balances. Existing ID-only receipts remain deduplicated and explicitly report unavailable details; they are never re-granted or displayed as a known zero. This is an additive save field change with no reward or growth-rule changes.
+
+Changed and LeveledUp notifications dispatch each captured subscriber independently, logging individual exceptions while allowing later subscribers and the host completion tail to run. The storage operation is outside that catch: candidate-write failures still return false; kill progress retains its existing live-state/LastError/Save-retry behavior. The earlier reservation and world-loot receipt guards remain as defensive recovery for exceptions outside notification dispatch.
+
+Review evidence: `Core/RewardPresentation/`, `Review-EnemyKill/`, `Review-Callback/`, and `Review-Recap/`. Prior `Final-Suite/` and its verification describe the initial published revision, not this followup. The followup frozen full suite and mirror compilation are complete; the results and input-hash verification are recorded below. Unity/device acceptance remains unavailable.
+
+Latest followup acceptance: `Review-Final-Suite/` passed all 279 checks, including all three platform API compilations, with zero input changes. `review-final-tree-verification.json` matches the suite inputs and 773 shared frozen files against both final trees; `Review-iOS-Mirror-API/` independently compiles all 296 final runtime files under each platform define. Earlier reports and failure logs remain available. No Unity/device execution occurred.

@@ -417,6 +417,8 @@ def main():
             failed = failed or not passed
         # Stability round 4: real transaction, input, and lifecycle regressions.
         for name, script in [
+            ("enemy-kill-callback-fault", "EnemyKillCallbackFaultTests.py"),
+            ("reward-presentation-exceptions", "RewardPresentationExceptionProductionTests.py"),
             ("chest-snapshot-retry", "ChestSnapshotRetryTests.py"),
             ("arena-reward-exception", "ArenaRewardExceptionTests.py"),
             ("ground-loot-callback-recovery", "GroundLootCallbackRecoveryTests.py"),

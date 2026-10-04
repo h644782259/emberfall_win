@@ -59,8 +59,16 @@ namespace Emberfall
                 candidate.chapterHighestAdventureTier=Math.Max(candidate.chapterHighestAdventureTier,receipt.Tier);
                 candidate.highestAdventureTier=Math.Max(candidate.highestAdventureTier,receipt.Tier);
             }
+            var detail=CaptureRewardPresentation(receipt.Id,Profile,candidate);
+            detail.FirstCompletion=(Profile.chapterCompletedMask&bit)==0;
+            detail.FirstCoreAvailable=!Profile.pendingFirstClearReward&&candidate.pendingFirstClearReward;
+            detail.SharedBefore=HighestAdventureTier;detail.SharedAfter=candidate.highestAdventureTier;
+            int highest=ChapterProgression.HighestCompletedDifficulty(candidate,receipt.Node);
+            detail.UnlockedDifficulty=highest>ChapterProgression.HighestCompletedDifficulty(Profile,receipt.Node)&&highest<2?highest+1:-1;
+            detail.UnlockedNode=index<2&&!ChapterProgression.IsUnlocked(Profile,(ChapterNode)(index+1))&&ChapterProgression.IsUnlocked(candidate,(ChapterNode)(index+1))?index+1:-1;
+            candidate.lastChapterRewardDetails=detail;
             if(!CommitCandidate(candidate))return false;
-            for(int level=oldLevel+1;level<=candidate.level;level++)if(LeveledUp!=null)LeveledUp(level);
+            for(int level=oldLevel+1;level<=candidate.level;level++)RaiseLeveledUp(level);
             return true;
         }
     }

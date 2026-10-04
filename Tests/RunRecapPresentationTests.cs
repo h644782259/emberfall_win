@@ -46,6 +46,8 @@ public static class RunRecapPresentationTests
         var negative=new RunRecapSnapshot(false,false,false,-2,-1,0,0,-6,0,null,float.PositiveInfinity,null,null,null,false,false,-2);
         Check(negative.Materials==0&&negative.ExchangeCost==1&&negative.GoldLost==0&&negative.LastDamageAmount==0,"invalid counters safely normalized");
         Check(negative.Wave==0&&negative.TotalWaves==1&&negative.Tier==1,"safe stage bounds");
+        var unknown=new RunRecapPresentation(new RunRecapSnapshot(true,true,false,1,3,3,0,0,12,null,0,null,null,null,false,false,rewardGold:999,rewardExperience:999,rewardMaterials:999,rewardDetailsUnavailable:true));
+        Check(unknown.Snapshot.RewardDetailsUnavailable&&unknown.HasProgress&&unknown.Rewards.Length==0,"legacy receipt keeps visible unknown state without fabricated reward rows");
         var modeWin=new RunRecapSnapshot(true,true,false,20,3,3,77,12,12,"旧受击",42,null,null,null,false,false,0,"烬河突围","None",500,0,2);
         var modeData=new RunRecapPresentation(modeWin);
         Check(modeData.Snapshot.ModeName=="烬河突围"&&modeData.Rewards.Length==2,"mode name and only actual positive grants retained");

@@ -139,6 +139,11 @@ namespace Emberfall
                     }
                     inner+=72;
                 }
+                if(snapshot.RewardDetailsUnavailable)
+                {
+                    Text(new Rect(14*unit,inner*unit,(w-28)*unit,56*unit),"奖励已保存；旧回执缺少明细，无法恢复准确数额。不会重复发放。",Mathf.RoundToInt(13*unit),muted,false,true);
+                    inner+=64;
+                }
                 if(snapshot.Materials>0)
                 {
                     Text(new Rect(14*unit,inner*unit,(w-182)*unit,24*unit),"结算碎片",Mathf.RoundToInt(15*unit),pale,true);
@@ -191,7 +196,7 @@ namespace Emberfall
             return y+RunRecapChipLayout.Height(chips)+18;
         }
         private static float ProgressCardHeight(RunRecapSnapshot data)
-        { return 24+(data.RewardGold>0||data.RewardExperience>0||data.RewardMaterials>0?72:0)+(data.Materials>0?72:0)+(data.GoldLost>0?34:0)+(data.PendingChest||data.FirstClearChoice?28:0); }
+        { return 24+(data.RewardDetailsUnavailable?64:0)+(data.RewardGold>0||data.RewardExperience>0||data.RewardMaterials>0?72:0)+(data.Materials>0?72:0)+(data.GoldLost>0?34:0)+(data.PendingChest||data.FirstClearChoice?28:0); }
         private float RecapGoalHeight(RunRecapLayout layout,float unit,RunRecapPresentation data)
         {return Mathf.Ceil(Style(Mathf.RoundToInt(13*unit),false,true).CalcHeight(new GUIContent(CurrentProgressionGoalStatus(data.Snapshot.RewardMaterials)),(layout.ContentWidth-24)*unit)/unit)+26;}
         private float RecapContentHeight(RunRecapLayout layout,RunRecapPresentation data)

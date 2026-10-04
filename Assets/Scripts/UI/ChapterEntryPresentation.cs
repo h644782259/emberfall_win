@@ -56,6 +56,7 @@ namespace Emberfall
                 "最后受击："+(string.IsNullOrEmpty(result.LastHit)?"未记录":result.LastHit)+" · "+result.LastHitAmount.ToString("0.#")+"\n"+
                 (string.IsNullOrEmpty(result.Failure)?"本次挑战未完成。":result.Failure)+"\n本次击杀经验 +"+result.KillExperience+"；未发通关经验。\n节点与难度未解锁；回营重试。"+MechanismReport(result);
             if(!result.Saved)return text+"节点完成 · 结算尚未保存\n奖励与解锁尚未提交，重试保存后再继续。"+MechanismReport(result);
+            if(result.RewardDetailsUnavailable)return text+"奖励已保存 · 旧回执缺少明细，无法恢复准确数额与本次解锁结果；不会重复发放。"+MechanismReport(result);
             text+="奖励已保存 · +"+result.Materials+" 碎片\n击杀经验 +"+result.KillExperience+" · 通关经验 +"+result.CompletionExperience;
             if(result.FirstCompletion)text+="\n"+ChapterDefinition.Get(result.Node).Outcome;
             if(result.FirstCoreAvailable)text+="\n首通核心已可领取（共享一次）";

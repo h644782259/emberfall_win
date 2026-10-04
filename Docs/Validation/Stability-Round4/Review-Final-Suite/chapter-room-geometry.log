@@ -1,0 +1,5 @@
+
+/workspace/scratch/stability-round4-win/Assets/Scripts/Core/ChapterProgression.cs(97,23): warning CS0649: Field 'ChapterRunReceipt.MasteryEligible' is never assigned to, and will always have its default value false [/tmp/EmberfallCloudValidation-p179uge6/chapter-room-geometry/Validation.csproj]
+/workspace/scratch/stability-round4-win/Assets/Scripts/Core/ChapterProgression.cs(96,22): warning CS0649: Field 'ChapterRunReceipt.MasteryEvidence' is never assigned to, and will always have its default value 0 [/tmp/EmberfallCloudValidation-p179uge6/chapter-room-geometry/Validation.csproj]
+PASS: 51209 chapter production geometry/navigation/spawn checks (managed shims, not gameplay or rendering)
+PASS: 780 chapter formation production navigation assertions (managed shims, not combat AI playback)

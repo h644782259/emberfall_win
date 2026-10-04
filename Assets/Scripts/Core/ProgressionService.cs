@@ -1976,8 +1976,9 @@ namespace Emberfall
             candidate.pendingFashionChest = true; candidate.pendingChestTier = tier;
             candidate.pendingFirstClearReward = !candidate.firstClearRewardClaimed;
             candidate.lastDungeonRewardId = rewardId;
+            candidate.lastDungeonRewardDetails=CaptureRewardPresentation(rewardId,Profile,candidate);
             if (!CommitCandidate(candidate)) return false;
-            for (int level = oldLevel + 1; level <= candidate.level; level++) if (LeveledUp != null) LeveledUp(level);
+            for (int level = oldLevel + 1; level <= candidate.level; level++) RaiseLeveledUp(level);
             return true;
         }
 
@@ -1998,8 +1999,9 @@ namespace Emberfall
                 candidate.chapterPriorAdventureTier=Math.Max(candidate.chapterPriorAdventureTier,completedTier);
                 candidate.pendingFirstClearReward=!candidate.firstClearRewardClaimed;
             }
+            candidate.lastModeRewardDetails=CaptureRewardPresentation(receipt,Profile,candidate);
             if(!CommitCandidate(candidate))return false;
-            for(int level=oldLevel+1;level<=candidate.level;level++)if(LeveledUp!=null)LeveledUp(level);
+            for(int level=oldLevel+1;level<=candidate.level;level++)RaiseLeveledUp(level);
             return true;
         }
 
@@ -2031,7 +2033,7 @@ namespace Emberfall
             // As with GrantExperience, failure keeps live progress and LastError;
             // Changed runs once before level notifications, all seeing final stats.
             for (int level = oldLevel + 1; level <= earnedLevel; level++)
-                if (LeveledUp != null) LeveledUp(level);
+                RaiseLeveledUp(level);
         }
 
         public void GrantExperience(int amount)
@@ -2051,7 +2053,7 @@ namespace Emberfall
             // Earned progress remains live after a storage failure; LastError stays visible.
             // Subscribers observe the final in-memory level, including multiple gains.
             foreach (int level in gainedLevels)
-                if (LeveledUp != null) LeveledUp(level);
+                RaiseLeveledUp(level);
         }
 
         public void AddGold(int amount)
@@ -2544,7 +2546,28 @@ namespace Emberfall
             RaiseChanged();
         }
 
-        private void RaiseChanged() { if (Changed != null) Changed(); }
+        private void RaiseChanged()
+        {
+            var observers=Changed;if(observers==null)return;
+            foreach(Action observer in observers.GetInvocationList())
+                try{observer();}catch(Exception error){Debug.LogWarning("Emberfall: change observer failed: "+error);}
+        }
+        private void RaiseLeveledUp(int level)
+        {
+            var observers=LeveledUp;if(observers==null)return;
+            foreach(Action<int> observer in observers.GetInvocationList())
+                try{observer(level);}catch(Exception error){Debug.LogWarning("Emberfall: level observer failed: "+error);}
+        }
+        private static long RewardExperienceTotal(GameProfile profile)
+        {long total=profile.xp;for(int level=1;level<profile.level;level++)total+=GameBalance.XpToNext(level);return total;}
+        private static RewardPresentationReceipt CaptureRewardPresentation(string id,GameProfile before,GameProfile after)
+        {return new RewardPresentationReceipt{Id=id,Gold=Math.Max(0,after.gold-before.gold),Materials=Math.Max(0,after.mechanicMaterials-before.mechanicMaterials),Experience=(int)Math.Max(0,RewardExperienceTotal(after)-RewardExperienceTotal(before))};}
+        public RewardPresentationReceipt GetRewardPresentation(string id)
+        {
+            if(string.IsNullOrEmpty(id))return null;
+            var detail=Profile.lastModeRewardId==id?Profile.lastModeRewardDetails:Profile.lastDungeonRewardId==id?Profile.lastDungeonRewardDetails:Profile.lastChapterRewardId==id?Profile.lastChapterRewardDetails:null;
+            return detail!=null&&detail.Id==id&&detail.Gold>=0&&detail.Experience>=0&&detail.Materials>=0?detail:null;
+        }
         private bool Fail(string message) { LastError = message; return false; }
 
         private ItemData FindItem(string id)

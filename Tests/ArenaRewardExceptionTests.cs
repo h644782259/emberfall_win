@@ -4,17 +4,20 @@ public static class ArenaRewardExceptionTests
  static int n;static void C(bool b,string why){n++;if(!b)throw new Exception(why);}
  static ExpeditionModeState Winner(){var s=new ExpeditionModeState(ExpeditionModeKind.TimedBreakthrough,1,7);for(int phase=0;phase<3;phase++){ExpeditionPhasePlan plan;C(s.TryBeginPhase(out plan),"phase begins");for(int i=0;i<plan.EnemyCount;i++){C(s.TryRegisterSpawn(plan,i),"spawn accepted");C(s.RecordDefeat(plan,i),"kill accepted");}}return s;}
  static GameSession Host(string root){var p=new ProgressionService(Path.Combine(root,Guid.NewGuid().ToString("N")));C(p.CreateNewSlot(HeroClass.Ranger),"create source save");return new GameSession{Progression=p,ModeRun=Winner(),modeReceipt=Guid.NewGuid().ToString("N")};}
- public static string Run(string root)
+ public static string Run(string root,bool defense=false)
  {
   foreach(bool levelEvent in new[]{false,true})
   {
    var h=Host(root);var run=h.ModeRun;int gold=h.Progression.Profile.gold;
-   int callbacks=0;
+   int callbacks=0,later=0;int warnings=UnityEngine.Debug.Warnings.Count;
    Action changed=()=>{callbacks++;throw new InvalidOperationException("observer after durable commit");};Action<int> level=(_)=>{callbacks++;throw new InvalidOperationException("level observer after durable commit");};
-   if(levelEvent)h.Progression.LeveledUp+=level;else h.Progression.Changed+=changed;
+   if(levelEvent){h.Progression.LeveledUp+=level;h.Progression.LeveledUp+=_=>later++;}else{h.Progression.Changed+=changed;h.Progression.Changed+=()=>later++;}
    bool returned=false;try{returned=h.TrySettleArenaReward();}catch(InvalidOperationException){}
    C(!run.RewardReserved,"committed subscriber exception must not strand reservation");C(returned&&run.RewardClaimed,"durable receipt reconciles original ticket after callback fault");
    C(callbacks==1,"actual selected postcommit callback was invoked and threw once");
+   C(later==(defense?0:1),"normal isolation continues later subscriber; defensive bypass is explicit");
+   if(!defense)C(UnityEngine.Debug.Warnings.Count>warnings&&UnityEngine.Debug.Warnings.Exists(w=>w.Contains(levelEvent?"level observer failed":"change observer failed")),"normal callback fault logged without propagation");
+   C(h.LastLog.Contains("+"+run.Reward.Gold+"金币")&&h.LastLog.Contains("+"+run.Reward.Experience+"经验"),"real presentation helper uses persistent grant details after callback fault");
    var disk=new ProgressionService(h.Progression.SaveDirectory);C(disk.LoadSlot(h.Progression.CurrentSlotId)&&disk.Profile.lastModeRewardId==h.modeReceipt,"independent durable receipt proves commit");
    C(disk.Profile.gold==gold+run.Reward.Gold,"actual reward saved once");int logs=h.Logs;C(h.TrySettleArenaReward()&&h.Logs==logs&&h.Progression.Profile.gold==disk.Profile.gold,"retry neither grants nor announces twice");
   }
