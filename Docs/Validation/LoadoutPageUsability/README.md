@@ -14,8 +14,23 @@ Windows 基线 `639ca3026dd6d2ade3fad625ae7f92e22e23972a`；iOS 基线 `f0890218
 
 ## 可复现验证
 
+最终完整聚合使用 .NET SDK 8.0.425；两个仓库的运行环境分别如下。
+
+Windows 最终通过运行：
+
 ```bash
-Tests/Run-CloudValidation.sh --dotnet /path/to/dotnet --download-references --compile-ios
+DOTNET_TieredCompilation=0 Tests/Run-CloudValidation.sh --dotnet /path/to/dotnet --compile --compile-ios
+```
+
+iOS 最终通过运行使用默认运行时配置：
+
+```bash
+env -u DOTNET_TieredCompilation Tests/Run-CloudValidation.sh --dotnet /path/to/dotnet --compile --compile-ios
+```
+
+缺少仓库固定 Unity API 引用包时可附加 `--download-references`。以下定向检查适用于两仓：
+
+```bash
 python3 Tests/BuildPlanUISourceTests.py
 python3 Tests/PracticeHudProductionTests.py /path/to/dotnet
 python3 Tests/BuildPlanPageGeometryTests.py /path/to/dotnet
@@ -39,7 +54,7 @@ python3 Docs/Validation/LoadoutPageUsability/navigation-replay.py /path/to/dotne
 
 复核期间另一次完整检查因定向运行发现引用替换夹具缺少两个状态字段而主动中止；退出码 130，没有声明其完成或通过。[中止状态与原始日志](Evidence/interrupted-review/status.json) 保留原源码清单和定向编译错误；补齐字段后重新冻结并全量重跑。
 
-Windows 另一次冻结全量执行 279 项，其中唯一失败是寻路分配量基准的精确字节差倍数；输入未变化，轨迹哈希一致。固定 `DOTNET_TieredCompilation=0` 的隔离复跑通过，随后用相同设置重跑完整聚合。该次原始退出码 1、报告及全部日志保存在 [review-aggregate/windows](Evidence/review-aggregate/windows/report.json)，没有改写为通过；这不涉及寻路或 UI 生产代码修改。
+Windows 另一次冻结全量执行 279 项，其中唯一失败是寻路分配量基准的精确字节差倍数；输入未变化，轨迹哈希一致。固定 `DOTNET_TieredCompilation=0` 的隔离复跑通过，随后用相同设置重跑完整聚合。该次原始退出码 1、报告及全部日志保存在 [review-aggregate/windows](Evidence/review-aggregate/windows/report.json)，没有改写为通过；这不涉及寻路或 UI 生产代码修改。这里只确认环境控制后的复跑通过；没有完成分配事件归因，不能认定所观察到的 256B 差异由 JIT 导致。
 
 ### 仓库内原始证据
 
