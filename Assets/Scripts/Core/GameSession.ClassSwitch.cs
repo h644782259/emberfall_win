@@ -27,6 +27,7 @@ namespace Emberfall
         private static void ClassSwitchCleanup(Action cleanup){try{cleanup();}catch(Exception error){Debug.LogException(error);}}
         public bool TrySwitchClass(HeroClass target)
         {
+            var randomBefore=UnityEngine.Random.state;
             ClassSwitchError=ClassSwitchLockReason();if(ClassSwitchError.Length>0)return false;
             if(classSwitchFrame==Time.frameCount){ClassSwitchError="本次点击已处理，请松开后重试。";return false;}
             classSwitchFrame=Time.frameCount;
@@ -65,8 +66,13 @@ namespace Emberfall
             }
             finally
             {
-                if(stagedObject!=null)Destroy(stagedObject);
-                classSwitchBusy=false;
+                try { if(stagedObject!=null)Destroy(stagedObject); }
+                finally
+                {
+                    // Failed preparation must not alter the shared combat RNG stream.
+                    if(!transaction.Committed)UnityEngine.Random.state=randomBefore;
+                    classSwitchBusy=false;
+                }
             }
         }
     }

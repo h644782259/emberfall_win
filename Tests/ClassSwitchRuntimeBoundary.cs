@@ -1,6 +1,7 @@
 using System;using System.Collections.Generic;using System.IO;using System.Linq;using Emberfall;using UnityEngine;
 namespace UnityEngine
 {
+ public static class Random{public struct State{public uint Value;}static State current=new State{Value=1};public static int Draws;public static State state{get=>current;set=>current=value;}public static float value{get{Draws++;current.Value=unchecked(current.Value*1664525u+1013904223u);return current.Value/(float)uint.MaxValue;}}}
  public static class Time{public static float time;public static int frameCount;}
  public struct Quaternion{public static Quaternion identity=>new Quaternion();}
  public struct Vector3{public float x,y,z;public Vector3(float x,float y,float z){this.x=x;this.y=y;this.z=z;}public float sqrMagnitude=>x*x+y*y+z*z;public static Vector3 forward=>new Vector3(0,0,1);public static Vector3 operator +(Vector3 a,Vector3 b)=>new Vector3(a.x+b.x,a.y+b.y,a.z+b.z);public static Vector3 operator -(Vector3 a,Vector3 b)=>new Vector3(a.x-b.x,a.y-b.y,a.z-b.z);public static Vector3 operator *(Vector3 a,float b)=>new Vector3(a.x*b,a.y*b,a.z*b);}
@@ -27,7 +28,7 @@ namespace Emberfall
  public sealed class CombatModel:Component
  {
   public static bool FailNext;public static Action Preparing;
-  public static CombatModel Hero(Transform t,HeroClass h){if(FailNext){FailNext=false;throw new Exception("fixture visual preparation failure");}var callback=Preparing;Preparing=null;callback?.Invoke();return new GameObject("model").AddComponent<CombatModel>();}
+  public static CombatModel Hero(Transform t,HeroClass h){float consumed=UnityEngine.Random.value;if(FailNext){FailNext=false;throw new Exception("fixture visual preparation failure");}var callback=Preparing;Preparing=null;callback?.Invoke();return new GameObject("model").AddComponent<CombatModel>();}
   public void ApplyFashion(FashionData a,FashionData b){}public void ApplyEquipment(ItemData a,ItemData b,ItemData c){}public void SetBlenderPilotOwnerAlive(bool value){}
  }
  public static class SummonedCompanion
@@ -58,6 +59,7 @@ namespace Emberfall
   public void Transient(string field,float value){GetType().GetField(field,System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).SetValue(this,value);}
  }
 }
+public static class ClassSwitchPersistenceFaults{public static bool Armed;public static int Attempts;}
 public static class ClassSwitchRuntimeTest
 {
  static int n;static void Check(bool ok,string s){n++;if(!ok)throw new Exception(s);}
@@ -67,13 +69,17 @@ public static class ClassSwitchRuntimeTest
   var p=new ProgressionService(Path.Combine(root,Guid.NewGuid().ToString("N")));p.NewGame(hero);p.Profile.level=45;p.Profile.skillRanks[0]=3;p.Save();
   var go=new GameObject("session");var s=go.AddComponent<GameSession>();s.Progression=p;s.ui=go.AddComponent<GameUI>();var h=new GameObject("hero").AddComponent<PlayerController>();s.Player=h;h.Initialize(s,hero);h.SetVitals(.37f);h.Consume();s.Observe();return s;
  }
+ static string OpenChest(ProgressionService p)
+ {var direct=typeof(ProgressionService).GetMethod("OpenDungeonChest",Type.EmptyTypes);return direct!=null?(string)direct.Invoke(p,null):p.OpenDungeonChest(0);}
  static void Main(string[] args)
  {
   Directory.CreateDirectory(args[0]);
   foreach(HeroClass from in Enum.GetValues(typeof(HeroClass)))foreach(HeroClass to in Enum.GetValues(typeof(HeroClass)))
   {
    if(from==to)continue;var s=New(args[0],from);var old=s.Player;float energy=old.Energy,cd=old.Remaining(0),fraction=old.Health/old.MaxHealth;int receipt=old.NewReceipt();SummonedCompanion.Partners.Add(old);
+   var randomBefore=UnityEngine.Random.state;int draws=UnityEngine.Random.Draws;
    Check(s.TrySwitchClass(to),"actual session accepts safe class switch");var current=s.Player;
+   Check(UnityEngine.Random.Draws>draws&&!UnityEngine.Random.state.Equals(randomBefore),"successful staged model keeps random consumption");
    Check(current!=old&&current.HeroClass==to&&s.Progression.Profile.heroClass==to&&s.Publications==1,"publication installs consistent owner exactly once");
    Check(Math.Abs(current.Health/current.MaxHealth-fraction)<.00001f&&current.Energy==energy&&current.Remaining(0)>=cd&&current.Dodge==4&&current.Proc==9,"actual player install preserves health ratio energy and cooldowns");
    Check(!old.gameObject.activeInHierarchy&&!SummonedCompanion.Partners.Contains(old)&&!old.HasReceipt(receipt),"old owner partner and cast receipt retired");
@@ -85,11 +91,28 @@ public static class ClassSwitchRuntimeTest
   {
    var s=New(args[0],HeroClass.Summoner);var old=s.Player;var profile=s.Progression.Profile;SummonedCompanion.Partners.Add(old);int receipt=old.NewReceipt();
    string json=JsonUtility.ToJson(profile,true),disk=File.ReadAllText(s.Progression.SaveFilePath);float hp=old.Health,energy=old.Energy,cd=old.Remaining(0);
+   var rng=UnityEngine.Random.state;int draws=UnityEngine.Random.Draws;
    Directory.CreateDirectory(s.Progression.SaveFilePath+".tmp");Check(!s.TrySwitchClass(HeroClass.Ranger),"actual session rejects failed storage");Directory.Delete(s.Progression.SaveFilePath+".tmp");
+   Check(UnityEngine.Random.Draws>draws&&UnityEngine.Random.state.Equals(rng),"failed staged model restores consumed combat RNG");
    Check(s.Player==old&&ReferenceEquals(profile,s.Progression.Profile)&&old.gameObject.activeInHierarchy&&SummonedCompanion.Partners.Contains(old)&&old.HasReceipt(receipt),"storage failure preserves original owner partners and receipts");
    Check(old.Health==hp&&old.Energy==energy&&old.Remaining(0)==cd&&s.Publications==0&&s.ui.Resets==0&&JsonUtility.ToJson(profile,true)==json&&File.ReadAllText(s.Progression.SaveFilePath)==disk,"storage failure has no runtime publication or data mutation");
-   Time.frameCount++;CombatModel.FailNext=true;Check(!s.TrySwitchClass(HeroClass.Ranger)&&s.Player==old&&s.Publications==0,"visual preparation failure leaves original owner intact");
+   rng=UnityEngine.Random.state;draws=UnityEngine.Random.Draws;Time.frameCount++;CombatModel.FailNext=true;Check(!s.TrySwitchClass(HeroClass.Ranger)&&s.Player==old&&s.Publications==0,"visual preparation failure leaves original owner intact");
+   Check(UnityEngine.Random.Draws>draws&&UnityEngine.Random.state.Equals(rng),"throwing staged model restores consumed combat RNG");
    Time.frameCount++;Check(s.TrySwitchClass(HeroClass.Ranger),"retry succeeds once after failure");
+  }
+  {
+   var s=New(args[0],HeroClass.Summoner);var p=s.Progression;var old=s.Player;SummonedCompanion.Partners.Add(old);int receipt=old.NewReceipt();
+   Check(p.PrepareDungeonChest(),"second-write fixture has real pending qualification");Directory.CreateDirectory(p.SaveFilePath+".tmp");Check(OpenChest(p)==null,"second-write fixture freezes actual failed draw");Directory.Delete(p.SaveFilePath+".tmp");
+   var field=typeof(ProgressionService).GetField("pendingChestRoll",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic);var frozen=(ChestReward)field.GetValue(p);Check(frozen!=null,"actual draw exists before target-write failure");
+   p.Profile.gold+=7;var profile=p.Profile;string json=JsonUtility.ToJson(profile,true),disk=File.ReadAllText(p.SaveFilePath);float hp=old.Health,energy=old.Energy,cd=old.Remaining(0);var rng=UnityEngine.Random.state;int draws=UnityEngine.Random.Draws;
+   int publications=s.Publications,uiResets=s.ui.Resets;ClassSwitchPersistenceFaults.Attempts=0;ClassSwitchPersistenceFaults.Armed=true;bool switched=s.TrySwitchClass(HeroClass.Ranger);ClassSwitchPersistenceFaults.Armed=false;
+   Check(!switched&&ClassSwitchPersistenceFaults.Attempts==2,"first current-profile save succeeds before injected second target save failure");
+   Check(s.Player==old&&ReferenceEquals(p.Profile,profile)&&old.gameObject.activeInHierarchy&&SummonedCompanion.Partners.Contains(old)&&old.HasReceipt(receipt),"target-write failure retains profile owner partner and cast receipts");
+   Check(old.Health==hp&&old.Energy==energy&&old.Remaining(0)==cd&&s.Publications==publications&&s.ui.Resets==uiResets&&JsonUtility.ToJson(p.Profile,true)==json,"target-write failure publishes no runtime or profile changes");
+   Check(ReferenceEquals(frozen,field.GetValue(p))&&p.Profile.pendingFashionChest&&!p.Profile.pendingChestReveal,"target-write failure retains complete frozen draw identity");
+   Check(UnityEngine.Random.Draws>draws&&UnityEngine.Random.state.Equals(rng),"target-write failure restores consumed combat RNG");
+   var reload=new ProgressionService(p.SaveDirectory);Check(reload.Load()&&reload.Profile.heroClass==HeroClass.Summoner&&reload.Profile.gold==profile.gold&&reload.Profile.pendingFashionChest&&File.ReadAllText(p.SaveFilePath)!=disk,"successful first write durably retains current configuration");
+   Check(OpenChest(p)!=null&&p.LastChestReward.id==frozen.id,"frozen draw still commits exact original identity after second-write failure");
   }
   {
    var s=New(args[0],HeroClass.Summoner);s.Player.Transient("starterRetry",12);
