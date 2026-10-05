@@ -1,0 +1,2 @@
+
+PASS: adapter full-width identity, repeated reads, hash collision independence, null/destroyed sentinel (API doubles)

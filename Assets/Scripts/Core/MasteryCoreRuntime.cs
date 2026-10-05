@@ -29,6 +29,15 @@ namespace Emberfall
             if (Core == core && Tier == tier) return;
             Core = core; Tier = tier; Reset();
         }
+        internal MasteryCoreRuntime CopyForClassArchive()
+        {return new MasteryCoreRuntime{Core=Core,Tier=Tier,cooldown=cooldown,comboRemaining=comboRemaining,energySpent=energySpent};}
+        internal void RestoreClassArchive(MasteryCoreRuntime previous,float elapsed,MasteryCoreRuntime cooldownFloor)
+        {
+            elapsed=Finite(elapsed)?Math.Max(0,elapsed):0;
+            if(previous!=null&&previous.Core==Core&&previous.Tier==Tier)
+            {cooldown=Math.Max(0,previous.cooldown-elapsed);comboRemaining=Math.Max(0,previous.comboRemaining-elapsed);energySpent=previous.energySpent;}
+            if(cooldownFloor!=null&&cooldownFloor.Core==Core)cooldown=Math.Max(cooldown,cooldownFloor.cooldown);
+        }
         public void Reset() { cooldown = comboRemaining = energySpent = 0; standaloneCasts.Clear(); }
         public void Advance(float dt)
         {

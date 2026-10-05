@@ -29,14 +29,14 @@ public static class ChestRevealPresentationTests
         var p=new ProgressionService(Path.Combine(root,Guid.NewGuid().ToString("N")));
         Check(p.CreateNewSlot(HeroClass.Vanguard),"real saved character");p.PrepareDungeonChest();
         Directory.CreateDirectory(p.SaveFilePath+".tmp");
-        Check(p.OpenDungeonChest(2)==null&&p.Profile.pendingFashionChest&&!p.Profile.pendingChestReveal,"failed opening preserves choice eligibility");Directory.Delete(p.SaveFilePath+".tmp");
-        Check(p.OpenDungeonChest(2)!=null&&p.Profile.pendingChestReveal,"successful explicit choice persists receipt");
+        Check(p.OpenDungeonChest()==null&&p.Profile.pendingFashionChest&&!p.Profile.pendingChestReveal,"failed opening preserves choice eligibility");Directory.Delete(p.SaveFilePath+".tmp");
+        Check(p.OpenDungeonChest()!=null&&p.Profile.pendingChestReveal,"successful explicit choice persists receipt");
         string live=JsonUtility.ToJson(p.Profile,false),disk=File.ReadAllText(p.SaveFilePath),full=ChestRevealPresentation.Result(p.LastChestReward,p.Profile.fashionThreads),id=p.LastChestReward.Id;
         for(int frame=0;frame<120;frame++){ChestRevealPresentation.Progress(frame/60f,1.1f);ChestRevealPresentation.Result(p.LastChestReward,p.Profile.fashionThreads);}
         Check(JsonUtility.ToJson(p.Profile,false)==live&&File.ReadAllText(p.SaveFilePath)==disk,"presentation has no persistence or currency side effects");
-        Check(p.OpenDungeonChest(0)==null&&p.LastChestReward.Id==id,"unselected chest cannot reroll committed result");
+        Check(p.OpenDungeonChest()==null&&p.LastChestReward.Id==id,"unselected chest cannot reroll committed result");
         var reload=new ProgressionService(Path.GetDirectoryName(p.SaveFilePath));Check(reload.LoadSlot(p.CurrentSlotId),"restart loads receipt");
-        Check(reload.Profile.pendingChestReveal&&reload.LastChestReward.choice==2&&ChestRevealPresentation.Result(reload.LastChestReward,reload.Profile.fashionThreads)==full,"restart restores full exact result, not choices");
+        Check(reload.Profile.pendingChestReveal&&reload.LastChestReward.choice==-1&&ChestRevealPresentation.Result(reload.LastChestReward,reload.Profile.fashionThreads)==full,"restart restores full exact result, not choices");
         Directory.CreateDirectory(reload.SaveFilePath+".tmp");Check(!reload.AcknowledgeChestReward()&&reload.Profile.pendingChestReveal&&reload.LastChestReward.Id==id,"failed acknowledgement keeps large result retryable");Directory.Delete(reload.SaveFilePath+".tmp");
         Check(reload.AcknowledgeChestReward()&&!reload.Profile.pendingChestReveal,"acknowledgement closes only after durable success");
         return checks+" chest presentation and real receipt lifecycle checks passed";

@@ -1,0 +1,31 @@
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.25
+PASS 10 actual practice hotbar navigation assertions
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.16
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.28
+Unhandled exception. System.Exception: practice right-click cannot open hidden panel
+   at Emberfall.GameUI.Check(Boolean okay, String why) in /tmp/practice-hotbar-dc9b835v/Shell.cs:line 36
+   at Emberfall.GameUI.Run() in /tmp/practice-hotbar-dc9b835v/Shell.cs:line 41
+   at Program.Main() in /tmp/practice-hotbar-dc9b835v/Shell.cs:line 49
+
+PASS compiled old-behavior negative: practice right-click cannot open hidden panel
+Unhandled exception. System.Exception: practice empty slot cannot open hidden panel
+   at Emberfall.GameUI.Check(Boolean okay, String why) in /tmp/practice-hotbar-dc9b835v/Shell.cs:line 36
+   at Emberfall.GameUI.Run() in /tmp/practice-hotbar-dc9b835v/Shell.cs:line 42
+   at Program.Main() in /tmp/practice-hotbar-dc9b835v/Shell.cs:line 49
+
+PASS compiled old-behavior negative: practice empty slot cannot open hidden panel

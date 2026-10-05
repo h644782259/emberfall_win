@@ -1,0 +1,55 @@
+/tmp/practice-potion-wa2492h1/Fixture.cs(93,374): warning CS0219: The variable 'role' is assigned but its value is never used [/tmp/practice-potion-wa2492h1/project/Validation.csproj]
+/tmp/practice-potion-wa2492h1/Fixture.cs(72,125): warning CS0169: The field 'AdvancedSkillSequence.step' is never used [/tmp/practice-potion-wa2492h1/project/Validation.csproj]
+/tmp/practice-potion-wa2492h1/CompanionBond.cs(4,24): warning CS0649: Field 'SummonedCompanion.BondState.EmpoweredHitSequence' is never assigned to, and will always have its default value 0 [/tmp/practice-potion-wa2492h1/project/Validation.csproj]
+/tmp/practice-potion-wa2492h1/Fixture.cs(39,215): warning CS0067: The event 'ProgressionService.LeveledUp' is never used [/tmp/practice-potion-wa2492h1/project/Validation.csproj]
+/tmp/practice-potion-wa2492h1/Fixture.cs(21,136): warning CS0067: The event 'Application.wantsToQuit' is never used [/tmp/practice-potion-wa2492h1/project/Validation.csproj]
+/tmp/practice-potion-wa2492h1/Fixture.cs(39,182): warning CS0067: The event 'ProgressionService.Changed' is never used [/tmp/practice-potion-wa2492h1/project/Validation.csproj]
+/tmp/practice-potion-wa2492h1/Fixture.cs(72,130): warning CS0414: The field 'AdvancedSkillSequence.steps' is assigned but its value is never used [/tmp/practice-potion-wa2492h1/project/Validation.csproj]
+Unhandled exception. System.Exception: live mobile input reaches actual practice potion once
+   at Program.C(Boolean b, String m) in /tmp/practice-potion-wa2492h1/project/Program.cs:line 1
+   at Program.Main() in /tmp/practice-potion-wa2492h1/project/Program.cs:line 2
+
+PASS baseline pre-fix TickPractice reproduces lost mobile potion
+/tmp/practice-potion-wa2492h1/Fixture.cs(93,374): warning CS0219: The variable 'role' is assigned but its value is never used [/tmp/practice-potion-wa2492h1/project/Validation.csproj]
+/tmp/practice-potion-wa2492h1/Fixture.cs(21,136): warning CS0067: The event 'Application.wantsToQuit' is never used [/tmp/practice-potion-wa2492h1/project/Validation.csproj]
+/tmp/practice-potion-wa2492h1/Fixture.cs(39,182): warning CS0067: The event 'ProgressionService.Changed' is never used [/tmp/practice-potion-wa2492h1/project/Validation.csproj]
+/tmp/practice-potion-wa2492h1/Fixture.cs(72,125): warning CS0169: The field 'AdvancedSkillSequence.step' is never used [/tmp/practice-potion-wa2492h1/project/Validation.csproj]
+/tmp/practice-potion-wa2492h1/Fixture.cs(39,215): warning CS0067: The event 'ProgressionService.LeveledUp' is never used [/tmp/practice-potion-wa2492h1/project/Validation.csproj]
+/tmp/practice-potion-wa2492h1/CompanionBond.cs(4,24): warning CS0649: Field 'SummonedCompanion.BondState.EmpoweredHitSequence' is never assigned to, and will always have its default value 0 [/tmp/practice-potion-wa2492h1/project/Validation.csproj]
+/tmp/practice-potion-wa2492h1/Fixture.cs(72,130): warning CS0414: The field 'AdvancedSkillSequence.steps' is assigned but its value is never used [/tmp/practice-potion-wa2492h1/project/Validation.csproj]
+PASS 20 actual practice/mobile/keyboard/potion guards and ownership assertions
+
+/tmp/practice-potion-wa2492h1/Fixture.cs(93,374): warning CS0219: The variable 'role' is assigned but its value is never used [/tmp/practice-potion-wa2492h1/project/Validation.csproj]
+/tmp/practice-potion-wa2492h1/Fixture.cs(72,125): warning CS0169: The field 'AdvancedSkillSequence.step' is never used [/tmp/practice-potion-wa2492h1/project/Validation.csproj]
+/tmp/practice-potion-wa2492h1/Fixture.cs(21,136): warning CS0067: The event 'Application.wantsToQuit' is never used [/tmp/practice-potion-wa2492h1/project/Validation.csproj]
+/tmp/practice-potion-wa2492h1/Fixture.cs(39,182): warning CS0067: The event 'ProgressionService.Changed' is never used [/tmp/practice-potion-wa2492h1/project/Validation.csproj]
+/tmp/practice-potion-wa2492h1/CompanionBond.cs(4,24): warning CS0649: Field 'SummonedCompanion.BondState.EmpoweredHitSequence' is never assigned to, and will always have its default value 0 [/tmp/practice-potion-wa2492h1/project/Validation.csproj]
+/tmp/practice-potion-wa2492h1/Fixture.cs(39,215): warning CS0067: The event 'ProgressionService.LeveledUp' is never used [/tmp/practice-potion-wa2492h1/project/Validation.csproj]
+/tmp/practice-potion-wa2492h1/Fixture.cs(72,130): warning CS0414: The field 'AdvancedSkillSequence.steps' is assigned but its value is never used [/tmp/practice-potion-wa2492h1/project/Validation.csproj]
+Unhandled exception. System.Exception: live mobile input reaches actual practice potion once
+   at Program.C(Boolean b, String m) in /tmp/practice-potion-wa2492h1/project/Program.cs:line 1
+   at Program.Main() in /tmp/practice-potion-wa2492h1/project/Program.cs:line 2
+
+/tmp/practice-potion-wa2492h1/Fixture.cs(93,374): warning CS0219: The variable 'role' is assigned but its value is never used [/tmp/practice-potion-wa2492h1/project/Validation.csproj]
+/tmp/practice-potion-wa2492h1/Fixture.cs(39,182): warning CS0067: The event 'ProgressionService.Changed' is never used [/tmp/practice-potion-wa2492h1/project/Validation.csproj]
+/tmp/practice-potion-wa2492h1/Fixture.cs(39,215): warning CS0067: The event 'ProgressionService.LeveledUp' is never used [/tmp/practice-potion-wa2492h1/project/Validation.csproj]
+/tmp/practice-potion-wa2492h1/CompanionBond.cs(4,24): warning CS0649: Field 'SummonedCompanion.BondState.EmpoweredHitSequence' is never assigned to, and will always have its default value 0 [/tmp/practice-potion-wa2492h1/project/Validation.csproj]
+/tmp/practice-potion-wa2492h1/Fixture.cs(21,136): warning CS0067: The event 'Application.wantsToQuit' is never used [/tmp/practice-potion-wa2492h1/project/Validation.csproj]
+/tmp/practice-potion-wa2492h1/Fixture.cs(72,125): warning CS0169: The field 'AdvancedSkillSequence.step' is never used [/tmp/practice-potion-wa2492h1/project/Validation.csproj]
+/tmp/practice-potion-wa2492h1/Fixture.cs(72,130): warning CS0414: The field 'AdvancedSkillSequence.steps' is assigned but its value is never used [/tmp/practice-potion-wa2492h1/project/Validation.csproj]
+Unhandled exception. System.Exception: blocked input discarded and quickbar guarded
+   at Program.C(Boolean b, String m) in /tmp/practice-potion-wa2492h1/project/Program.cs:line 1
+   at Program.Main() in /tmp/practice-potion-wa2492h1/project/Program.cs:line 3
+
+/tmp/practice-potion-wa2492h1/Fixture.cs(93,374): warning CS0219: The variable 'role' is assigned but its value is never used [/tmp/practice-potion-wa2492h1/project/Validation.csproj]
+/tmp/practice-potion-wa2492h1/Fixture.cs(72,125): warning CS0169: The field 'AdvancedSkillSequence.step' is never used [/tmp/practice-potion-wa2492h1/project/Validation.csproj]
+/tmp/practice-potion-wa2492h1/Fixture.cs(21,136): warning CS0067: The event 'Application.wantsToQuit' is never used [/tmp/practice-potion-wa2492h1/project/Validation.csproj]
+/tmp/practice-potion-wa2492h1/Fixture.cs(39,215): warning CS0067: The event 'ProgressionService.LeveledUp' is never used [/tmp/practice-potion-wa2492h1/project/Validation.csproj]
+/tmp/practice-potion-wa2492h1/Fixture.cs(39,182): warning CS0067: The event 'ProgressionService.Changed' is never used [/tmp/practice-potion-wa2492h1/project/Validation.csproj]
+/tmp/practice-potion-wa2492h1/CompanionBond.cs(4,24): warning CS0649: Field 'SummonedCompanion.BondState.EmpoweredHitSequence' is never assigned to, and will always have its default value 0 [/tmp/practice-potion-wa2492h1/project/Validation.csproj]
+/tmp/practice-potion-wa2492h1/Fixture.cs(72,130): warning CS0414: The field 'AdvancedSkillSequence.steps' is assigned but its value is never used [/tmp/practice-potion-wa2492h1/project/Validation.csproj]
+Unhandled exception. System.Exception: start discards prepare/restart pending latch
+   at Program.C(Boolean b, String m) in /tmp/practice-potion-wa2492h1/project/Program.cs:line 1
+   at Program.Main() in /tmp/practice-potion-wa2492h1/project/Program.cs:line 4
+
+PASS compiled lost routing / quickbar guard / stale start latch negatives rejected

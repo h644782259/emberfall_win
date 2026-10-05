@@ -134,7 +134,7 @@ namespace Emberfall
                     for(int i=0;i<data.Rewards.Length;i++)
                     {
                         float x=14+i*(rewardWidth+10);
-                        Text(new Rect(x*unit,inner*unit,rewardWidth*unit,35*unit),"+"+Money(data.Rewards[i].Value),Mathf.RoundToInt(25*unit),gold,true);
+                        DrawRewardToken(new Rect(x*unit,inner*unit,rewardWidth*unit,35*unit),data.Rewards[i].Key=="金币"?0:data.Rewards[i].Key=="碎片"?1:3,data.Rewards[i].Value,unit);
                         Text(new Rect(x*unit,(inner+38)*unit,rewardWidth*unit,23*unit),data.Rewards[i].Key,Mathf.RoundToInt(13*unit),muted);
                     }
                     inner+=72;

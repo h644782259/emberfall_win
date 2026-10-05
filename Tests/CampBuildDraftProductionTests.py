@@ -8,6 +8,9 @@ with tempfile.TemporaryDirectory(prefix='camp-draft-') as directory:
  p=Path(directory);sources=[root/('Assets/Scripts/Core/'+f+'.cs') for f in ['SkillRuntime','GameTypes','ProgressionService','CombatBalance','SkillDamageBudgets','HubTravelRules','MasteryCoreRuntime','TierRewardRules','TierRewardBand','ProgressionGoalState','ChapterProgression','ProgressionService.Chapter','ProgressionService.Reforge','ReforgeQuote','RoomTactics']]
  sources += [root/('Assets/Scripts/UI/'+f+'.cs') for f in ['GameUI.BuildPlans','GameUI.BuildDraft','MobilePanelLayout']]
  sources += [root/('Tests/'+f+'.cs') for f in ['ProgressionTests','CampBuildDraftTests','CampBuildDraftUIBoundary','BuildPresetTests']]
+ # Extend this isolated Unity API double for the production wrapped-button color expression.
+ boundary=p/'ProgressionBoundary.cs';boundary.write_text((root/'Tests/ProgressionTests.cs').read_text().replace('public struct Color {', 'public struct Color { public static Color operator *(Color c,float f)=>c;'))
+ sources=[boundary if f==root/'Tests/ProgressionTests.cs' else f for f in sources]
 
  def method(source,signature):
   a=source.index(signature);b=source.index('{',a)+1;depth=1

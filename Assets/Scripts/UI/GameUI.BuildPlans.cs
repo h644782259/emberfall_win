@@ -17,17 +17,22 @@ namespace Emberfall
         private GameProfile buildPlanSource;
         private string buildPlanPreview, buildPlanError;
         private Vector2 buildPlanScroll;
+        private int buildPlanDetails=-1;
+        private static string BuildPlanName(int slot){return slot==0?"A":"B";}
 
         private void OpenBuildPlans()
         {
             buildPlansOpen=true;buildPlanAction=BuildPlanAction.None;buildPlanOwner=session.Progression;
             buildPlanHero=session.Player;buildPlanCharacterId=session.Progression.CurrentSlotId;
-            buildPlanError=null;buildPlanScroll=Vector2.zero;
+            buildPlanError=null;buildPlanScroll=Vector2.zero;buildPlanDetails=-1;practiceChoicesOpen=false;
             CancelMobileScroll();BlockUITransition();
         }
         private void RequestBuildPlanAction(BuildPlanAction action,int slot=0)
         {
             var p=session.Progression;
+            // Shortcuts may open a confirmation directly from the workshop.
+            // Only external entry resets disclosures; internal confirmations preserve them.
+            if(!buildPlansOpen){buildPlanDetails=-1;practiceChoicesOpen=false;}
             buildPlansOpen=true;buildPlanOwner=p;buildPlanSource=p.Profile;
             buildPlanHero=session.Player;buildPlanCharacterId=p.CurrentSlotId;
             buildPlanAction=action;buildPlanSlot=slot;buildPlanFingerprint=p.BuildStateFingerprint();
@@ -42,14 +47,14 @@ namespace Emberfall
             if(allocationDraft!=null)CancelAllocationDraft();
             else if(buildPlanChoosing){buildPlanChoosing=false;}
             else if(buildPlanAction!=BuildPlanAction.None)buildPlanAction=BuildPlanAction.None;
-            else buildPlansOpen=false;
+            else {buildPlansOpen=false;buildPlanDetails=-1;practiceChoicesOpen=false;}
             buildPlanError=null;buildPlanScroll=Vector2.zero;
             CancelMobileScroll();BlockUITransition();return true;
         }
         private void ResetBuildPlanSurface()
         {
             CancelAllocationDraft();buildPlanChoosing=false;buildPlanReplacement=null;
-            buildPlansOpen=false;buildPlanAction=BuildPlanAction.None;
+            buildPlansOpen=false;buildPlanAction=BuildPlanAction.None;buildPlanDetails=-1;practiceChoicesOpen=false;
             buildPlanOwner=null;buildPlanSource=null;buildPlanHero=null;buildPlanCharacterId=null;
             buildPlanPreview=buildPlanError=null;buildPlanScroll=Vector2.zero;
         }
@@ -69,8 +74,8 @@ namespace Emberfall
             var layout=new MobileDialogLayout(width/unit,height/unit);
             bool confirm=!buildPlanChoosing&&buildPlanAction!=BuildPlanAction.None;
             string title=buildPlanChoosing?"手动选择替换装备":buildPlanAction==BuildPlanAction.Replace?"确认单部位引用替换？":buildPlanAction==BuildPlanAction.Reset?"免费重置配点？":buildPlanAction==BuildPlanAction.Save?
-                (session.Progression.HasBuildPreset(buildPlanSlot)?"覆盖配装方案 ":"记录配装方案 ")+(buildPlanSlot+1)+"？":
-                buildPlanAction==BuildPlanAction.Apply?"应用配装方案 "+(buildPlanSlot+1)+"？":"配装方案 · 两套";
+                (session.Progression.HasBuildPreset(buildPlanSlot)?"覆盖配装方案 ":"记录配装方案 ")+BuildPlanName(buildPlanSlot)+"？":
+                buildPlanAction==BuildPlanAction.Apply?"应用配装方案 "+BuildPlanName(buildPlanSlot)+"？":"配装方案 · A / B";
             Fill(new Rect(0,0,width,height),new Color(.008f,.018f,.03f,1));
             blockedRects.Add(new Rect(0,0,width,height));
             Box(BuildPlanRect(layout.Frame,unit),gold,false);
@@ -81,7 +86,7 @@ namespace Emberfall
                 new Rect(0,0,contentWidth*unit,Mathf.Max(layout.Body.Height,contentHeight)*unit));
             DrawBuildPlanContent(contentWidth,unit,true);
             EndTouchScroll();
-            if(Button(BuildPlanRect(layout.FooterButton(0,2),unit),confirm?"取消":"返回营地工坊",jade))
+            if(Button(BuildPlanRect(layout.FooterButton(0,2),unit),confirm?"取消":buildPlanChoosing?"返回方案":"返回营地工坊",jade))
             {CloseBuildPlanSurface();return true;}
             if(confirm)
             {
@@ -155,30 +160,39 @@ namespace Emberfall
                 if(!session.IsInCamp)BuildPlanParagraph(ref y,width,unit,"请先安全返回营地再操作。",gold,draw);
                 return y;
             }
-            DrawPracticeChoices(ref y,width,unit,draw,session.IsInCamp,null);
-            DraftButton(ref y,width,unit,"局部调整配点 · 临时草稿",session.IsInCamp,draw,OpenAllocationDraft);
-            BuildPlanParagraph(ref y,width,unit,"当前配装",gold,draw,true);
-            BuildPlanParagraph(ref y,width,unit,p.CurrentBuildSummary(),pale,draw);
-            BuildPlanParagraph(ref y,width,unit,"免费重置预览：技能进阶 "+p.RefundableSkillRanks+"点 + 精通 "+p.RefundableMasteryPoints+"点 = "+p.RefundableBuildPoints+"点。保留已学1阶，关闭精通核心。",muted,draw);
             for(int slot=0;slot<ProgressionService.BuildPresetCount;slot++)
             {
                 bool occupied=p.HasBuildPreset(slot);
-                BuildPlanParagraph(ref y,width,unit,"配装方案 "+(slot+1)+(occupied?"":" · 空位"),gold,draw,true);
-                if(occupied)BuildPlanParagraph(ref y,width,unit,p.BuildPresetSummary(slot),pale,draw);
+                BuildPlanParagraph(ref y,width,unit,"配装方案 "+BuildPlanName(slot)+(occupied?"":" · 空位"),gold,draw,true);
                 string reason=p.BuildPresetLockReason(slot,session.IsInCamp);
                 if(occupied&&!string.IsNullOrEmpty(reason))BuildPlanParagraph(ref y,width,unit,reason,gold,draw);
                 if(draw)
                 {
                     float buttonWidth=(width-24)*.5f;
-                    if(Button(new Rect(8*unit,y*unit,buttonWidth*unit,48*unit),occupied?"覆盖为当前配装":"记录当前配装",jade,session.IsInCamp))
+                    if(Button(new Rect(8*unit,y*unit,buttonWidth*unit,48*unit),occupied?"覆盖方案 "+BuildPlanName(slot):"记录方案 "+BuildPlanName(slot),jade,session.IsInCamp))
                         RequestBuildPlanAction(BuildPlanAction.Save,slot);
-                    if(Button(new Rect((16+buttonWidth)*unit,y*unit,buttonWidth*unit,48*unit),"应用方案 "+(slot+1),gold,occupied&&string.IsNullOrEmpty(reason)))
+                    if(Button(new Rect((16+buttonWidth)*unit,y*unit,buttonWidth*unit,48*unit),"应用方案 "+BuildPlanName(slot),gold,occupied&&string.IsNullOrEmpty(reason)))
                         RequestBuildPlanAction(BuildPlanAction.Apply,slot);
                 }
                 y+=64;
-                if(occupied)for(int part=0;part<3;part++){int selectedPlan=slot;var selectedPart=(ItemSlot)part;DraftButton(ref y,width,unit,"手动替换 "+GameBalance.SlotName(selectedPart)+" 引用",session.IsInCamp,draw,()=>BeginPresetReplacement(selectedPlan,selectedPart));}
+                if(occupied)
+                {
+                    int selectedPlan=slot;
+                    DraftButton(ref y,width,unit,(buildPlanDetails==slot?"收起":"展开")+"方案 "+BuildPlanName(slot)+" · 详情与引用修复",true,draw,()=>
+                    {buildPlanDetails=buildPlanDetails==selectedPlan?-1:selectedPlan;CancelMobileScroll();BlockUITransition();});
+                    if(buildPlanDetails==slot)
+                    {
+                        BuildPlanParagraph(ref y,width,unit,p.BuildPresetSummary(slot),pale,draw);
+                        for(int part=0;part<3;part++){var selectedPart=(ItemSlot)part;DraftButton(ref y,width,unit,"手动替换 "+GameBalance.SlotName(selectedPart)+" 引用",session.IsInCamp,draw,()=>BeginPresetReplacement(selectedPlan,selectedPart));}
+                    }
+                }
             }
             BuildPlanParagraph(ref y,width,unit,"方案属于当前角色。缺失或等级不足的装备会阻止应用；不会凭名称寻找替代装备或复制已出售物品。",muted,draw);
+            DraftButton(ref y,width,unit,"局部调整配点 · 临时草稿",session.IsInCamp,draw,OpenAllocationDraft);
+            DrawPracticeChoices(ref y,width,unit,draw,session.IsInCamp,null);
+            BuildPlanParagraph(ref y,width,unit,"当前配装",gold,draw,true);
+            BuildPlanParagraph(ref y,width,unit,p.CurrentBuildSummary(),pale,draw);
+            BuildPlanParagraph(ref y,width,unit,"免费重置预览：技能进阶 "+p.RefundableSkillRanks+"点 + 精通 "+p.RefundableMasteryPoints+"点 = "+p.RefundableBuildPoints+"点。保留已学1阶，关闭精通核心。",muted,draw);
             return y;
         }
         private void BeginPresetReplacement(int plan,ItemSlot slot)
@@ -235,7 +249,7 @@ namespace Emberfall
             else
             {
                 string result=buildPlanAction==BuildPlanAction.Replace?"仅此方案的单部位引用已更新":buildPlanAction==BuildPlanAction.Reset?"配点已重置；技能进阶与精通点已返还":
-                    buildPlanAction==BuildPlanAction.Save?"配装方案 "+(buildPlanSlot+1)+" 已记录":"已应用配装方案 "+(buildPlanSlot+1);
+                    buildPlanAction==BuildPlanAction.Save?"配装方案 "+BuildPlanName(buildPlanSlot)+" 已记录":"已应用配装方案 "+BuildPlanName(buildPlanSlot);
                 buildPlanAction=BuildPlanAction.None;buildPlanError=null;session.Notify(result);
             }
             buildPlanScroll=Vector2.zero;CancelMobileScroll();BlockUITransition();

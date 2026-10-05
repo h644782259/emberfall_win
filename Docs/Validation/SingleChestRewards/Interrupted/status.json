@@ -1,0 +1,5 @@
+{
+  "exitCode": 130,
+  "completed": false,
+  "reason": "Stopped after progression-growth expected old cumulative material count; base clear 4 + new chest 1 + next base clear 7 = 12, not 11. Production unchanged."
+}

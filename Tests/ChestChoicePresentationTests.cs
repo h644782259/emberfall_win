@@ -48,19 +48,19 @@ public static class ChestChoicePresentationTests
         profile.fashions.Clear();
         for(int choice=0;choice<3;choice++)
         {
-            p.Profile.pendingFashionChest=true;SetRoll(p,0);Check(p.OpenDungeonChest(choice)!=null,"real chest saved");
+            p.Profile.pendingFashionChest=true;SetRoll(p,choice==2?50:0);Check(p.OpenDungeonChest()!=null,"real chest saved");
             var receipt=p.LastChestReward;var disk=File.ReadAllText(p.SaveFilePath);string id=receipt.Id;
             var before=JsonUtility.ToJson(p.Profile,true);
             if(choice<2)
             {
-                var slot=choice==0?FashionSlot.Weapon:FashionSlot.Wings;
+                var slot=choice==0?FashionSlot.Wings:FashionSlot.Weapon;
                 Check(ChestRevealPresentation.ResultWithCollection(receipt,p.Profile).Contains("当前"+ChestRevealPresentation.CollectionProgress(p.Profile,slot)),"actual receipt collection shown");
                 Check(GameUI.Model(receipt)?.slot==slot,"actual model consumes receipt slot");
                 Check(GameUI.Model(receipt)?.rarity==receipt.Rarity,"actual model consumes receipt quality");
             }
             else
             {
-                Check(ChestRevealPresentation.ResultWithCollection(receipt,p.Profile).Contains("补给 · 更多金币"),"new supply emphasis");
+                Check(ChestRevealPresentation.ResultWithCollection(receipt,p.Profile).Contains("星烬碎片"),"single chest exposes actual material receipt");
                 Check(GameUI.Model(receipt)==null,"supply never draws fashion model");
                 Check(GameUI.Gold(receipt).Contains("+"+receipt.goldDelta+" 金币"),"gold art uses committed delta");
             }
@@ -68,7 +68,7 @@ public static class ChestChoicePresentationTests
             Check(p.Load()&&p.LastChestReward.Id==id,"reload retains exact receipt");Check(p.AcknowledgeChestReward(),"ack actual receipt");
         }
         // Force a real duplicate; the displayed collection must stay unique.
-        p.Profile.pendingFashionChest=true;SetRoll(p,0);p.OpenDungeonChest(0);
+        p.Profile.pendingFashionChest=true;SetRoll(p,0);p.OpenDungeonChest();
         Check(p.LastChestReward.Duplicate&&ChestRevealPresentation.CollectionCount(p.Profile,FashionSlot.Weapon)==1,"duplicate does not increment progress");
         Check(ChestRevealPresentation.ResultWithCollection(p.LastChestReward,p.Profile).Contains("重复收藏"),"duplicate receipt preserved");p.AcknowledgeChestReward();
         // Old choice 2 legitimately held wings. Save/load and invoke the real model entry.

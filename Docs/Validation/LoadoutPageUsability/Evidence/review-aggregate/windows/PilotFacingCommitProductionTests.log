@@ -1,0 +1,3 @@
+PASS: 66 actual Update movement/aim tail + FaceAim + BasicAttack visual-commit facing assertions; damage dispatch and Unity frame loop excluded
+PASS: compiled missing-raw-facing fails current-facing commit assertion
+PASS: compiled stale-basis fails current-facing commit assertion

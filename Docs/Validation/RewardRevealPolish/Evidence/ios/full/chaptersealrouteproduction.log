@@ -1,0 +1,9 @@
+PASS: 128 actual independent seal state and routed chapter geometry assertions
+PASS: 51209 chapter production geometry/navigation/spawn checks (managed shims, not gameplay or rendering)
+PASS: 780 chapter formation production navigation assertions (managed shims, not combat AI playback)
+
+PASS compiled exact negative: old-empty-seal-hud
+PASS compiled exact negative: old-sequential-seals
+PASS compiled exact negative: old-room-one-boss
+PASS compiled exact negative: old-fixed-heat-route
+PASS: A/B HUD and physical-ring identity wiring (source-only, not rendered UI)

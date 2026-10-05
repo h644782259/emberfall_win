@@ -1,0 +1,65 @@
+/tmp/reforge-selection-2ye667nx/MilestoneGoalSurfaceTests.cs(22,70): warning CS0649: Field 'GameUI.pale' is never assigned to, and will always have its default value [/tmp/reforge-selection-2ye667nx/p/Validation.csproj]
+/tmp/reforge-selection-2ye667nx/MilestoneGoalSurfaceTests.cs(22,80): warning CS0649: Field 'GameUI.muted' is never assigned to, and will always have its default value [/tmp/reforge-selection-2ye667nx/p/Validation.csproj]
+/tmp/reforge-selection-2ye667nx/MilestoneGoalSurfaceTests.cs(22,75): warning CS0649: Field 'GameUI.gold' is never assigned to, and will always have its default value [/tmp/reforge-selection-2ye667nx/p/Validation.csproj]
+/tmp/reforge-selection-2ye667nx/MilestoneGoalSurfaceTests.cs(22,65): warning CS0649: Field 'GameUI.jade' is never assigned to, and will always have its default value [/tmp/reforge-selection-2ye667nx/p/Validation.csproj]
+
+Build succeeded.
+
+/tmp/reforge-selection-2ye667nx/MilestoneGoalSurfaceTests.cs(22,70): warning CS0649: Field 'GameUI.pale' is never assigned to, and will always have its default value [/tmp/reforge-selection-2ye667nx/p/Validation.csproj]
+/tmp/reforge-selection-2ye667nx/MilestoneGoalSurfaceTests.cs(22,80): warning CS0649: Field 'GameUI.muted' is never assigned to, and will always have its default value [/tmp/reforge-selection-2ye667nx/p/Validation.csproj]
+/tmp/reforge-selection-2ye667nx/MilestoneGoalSurfaceTests.cs(22,75): warning CS0649: Field 'GameUI.gold' is never assigned to, and will always have its default value [/tmp/reforge-selection-2ye667nx/p/Validation.csproj]
+/tmp/reforge-selection-2ye667nx/MilestoneGoalSurfaceTests.cs(22,65): warning CS0649: Field 'GameUI.jade' is never assigned to, and will always have its default value [/tmp/reforge-selection-2ye667nx/p/Validation.csproj]
+    4 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.43
+PASS: 29 real reforge choice preview UI target and atomic-save assertions
+/tmp/reforge-selection-2ye667nx/MilestoneGoalSurfaceTests.cs(22,70): warning CS0649: Field 'GameUI.pale' is never assigned to, and will always have its default value [/tmp/reforge-selection-2ye667nx/p/Validation.csproj]
+/tmp/reforge-selection-2ye667nx/MilestoneGoalSurfaceTests.cs(22,80): warning CS0649: Field 'GameUI.muted' is never assigned to, and will always have its default value [/tmp/reforge-selection-2ye667nx/p/Validation.csproj]
+/tmp/reforge-selection-2ye667nx/MilestoneGoalSurfaceTests.cs(22,75): warning CS0649: Field 'GameUI.gold' is never assigned to, and will always have its default value [/tmp/reforge-selection-2ye667nx/p/Validation.csproj]
+/tmp/reforge-selection-2ye667nx/MilestoneGoalSurfaceTests.cs(22,65): warning CS0649: Field 'GameUI.jade' is never assigned to, and will always have its default value [/tmp/reforge-selection-2ye667nx/p/Validation.csproj]
+
+Build succeeded.
+
+/tmp/reforge-selection-2ye667nx/MilestoneGoalSurfaceTests.cs(22,70): warning CS0649: Field 'GameUI.pale' is never assigned to, and will always have its default value [/tmp/reforge-selection-2ye667nx/p/Validation.csproj]
+/tmp/reforge-selection-2ye667nx/MilestoneGoalSurfaceTests.cs(22,80): warning CS0649: Field 'GameUI.muted' is never assigned to, and will always have its default value [/tmp/reforge-selection-2ye667nx/p/Validation.csproj]
+/tmp/reforge-selection-2ye667nx/MilestoneGoalSurfaceTests.cs(22,75): warning CS0649: Field 'GameUI.gold' is never assigned to, and will always have its default value [/tmp/reforge-selection-2ye667nx/p/Validation.csproj]
+/tmp/reforge-selection-2ye667nx/MilestoneGoalSurfaceTests.cs(22,65): warning CS0649: Field 'GameUI.jade' is never assigned to, and will always have its default value [/tmp/reforge-selection-2ye667nx/p/Validation.csproj]
+    4 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.29
+/tmp/reforge-selection-2ye667nx/MilestoneGoalSurfaceTests.cs(22,65): warning CS0649: Field 'GameUI.jade' is never assigned to, and will always have its default value [/tmp/reforge-selection-2ye667nx/p/Validation.csproj]
+/tmp/reforge-selection-2ye667nx/MilestoneGoalSurfaceTests.cs(22,70): warning CS0649: Field 'GameUI.pale' is never assigned to, and will always have its default value [/tmp/reforge-selection-2ye667nx/p/Validation.csproj]
+/tmp/reforge-selection-2ye667nx/MilestoneGoalSurfaceTests.cs(22,75): warning CS0649: Field 'GameUI.gold' is never assigned to, and will always have its default value [/tmp/reforge-selection-2ye667nx/p/Validation.csproj]
+/tmp/reforge-selection-2ye667nx/MilestoneGoalSurfaceTests.cs(22,80): warning CS0649: Field 'GameUI.muted' is never assigned to, and will always have its default value [/tmp/reforge-selection-2ye667nx/p/Validation.csproj]
+
+Build succeeded.
+
+/tmp/reforge-selection-2ye667nx/MilestoneGoalSurfaceTests.cs(22,65): warning CS0649: Field 'GameUI.jade' is never assigned to, and will always have its default value [/tmp/reforge-selection-2ye667nx/p/Validation.csproj]
+/tmp/reforge-selection-2ye667nx/MilestoneGoalSurfaceTests.cs(22,70): warning CS0649: Field 'GameUI.pale' is never assigned to, and will always have its default value [/tmp/reforge-selection-2ye667nx/p/Validation.csproj]
+/tmp/reforge-selection-2ye667nx/MilestoneGoalSurfaceTests.cs(22,75): warning CS0649: Field 'GameUI.gold' is never assigned to, and will always have its default value [/tmp/reforge-selection-2ye667nx/p/Validation.csproj]
+/tmp/reforge-selection-2ye667nx/MilestoneGoalSurfaceTests.cs(22,80): warning CS0649: Field 'GameUI.muted' is never assigned to, and will always have its default value [/tmp/reforge-selection-2ye667nx/p/Validation.csproj]
+    4 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.39
+/tmp/reforge-selection-2ye667nx/MilestoneGoalSurfaceTests.cs(22,80): warning CS0649: Field 'GameUI.muted' is never assigned to, and will always have its default value [/tmp/reforge-selection-2ye667nx/p/Validation.csproj]
+/tmp/reforge-selection-2ye667nx/MilestoneGoalSurfaceTests.cs(22,75): warning CS0649: Field 'GameUI.gold' is never assigned to, and will always have its default value [/tmp/reforge-selection-2ye667nx/p/Validation.csproj]
+/tmp/reforge-selection-2ye667nx/MilestoneGoalSurfaceTests.cs(22,70): warning CS0649: Field 'GameUI.pale' is never assigned to, and will always have its default value [/tmp/reforge-selection-2ye667nx/p/Validation.csproj]
+/tmp/reforge-selection-2ye667nx/MilestoneGoalSurfaceTests.cs(22,65): warning CS0649: Field 'GameUI.jade' is never assigned to, and will always have its default value [/tmp/reforge-selection-2ye667nx/p/Validation.csproj]
+
+Build succeeded.
+
+/tmp/reforge-selection-2ye667nx/MilestoneGoalSurfaceTests.cs(22,80): warning CS0649: Field 'GameUI.muted' is never assigned to, and will always have its default value [/tmp/reforge-selection-2ye667nx/p/Validation.csproj]
+/tmp/reforge-selection-2ye667nx/MilestoneGoalSurfaceTests.cs(22,75): warning CS0649: Field 'GameUI.gold' is never assigned to, and will always have its default value [/tmp/reforge-selection-2ye667nx/p/Validation.csproj]
+/tmp/reforge-selection-2ye667nx/MilestoneGoalSurfaceTests.cs(22,70): warning CS0649: Field 'GameUI.pale' is never assigned to, and will always have its default value [/tmp/reforge-selection-2ye667nx/p/Validation.csproj]
+/tmp/reforge-selection-2ye667nx/MilestoneGoalSurfaceTests.cs(22,65): warning CS0649: Field 'GameUI.jade' is never assigned to, and will always have its default value [/tmp/reforge-selection-2ye667nx/p/Validation.csproj]
+    4 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.31
+PASS compiled reforge regression rejected at: actual track button freezes chosen19 not player50
+PASS compiled reforge regression rejected at: three distinct actual choices
+PASS compiled reforge regression rejected at: UI commit matches actual preview and charges450 once
+PASS actual desktop/mobile entry and existing Back routing connect to the tested surface

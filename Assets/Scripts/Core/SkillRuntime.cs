@@ -19,6 +19,16 @@ namespace Emberfall
             HeroClass = heroClass;
         }
 
+        // Detached runtime transfer: never restores energy or clears an existing timer.
+        internal SkillRuntime CopyForClass(HeroClass target,float elapsed,float currentEnergy,SkillRuntime cooldownFloor=null)
+        {
+            var copy=new SkillRuntime(target);elapsed=ValidElapsed(elapsed);
+            copy.Energy=float.IsNaN(currentEnergy)||float.IsInfinity(currentEnergy)?0:Math.Max(0,Math.Min(MaximumEnergy,currentEnergy));
+            for(int i=0;i<cooldowns.Length;i++)copy.cooldowns[i]=Math.Max(Math.Max(0,cooldowns[i]-elapsed),cooldownFloor==null?0:cooldownFloor.Remaining(i));
+            return copy;
+        }
+        private static float ValidElapsed(float value){return value<0||float.IsNaN(value)||float.IsInfinity(value)?0:value;}
+
         public float Remaining(int skill)
         {
             return skill >= 0 && skill < cooldowns.Length ? cooldowns[skill] : 0;

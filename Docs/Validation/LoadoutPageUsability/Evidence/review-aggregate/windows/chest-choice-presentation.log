@@ -1,0 +1,21 @@
+PASS: 37 H03 collection/real receipt checks; 18 actual card draws plus 3 emblem and real model-entry routes
+NEGATIVE CONTROL: ChestRevealPresentation.cs return ranks.Count;
+Unhandled exception. System.Exception: count distinct valid ranks, not list length
+   at ChestChoicePresentationTests.Check(Boolean value, String why) in /tmp/h03-chest-ui-cfsd8mv3/ChestChoicePresentationTests.cs:line 10
+   at ChestChoicePresentationTests.Run(String root) in /tmp/h03-chest-ui-cfsd8mv3/ChestChoicePresentationTests.cs:line 28
+   at Program.Main(String[] args) in /tmp/h03-chest-ui-cfsd8mv3/Program.cs:line 37
+
+NEGATIVE CONTROL: ChestRevealPresentation.cs reward.rulesRevision==1&&
+Unhandled exception. System.Exception: legacy gold not relabelled supply
+   at ChestChoicePresentationTests.Check(Boolean value, String why) in /tmp/h03-chest-ui-cfsd8mv3/ChestChoicePresentationTests.cs:line 10
+   at ChestChoicePresentationTests.Run(String root) in /tmp/h03-chest-ui-cfsd8mv3/ChestChoicePresentationTests.cs:line 81
+   at Program.Main(String[] args) in /tmp/h03-chest-ui-cfsd8mv3/Program.cs:line 37
+
+NEGATIVE CONTROL: GameUI.ChestChoices.cs if(choice==0)
+/tmp/h03-chest-ui-cfsd8mv3/GameUI.ChestChoices.cs(28,17): warning CS0162: Unreachable code detected [/tmp/h03-chest-ui-cfsd8mv3/Test.csproj]
+Unhandled exception. System.Exception: three distinct production emblem silhouettes
+   at ChestChoicePresentationTests.Check(Boolean value, String why) in /tmp/h03-chest-ui-cfsd8mv3/ChestChoicePresentationTests.cs:line 10
+   at ChestChoicePresentationTests.Run(String root) in /tmp/h03-chest-ui-cfsd8mv3/ChestChoicePresentationTests.cs:line 45
+   at Program.Main(String[] args) in /tmp/h03-chest-ui-cfsd8mv3/Program.cs:line 37
+
+PASS: H03 three regression controls rejected

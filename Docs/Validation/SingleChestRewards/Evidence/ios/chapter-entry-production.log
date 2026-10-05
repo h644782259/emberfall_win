@@ -1,0 +1,33 @@
+/tmp/chapter-entry-1_dh0__i/positive/Program.cs(30,15): warning CS0649: Field 'GameUI.bindingReturnPanel' is never assigned to, and will always have its default value [/tmp/chapter-entry-1_dh0__i/positive/Validation.csproj]
+/tmp/chapter-entry-1_dh0__i/positive/Program.cs(30,58): warning CS0414: The field 'GameUI.campTab' is assigned but its value is never used [/tmp/chapter-entry-1_dh0__i/positive/Validation.csproj]
+/tmp/chapter-entry-1_dh0__i/positive/Program.cs(30,66): warning CS0414: The field 'GameUI.rebindingSlot' is assigned but its value is never used [/tmp/chapter-entry-1_dh0__i/positive/Validation.csproj]
+
+Build succeeded.
+
+/tmp/chapter-entry-1_dh0__i/positive/Program.cs(30,15): warning CS0649: Field 'GameUI.bindingReturnPanel' is never assigned to, and will always have its default value [/tmp/chapter-entry-1_dh0__i/positive/Validation.csproj]
+/tmp/chapter-entry-1_dh0__i/positive/Program.cs(30,58): warning CS0414: The field 'GameUI.campTab' is assigned but its value is never used [/tmp/chapter-entry-1_dh0__i/positive/Validation.csproj]
+/tmp/chapter-entry-1_dh0__i/positive/Program.cs(30,66): warning CS0414: The field 'GameUI.rebindingSlot' is assigned but its value is never used [/tmp/chapter-entry-1_dh0__i/positive/Validation.csproj]
+    3 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:02.09
+PASS: 344 chapter UI/core replay assertions
+/tmp/chapter-entry-1_dh0__i/legacy/Program.cs(30,15): warning CS0649: Field 'GameUI.bindingReturnPanel' is never assigned to, and will always have its default value [/tmp/chapter-entry-1_dh0__i/legacy/Validation.csproj]
+/tmp/chapter-entry-1_dh0__i/legacy/Program.cs(30,58): warning CS0414: The field 'GameUI.campTab' is assigned but its value is never used [/tmp/chapter-entry-1_dh0__i/legacy/Validation.csproj]
+/tmp/chapter-entry-1_dh0__i/legacy/Program.cs(30,66): warning CS0414: The field 'GameUI.rebindingSlot' is assigned but its value is never used [/tmp/chapter-entry-1_dh0__i/legacy/Validation.csproj]
+
+Build succeeded.
+
+/tmp/chapter-entry-1_dh0__i/legacy/Program.cs(30,15): warning CS0649: Field 'GameUI.bindingReturnPanel' is never assigned to, and will always have its default value [/tmp/chapter-entry-1_dh0__i/legacy/Validation.csproj]
+/tmp/chapter-entry-1_dh0__i/legacy/Program.cs(30,58): warning CS0414: The field 'GameUI.campTab' is assigned but its value is never used [/tmp/chapter-entry-1_dh0__i/legacy/Validation.csproj]
+/tmp/chapter-entry-1_dh0__i/legacy/Program.cs(30,66): warning CS0414: The field 'GameUI.rebindingSlot' is assigned but its value is never used [/tmp/chapter-entry-1_dh0__i/legacy/Validation.csproj]
+    3 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:02.09
+PASS: old chapter Back hook negative control compiled and failed specified navigation assertion
+PASS: old opaque-first result compiled and failed exact boss-exit UI assertion
+PASS: old origin-aligned desktop compiled and failed exact centering oracle
+PASS: old node-scroll ownership compiled and failed exact fixed-node oracle
+PASS: compiled shared entry/result scroll fails exact new-run scroll oracle
+PASS: compiled retry-reset control fails actual pending write-failure reading-position assertion

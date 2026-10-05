@@ -1,0 +1,9 @@
+  Determining projects to restore...
+  Restored /tmp/emberfall-filled-vfx-ebwet6b1/Validation.csproj (in 98 ms).
+Filled VFX recipe checks: 23858
+PASS: 84210 production filled allocation/animated-vertex/coverage checks (managed, not GPU)
+PASS: 34 production visual-child/root-invariance and sword-endpoint checks (managed, not GPU)
+PASS: 6378 production secondary-field placement/animated extent/cache checks (managed, not GPU)
+PASS: old-order mutation fails actual mobile retained-base allocation; no Unity/GPU execution
+PASS: visual-writing-logical-root negative control fails the production transform invariant
+PASS: legacy rotating whole-piece coverage toggle fails the actual near-wall field test

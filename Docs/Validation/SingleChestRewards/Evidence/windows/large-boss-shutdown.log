@@ -1,0 +1,3 @@
+PASS 41 actual boss channel-mask and detached shutdown lifecycle cases (Unity API doubles)
+PASS scaled-clock mutation fails actual zero-timescale settlement assertion
+PASS reward/exactly-once guard remains before visual entry; large host immediately disables; shutdown has no reward/damage API

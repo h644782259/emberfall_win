@@ -1,0 +1,9 @@
+  Determining projects to restore...
+  Restored /tmp/class-review-fix-rrs0nnoh/ios-compile/Validation.csproj (in 109 ms).
+  Validation -> /tmp/class-review-fix-rrs0nnoh/ios-compile/bin/Release/netstandard2.1/Validation.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:02.85

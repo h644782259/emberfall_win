@@ -172,13 +172,20 @@ namespace Emberfall
 
     /// <summary>Durable chest receipt. Unity serializes the fields; nullable view properties
     /// let the reveal UI distinguish a gold-only reward without unsupported nullable fields.</summary>
+    public enum RewardMaterialKind { None, StarAshFragment }
+    public enum ChestRewardKind { Legacy, SingleChest }
+    [Serializable]
+    public class MaterialExchangeReceipt
+    { public string id;public long sequence;public RewardMaterialKind materialKind;public int threadsDelta,materialsDelta; }
     [Serializable]
     public class ChestReward
     {
         // Zero is the historical identical-chest schema; never infer it from choice.
         public int rulesRevision;
         public bool hasCurrencyDeltas;
-        public int goldDelta, threadsDelta;
+        public int goldDelta, threadsDelta,materialsDelta;
+        public ChestRewardKind rewardKind;public RewardMaterialKind materialKind;
+        public int materials,baseGold,duplicateGold,baseThreads,duplicateThreads;public bool legacyGoldProtection;
         public string id;
         public int choice;
         public int gold;
@@ -206,6 +213,14 @@ namespace Emberfall
     public enum EnemyKind { Slime, Goblin, Wisp, Guardian }
     public enum ZoneKind { Wilderness, Dungeon }
     public enum SkillCategory { Damage, Control, Mobility, Buff, Defense, Healing }
+
+    public enum RewardMomentKind { FirstCore, MechanicExchange, Ascension, MaterialExchange, FashionExchange, StrictUpgrade }
+    // Transient presentation snapshot, never serialized into GameProfile or used to grant.
+    public sealed class RewardMoment
+    {
+        public long Sequence; public string SlotId; public HeroClass HeroClass; public RewardMomentKind Kind;
+        public ItemData Item; public FashionData Fashion; public int GoldDelta,MaterialsDelta,ThreadsDelta;
+    }
 
     [Serializable]
     public class ItemData
@@ -260,11 +275,33 @@ namespace Emberfall
         public int equipmentMechanicKnownMask;
     }
 
+    /// <summary>Fixed class-local allocations. Inventory, equipment identity and rewards live only on GameProfile.</summary>
+    [Serializable]
+    public sealed class ClassBuildState
+    {
+        public int version=1;
+        public bool initialized;
+        public HeroClass heroClass;
+        public int[] skillRanks,masteryRanks,equippedSkills,hotbarKeys;
+        public int masteryCore=-1,hotbarPage,tutorialMask;
+        public ElementalistSpecialization specialization;
+        public SummonerRoute summonerRoute;
+        public BuildPreset[] buildPresets;
+        public bool classTutorialCompleted;
+        public ProgressionGoalKind progressionGoal;
+        public string progressionGoalItemId;
+        public int progressionGoalTier,progressionGoalLevel;
+        public EquipmentMechanic progressionGoalMechanic;
+        public Rarity progressionGoalMinimumRarity;
+    }
+
     public enum ProgressionGoalKind { None, Core, Variant, Ascension, SecondPreset, Tier, Reforge, ClassTutorial }
 
     [Serializable]
     public class GameProfile
     {
+        public int classStateRevision;
+        public ClassBuildState[] classStates;
         public int version = 1;
         public HeroClass heroClass;
         public int level = 1;
@@ -336,6 +373,9 @@ namespace Emberfall
         public List<FashionData> fashions = new List<FashionData>();
         public string wingsFashionId;
         public string weaponFashionId;
+        public int chestRulesRevision,pendingChestRulesRevision;public bool pendingChestLegacyGoldProtection;
+        public string pendingChestQualificationId;public ChestReward pendingChestDraw;
+        public long threadMaterialSequence;public MaterialExchangeReceipt lastThreadMaterialReceipt;
         public bool pendingFashionChest;
         public int pendingChestTier = 1;
         public ChestReward lastChestReward;

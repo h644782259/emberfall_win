@@ -1,0 +1,3 @@
+PASS: 55 actual multislot occlusion ownership/cap/lifecycle/group assertions; managed Unity API boundaries
+PASS: slot-zero-only production mutant rejected by exact dual-slot oracle
+PASS: unsupported-member-skipping production mutant rejected by whole-building oracle

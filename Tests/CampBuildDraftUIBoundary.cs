@@ -1,6 +1,7 @@
 using System;using System.Collections.Generic;using UnityEngine;
 namespace UnityEngine {
- public struct Vector2 {public static Vector2 zero=>new Vector2();}public struct Rect {public Rect(float x,float y,float w,float h){}}
+ public struct Vector2 {public static Vector2 zero=>new Vector2();}public struct Rect {public float x,y,width,height;public Rect(float x,float y,float w,float h){this.x=x;this.y=y;width=w;height=h;}}
+ public enum TextAnchor{MiddleCenter} public static class GUI{public static bool enabled=true;}
  public static class Mathf {public static int RoundToInt(float f)=>(int)Math.Round(f);public static float Ceil(float f)=>(float)Math.Ceiling(f);public static float Max(float a,float b)=>Math.Max(a,b);public static float Min(float a,float b)=>Math.Min(a,b);public static float Clamp(float f,float a,float b)=>Math.Min(b,Math.Max(a,f));}
  public class GUIContent {public GUIContent(string s){}}public class GUIStyle {public float CalcHeight(GUIContent c,float w)=>24;}
 }
@@ -17,12 +18,17 @@ namespace Emberfall {
  public partial class GameSession {public bool HasStarted=true;string equipmentFingerprint;void RecordCombatAction(string value){}public void Bind(){Player.Bind(this);Progression.Changed+=OnProgressChanged;}public ProgressionService Progression;public PlayerController Player=new PlayerController();public bool IsInCamp=true;public bool IsDead=>Player.IsDead;public bool PracticeActive;public void Notify(string value){}}
  public sealed partial class GameUI {
   void Feedback(bool ok,string text){throw new System.Exception("unexpected sale feedback in draft test");}void SellInventoryItem(string id,bool confirmed){throw new System.Exception("unexpected inventory sale in draft test");}void RebuildBagItems(){throw new System.Exception("unexpected inventory rebuild in draft test");}void ResolveSelectedItem(){throw new System.Exception("unexpected inventory selection in draft test");}
+  bool practiceChoicesOpen;int TouchFont(int size)=>(int)(size*TouchRatio);
   private void DrawPracticeChoices(ref float y,float width,float unit,bool draw,bool enabled,ProgressionService.BuildDraft draft){}
   enum Panel{Camp,Inventory}Panel panel;GameSession session;float width=1000,height=700,TouchRatio=1;Color gold,jade,pale,muted;List<Rect> blockedRects=new List<Rect>();string click;int clickIndex,seen;List<string> labels=new List<string>();
-  bool Button(Rect r,string s,Color c,bool enabled=true,string reason=null){labels.Add(s);if(s!=click)return false;if(seen++!=clickIndex)return false;return enabled;}
-  void Text(Rect r,string s,int z,Color c,bool b=false,bool wrap=false){labels.Add(s);}void Fill(Rect r,Color c){}void Box(Rect r,Color c,bool b){}GUIStyle Style(int s,bool b,bool w)=>new GUIStyle();
+  // Wrapped captions are painted after their hitboxes. A passive frame records that
+  // association; replay still invokes the actual production callback through Button.
+  readonly Dictionary<string,string> buttonCaptions=new Dictionary<string,string>();string pendingCaption;
+  string BoundsKey(Rect r)=>r.x+","+r.y+","+r.width+","+r.height;
+  bool Button(Rect r,string s,Color c,bool enabled=true,string reason=null){if(s==""){pendingCaption=BoundsKey(r);buttonCaptions.TryGetValue(pendingCaption,out s);}labels.Add(s);if(click==null||s!=click)return false;if(seen++!=clickIndex)return false;return enabled;}
+  void Text(Rect r,string s,int z,Color c,bool b=false,bool wrap=false,TextAnchor align=TextAnchor.MiddleCenter){if(pendingCaption!=null){buttonCaptions[pendingCaption]=s;pendingCaption=null;}labels.Add(s);}void Fill(Rect r,Color c){}void Box(Rect r,Color c,bool b){}GUIStyle Style(int s,bool b,bool w)=>new GUIStyle();
   void CancelMobileScroll(){}void BlockUITransition(){}Vector2 BeginTouchScroll(string s,Rect r,Vector2 v,Rect body)=>v;void EndTouchScroll(){}
-  void Click(string value,int index=0){click=value;clickIndex=index;seen=0;labels.Clear();DrawBuildPlanSurface();click=null;}
+  void Click(string value,int index=0){click=null;seen=0;DrawBuildPlanSurface();click=value;clickIndex=index;seen=0;labels.Clear();DrawBuildPlanSurface();click=null;}
   public static void TestDraftVitals(ProgressionService p,bool mobile,Action<bool,string> check)
   {
    MobileControls.Active=mobile;var ui=new GameUI{session=new GameSession{Progression=p}};ui.session.Bind();var player=ui.session.Player;

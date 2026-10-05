@@ -1,0 +1,6 @@
+  Determining projects to restore...
+  Restored /tmp/chapter-transactions-mtkxpuwc/Test.csproj (in 87 ms).
+PASS: 212 actual chapter save/receipt/sequence/difficulty/reload assertions
+14 atomic mode reward/receipt assertions passed
+PASS: 103 shared adventure, preset variant and tutorial persistence checks (managed fixtures)
+PASS: legacy reload inference and old-receipt replay mutations fail real production assertions

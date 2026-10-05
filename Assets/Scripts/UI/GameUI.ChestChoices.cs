@@ -3,6 +3,12 @@ namespace Emberfall
 {
     public sealed partial class GameUI
     {
+        private void DrawSingleChestCard(Rect r,float unit)
+        {
+            Fill(r,new Color(.055f,.08f,.11f));Border(r,gold);
+            DrawRewardChest(ChestChoiceArt(r,unit),false,1,0);
+            Text(new Rect(r.x+12*unit,r.y+8*unit,r.width-24*unit,24*unit),"通关宝箱",Mathf.RoundToInt(16*unit),pale,true);
+        }
         private Color ChestChoiceAccent(int choice)
         {return choice==0?new Color(.91f,.62f,.36f):choice==1?new Color(.48f,.81f,.94f):gold;}
         private Rect ChestChoiceArt(Rect r,float scale)

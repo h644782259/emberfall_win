@@ -47,7 +47,7 @@ namespace Emberfall {
   bool Button(Rect r,string s,Color c,bool enabled=true){buttons.Add((s,r,insideScroll,enabled));if(enabled&&click!=null&&s.StartsWith(click)){click=null;return true;}return false;}
   GUIStyle Style(int n,bool b,bool w)=>new GUIStyle();MobilePanelLayout MobilePanelGeometry()=>new MobilePanelLayout(width/TouchRatio,height/TouchRatio);
   Vector2 observedResultScroll;Vector2 BeginTouchScroll(string key,Rect body,Vector2 p,Rect full){if(key=="chapter-result")observedResultScroll=p;insideScroll=true;viewport=body;content=full;return p;}void EndTouchScroll(){insideScroll=false;}
-  bool CloseMobileInventoryDetail()=>false;bool CloseMobileSkillDetail()=>false;bool CloseRouteSkill()=>false;bool CloseProgressionGoalSurface()=>false;bool CloseBuildPlanSurface()=>false;bool CloseTravelMap()=>false;bool CancelSaveDeletion()=>false;bool CancelActiveSaveFlow()=>false;
+  bool CloseMobileInventoryDetail()=>false;bool CloseMobileSkillDetail()=>false;bool CloseRouteSkill()=>false;bool CloseProgressionGoalSurface()=>false;bool CloseClassSwitchSurface()=>false;bool CloseBuildPlanSurface()=>false;bool CloseTravelMap()=>false;bool CancelSaveDeletion()=>false;bool CancelActiveSaveFlow()=>false;
   void FinishChestReveal(){}void ReturnToInventory(){panel=Panel.Inventory;}
   CLOSE
   public static int Verify(string root){int n=0;Action<bool,string> check=(ok,why)=>{n++;if(!ok)throw new Exception(why);};

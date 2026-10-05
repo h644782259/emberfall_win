@@ -25,7 +25,13 @@ public static class RewardViewingRulesTests
         view.Reset();Check(view.Mode==CollectionPreviewComposition.Full&&view.Yaw==20,"owner replacement resets bounded presentation state");
         var legacy=new ChestReward{gold=10,rarityIndex=-1};Check(ChestRevealPresentation.Result(legacy,12).Contains("未保存实际增量"),"legacy amounts never fabricated");
         var capped=new ChestReward{gold=800,rarityIndex=-1,hasCurrencyDeltas=true,goldDelta=1,threadsDelta=0};string result=ChestRevealPresentation.Result(capped,999999);
-        Check(result.Contains("到账 +1 金币 · +0 星纹")&&result.Contains("可在营地自选传说"),"exact delta and deterministic legendary progress");
+        Check(result.Contains("到账 +1 金币 · +0 星纹")&&!result.Contains("可在营地自选传说"),"exact delta does not infer collection eligibility from balance alone");
+        var profile=new GameProfile{fashionThreads=30};
+        Check(ChestRevealPresentation.ResultWithCollection(capped,profile).Contains("可在营地兑换缺少的传说兵装 / 羽翼"),"funded missing collection offers exact gaps");
+        profile.fashions.Add(new FashionData{slot=FashionSlot.Weapon,rarity=Rarity.Legendary});
+        Check(ChestRevealPresentation.LegendaryExchangeHint(profile)=="可在营地兑换缺少的传说羽翼","one owned legendary narrows eligible part");
+        profile.fashions.Add(new FashionData{slot=FashionSlot.Wings,rarity=Rarity.Legendary});
+        Check(ChestRevealPresentation.ResultWithCollection(capped,profile).Contains("两部位传说已收藏")&&!ChestRevealPresentation.LegendaryExchangeHint(profile).Contains("兑换缺少"),"full legendary collection does not promise unavailable exchange");
         return "PASS: "+n+" composite, transition and independent viewing state checks";
     }
 }

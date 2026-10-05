@@ -92,14 +92,14 @@ public static class ProgressionTests
         Check(counts[0] == 22 && counts[1] == 12 && counts[2] == 5 && counts[3] == 1 && counts[4] == 60,
             "chest rarity distribution uses absolute chances per opening, including 1% legendary");
         var service = Fresh();
-        Check(service.OpenDungeonChest(0) == null, "chest cannot be opened before a clear");
+        Check(service.OpenDungeonChest() == null, "chest cannot be opened before a clear");
         service.PrepareDungeonChest();
         Check(service.Load() && service.Profile.pendingFashionChest, "unopened chest survives save and reload");
         int priorGold = service.Profile.gold;
-        string result = service.OpenDungeonChest(2);
+        string result = service.OpenDungeonChest();
         Check(!string.IsNullOrEmpty(result) && service.Profile.gold >= priorGold + 60 && !service.Profile.pendingFashionChest,
             "one chosen chest grants guaranteed gold and consumes the saved entitlement");
-        Check(service.OpenDungeonChest(1) == null && service.Load() && !service.Profile.pendingFashionChest,
+        Check(service.OpenDungeonChest() == null && service.Load() && !service.Profile.pendingFashionChest,
             "other chests cannot be claimed and entitlement stays consumed after reload");
         var wings = new FashionData { id = "fashion-0-3", slot = FashionSlot.Wings, rarity = Rarity.Legendary, name = "烬王之翼" };
         var weapon = new FashionData { id = "fashion-1-3", slot = FashionSlot.Weapon, rarity = Rarity.Legendary, name = "烬王兵装" };

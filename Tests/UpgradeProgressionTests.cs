@@ -177,9 +177,9 @@ public static class UpgradeProgressionTests
         Check(service.Profile.pendingFirstClearReward && service.Profile.mechanicMaterials == 3, "first clear offers persistent choice plus materials");
         service.PrepareDungeonChest();
         Check(service.Profile.mechanicMaterials == 3, "repeating chest preparation cannot farm materials");
-        service.OpenDungeonChest(0);
+        service.OpenDungeonChest();
         service.PrepareDungeonChest();
-        Check(service.Profile.mechanicMaterials == 3, "opening/repreparing same clear does not mint materials");
+        Check(service.Profile.mechanicMaterials == 4, "opening adds one chest fragment; repreparing does not repeat base clear materials");
         Check(!service.ClaimFirstClearReward(EquipmentMechanic.ReturningBlade) && service.Profile.pendingFirstClearReward, "foreign choice does not consume first reward");
         FillBag(service); FillPending(service);
         Check(!service.ClaimFirstClearReward(EquipmentMechanic.CinderTrail) && service.Profile.pendingFirstClearReward, "full storage preserves first-clear choice");
@@ -190,10 +190,10 @@ public static class UpgradeProgressionTests
         service = Reload(service);
         Check(service.Profile.firstClearRewardClaimed && service.HasDiscoveredMechanic(EquipmentMechanic.CinderTrail), "first-clear state and codex persist");
         for (int clear = 2; clear <= 4; clear++) { service.Profile.clearedRuns = clear; service.PrepareDungeonChest(); }
-        Check(service.Profile.mechanicMaterials == 12, "four clears fund one targeted mechanic");
-        Check(!service.ExchangeMechanic(EquipmentMechanic.ReturningBlade) && service.Profile.mechanicMaterials == 12, "wrong-class exchange has no cost");
+        Check(service.Profile.mechanicMaterials == 13, "four base clears plus one opened box total13 materials");
+        Check(!service.ExchangeMechanic(EquipmentMechanic.ReturningBlade) && service.Profile.mechanicMaterials == 13, "wrong-class exchange has no cost");
         service.Profile.level = 40; service.Save();
-        Check(service.ExchangeMechanic(EquipmentMechanic.FrostEcho) && service.Profile.mechanicMaterials == 0, "targeted exchange spends fixed cost once");
+        Check(service.ExchangeMechanic(EquipmentMechanic.FrostEcho) && service.Profile.mechanicMaterials == 1, "targeted exchange spends12 once and retains added chest fragment");
         Check(service.Profile.inventory.Exists(value => value.mechanic == EquipmentMechanic.FrostEcho && value.level == 40 && value.locked), "exchange produces chosen current-level protected gear");
         Check(!service.ExchangeMechanic(EquipmentMechanic.FrostEcho), "insufficient materials cannot go negative");
         FillBag(service);
@@ -304,26 +304,26 @@ public static class UpgradeProgressionTests
         service.Changed += () => changes++;
         string blockedTemp = service.SaveFilePath + ".tmp";
         Directory.CreateDirectory(blockedTemp);
-        Check(service.OpenDungeonChest(1) == null, "failed durable write does not open chest");
+        Check(service.OpenDungeonChest() == null, "failed durable write does not open chest");
         Check(service.Profile.pendingFashionChest && !service.Profile.pendingChestReveal && service.LastChestReward == null, "write failure publishes neither consumption nor animation receipt");
         Check(service.Profile.gold == gold && service.Profile.fashions.Count == fashions && changes == 0, "write failure grants nothing and emits no reward event");
         Check(File.ReadAllText(service.SaveFilePath) == saved, "failed open leaves prior durable character untouched");
         Directory.Delete(blockedTemp);
-        string text = service.OpenDungeonChest(1);
+        string text = service.OpenDungeonChest();
         ChestReward receipt = service.LastChestReward;
-        Check(text != null && receipt != null && receipt.Id.Length == 32 && receipt.choice == 1 && changes == 1, "successful open saves one typed receipt before one event");
+        Check(text != null && receipt != null && receipt.Id.Length == 32 && receipt.choice == -1 && changes == 1, "successful open saves one typed receipt before one event");
         Check(service.Profile.gold == gold + receipt.Gold && receipt.Gold >= 60 && receipt.Gold <= 100, "first reward receipt matches gold actually granted");
         Check(!service.Profile.pendingFashionChest && service.Profile.pendingChestReveal, "chest availability and reveal are separate persistent states");
         Check(receipt.Rarity.HasValue == receipt.Slot.HasValue && receipt.Name.Length > 0, "gold-only receipt distinguishes missing rarity and slot");
         if (receipt.Rarity.HasValue) Check(service.Profile.fashions.Count == fashions + 1, "fashion typed receipt matches collection grant");
         else Check(service.Profile.fashions.Count == fashions, "gold-only receipt grants no fashion");
         gold = service.Profile.gold;
-        Check(service.OpenDungeonChest(0) == null && service.OpenDungeonChest(2) == null && service.Profile.gold == gold && changes == 1, "duplicate chest clicks neither reroll nor grant again");
+        Check(service.OpenDungeonChest() == null && service.OpenDungeonChest() == null && service.Profile.gold == gold && changes == 1, "duplicate chest clicks neither reroll nor grant again");
         service = Reload(service);
-        Check(service.Profile.pendingChestReveal && service.LastChestReward.Id == receipt.Id && service.LastChestReward.Gold == receipt.Gold && service.LastChestReward.choice == 1, "interrupted animation resumes the identical saved receipt");
-        Check(service.OpenDungeonChest(1) == null && service.Profile.gold == gold, "reload cannot reopen already granted chest");
+        Check(service.Profile.pendingChestReveal && service.LastChestReward.Id == receipt.Id && service.LastChestReward.Gold == receipt.Gold && service.LastChestReward.choice == -1, "interrupted animation resumes the identical saved receipt");
+        Check(service.OpenDungeonChest() == null && service.Profile.gold == gold, "reload cannot reopen already granted chest");
         service.PrepareDungeonChest();
-        Check(service.Profile.pendingFashionChest && service.OpenDungeonChest(1) == null, "new chest cannot overwrite previous unacknowledged reveal");
+        Check(service.Profile.pendingFashionChest && service.OpenDungeonChest() == null, "new chest cannot overwrite previous unacknowledged reveal");
         Directory.CreateDirectory(blockedTemp);
         Check(!service.AcknowledgeChestReward() && service.Profile.pendingChestReveal, "failed skip/close save keeps reveal resumable");
         Directory.Delete(blockedTemp);
@@ -331,7 +331,7 @@ public static class UpgradeProgressionTests
         Check(!service.AcknowledgeChestReward() && service.Profile.gold == gold, "duplicate skip/close is a harmless refusal");
         service = Reload(service);
         Check(!service.Profile.pendingChestReveal && service.LastChestReward.Id == receipt.Id, "acknowledged animation stays closed after reload");
-        Check(service.OpenDungeonChest(2) != null && service.LastChestReward.Id != receipt.Id, "next earned chest gets one distinct receipt");
+        Check(service.OpenDungeonChest() != null && service.LastChestReward.Id != receipt.Id, "next earned chest gets one distinct receipt");
         int[] counts = new int[5];
         for (int roll = 0; roll < 100; roll++)
         {
@@ -377,7 +377,7 @@ public static class UpgradeProgressionTests
         FillBag(service);
         ItemData pending = service.CreateMechanicItem(EquipmentMechanic.CinderTrail);
         Check(service.CollectLoot(pending), "copy fixture has protected pending item");
-        service.PrepareDungeonChest(); service.OpenDungeonChest(0);
+        service.PrepareDungeonChest(); service.OpenDungeonChest();
         string oldPath = service.SaveFilePath, oldBytes = File.ReadAllText(oldPath), receipt = service.LastChestReward.Id;
         GameProfile oldProfile = service.Profile;
         Check(service.SaveAsNewSlot() && service.Profile != oldProfile && service.SaveFilePath != oldPath, "save-as makes a separate full-profile copy");

@@ -15,7 +15,7 @@ with tempfile.TemporaryDirectory(prefix='camp-practice-') as directory:
   a=ui.index(key);b=ui.index('{',a)+1;n=1
   while n:n+=(ui[b]=='{')-(ui[b]=='}');b+=1
   return ui[a:b]
- surface=p/'UI.cs';surface.write_text('using UnityEngine;namespace Emberfall{public partial class GameUI{'+''.join(member(k) for k in ['private void RequestBuildPlanAction(','private void BeginPresetReplacement(','private void PreviewPresetReplacement(','private void ConfirmBuildPlanAction()','private bool CloseBuildPlanSurface()','private void RequestPresetSale(','private void ConfirmPresetSale()','private void CancelPresetSale()'])+'}}');sources.append(surface)
+ surface=p/'UI.cs';surface.write_text('using UnityEngine;namespace Emberfall{public partial class GameUI{'+''.join(member(k) for k in ['private static string BuildPlanName(', 'private void RequestBuildPlanAction(','private void BeginPresetReplacement(','private void PreviewPresetReplacement(','private void ConfirmBuildPlanAction()','private bool CloseBuildPlanSurface()','private void RequestPresetSale(','private void ConfirmPresetSale()','private void CancelPresetSale()'])+'}}');sources.append(surface)
  project=m.write_project(p/'project',sources,'using System;class Program{static void Main(string[] args){Console.WriteLine(PresetReplacementTests.Run(args[0]));}}')
  config=p/'NuGet.Config';config.write_text('<configuration><packageSources><clear /></packageSources></configuration>')
  env=dict(os.environ,DOTNET_CLI_HOME=str(p/'cli'),DOTNET_NOLOGO='1',DOTNET_CLI_TELEMETRY_OPTOUT='1');dotnet=sys.argv[1] if len(sys.argv)>1 else 'dotnet'

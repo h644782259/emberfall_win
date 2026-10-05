@@ -1,0 +1,25 @@
+PASS:3 explicit source-link guards for unexecuted water/bank wiring and1 noncombat damage boundary
+PASS: environment partition 66 production material/light/focus checks
+PASS: town partition 170 full production town/group/registry wiring checks
+PASS: hub partition 40 production NPC/props/pause/cosmetic-ground checks
+PASS: 276 total production scenery assertions; managed Unity APIs, no rendered/GPU/pathfinding acceptance
+PASS: compiled environment control rejected: actual tree assigns Foliage and Wood categories
+PASS: compiled environment control rejected: actual tree assigns Foliage and Wood categories
+PASS: compiled environment control rejected: factory applies actual environment light profile
+PASS: compiled environment control rejected: actual point lights remain unshadowed vertex accents
+PASS: compiled environment control rejected: town portal invokes six focus insets
+PASS: compiled environment control rejected: focus and light pools remain cosmetic without traversal physics or occlusion
+PASS: compiled town control rejected: complete upper building parts include roof helper and late ornaments
+PASS: compiled town control rejected: town registers each building solid exactly once
+PASS: compiled town control rejected: town registers each building solid exactly once
+PASS: compiled town control rejected: all upper parts enter real registry and own building group
+PASS: compiled town control rejected: all upper parts enter real registry and own building group
+PASS: compiled town control rejected: building root preserves parent and identity transform
+PASS: compiled hub control rejected: each NPC registers body and role-prop footprint exactly once
+PASS: compiled hub control rejected: same NPC simulation state ignores wall clock during active idle
+PASS: compiled hub control rejected: actual NPC pose and age freeze while paused despite wall clock
+PASS: compiled hub control rejected: ground and bank detail do not mutate navigation or occlusion
+PASS: compiled hub control rejected: actual NPC initializer binds articulated arms and exchange dial
+PASS: compiled hub control rejected: NPC rendering and session interaction share authored positions
+PASS: compiled behavior-preserving control: tree bark color may change without losing Wood category
+PASS: compiled behavior-preserving control: late building group owns roof registration even without redundant flags

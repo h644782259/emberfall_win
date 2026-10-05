@@ -26,7 +26,7 @@ enum Panel{None,Skills,Camp,Inventory,SaveSelection,Chests,Fashion,PotionAssignm
 Panel panel=Panel.Camp,bindingReturnPanel;Session session=new Session();int campTab=2,selectedSkill,desktopDetailSkill=-1,rebindingSlot,blocks;
 bool presetSaleOpen;bool mobileSkillDetail,saveSelectionFromPause,chestDetails,bindingReturnPause,saveReturnPause,controlsReturnPause;bool ChestAnimationDone=true;float chestRevealedAt,ChestDuration=1;
 ProgressionService mobileSkillsService;string mobileSkillsSlot,mobileSkillStatus;bool mobileSkillStatusFailed;Vector2 mobileSkillListScroll=new Vector2(0,173),mobileSkillDetailScroll=new Vector2(0,300),desktopDetailScroll=new Vector2(0,260);Vector2[] mobileWorkshopScroll={new Vector2(0,93),new Vector2(0,143),new Vector2(0,271),new Vector2(0,12)};
-bool CloseChapterSelection()=>false;bool CloseMobileInventoryDetail()=>false;bool CloseMobileSkillDetail(){if(!mobileSkillDetail)return false;mobileSkillDetail=false;return true;}bool CloseProgressionGoalSurface()=>false;bool CloseBuildPlanSurface()=>false;bool CloseTravelMap()=>false;bool CancelSaveDeletion()=>false;bool CancelActiveSaveFlow()=>false;
+bool CloseChapterSelection()=>false;bool CloseMobileInventoryDetail()=>false;bool CloseMobileSkillDetail(){if(!mobileSkillDetail)return false;mobileSkillDetail=false;return true;}bool CloseProgressionGoalSurface()=>false;bool CloseClassSwitchSurface()=>false;bool CloseBuildPlanSurface()=>false;bool CloseTravelMap()=>false;bool CancelSaveDeletion()=>false;bool CancelActiveSaveFlow()=>false;
 void Feedback(bool saved,string text){}void CancelMobileScroll(){}void BlockUITransition(){blocks++;}void FinishChestReveal(){}void ReturnToInventory(){}
 RECONCILE
 LEARN

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Actual production save transactions with managed JSON/filesystem and regression mutations."""
 from CastReceiptFixtureSources import include_cast_receipt_source
-import os,sys,tempfile,subprocess
+import os,sys,tempfile,subprocess,hashlib
 from pathlib import Path
 root=Path(__file__).resolve().parents[1]
 dotnet=sys.argv[1] if len(sys.argv)>1 else os.environ.get('DOTNET','dotnet')
@@ -25,7 +25,7 @@ with tempfile.TemporaryDirectory(prefix='chapter-transactions-') as folder:
     print('NEGATIVE CONTROL: baseline real SaveSlotTransition replaces service without pending-draw context',flush=True);print(failed.stdout+failed.stderr,flush=True)
     assert failed.returncode and 'same-slot real staged replacement retains failed choice' in failed.stdout+failed.stderr
     stage.write_text(actual_stage);(folder/'Program.cs').write_text(transition_program)
-    mutations=[('ProgressionService.cs','choice == 2 ? baseGold * 3 / 2 : baseGold','baseGold','supply floors each original gold roll'),
+    mutations=[('ProgressionService.cs','protectLegacy?gold*3/2:gold','gold','legacy undrawn qualification floors protected base gold times1.5'),
         ('ProgressionService.Chapter.cs','ChapterProgression.GrantDifficultyRewards(candidate, ChapterProgression.DifficultyRewardBit(receipt.Node, receipt.Difficulty));','/* baseline: no first difficulty grant */','base fragments independent plus exact 4'),
         ('ChapterProgression.cs','proven & 63 & ~profile.chapterDifficultyRewardMask','proven & 63','real repeat grants only base fragments')]
     for filename,old,new,expected in mutations:
@@ -36,13 +36,20 @@ with tempfile.TemporaryDirectory(prefix='chapter-transactions-') as folder:
         p.write_text(original)
         assert result.returncode and expected in result.stdout+result.stderr,result.stdout+result.stderr
     # Actual immutable pre-change OpenDungeonChest, not a hand-written approximation.
-    baseline_ref='5d85e47b9fab2489d5b06963a0b896ec19112740'
-    baseline=subprocess.check_output(['git','show',baseline_ref+':Assets/Scripts/Core/ProgressionService.cs'],cwd=root,text=True)
     def method(source):
         a=source.index('        public string OpenDungeonChest(int choice)');b=source.index('        public bool AcknowledgeChestReward()',a)
         return source[a:b]
+    # The repositories have distinct history; these immutable pre-change methods are byte-identical.
+    baseline_refs=('5d85e47b9fab2489d5b06963a0b896ec19112740','e8b068cd29721db92fdc5f7b77166c2c9652019e')
+    baseline_ref=next((ref for ref in baseline_refs if subprocess.run(
+        ['git','cat-file','-e',ref+':Assets/Scripts/Core/ProgressionService.cs'],cwd=root,stderr=subprocess.DEVNULL).returncode==0),None)
+    assert baseline_ref is not None,'fetch repository history for the immutable reward baseline'
+    baseline=subprocess.check_output(['git','show',baseline_ref+':Assets/Scripts/Core/ProgressionService.cs'],cwd=root,text=True)
+    assert hashlib.sha256(method(baseline).encode()).hexdigest()=='a2ed81e3d2b2cad7cbce2b6a4aead584bb139e75cdb6c9d6a914e3a2bb04f581','historical baseline method changed'
     p=folder/'ProgressionService.cs';original=p.read_text();program=(folder/'Program.cs').read_text()
-    p.write_text(original.replace(method(original),method(baseline)))
+    a=original.index('        public string OpenDungeonChest(int ');b=original.index('{',a)+1;depth=1
+    while depth:depth+=(original[b]=='{')-(original[b]=='}');b+=1
+    p.write_text(original[:a]+method(baseline)+original[b:])
     (folder/'Program.cs').write_text('RewardRevisionTests.BaselineSupply(args[0]);')
     result=subprocess.run(command,capture_output=True,text=True)
     print('ACTUAL BASELINE CONTROL:',baseline_ref,flush=True);print(result.stdout+result.stderr,flush=True)

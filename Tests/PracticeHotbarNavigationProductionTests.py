@@ -29,7 +29,7 @@ body=''.join(member(ui,x) for x in ['private void DrawHotbar(','private void Com
 # Execute the exact early-return practice routing block; only GUI state objects are boundaries.
 on_gui=member(ui,'private void OnGUI()')
 route=member(on_gui,'if(session.PracticeActive)')
-body+='void ReplayPracticeRoute(){var oldMatrix=GUI.matrix;var oldColor=GUI.color;var oldContentColor=GUI.contentColor;bool oldEnabled=GUI.enabled;'+route+'throw new System.Exception("practice route fell through");}void DrawPracticeOverlay(){}'
+body+='void ReplayPracticeRoute(){var oldMatrix=GUI.matrix;var oldColor=GUI.color;var oldContentColor=GUI.contentColor;bool oldEnabled=GUI.enabled;'+route+'throw new System.Exception("practice route fell through");}void ClearRewardMoment(){}void DrawPracticeOverlay(){}'
 shell=shell.replace('public static bool enabled=true;', 'public static object matrix,color,contentColor;public static bool enabled=true;')
 with tempfile.TemporaryDirectory(prefix='practice-hotbar-') as tmp:
  p=Path(tmp)

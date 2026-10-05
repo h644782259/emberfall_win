@@ -1,0 +1,22 @@
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.82
+ 
+PASS 741 actual ApplyHeroLocomotion assertions; no Unity/render/weapon intersection acceptance
+ 
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.51
+ 
+ Unhandled exception. System.Exception: ranger light step differs from restrained caster
+   at Program.C(Boolean b, String why) in /tmp/hero-motion-round2-5y33qb1t/Program.cs:line 20
+   at Program.Main() in /tmp/hero-motion-round2-5y33qb1t/Program.cs:line 24
+
+PASS exact baseline shared-style method compiled and rejected
+PASS real hero pose uses class style, authored layer and original recovery; controls/physics not executed

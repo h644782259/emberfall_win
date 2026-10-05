@@ -1,0 +1,6 @@
+  Determining projects to restore...
+  Restored /tmp/side-event-host-6vv5dhym/Validation.csproj (in 72 ms).
+/tmp/side-event-host-6vv5dhym/SideEventProductionTests.cs(55,16): warning CS0414: The field 'GameSession.sideEventStarted' is assigned but its value is never used [/tmp/side-event-host-6vv5dhym/Validation.csproj]
+/tmp/side-event-host-6vv5dhym/SideEventProductionTests.cs(55,64): warning CS0414: The field 'GameSession.sideCrystal' is assigned but its value is never used [/tmp/side-event-host-6vv5dhym/Validation.csproj]
+PASS: 13 actual side-event host failure/duplicate/death/epoch/old-room/retry checks (managed substitutes, not Unity)
+

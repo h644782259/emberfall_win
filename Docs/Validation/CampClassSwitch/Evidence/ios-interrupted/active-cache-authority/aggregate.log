@@ -1,0 +1,339 @@
+{
+  "passed": true,
+  "scope": "All authored Assets files/folders and meta identities; no Unity import or external reference resolution",
+  "assetFiles": 452,
+  "assetFolders": 25,
+  "metaFiles": 477,
+  "validUniqueGuidCount": 477,
+  "emptyFolderMetas": [],
+  "failures": []
+}
+PASS asset-meta-guids
+PASS metadata audit fixture: valid
+PASS metadata audit fixture: short
+PASS metadata audit fixture: long
+PASS metadata audit fixture: nonhex
+PASS metadata audit fixture: empty
+PASS metadata audit fixture: zero
+PASS metadata audit fixture: missing declaration
+PASS metadata audit fixture: multiple declarations
+PASS metadata audit fixture: nested reference/BOM/CRLF
+PASS metadata audit fixture: missing file meta
+PASS metadata audit fixture: missing folder meta
+PASS metadata audit fixture: orphan file meta
+PASS metadata audit fixture: folder/file mismatch
+PASS metadata audit fixture: invalid folder marker
+PASS metadata audit fixture: empty folder preserved
+PASS metadata audit fixture: case-insensitive file/folder collision
+PASS metadata audit fixture: hidden assets included
+PASS metadata audit fixture: symlink rejected
+PASS metadata scanner controls: 18 fixtures; all intended failures detected
+PASS asset-meta-guid-controls
+PASS: 2650 assertions across 151 isolated progression scenarios.
+PASS progression
+PASS: 937 skill combat, catalog, paging, and binding assertions.
+PASS skills
+PASS: 480 assertions across 20 upgrade progression scenarios.
+PASS upgrade-progression
+PASS: 375 boss policy and imminent-dodge timing assertions
+PASS boss-attack-policy
+PASS: 292 player upgrade assertions
+PASS player-upgrades
+PASS: 577051 seeded encounter budget, composition, spacing and environment assertions.
+PASS encounter-plans
+PASS: 27444 run-choice assertions
+PASS run-choices
+PASS: 56 pause-state assertions
+PASS application-pause-state
+PASS: 68039 combat-balance assertions
+PASS combat-balance
+PASS: 353 rebalance progression assertions in 17 isolated scenarios.
+PASS rebalance-progression
+PASS: 514 companion rules assertions
+PASS companion-rules
+10181 mobile control geometry assertions passed
+PASS mobile-layout
+PASS: 25 safe-exit preservation, rejection, cancel, exception and repeated-confirm assertions
+PASS safe-exit
+27 mobile direct-skill/auto-target/touch ownership assertions passed
+PASS mobile-skills
+Mobile camera ownership, threshold, density, pitch and cancel tests passed
+PASS mobile-camera
+30 touch scroll 2D cancellation, vertical motion, release, ownership and panel-reset assertions passed
+PASS touch-scroll
+PASS: 51061 room objectives, 540 seeds, 54 combinations and 1000 consecutive-run assertions (not playtesting)
+PASS room-chain
+Large boss phase checks: 45
+PASS large-boss-phases
+Terminal adventure late-damage/kill and scene identity tests passed
+PASS adventure-results
+PASS: 118 shared combat sight policy assertions
+PASS combat-sight
+PASS: 84 shared ordinary/trial/large-expedition tier reward assertions
+PASS tier-reward-bands
+PASS: 10 pointer-specific transition-release assertions
+PASS touch-release-latch
+135 HUD/portal/lifecycle assertions passed
+PASS interface-safety
+PASS: 3219 destructible rule/impact assertions
+PASS destructible-props
+PASS: 19 dynamic traversal handle assertions
+PASS destructible-traversal
+Emberfall: 保存失败：临时存档路径被目录占用，未覆盖原文件或备份。
+PASS: 41 manual-save, cancel, stable-load and isolated staging assertions
+PASS safe-save-flow
+4930 hub travel and atomic economy assertions passed
+PASS hub-economy
+14 atomic mode reward/receipt assertions passed
+PASS mode-rewards
+PASS: 4096 run-combat modifier, cooldown-reset and control-budget assertions
+PASS run-combat-rules
+Emberfall: 保存失败：当前存档已删除或移走。请读取其他存档或创建新角色。
+23 attention, equipment-level and stable save destination assertions passed
+PASS progression-attention
+PASS: 7765 expedition-mode assertions
+PASS expedition-modes
+PASS: 655 recap presentation/layout assertions
+PASS run-recap
+Filled VFX recipe checks: 23858
+PASS filled-vfx
+PASS: 133674 procedural geometry assertions (no rendered-frame validation)
+PASS procedural-visuals
+Emberfall: 保存失败：当前存档已删除或移走。请读取其他存档或创建新角色。
+Emberfall: 保存失败：当前存档已删除或移走。请读取其他存档或创建新角色。
+Emberfall: 保存失败：当前存档已删除或移走。请读取其他存档或创建新角色。
+Emberfall: 保存失败：已达到 64 份存档/临时恢复文件上限。请先备份目录并处理恢复文件；未覆盖或清理现有文件。
+Emberfall: 保存失败：已达到 64 份存档/临时恢复文件上限。请先备份目录并处理恢复文件；未覆盖或清理现有文件。
+Emberfall: 保存失败：The file '/tmp/EmberfallCloudValidation-931ke66x/saves/deletion-9bab4210307e4f379d9f2a4793135ac1/case-14/emberfall-save-fd26cf192194450fb246879c95a0199f.json' already exists.
+Emberfall: 保存失败：发现可恢复的临时存档，已保留且未覆盖。请先备份整个存档目录，再处理临时存档恢复。
+PASS: 406 save-deletion/storage assertions in 15 isolated scenarios.
+PASS save-deletion
+Scheduled tick checks: 2337
+PASS scheduled-ticks
+Combat pacing/contract checks: 77
+PASS combat-pacing-followup
+PASS: 94 production combat-sight/traversal assertions (managed geometry)
+PASS combat-sight-traversal
+2512 deterministic combo/resource/pet budget checks passed across 48 scenarios
+PASS combo-resource-budgets
+PASS: 68 per-skill coefficient and shared-volley budget assertions
+PASS skill-damage-budgets
+418 mobile skills/workshop compact phone and tablet geometry assertions passed
+PASS mobile-skills-workshop-layout
+388 mobile inventory/reward geometry assertions passed
+PASS mobile-collection-layout
+2540 mobile save path Unicode/wrapping and compact action geometry assertions passed
+PASS mobile-save-location
+Emberfall: 保存失败：发现可恢复的临时存档，已保留且未覆盖。请先备份整个存档目录，再处理临时存档恢复。
+Emberfall: 保存失败：临时存档路径被目录占用，未覆盖原文件或备份。
+Emberfall: 保存失败：当前存档已删除或移走。请读取其他存档或创建新角色。
+Emberfall: 保存失败：当前存档已删除或移走。请读取其他存档或创建新角色。
+Emberfall: 保存失败：存档路径是链接，未修改该路径或其目标。请保留原文件并检查存档目录。
+Emberfall: 保存失败：存档路径是链接，未修改该路径或其目标。请保留原文件并检查存档目录。
+Emberfall: 保存失败：存档路径是链接，未修改该路径或其目标。请保留原文件并检查存档目录。
+Emberfall: 保存失败：当前存档已删除或移走。请读取其他存档或创建新角色。
+Emberfall: 保存失败：存档路径是链接，未修改该路径或其目标。请保留原文件并检查存档目录。
+Emberfall: 保存失败：存档路径是链接，未修改该路径或其目标。请保留原文件并检查存档目录。
+Emberfall: 保存失败：当前存档已删除或移走。请读取其他存档或创建新角色。
+PASS: 149 idempotent-save assertions in 23 isolated scenarios
+PASS save-idempotence
+95 equipment identity/eligibility checks; managed 16,384-read allocation probe passed (not Unity profiling)
+PASS equipment-lookups
+PASS: 98 explicit-action rollback/retry/durable-state assertions in14 fake fixtures
+PASS explicit-action-persistence
+2204 mastery/refund/ascension/tier transaction assertions passed
+PASS progression-growth
+Emberfall: 保存失败：临时存档路径被目录占用，未覆盖原文件或备份。
+Emberfall: 保存失败：发现可恢复的临时存档，已保留且未覆盖。请先备份整个存档目录，再处理临时存档恢复。
+Emberfall: 保存失败：主存档与备份均无法验证，当前进度尚未保存。原文件已保留，请先备份整个目录并恢复可用存档。
+Emberfall: 保存失败：当前存档已删除或移走。请读取其他存档或创建新角色。
+Emberfall: 保存失败：当前存档已删除或移走。请读取其他存档或创建新角色。
+Unhandled exception. System.InvalidOperationException: the entire reward reloads from the selected slot
+   at EnemyKillRewardTests.Check(Boolean value, String message) in /workspace/emberfall_ios/Tests/EnemyKillRewardTests.cs:line 37
+   at EnemyKillRewardTests.CheckReload(ProgressionService p, String expected) in /workspace/emberfall_ios/Tests/EnemyKillRewardTests.cs:line 61
+   at EnemyKillRewardTests.CallbackMutationsRequireTheFinalSave() in /workspace/emberfall_ios/Tests/EnemyKillRewardTests.cs:line 261
+   at EnemyKillRewardTests.Run(String directory) in /workspace/emberfall_ios/Tests/EnemyKillRewardTests.cs:line 32
+   at Program.Main(String[] args) in /tmp/EmberfallCloudValidation-931ke66x/enemy-kill-rewards/Program.cs:line 1
+FAIL enemy-kill-rewards
+PASS: 184 loot retry/receipt-boundary assertions in isolated fake saves
+PASS world-loot-receipts
+Emberfall: 保存失败：配装方案超过2份安全容量；保留原存档，请从备份恢复。
+PASS: 136 combined-respec/build-preset assertions in isolated fake saves
+PASS build-presets
+PASS: 103 shared adventure, preset variant and tutorial persistence checks (managed fixtures)
+PASS adventure-progression
+PASS: 21 pure build-size policy checks (no Unity build executed).
+PASS build-size-policy
+PASS: 52 production goal identity, qualification, failure transaction and replay checks
+PASS progression-goal-identity
+PASS: 47 route layer and shared HUD priority checks
+PASS progression-route-layers
+688 chest presentation and real receipt lifecycle checks passed
+PASS chest-reveal-presentation
+PASS: 60 side reward transaction/restart/bounded receipt checks (recent32 only; host must reject stale epochs)
+PASS side-event-rewards
+PASS: 2005 entry reward truth assertions (no completion-time or player-experience claim)
+PASS adventure-entry-truth
+PASS: 171 mobile room-objective presentation assertions (text/state/layout, not rendered UI)
+PASS mobile-room-objective
+PASS: 55 shared hazard geometry/time, true wall LOS, capture segments, label and camera protection checks (not Unity rendering)
+PASS environment-readability
+PASS: 5193 Escape formation, true traversal and post-policy checks (managed; no playtest claim)
+PASS escape-room-formation
+PASS: 48 room region / actual traversal LOS / support / capture preservation checks (managed, not Unity play)
+PASS tactical-room-region
+PASS: 159083 production geometry/path assertions across six layouts (managed Unity shims, not rendered playtest)
+PASS tactical-room-geometry
+PASS: 5630 basic action timeline assertions (no rendered-frame validation)
+PASS basic-action-timeline
+PASS: 71 weapon structure relationships (no engine/render validation)
+PASS weapon-structure
+PASS: 1865 production attachment envelope/legacy-negative-control checks; animated overlap still requires Unity validation
+PASS equipment-attachment
+PASS: 1000 fixed goal header/action and scrolling candidate geometry checks
+PASS progression-goal-layout
+PASS: 306 cosmetic recovery/inertia invariants (not an animation playback test)
+PASS visual-motion-envelope
+PASS: 37 environment lighting policy checks (no rendered-frame or device performance validation)
+PASS environment-light-profile
+PASS: 137 water depth/current profile invariants (no shader or visual validation)
+PASS water-presentation
+PASS: 14981 collection surface/composition/motion rules (not rendered UI or native lifecycle)
+PASS collection-preview-composition
+PASS: 29 costume layer/milestone policy checks (no rendered-frame validation)
+PASS costume-layers
+PASS: 345 panel readability geometry checks (no Unity rendering)
+PASS panel-readability
+PASS: 3002 production decoration-budget assertions
+PASS decoration-budget
+16 mobile combat state assertions passed
+PASS mobile-combat-feedback
+11735 measured combat text geometry assertions passed
+PASS combat-text-layout
+46 combat opportunity presentation assertions passed
+PASS combat-opportunity
+PASS: 30007 large boss pose/angular-continuity assertions (not rendered animation)
+PASS large-boss-motion
+PASS: 18 deferred room-choice frame/epoch/reentry/budget assertions
+PASS deferred-room-choice
+PASS: 247 Guardian active-charge lifetime/late-hit/cancel assertions (managed, not rendering)
+PASS guardian-charge-pose
+PASS: 4030 displacement, jump, cloth and enemy-phase assertions (no rendered acceptance)
+PASS locomotion-poses
+2013 camera fade/zoom/projection rule assertions passed
+PASS camera-visibility
+604 companion directive checks passed
+PASS companion-directive
+PASS: 178 equipment mechanism and collection/receipt presentation assertions
+PASS equipment-comparison
+PASS: 587 production town navigation/approach checks (no Unity rendering)
+PASS hub-settlement-geometry
+PASS: 4624 costume topology/bounds/identity checks (no rendered-frame validation)
+PASS costume-recipes
+PASS: 387 explicit visual recipe assertions (no rendered validation)
+PASS skill-visual-recipe
+PASS: 41 hold-point state/footprint/idle-wait assertions
+PASS hold-point-state
+PASS: 294924 independently evaluated low-level blessing usefulness assertions (production cast effects, not playtesting)
+PASS room-blessing-usability
+PASS: 27504 authoritative room preview and fallback checks
+PASS room-blessing-preview
+WITNESS DodgeShock: hero=Vanguard, mobile=False, seed=4, slot=0; rest-open distinct=11
+WITNESS ChargedWard: hero=Vanguard, mobile=False, seed=0, slot=0; rest-open distinct=11
+WITNESS InterruptFlow: hero=Vanguard, mobile=False, seed=1, slot=2; rest-open distinct=11
+WITNESS MarkedPursuit: hero=Ranger, mobile=False, seed=4, slot=0; rest-open distinct=11
+WITNESS ExecutionMend: hero=Vanguard, mobile=False, seed=1, slot=1; rest-open distinct=11
+WITNESS RiskContract: hero=Vanguard, mobile=False, seed=0, slot=2; rest-open distinct=11
+WITNESS KeenSight: hero=Vanguard, mobile=False, seed=11, slot=0; rest-open distinct=12
+WITNESS DeadlyEdge: hero=Vanguard, mobile=False, seed=3, slot=0; rest-open distinct=12
+WITNESS BattleFervor: hero=Vanguard, mobile=False, seed=1, slot=0; rest-open distinct=11
+WITNESS QuickRecovery: hero=Vanguard, mobile=False, seed=0, slot=1; rest-open distinct=12
+WITNESS SwiftHands: hero=Vanguard, mobile=False, seed=5, slot=1; rest-open distinct=12
+WITNESS IronSkin: hero=Vanguard, mobile=False, seed=2, slot=1; rest-open distinct=12
+WITNESS LastStand: hero=Vanguard, mobile=False, seed=3, slot=1; rest-open distinct=12
+WITNESS FlowingEssence: hero=Vanguard, mobile=False, seed=4, slot=1; rest-open distinct=12
+PASS: 107282 room blessing/route assertions (no Unity execution)
+PASS room-blessing-routes
+PASS: 433 production mobile pause navigation assertions
+PASS mobile-pause-navigation
+PASS: 1342 production preview lifecycle checks (managed resource fixture, not Unity rendering)
+PASS collection-render-lifecycle
+PASS: 1342 production preview lifecycle checks (managed resource fixture, not Unity rendering)
+PASS collection-render-lifecycle-modern
+PASS: 694 UI cache correctness checks; 20,000 production appearance snapshots allocate 0 managed bytes; 24 stable captions/48 reflows require 24 metric samples (not Unity profiling)
+PASS ui-render-cache
+PASS: 21 actual FloatingNumber managed lifecycle checks; stable glyph queries, texture rebuild/replacement, live DPI, disable/destroy and resolver ownership (not Unity execution)
+PASS ui-render-cache-lifecycle
+PASS: 9 font resolver ownership/platform checks (managed API fixture, no glyph rasterization)
+PASS game-font-desktop
+PASS: 7 font resolver ownership/platform checks (managed API fixture, no glyph rasterization)
+PASS game-font-android
+PASS: 7 font resolver ownership/platform checks (managed API fixture, no glyph rasterization)
+PASS game-font-ios
+PASS: 2621497 Android lifecycle state assertions (65536 callback sequences)
+PASS android-lifecycle
+PASS: adapter full-width identity, repeated reads, hash collision independence, null/destroyed sentinel (API doubles)
+PASS combat-review-object-id-modern-contract
+PASS: adapter full-width identity, repeated reads, hash collision independence, null/destroyed sentinel (API doubles)
+PASS combat-review-object-id-legacy
+PASS: review bus payload, disabled path, sink isolation, unsubscribe and five independent level-50 configs
+PASS combat-review-events
+PASS: 5677 combat review rules assertions
+PASS combat-review-rules
+PASS: 40 atomic ten-key reset assertions (production persistence, managed JSON transport)
+PASS hotbar-reset
+/workspace/emberfall_ios/Assets/Scripts/Core/ChapterProgression.cs(96,22): warning CS0649: Field 'ChapterRunReceipt.MasteryEvidence' is never assigned to, and will always have its default value 0 [/tmp/EmberfallCloudValidation-931ke66x/chapter-room-geometry/Validation.csproj]
+/workspace/emberfall_ios/Assets/Scripts/Core/ChapterProgression.cs(97,23): warning CS0649: Field 'ChapterRunReceipt.MasteryEligible' is never assigned to, and will always have its default value false [/tmp/EmberfallCloudValidation-931ke66x/chapter-room-geometry/Validation.csproj]
+PASS: 51209 chapter production geometry/navigation/spawn checks (managed shims, not gameplay or rendering)
+PASS: 780 chapter formation production navigation assertions (managed shims, not combat AI playback)
+PASS chapter-room-geometry
+PASS: 917 chapter presentation, shared definitions and reward-boundary checks
+PASS chapter-presentation
+PASS: 282 chest actual currency delta transaction checks
+PASS chest-currency-deltas
+PASS: 129 composite, transition and independent viewing state checks
+PASS reward-viewing-rules
+PASS: 17 extracted production capture statements; disabled/unsubscribed 340,000 executions perform zero ID API reads; enabled captures retain complete IDs and damage payload. API doubles, no Unity allocation/frame claim.
+PASS combat-review-instrumentation
+  Determining projects to restore...
+  Restored /tmp/emberfall-fading-ir0bh4km/Validation.csproj (in 83 ms).
+PASS: 48 actual fading-effect managed lifecycle checks (not Unity execution)
+PASS fading-combat-effect-lifecycle
+/tmp/emberfall-touch-replay-fdbdw2ey/Replay.cs(53,18): warning CS0414: The field 'MobileControls.worldPointerOwner' is assigned but its value is never used [/tmp/emberfall-touch-replay-fdbdw2ey/project/Validation.csproj]
+/tmp/emberfall-touch-replay-fdbdw2ey/Replay.cs(53,36): warning CS0414: The field 'MobileControls.worldPointerTarget' is assigned but its value is never used [/tmp/emberfall-touch-replay-fdbdw2ey/project/Validation.csproj]
+
+Build succeeded.
+
+/tmp/emberfall-touch-replay-fdbdw2ey/Replay.cs(53,18): warning CS0414: The field 'MobileControls.worldPointerOwner' is assigned but its value is never used [/tmp/emberfall-touch-replay-fdbdw2ey/project/Validation.csproj]
+/tmp/emberfall-touch-replay-fdbdw2ey/Replay.cs(53,36): warning CS0414: The field 'MobileControls.worldPointerTarget' is assigned but its value is never used [/tmp/emberfall-touch-replay-fdbdw2ey/project/Validation.csproj]
+    2 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.75
+PASS: 26 production multi-pointer lifecycle assertions (11/12/13 at 1s and 110s)
+PASS production-touch-lifecycle
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.51
+PASS: 85 production Update chest pause assertions
+PASS chest-pause-back-production
+  Determining projects to restore...
+  Restored /tmp/live-tactics-ky5zta_4/Test.csproj (in 109 ms).
+PASS: 40 actual tactical/guard/capture component lifecycle and damage assertions
+PASS: compiled stale support/closed armor/duplicate ring/shared seal/zero contention/wrong room adapter/owner controls rejected
+PASS: tactical heartbeat rings removed and guard initialization connected; managed engine substitutes, no GPU acceptance
+PASS tactical-live-visual
+PASS 189 production companion structures/retirement lifecycle assertions (Unity API doubles)
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.88
+PASS expiry/defeat/recall and real rank refresh hooks; recall remains a living navigation command
+PASS: compiled old root-fixed hardware fails exact pose attachment assertion
+PASS production Animate and authored crown connect to companion rigid pose
+PASS companion-appearance

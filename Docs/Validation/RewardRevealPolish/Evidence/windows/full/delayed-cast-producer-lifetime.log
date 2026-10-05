@@ -1,0 +1,85 @@
+current BUILD /tmp/cast-producer-jobac6me/Lifetimes.cs(4,208): warning CS0169: The field 'AreaLifetime.step' is never used [/tmp/cast-producer-jobac6me/Test.csproj]
+/tmp/cast-producer-jobac6me/Lifetimes.cs(5,266): warning CS0169: The field 'SummonerLifetime.steps' is never used [/tmp/cast-producer-jobac6me/Test.csproj]
+/tmp/cast-producer-jobac6me/Lifetimes.cs(3,182): warning CS0169: The field 'ProjectileLifetime.healingAura' is never used [/tmp/cast-producer-jobac6me/Test.csproj]
+/tmp/cast-producer-jobac6me/Lifetimes.cs(4,317): warning CS0169: The field 'AreaLifetime.arrowBatch' is never used [/tmp/cast-producer-jobac6me/Test.csproj]
+/tmp/cast-producer-jobac6me/Lifetimes.cs(4,213): warning CS0169: The field 'AreaLifetime.steps' is never used [/tmp/cast-producer-jobac6me/Test.csproj]
+/tmp/cast-producer-jobac6me/Lifetimes.cs(5,261): warning CS0169: The field 'SummonerLifetime.step' is never used [/tmp/cast-producer-jobac6me/Test.csproj]
+/tmp/cast-producer-jobac6me/Lifetimes.cs(4,343): warning CS0169: The field 'AreaLifetime.hostileEnded' is never used [/tmp/cast-producer-jobac6me/Test.csproj]
+/tmp/cast-producer-jobac6me/Lifetimes.cs(5,344): warning CS0169: The field 'SummonerLifetime.healingAura' is never used [/tmp/cast-producer-jobac6me/Test.csproj]
+/tmp/cast-producer-jobac6me/Lifetimes.cs(4,291): warning CS0169: The field 'AreaLifetime.healingAura' is never used [/tmp/cast-producer-jobac6me/Test.csproj]
+/tmp/cast-producer-jobac6me/Lifetimes.cs(4,864): warning CS0169: The field 'SequenceLifetime.hostileEnded' is never used [/tmp/cast-producer-jobac6me/Test.csproj]
+/tmp/cast-producer-jobac6me/Lifetimes.cs(3,104): warning CS0169: The field 'ProjectileLifetime.steps' is never used [/tmp/cast-producer-jobac6me/Test.csproj]
+/tmp/cast-producer-jobac6me/Lifetimes.cs(5,396): warning CS0169: The field 'SummonerLifetime.hostileEnded' is never used [/tmp/cast-producer-jobac6me/Test.csproj]
+/tmp/cast-producer-jobac6me/Lifetimes.cs(3,99): warning CS0169: The field 'ProjectileLifetime.step' is never used [/tmp/cast-producer-jobac6me/Test.csproj]
+/tmp/cast-producer-jobac6me/Lifetimes.cs(3,208): warning CS0169: The field 'ProjectileLifetime.arrowBatch' is never used [/tmp/cast-producer-jobac6me/Test.csproj]
+/tmp/cast-producer-jobac6me/Lifetimes.cs(5,370): warning CS0169: The field 'SummonerLifetime.arrowBatch' is never used [/tmp/cast-producer-jobac6me/Test.csproj]
+
+Build succeeded.
+
+/tmp/cast-producer-jobac6me/Lifetimes.cs(4,208): warning CS0169: The field 'AreaLifetime.step' is never used [/tmp/cast-producer-jobac6me/Test.csproj]
+/tmp/cast-producer-jobac6me/Lifetimes.cs(5,266): warning CS0169: The field 'SummonerLifetime.steps' is never used [/tmp/cast-producer-jobac6me/Test.csproj]
+/tmp/cast-producer-jobac6me/Lifetimes.cs(3,182): warning CS0169: The field 'ProjectileLifetime.healingAura' is never used [/tmp/cast-producer-jobac6me/Test.csproj]
+/tmp/cast-producer-jobac6me/Lifetimes.cs(4,317): warning CS0169: The field 'AreaLifetime.arrowBatch' is never used [/tmp/cast-producer-jobac6me/Test.csproj]
+/tmp/cast-producer-jobac6me/Lifetimes.cs(4,213): warning CS0169: The field 'AreaLifetime.steps' is never used [/tmp/cast-producer-jobac6me/Test.csproj]
+/tmp/cast-producer-jobac6me/Lifetimes.cs(5,261): warning CS0169: The field 'SummonerLifetime.step' is never used [/tmp/cast-producer-jobac6me/Test.csproj]
+/tmp/cast-producer-jobac6me/Lifetimes.cs(4,343): warning CS0169: The field 'AreaLifetime.hostileEnded' is never used [/tmp/cast-producer-jobac6me/Test.csproj]
+/tmp/cast-producer-jobac6me/Lifetimes.cs(5,344): warning CS0169: The field 'SummonerLifetime.healingAura' is never used [/tmp/cast-producer-jobac6me/Test.csproj]
+/tmp/cast-producer-jobac6me/Lifetimes.cs(4,291): warning CS0169: The field 'AreaLifetime.healingAura' is never used [/tmp/cast-producer-jobac6me/Test.csproj]
+/tmp/cast-producer-jobac6me/Lifetimes.cs(4,864): warning CS0169: The field 'SequenceLifetime.hostileEnded' is never used [/tmp/cast-producer-jobac6me/Test.csproj]
+/tmp/cast-producer-jobac6me/Lifetimes.cs(3,104): warning CS0169: The field 'ProjectileLifetime.steps' is never used [/tmp/cast-producer-jobac6me/Test.csproj]
+/tmp/cast-producer-jobac6me/Lifetimes.cs(5,396): warning CS0169: The field 'SummonerLifetime.hostileEnded' is never used [/tmp/cast-producer-jobac6me/Test.csproj]
+/tmp/cast-producer-jobac6me/Lifetimes.cs(3,99): warning CS0169: The field 'ProjectileLifetime.step' is never used [/tmp/cast-producer-jobac6me/Test.csproj]
+/tmp/cast-producer-jobac6me/Lifetimes.cs(3,208): warning CS0169: The field 'ProjectileLifetime.arrowBatch' is never used [/tmp/cast-producer-jobac6me/Test.csproj]
+/tmp/cast-producer-jobac6me/Lifetimes.cs(5,370): warning CS0169: The field 'SummonerLifetime.arrowBatch' is never used [/tmp/cast-producer-jobac6me/Test.csproj]
+    15 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.61
+ 
+current RUN PASS 14 production producer acquisition/OnDisable lifetime assertions; engine construction is a shim
+PASS 30284 production cast/actor/interrupt/core bounded-lifetime assertions; managed physics/session boundary
+ 
+missing-producer-release BUILD /tmp/cast-producer-jobac6me/Lifetimes.cs(5,238): warning CS0169: The field 'SummonerLifetime.step' is never used [/tmp/cast-producer-jobac6me/Test.csproj]
+/tmp/cast-producer-jobac6me/Lifetimes.cs(5,321): warning CS0169: The field 'SummonerLifetime.healingAura' is never used [/tmp/cast-producer-jobac6me/Test.csproj]
+/tmp/cast-producer-jobac6me/Lifetimes.cs(5,243): warning CS0169: The field 'SummonerLifetime.steps' is never used [/tmp/cast-producer-jobac6me/Test.csproj]
+/tmp/cast-producer-jobac6me/Lifetimes.cs(3,182): warning CS0169: The field 'ProjectileLifetime.healingAura' is never used [/tmp/cast-producer-jobac6me/Test.csproj]
+/tmp/cast-producer-jobac6me/Lifetimes.cs(4,320): warning CS0169: The field 'AreaLifetime.hostileEnded' is never used [/tmp/cast-producer-jobac6me/Test.csproj]
+/tmp/cast-producer-jobac6me/Lifetimes.cs(3,99): warning CS0169: The field 'ProjectileLifetime.step' is never used [/tmp/cast-producer-jobac6me/Test.csproj]
+/tmp/cast-producer-jobac6me/Lifetimes.cs(4,185): warning CS0169: The field 'AreaLifetime.step' is never used [/tmp/cast-producer-jobac6me/Test.csproj]
+/tmp/cast-producer-jobac6me/Lifetimes.cs(4,190): warning CS0169: The field 'AreaLifetime.steps' is never used [/tmp/cast-producer-jobac6me/Test.csproj]
+/tmp/cast-producer-jobac6me/Lifetimes.cs(4,268): warning CS0169: The field 'AreaLifetime.healingAura' is never used [/tmp/cast-producer-jobac6me/Test.csproj]
+/tmp/cast-producer-jobac6me/Lifetimes.cs(3,104): warning CS0169: The field 'ProjectileLifetime.steps' is never used [/tmp/cast-producer-jobac6me/Test.csproj]
+/tmp/cast-producer-jobac6me/Lifetimes.cs(5,347): warning CS0169: The field 'SummonerLifetime.arrowBatch' is never used [/tmp/cast-producer-jobac6me/Test.csproj]
+/tmp/cast-producer-jobac6me/Lifetimes.cs(4,818): warning CS0169: The field 'SequenceLifetime.hostileEnded' is never used [/tmp/cast-producer-jobac6me/Test.csproj]
+/tmp/cast-producer-jobac6me/Lifetimes.cs(4,294): warning CS0169: The field 'AreaLifetime.arrowBatch' is never used [/tmp/cast-producer-jobac6me/Test.csproj]
+/tmp/cast-producer-jobac6me/Lifetimes.cs(5,373): warning CS0169: The field 'SummonerLifetime.hostileEnded' is never used [/tmp/cast-producer-jobac6me/Test.csproj]
+/tmp/cast-producer-jobac6me/Lifetimes.cs(3,208): warning CS0169: The field 'ProjectileLifetime.arrowBatch' is never used [/tmp/cast-producer-jobac6me/Test.csproj]
+
+Build succeeded.
+
+/tmp/cast-producer-jobac6me/Lifetimes.cs(5,238): warning CS0169: The field 'SummonerLifetime.step' is never used [/tmp/cast-producer-jobac6me/Test.csproj]
+/tmp/cast-producer-jobac6me/Lifetimes.cs(5,321): warning CS0169: The field 'SummonerLifetime.healingAura' is never used [/tmp/cast-producer-jobac6me/Test.csproj]
+/tmp/cast-producer-jobac6me/Lifetimes.cs(5,243): warning CS0169: The field 'SummonerLifetime.steps' is never used [/tmp/cast-producer-jobac6me/Test.csproj]
+/tmp/cast-producer-jobac6me/Lifetimes.cs(3,182): warning CS0169: The field 'ProjectileLifetime.healingAura' is never used [/tmp/cast-producer-jobac6me/Test.csproj]
+/tmp/cast-producer-jobac6me/Lifetimes.cs(4,320): warning CS0169: The field 'AreaLifetime.hostileEnded' is never used [/tmp/cast-producer-jobac6me/Test.csproj]
+/tmp/cast-producer-jobac6me/Lifetimes.cs(3,99): warning CS0169: The field 'ProjectileLifetime.step' is never used [/tmp/cast-producer-jobac6me/Test.csproj]
+/tmp/cast-producer-jobac6me/Lifetimes.cs(4,185): warning CS0169: The field 'AreaLifetime.step' is never used [/tmp/cast-producer-jobac6me/Test.csproj]
+/tmp/cast-producer-jobac6me/Lifetimes.cs(4,190): warning CS0169: The field 'AreaLifetime.steps' is never used [/tmp/cast-producer-jobac6me/Test.csproj]
+/tmp/cast-producer-jobac6me/Lifetimes.cs(4,268): warning CS0169: The field 'AreaLifetime.healingAura' is never used [/tmp/cast-producer-jobac6me/Test.csproj]
+/tmp/cast-producer-jobac6me/Lifetimes.cs(3,104): warning CS0169: The field 'ProjectileLifetime.steps' is never used [/tmp/cast-producer-jobac6me/Test.csproj]
+/tmp/cast-producer-jobac6me/Lifetimes.cs(5,347): warning CS0169: The field 'SummonerLifetime.arrowBatch' is never used [/tmp/cast-producer-jobac6me/Test.csproj]
+/tmp/cast-producer-jobac6me/Lifetimes.cs(4,818): warning CS0169: The field 'SequenceLifetime.hostileEnded' is never used [/tmp/cast-producer-jobac6me/Test.csproj]
+/tmp/cast-producer-jobac6me/Lifetimes.cs(4,294): warning CS0169: The field 'AreaLifetime.arrowBatch' is never used [/tmp/cast-producer-jobac6me/Test.csproj]
+/tmp/cast-producer-jobac6me/Lifetimes.cs(5,373): warning CS0169: The field 'SummonerLifetime.hostileEnded' is never used [/tmp/cast-producer-jobac6me/Test.csproj]
+/tmp/cast-producer-jobac6me/Lifetimes.cs(3,208): warning CS0169: The field 'ProjectileLifetime.arrowBatch' is never used [/tmp/cast-producer-jobac6me/Test.csproj]
+    15 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.39
+ 
+missing-producer-release RUN  Unhandled exception. System.Exception: production OnDisable retires final lease without GC
+   at LifetimeTests.C(Boolean b, String why) in /tmp/cast-producer-jobac6me/Lifetimes.cs:line 7
+   at LifetimeTests.Run() in /tmp/cast-producer-jobac6me/Lifetimes.cs:line 10
+   at Program.Main() in /tmp/cast-producer-jobac6me/Fixture.cs:line 29
+
+PASS compiled missing-release control fails actual lifetime boundary

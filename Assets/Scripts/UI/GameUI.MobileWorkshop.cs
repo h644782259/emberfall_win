@@ -81,9 +81,10 @@ namespace Emberfall
         private void DrawMobileWorkshopAbilities(ref float y, float width, bool draw)
         {
             var p = session.Progression;
+            MobileWorkshopAction(ref y,width,"营地 · 切换职业",jade,true,draw,OpenClassSwitch);
             MobileWorkshopParagraph(ref y, width, "配装方案与免费重置", gold, draw, true, 16);
             MobileWorkshopParagraph(ref y, width, "可返还技能进阶 " + p.RefundableSkillRanks + "点 + 精通 " + p.RefundableMasteryPoints + "点 = " + p.RefundableBuildPoints + "点；保留已学1阶与当前装备。", muted, draw);
-            MobileWorkshopAction(ref y, width, "配装方案 · 记录 / 应用两套", jade, true, draw, OpenBuildPlans);
+            MobileWorkshopAction(ref y, width, "配装方案 A / B · 记录 / 应用", jade, true, draw, OpenBuildPlans);
             MobileWorkshopAction(ref y, width, "免费重置配点 · " + p.RefundableBuildPoints + "点", gold,
                 session.IsInCamp && (p.RefundableBuildPoints > 0 || p.Profile.masteryCore >= 0), draw,
                 () => RequestBuildPlanAction(BuildPlanAction.Reset));

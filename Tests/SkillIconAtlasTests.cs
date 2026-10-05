@@ -20,7 +20,14 @@ public static class SkillIconAtlasTests
    check(visible>size&&visible<size*size,"glyph has visible structure and transparent background");check(icon.ReleasedCpu,"finished textures release CPU pixel storage");
   }
   check(ReferenceEquals(UIIconAtlas.Skill(HeroClass.Vanguard,0,27),UIIconAtlas.Skill(HeroClass.Vanguard,0,32)),"arbitrary sizes use three bounded tiers");
-  var utility=UIIconAtlas.Utility("potion");check(utility.width==64,"utility cache keeps existing format");int before=UnityEngine.Object.Destroyed;UIIconAtlas.Clear();check(UnityEngine.Object.Destroyed-before==121,"all120skill variants and utility are released");
+  var signatures=new System.Collections.Generic.HashSet<uint>();
+  for(int kind=0;kind<4;kind++){
+   var resource=UIIconAtlas.Reward(kind);check(resource.width==64&&ReferenceEquals(resource,UIIconAtlas.Reward(kind)),"resource pictogram uses stable cache");uint hash=2166136261;int visible=0;
+   foreach(var pixel in resource.CapturedPixels){hash=unchecked((hash^(uint)(pixel.a*255))*16777619);if(pixel.a>.2f)visible++;}
+   check(visible>64&&visible<4096&&resource.ReleasedCpu,"resource glyph has transparent structure and releases pixels");signatures.Add(hash);
+  }
+  check(signatures.Count==4,"gold fragment thread and experience pictograms are distinct");
+  var utility=UIIconAtlas.Utility("potion");check(utility.width==64,"utility cache keeps existing format");int before=UnityEngine.Object.Destroyed;UIIconAtlas.Clear();check(UnityEngine.Object.Destroyed-before==125,"all120skill variants four resource glyphs and utility are released");
   return "PASS: "+n+" production skill icon raster/cache assertions (not rendered readability)";
  }
 }

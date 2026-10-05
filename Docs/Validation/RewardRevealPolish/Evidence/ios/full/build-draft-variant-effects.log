@@ -1,0 +1,43 @@
+
+PASS 87 actual equipped variant / draft before-after / persistence / authoritative budget assertions
+
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.11
+
+Unhandled exception. System.Exception: before uses actual equipped current mechanism
+   at BuildDraftVariantEffectsTests.Check(Boolean value, String message) in /workspace/emberfall_ios_polish/Tests/BuildDraftVariantEffectsTests.cs:line 6
+   at BuildDraftVariantEffectsTests.Change(ProgressionService p, Int32 skill, Int32 from, Int32 to) in /workspace/emberfall_ios_polish/Tests/BuildDraftVariantEffectsTests.cs:line 15
+   at BuildDraftVariantEffectsTests.Run(String root) in /workspace/emberfall_ios_polish/Tests/BuildDraftVariantEffectsTests.cs:line 25
+   at Program.Main(String[] args) in /tmp/draft-variant-effects-_fwmf9fg/project/Program.cs:line 1
+
+PASS compiled behavioral mutation rejected: before uses actual equipped current mechanism
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.17
+
+Unhandled exception. System.Exception: B both before and after replace fan descriptions
+   at BuildDraftVariantEffectsTests.Check(Boolean value, String message) in /workspace/emberfall_ios_polish/Tests/BuildDraftVariantEffectsTests.cs:line 6
+   at BuildDraftVariantEffectsTests.Run(String root) in /workspace/emberfall_ios_polish/Tests/BuildDraftVariantEffectsTests.cs:line 26
+   at Program.Main(String[] args) in /tmp/draft-variant-effects-_fwmf9fg/project/Program.cs:line 1
+
+PASS compiled behavioral mutation rejected: B both before and after replace fan descriptions
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.13
+
+Unhandled exception. System.Exception: locked forged B cannot override preview
+   at BuildDraftVariantEffectsTests.Check(Boolean value, String message) in /workspace/emberfall_ios_polish/Tests/BuildDraftVariantEffectsTests.cs:line 6
+   at BuildDraftVariantEffectsTests.Run(String root) in /workspace/emberfall_ios_polish/Tests/BuildDraftVariantEffectsTests.cs:line 32
+   at Program.Main(String[] args) in /tmp/draft-variant-effects-_fwmf9fg/project/Program.cs:line 1
+
+PASS compiled behavioral mutation rejected: locked forged B cannot override preview

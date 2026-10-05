@@ -37,6 +37,16 @@ public static class RewardRevisionTests
         var p=Fresh(root);p.Profile.pendingFashionChest=true;Rng(p,0,0);
         Check(p.OpenDungeonChest(2)!=null&&!p.LastChestReward.Rarity.HasValue,"baseline supply must not roll fashion");
     }
+    // Legacy replay fixture: an already-saved draw, not a live type selector.
+    static void FreezeLegacy(ProgressionService p,int choice,int goldRoll,int qualityRoll)
+    {
+        var rarity=choice==2?(Rarity?)null:ProgressionService.RollFashionRarity(qualityRoll);
+        p.Profile.pendingFashionChest=true;p.Profile.pendingChestRulesRevision=1;
+        int gold=TierRewardRules.ChestGoldMinimum(p.Profile.pendingChestTier)+goldRoll;
+        p.Profile.pendingChestDraw=new ChestReward{rulesRevision=1,id=Guid.NewGuid().ToString("N"),choice=choice,gold=choice==2?gold*3/2:gold,rarityIndex=rarity.HasValue?(int)rarity.Value:-1};p.Save();
+    }
+    static string LegacyOpen(ProgressionService p,int choice,int goldRoll,int qualityRoll)
+    {FreezeLegacy(p,choice,goldRoll,qualityRoll);return p.OpenDungeonChest(choice);}
     public static string Run(string root)
     {
         // Enumerate the actual production rarity roll for each directional chest.
@@ -47,7 +57,7 @@ public static class RewardRevisionTests
             for(int roll=0;roll<100;roll++)
             {
                 p.Profile.pendingFashionChest=true;p.Profile.fashions.Clear();Rng(p,1,roll);
-                Check(p.OpenDungeonChest(choice)!=null,"directional chest commits");var r=p.LastChestReward;
+                Check(LegacyOpen(p,choice,1,roll)!=null,"frozen directional chest commits");var r=p.LastChestReward;
                 counts[r.rarityIndex+1]++;Check(r.rulesRevision==1,"new receipt uses explicit directional rules revision");
                 Check(!r.Slot.HasValue || r.Slot==(choice==0?FashionSlot.Weapon:FashionSlot.Wings),"fashion slot follows weapon/wings choice");
                 Check(r.gold==TierRewardRules.ChestGoldMinimum(1)+1&&!r.duplicate,"directional gold roll unchanged");
@@ -58,16 +68,16 @@ public static class RewardRevisionTests
         for(int goldRoll=0;goldRoll<=40;goldRoll++)
         {
             p.Profile.pendingFashionChest=true;Rng(p,goldRoll,0);int threads=p.Profile.fashionThreads,materials=p.Profile.mechanicMaterials,fashions=p.Profile.fashions.Count;
-            Check(p.OpenDungeonChest(2)!=null,"supply opens");var r=p.LastChestReward;
+            Check(LegacyOpen(p,2,goldRoll,0)!=null,"frozen supply opens");var r=p.LastChestReward;
             Check(!r.Rarity.HasValue&&!r.Slot.HasValue&&p.Profile.fashions.Count==fashions,"supply never rolls fashion");
             Check(r.gold==(TierRewardRules.ChestGoldMinimum(1)+goldRoll)*3/2,"supply floors each original gold roll times 1.5");
             Check(r.threadsDelta==1&&p.Profile.fashionThreads==threads+1&&p.Profile.mechanicMaterials==materials,"one base thread and no extra clear fragments in chest");
             Check(p.AcknowledgeChestReward(),"supply acknowledge");
         }
-        p.Profile.fashions.Clear();p.Profile.pendingFashionChest=true;Rng(p,0,18);p.OpenDungeonChest(0);p.AcknowledgeChestReward();
-        int beforeThreads=p.Profile.fashionThreads;p.Profile.pendingFashionChest=true;p.OpenDungeonChest(0);
+        p.Profile.fashions.Clear();p.Profile.pendingFashionChest=true;Rng(p,0,18);LegacyOpen(p,0,0,18);p.AcknowledgeChestReward();
+        int beforeThreads=p.Profile.fashionThreads;p.Profile.pendingFashionChest=true;LegacyOpen(p,0,0,18);
         Check(p.LastChestReward.duplicate&&p.LastChestReward.gold==TierRewardRules.ChestGoldMinimum(1)+40&&p.Profile.fashionThreads==beforeThreads+2,"duplicate common conversion plus base thread preserved");p.AcknowledgeChestReward();
-        p.Profile.pendingFashionChest=true;p.Save();int beforeGold=p.Profile.gold;beforeThreads=p.Profile.fashionThreads;string disk=File.ReadAllText(p.SaveFilePath);int events=0;p.Changed+=()=>events++;
+        p.Profile.pendingFashionChest=true;FreezeLegacy(p,2,0,0);p.Save();int beforeGold=p.Profile.gold;beforeThreads=p.Profile.fashionThreads;string disk=File.ReadAllText(p.SaveFilePath);int events=0;p.Changed+=()=>events++;
         Directory.CreateDirectory(p.SaveFilePath+".tmp");Check(p.OpenDungeonChest(2)==null,"failed chest save rejected");
         Check(p.Profile.gold==beforeGold&&p.Profile.fashionThreads==beforeThreads&&p.Profile.pendingFashionChest&&events==0&&File.ReadAllText(p.SaveFilePath)==disk,"failed chest exposes no reward or mutation");
         var frozen=(ChestReward)typeof(ProgressionService).GetField("pendingChestRoll",BindingFlags.NonPublic|BindingFlags.Instance).GetValue(p);
@@ -76,11 +86,16 @@ public static class RewardRevisionTests
         Directory.Delete(p.SaveFilePath+".tmp");Check(p.Load()&&p.OpenDungeonChest(2)!=null,"retry chest commits once");
         Check(p.LastChestReward.id==frozenId&&p.LastChestReward.gold==frozenGold,"failed write reload/retry preserves exact draw despite changed rng");beforeGold=p.Profile.gold;string id=p.LastChestReward.id;
         Check(p.OpenDungeonChest(0)==null&&p.Load()&&p.LastChestReward.id==id&&p.Profile.gold==beforeGold,"retry/reload cannot reroll");
+        for(int goldRoll=0;goldRoll<=40;goldRoll++)
+        {
+            var migrated=Fresh(root);migrated.Profile.pendingFashionChest=true;migrated.Profile.pendingChestRulesRevision=0;Rng(migrated,goldRoll,99);
+            Check(migrated.OpenDungeonChest()!=null&&migrated.LastChestReward.baseGold==(60+goldRoll)*3/2,"legacy undrawn qualification floors protected base gold times1.5");
+        }
         // Old choice 2 could legitimately contain Wings. New supply rules must not alter it.
         p.Profile.lastChestReward=new ChestReward{id=Guid.NewGuid().ToString("N"),choice=2,gold=93,slotIndex=0,rarityIndex=3,name="legacy wings",summary="legacy exact text",hasCurrencyDeltas=true,goldDelta=93,threadsDelta=1};
         p.Profile.pendingChestReveal=true;p.Save();var old=UnityEngine.JsonUtility.ToJson(p.LastChestReward,true);
         Check(p.Load()&&UnityEngine.JsonUtility.ToJson(p.LastChestReward,true)==old&&p.OpenDungeonChest(2)==null,"legacy saved result retained byte-for-byte semantically, never rerolled");
-        Check(p.LastChestReward.rulesRevision==0&&ProgressionService.DungeonChestRules(1,p.LastChestReward).Contains("当前展示旧版已保存奖励"),"legacy rules explain new-only probabilities without remapping old choice");
+        Check(p.LastChestReward.rulesRevision==0&&ProgressionService.DungeonChestRules(1,p.LastChestReward).Contains("旧版已保存奖励"),"legacy rules explain new-only probabilities without remapping old choice");
         // Every fresh node/difficulty first bonus and transaction retry.
         p=Fresh(root);int bonus=0;
         for(int n=0;n<3;n++)for(int d=0;d<3;d++)
@@ -123,13 +138,13 @@ public static class RewardRevisionTests
         Directory.Delete(p.SaveFilePath+".tmp");
         Check(p.Load()&&p.Profile.mechanicMaterials==prior+8&&p.Load()&&p.Profile.mechanicMaterials==prior+8,"backup recovery commits migration once");
         p=Fresh(root);p.Profile.pendingFashionChest=true;p.Save();Rng(p,0,18);
-        Directory.CreateDirectory(p.SaveFilePath+".tmp");Check(p.OpenDungeonChest(0)==null,"freeze before new game");
+        Directory.CreateDirectory(p.SaveFilePath+".tmp");Check(p.OpenDungeonChest()==null,"freeze before new game");
         Directory.Delete(p.SaveFilePath+".tmp");string samePath=p.SaveFilePath;p.NewGame(HeroClass.Ranger);p.Profile.pendingFashionChest=true;
-        Check(p.SaveFilePath==samePath&&p.OpenDungeonChest(1)!=null,"new game same path/count/tier cannot inherit old roll or choice lock");p.AcknowledgeChestReward();
-        p.Profile.pendingFashionChest=true;p.Save();Directory.CreateDirectory(p.SaveFilePath+".tmp");Check(p.OpenDungeonChest(0)==null,"freeze before slot change");
+        Check(p.SaveFilePath==samePath&&p.OpenDungeonChest()!=null,"new game same path/count/tier cannot inherit old roll or choice lock");p.AcknowledgeChestReward();
+        p.Profile.pendingFashionChest=true;p.Save();Directory.CreateDirectory(p.SaveFilePath+".tmp");Check(p.OpenDungeonChest()==null,"freeze before slot change");
         Directory.Delete(p.SaveFilePath+".tmp");string oldSlot=p.CurrentSlotId;Check(p.CreateNewSlot(HeroClass.Ranger),"switch to new role");p.Profile.pendingFashionChest=true;
-        Check(p.OpenDungeonChest(1)!=null,"other save cannot inherit failed choice");
-        Check(p.LoadSlot(oldSlot)&&p.OpenDungeonChest(1)==null&&p.OpenDungeonChest(0)!=null,"returning to slot preserves its unpublished draw without leaking another role choice");
+        Check(p.OpenDungeonChest()!=null,"other save cannot inherit failed choice");
+        Check(p.LoadSlot(oldSlot)&&p.OpenDungeonChest(1)==null&&p.OpenDungeonChest()!=null,"returning to slot preserves its unpublished draw without leaking another role choice");
         return "PASS: "+checks+" reward revision production assertions (all rolls, receipts, failure/retry/reload, six first clears and legacy migration)";
     }
 }

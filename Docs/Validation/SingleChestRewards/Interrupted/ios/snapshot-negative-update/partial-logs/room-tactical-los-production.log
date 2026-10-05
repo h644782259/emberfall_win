@@ -1,0 +1,3 @@
+PASS: 64 actual session method / traversal checks (managed, not Unity runtime)
+PASS: old-contest compiled and failed exact runtime assertion: far contest candidates must skip LOS
+PASS: old-support compiled and failed exact runtime assertion: far support candidates must skip LOS

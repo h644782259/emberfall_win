@@ -1,0 +1,48 @@
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.56
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.21
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.20
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.58
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.31
+PASS 10 actual full status visual component lifecycle checks; Unity rendering doubled
+
+Unhandled exception. System.Exception: boss mark never implies hard freeze
+   at Program.C(Boolean b, String msg) in /tmp/status-visual-geinvu66/EnemyStatusVisualProductionTests.cs:line 25
+   at Program.Main() in /tmp/status-visual-geinvu66/EnemyStatusVisualProductionTests.cs:line 30
+
+Unhandled exception. System.Exception: selected real freeze and frost have separate channels
+   at Program.C(Boolean b, String msg) in /tmp/status-visual-geinvu66/EnemyStatusVisualProductionTests.cs:line 25
+   at Program.Main() in /tmp/status-visual-geinvu66/EnemyStatusVisualProductionTests.cs:line 28
+
+PASS compiled boss conflation and lost synchronous binding controls rejected
+PASS 6 production authority notification checks
+
+Unhandled exception. System.Exception: actual shatter emits consumed state synchronously
+   at Program.C(Boolean b, String m) in /tmp/status-authority-cnky3zvc/Program.cs:line 1
+   at Program.Main() in /tmp/status-authority-cnky3zvc/Program.cs:line 1
+
+PASS compiled lost consume notification control rejected

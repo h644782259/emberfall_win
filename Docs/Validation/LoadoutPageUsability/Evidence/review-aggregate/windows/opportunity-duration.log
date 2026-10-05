@@ -1,0 +1,81 @@
+/tmp/opportunity-duration-lzhx2cc_/Fixture.cs(50,76): warning CS0414: The field 'PlayerController.classDodgeTime' is assigned but its value is never used [/tmp/opportunity-duration-lzhx2cc_/Test.csproj]
+
+Build succeeded.
+
+/tmp/opportunity-duration-lzhx2cc_/Fixture.cs(50,76): warning CS0414: The field 'PlayerController.classDodgeTime' is assigned but its value is never used [/tmp/opportunity-duration-lzhx2cc_/Test.csproj]
+    1 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.56
+
+PASS: 41 actual opportunity duration assertions (state, refresh, consume, boss, multi-target, counter); managed engine boundaries
+
+/tmp/opportunity-duration-lzhx2cc_/Fixture.cs(50,76): warning CS0414: The field 'PlayerController.classDodgeTime' is assigned but its value is never used [/tmp/opportunity-duration-lzhx2cc_/Test.csproj]
+
+Build succeeded.
+
+/tmp/opportunity-duration-lzhx2cc_/Fixture.cs(50,76): warning CS0414: The field 'PlayerController.classDodgeTime' is assigned but its value is never used [/tmp/opportunity-duration-lzhx2cc_/Test.csproj]
+    1 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.35
+
+NEGATIVE CONTROL EnemyStatusEffects.cs if(duration>=frostMarkTime)frostWindowDuration=duration;
+Unhandled exception. System.Exception: short frost refresh retains denominator
+   at OpportunityDurationProductionTests.C(Boolean b, String reason) in /tmp/opportunity-duration-lzhx2cc_/Tests.cs:line 5
+   at OpportunityDurationProductionTests.Pair(Single remaining, Single duration, Single expectedRemaining, Single expectedDuration, String why) in /tmp/opportunity-duration-lzhx2cc_/Tests.cs:line 8
+   at OpportunityDurationProductionTests.Run() in /tmp/opportunity-duration-lzhx2cc_/Tests.cs:line 16
+   at Program.<Main>$(String[] args) in /tmp/opportunity-duration-lzhx2cc_/Program.cs:line 1
+
+/tmp/opportunity-duration-lzhx2cc_/Fixture.cs(50,76): warning CS0414: The field 'PlayerController.classDodgeTime' is assigned but its value is never used [/tmp/opportunity-duration-lzhx2cc_/Test.csproj]
+
+Build succeeded.
+
+/tmp/opportunity-duration-lzhx2cc_/Fixture.cs(50,76): warning CS0414: The field 'PlayerController.classDodgeTime' is assigned but its value is never used [/tmp/opportunity-duration-lzhx2cc_/Test.csproj]
+    1 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.23
+
+NEGATIVE CONTROL EnemyStatusEffects.cs if(duration>=poisonSchedule.Remaining)poisonWindowDuration=duration;
+Unhandled exception. System.Exception: short poison refresh retains denominator
+   at OpportunityDurationProductionTests.C(Boolean b, String reason) in /tmp/opportunity-duration-lzhx2cc_/Tests.cs:line 5
+   at OpportunityDurationProductionTests.Pair(Single remaining, Single duration, Single expectedRemaining, Single expectedDuration, String why) in /tmp/opportunity-duration-lzhx2cc_/Tests.cs:line 8
+   at OpportunityDurationProductionTests.Run() in /tmp/opportunity-duration-lzhx2cc_/Tests.cs:line 22
+   at Program.<Main>$(String[] args) in /tmp/opportunity-duration-lzhx2cc_/Program.cs:line 1
+
+/tmp/opportunity-duration-lzhx2cc_/Fixture.cs(50,76): warning CS0414: The field 'PlayerController.classDodgeTime' is assigned but its value is never used [/tmp/opportunity-duration-lzhx2cc_/Test.csproj]
+
+Build succeeded.
+
+/tmp/opportunity-duration-lzhx2cc_/Fixture.cs(50,76): warning CS0414: The field 'PlayerController.classDodgeTime' is assigned but its value is never used [/tmp/opportunity-duration-lzhx2cc_/Test.csproj]
+    1 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.12
+
+NEGATIVE CONTROL Player.cs duration=kind==CombatOpportunityKind.Shatter?status.FrostWindowDuration:status.BurnWindowDuration;
+Unhandled exception. System.Exception: multi target pairs duration with longest remaining
+   at OpportunityDurationProductionTests.C(Boolean b, String reason) in /tmp/opportunity-duration-lzhx2cc_/Tests.cs:line 5
+   at OpportunityDurationProductionTests.Pair(Single remaining, Single duration, Single expectedRemaining, Single expectedDuration, String why) in /tmp/opportunity-duration-lzhx2cc_/Tests.cs:line 8
+   at OpportunityDurationProductionTests.Run() in /tmp/opportunity-duration-lzhx2cc_/Tests.cs:line 28
+   at Program.<Main>$(String[] args) in /tmp/opportunity-duration-lzhx2cc_/Program.cs:line 1
+
+/tmp/opportunity-duration-lzhx2cc_/Fixture.cs(50,76): warning CS0414: The field 'PlayerController.classDodgeTime' is assigned but its value is never used [/tmp/opportunity-duration-lzhx2cc_/Test.csproj]
+
+Build succeeded.
+
+/tmp/opportunity-duration-lzhx2cc_/Fixture.cs(50,76): warning CS0414: The field 'PlayerController.classDodgeTime' is assigned but its value is never used [/tmp/opportunity-duration-lzhx2cc_/Test.csproj]
+    1 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.40
+
+NEGATIVE CONTROL Player.cs counterWindowDuration = counterTime = perfectDodgeCounterTime =
+Unhandled exception. System.Exception: normal perfect counter grant duration
+   at OpportunityDurationProductionTests.C(Boolean b, String reason) in /tmp/opportunity-duration-lzhx2cc_/Tests.cs:line 5
+   at OpportunityDurationProductionTests.Pair(Single remaining, Single duration, Single expectedRemaining, Single expectedDuration, String why) in /tmp/opportunity-duration-lzhx2cc_/Tests.cs:line 8
+   at OpportunityDurationProductionTests.Run() in /tmp/opportunity-duration-lzhx2cc_/Tests.cs:line 33
+   at Program.<Main>$(String[] args) in /tmp/opportunity-duration-lzhx2cc_/Program.cs:line 1
+
+PASS: four compiled duration regressions rejected; no Unity execution claim

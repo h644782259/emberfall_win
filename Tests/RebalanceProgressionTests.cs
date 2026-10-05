@@ -75,8 +75,8 @@ public static class RebalanceProgressionTests
         for(int i=0;i<5;i++)
         {
             p.PrepareDungeonChest();int prior=p.Profile.fashionThreads;
-            Check(p.OpenDungeonChest(i%3)!=null&&p.Profile.fashionThreads>=prior+1,"every chest progresses deterministic accumulation");
-            int after=p.Profile.fashionThreads;Check(p.OpenDungeonChest((i+1)%3)==null&&p.Profile.fashionThreads==after,"receipt repeated click cannot mint threads");
+            Check(p.OpenDungeonChest()!=null&&p.Profile.fashionThreads>=prior+1,"every chest progresses deterministic accumulation");
+            int after=p.Profile.fashionThreads;Check(p.OpenDungeonChest()==null&&p.Profile.fashionThreads==after,"receipt repeated click cannot mint threads");
             Check(p.AcknowledgeChestReward(),"close receipt");
         }
         Check(Reload(p).Profile.fashionThreads==p.Profile.fashionThreads,"accumulation persists");

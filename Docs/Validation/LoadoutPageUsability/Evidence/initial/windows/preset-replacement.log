@@ -1,0 +1,11 @@
+
+/tmp/camp-practice-u99m2a_8/UI.cs(27,67): error CS0103: The name 'BuildPlanName' does not exist in the current context [/tmp/camp-practice-u99m2a_8/project/Validation.csproj]
+/tmp/camp-practice-u99m2a_8/UI.cs(27,114): error CS0103: The name 'BuildPlanName' does not exist in the current context [/tmp/camp-practice-u99m2a_8/project/Validation.csproj]
+
+The build failed. Fix the build errors and run again.
+
+Traceback (most recent call last):
+  File "/workspace/emberfall_win/Tests/PresetReplacementProductionTests.py", line 25, in <module>
+    assert run(['run','--project',str(project),'--no-restore','--',str(p/'saves')]).returncode==0
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError

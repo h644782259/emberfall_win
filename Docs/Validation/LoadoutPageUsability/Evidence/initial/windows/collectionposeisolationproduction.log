@@ -1,0 +1,4 @@
+PASS: 185 production isolated preview pose checks (managed transforms, no rendered engine frames)
+PASS: old global-clock breathing compiled and rejected by exact preview isolation assertion
+PASS: 16-degree orbit tied to wrapped time compiled and failed exact visual-transform continuity assertion
+PASS: old contact-only preview compiled and rejected by actual arrow visibility assertion

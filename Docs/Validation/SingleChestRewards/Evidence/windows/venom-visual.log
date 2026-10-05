@@ -1,0 +1,30 @@
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.70
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.24
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.30
+PASS original projectile Update SHA preserved after excluding only explicit B-only steering/selection/filter.
+PASS 13 real venom visual lifecycle assertions
+
+Unhandled exception. System.Exception: physical nick distinct from three consumed seeds
+   at Program.C(Boolean b, String m) in /tmp/venom-visual-i9suuuqp/Test.cs:line 16
+   at Program.Main() in /tmp/venom-visual-i9suuuqp/Test.cs:line 16
+
+Unhandled exception. System.Exception: consumption shrinks rather than expanding splash
+   at Program.C(Boolean b, String m) in /tmp/venom-visual-i9suuuqp/Test.cs:line 16
+   at Program.Main() in /tmp/venom-visual-i9suuuqp/Test.cs:line 16
+
+PASS compiled nick/success confusion and expanding splash negatives rejected

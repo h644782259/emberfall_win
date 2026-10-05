@@ -1,0 +1,5 @@
+{
+  "completed": false,
+  "failure": "enemy-kill-rewards callback save/reload JSON mismatch",
+  "reason": "Stopped to remove the redundant active-class mirror; original assertion retained."
+}
