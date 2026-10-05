@@ -32,3 +32,19 @@ Tests/Run-CloudValidation.sh --dotnet /path/to/dotnet --compile --compile-ios
 ```
 
 本环境没有 Unity Editor、Windows Player 或 iOS 实机。固定 Unity API 引用的托管源码编译不等于 Unity 6 平台构建、真实 JsonUtility、场景生命周期、触控或实机验收。需要在 Unity 核对伙伴退役/生成、失败后的原模型、各类输入释放、保存迁移、窄屏和大字号，及真实设备上的冷却与生命表现。未生成安装包或上传视频。
+
+## 独立复核后的失败随机状态隔离
+
+仅 `GameSession.ClassSwitch.cs` 生产文件新增保护：操作开始保存 Unity Random.state；提交前失败在暂存对象清理后恢复，成功提交不恢复。模型替身主动消费 Random.value，不能用不消费随机的替身证明隔离。
+
+运行时现为160项断言与5个编译负向对照，包括删除失败恢复与错误地恢复成功路径两种随机状态负向对照。新增真实服务的第二段写入故障注入：第一段确实保存当前配置，第二段目标职业写入拒绝；Profile引用/内容、旧控制器、伙伴、施法回执、HP/能量/冷却和冻结宝箱身份保留，原抽签之后仍可原样提交。故障只注入临时编译副本，不改生产存储服务。
+
+前文两仓各282项是修复前冻结全量基线，原报告不改写。本次两仓各5项增量检查全部通过：服务712、运行时160及5负向、UI78、Windows和iOS条件源码编译；编译均零警告零错误，运行中源码无变化。输入差异恰好为上述生产文件及两份运行时测试。`Evidence/review-fix/` 包含全部日志、原报告哈希、逐文件差异和最终源码哈希；校验器检查完整证据链，不宣称旧282项直接跑在修复后源码上。
+
+```bash
+python Docs/Validation/CampClassSwitch/run-review-fix.py --dotnet /path/to/dotnet --platform windows
+# iOS仓库使用 --platform ios
+python Docs/Validation/CampClassSwitch/verify-evidence.py
+```
+
+仍未执行Unity引擎、实际模型/伙伴生命周期或真实JsonUtility验收。
