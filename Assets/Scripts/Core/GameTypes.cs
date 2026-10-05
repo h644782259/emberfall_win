@@ -214,6 +214,14 @@ namespace Emberfall
     public enum ZoneKind { Wilderness, Dungeon }
     public enum SkillCategory { Damage, Control, Mobility, Buff, Defense, Healing }
 
+    public enum RewardMomentKind { FirstCore, MechanicExchange, Ascension, MaterialExchange, FashionExchange, StrictUpgrade }
+    // Transient presentation snapshot, never serialized into GameProfile or used to grant.
+    public sealed class RewardMoment
+    {
+        public long Sequence; public string SlotId; public HeroClass HeroClass; public RewardMomentKind Kind;
+        public ItemData Item; public FashionData Fashion; public int GoldDelta,MaterialsDelta,ThreadsDelta;
+    }
+
     [Serializable]
     public class ItemData
     {

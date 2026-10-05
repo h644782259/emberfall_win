@@ -181,6 +181,7 @@ namespace Emberfall
                 (hotbarPointerConfiguring ? panel != Panel.Skills || GameBalance.IsPassive(selectedSkill) : panel != Panel.None))) CancelHotbarPointer();
             if (!session.HasStarted)
             {
+                ClearRewardMoment();
                 if (Input.GetKeyDown(KeyCode.Escape))
                 {
                     if(panel==Panel.SaveSelection)ClosePanel();
@@ -239,6 +240,7 @@ namespace Emberfall
         {
             if(session!=null&&session.Progression!=null)session.Progression.Changed-=InvalidateAttention;
             if(attentionDot!=null)Destroy(attentionDot);
+            ClearRewardMoment();
             ReleaseChestTextures();
             ReleaseCollectionPreview();
             if(terrainMap!=null)Destroy(terrainMap);
@@ -267,19 +269,21 @@ namespace Emberfall
             tooltip = null;
             if(exitRequest.Open)
             {
-                DrawExitConfirmation();GUI.matrix=oldMatrix;GUI.color=oldColor;GUI.contentColor=oldContentColor;GUI.enabled=oldEnabled;return;
+                ClearRewardMoment();DrawExitConfirmation();GUI.matrix=oldMatrix;GUI.color=oldColor;GUI.contentColor=oldContentColor;GUI.enabled=oldEnabled;return;
             }
             if(session.PracticeActive)
-            { DrawPracticeCombatHUD();DrawPracticeOverlay();GUI.matrix=oldMatrix;GUI.color=oldColor;GUI.contentColor=oldContentColor;GUI.enabled=oldEnabled;return; }
+            { ClearRewardMoment();DrawPracticeCombatHUD();DrawPracticeOverlay();GUI.matrix=oldMatrix;GUI.color=oldColor;GUI.contentColor=oldContentColor;GUI.enabled=oldEnabled;return; }
             HandleBindingInput();
 
             if (!session.HasStarted)
             {
+                ClearRewardMoment();
                 if (panel == Panel.SaveSelection) DrawSaveSelection();
                 else DrawTitle();
             }
             else
             {
+                PrepareRewardMoment();
                 bool priorEnabled = GUI.enabled;
                 GUI.enabled = priorEnabled && panel == Panel.None && !session.InputBlocked;
                 DrawHUD();
@@ -309,6 +313,7 @@ namespace Emberfall
                 else if (panel == Panel.Notice) DrawMobileNotice();
                 else if (panel == Panel.Chapter) DrawChapterSelection();
                 DrawNotification();
+                DrawRewardMoment();
             }
             if (hotbarDragging && hotbarPointerSkill != -1)
             {

@@ -1,0 +1,46 @@
+current BUILD 
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.60
+ 
+current RUN PASS 224 production window/result-channel assertions; managed only
+ 
+old-result-masks-window BUILD 
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.55
+ 
+old-result-masks-window RUN  Unhandled exception. System.Exception: result cannot mask persistent HUD opportunity
+   at Program.C(Boolean b, String s) in /tmp/opportunity-channels-3713f8no/Tests.cs:line 4
+   at Program.Main() in /tmp/opportunity-channels-3713f8no/Tests.cs:line 19
+
+PASS compiled negative control: old-result-masks-window
+old-ready-only BUILD 
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.43
+ 
+old-ready-only RUN  Unhandled exception. System.Exception: energy preserves clock without execution
+   at Program.C(Boolean b, String s) in /tmp/opportunity-channels-3713f8no/Tests.cs:line 4
+   at Program.Main() in /tmp/opportunity-channels-3713f8no/Tests.cs:line 7
+
+PASS compiled negative control: old-ready-only
+window-all-actionable BUILD 
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.43
+ 
+window-all-actionable RUN  Unhandled exception. System.Exception: energy preserves clock without execution
+   at Program.C(Boolean b, String s) in /tmp/opportunity-channels-3713f8no/Tests.cs:line 4
+   at Program.Main() in /tmp/opportunity-channels-3713f8no/Tests.cs:line 7
+
+PASS compiled negative control: window-all-actionable
+PASS no Unity rendering/input/physics claim

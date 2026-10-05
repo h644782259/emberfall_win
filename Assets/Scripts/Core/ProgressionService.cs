@@ -499,7 +499,7 @@ namespace Emberfall
             error = "该存档的删除尚未完成，请在存档列表确认清理剩余文件。";
             if (File.Exists(primary + DeletionSuffix)) return false;
             if (TryReadProfile(primary, out profile, out error)) return true;
-            if(error=="future format")return false;
+            if(error=="future format"||IsFrozenRewardReadError(error))return false;
             if (!TryReadProfile(primary + ".bak", out profile, out error)) return false;
             recovered = true;
             error = "主存档无法读取，已恢复上一次备份。" + (string.IsNullOrEmpty(error) ? "" : " " + error);
@@ -593,6 +593,7 @@ namespace Emberfall
                     bool usableBackup = TryReadProfile(backup, out recovery, out readError);
                     if (samePrimary && usableBackup) return true;
                     bool usablePrimary = samePrimary || TryReadProfile(primary, out recovery, out readError);
+                    if(!usablePrimary&&(readError=="future format"||IsFrozenRewardReadError(readError)))throw new IOException("主档含不可回退的奖励记录，原主档和备份均保留。");
                     // Do not expose an uncommitted candidate in a newly repaired
                     // backup or overwrite both damaged originals to manufacture one.
                     if (!usablePrimary && !usableBackup)
@@ -1031,7 +1032,8 @@ namespace Emberfall
             if (!CanReceiveProtectedLoot) return Fail("背包与待领取栏均已满；首通选择保留，请先腾出位置。");
             Profile.firstClearRewardClaimed = true;
             Profile.pendingFirstClearReward = false;
-            if (CollectLoot(CreateMechanicItem(mechanic))) return true;
+            var item=CreateMechanicItem(mechanic);
+            if (CollectLoot(item)) {PublishRewardMoment(RewardMomentKind.FirstCore,item);return true;}
             Profile.firstClearRewardClaimed = false;
             Profile.pendingFirstClearReward = true;
             return false;
@@ -1044,7 +1046,8 @@ namespace Emberfall
             if (Profile.mechanicMaterials < MechanicExchangeCost) return Fail("需要12枚星烬碎片；遗迹通关按阶数获得3至7枚。");
             if (!CanReceiveProtectedLoot) return Fail("背包与待领取栏均已满，请先腾出位置；尚未扣除碎片。");
             Profile.mechanicMaterials -= MechanicExchangeCost;
-            if (CollectLoot(CreateMechanicItem(mechanic))) return true;
+            var item=CreateMechanicItem(mechanic);
+            if (CollectLoot(item)) {PublishRewardMoment(RewardMomentKind.MechanicExchange,item,materials:-MechanicExchangeCost);return true;}
             Profile.mechanicMaterials += MechanicExchangeCost;
             return false;
         }
@@ -1727,7 +1730,8 @@ namespace Emberfall
             if (Profile.fashionThreads < FashionChoiceCost) return Fail("需要30缕星纹；每次开箱+1，重复时装额外增加。");
             GameProfile candidate = Snapshot(); candidate.fashionThreads -= FashionChoiceCost;
             candidate.fashions.Add(new FashionData { id = id, slot = slot, rarity = Rarity.Legendary, name = FashionName(slot, Rarity.Legendary) });
-            return CommitCandidate(candidate);
+            if(!CommitCandidate(candidate))return false;
+            PublishRewardMoment(RewardMomentKind.FashionExchange,fashion:candidate.fashions.Find(f=>f.id==id),threads:-FashionChoiceCost);return true;
         }
 
         public bool ReforgeMechanic(string id, bool inCamp)
@@ -1756,7 +1760,8 @@ namespace Emberfall
             item.upgradeAnchorAttack = item.baseAttack; item.upgradeAnchorDefense = item.baseDefense; item.upgradeAnchorHealth = item.baseHealth;
             ApplyUpgradeRank(item, IsEquipped(candidate, id) ? candidate.slotUpgradeRanks[(int)item.slot] : 0);
             candidate.mechanicMaterials -= AscensionCost;
-            return CommitCandidate(candidate);
+            if(!CommitCandidate(candidate))return false;
+            PublishRewardMoment(RewardMomentKind.Ascension,item,materials:-AscensionCost);return true;
         }
 
         public bool ToggleMechanicVariant(string id, bool inCamp)
@@ -1896,7 +1901,8 @@ namespace Emberfall
             if(quote.Owner!=this||quote.Source!=Profile||quote.Slot!=CurrentSlotId||quote.Fingerprint!=BuildStateFingerprint()||quote.Sequence!=Profile.threadMaterialSequence+1)return Fail("兑换预览已过期，请重新核对。");
             var candidate=Snapshot();candidate.chestRulesRevision=2;candidate.fashionThreads-=ThreadMaterialCost;candidate.mechanicMaterials++;candidate.threadMaterialSequence=quote.Sequence;
             candidate.lastThreadMaterialReceipt=new MaterialExchangeReceipt{id=quote.Id,sequence=quote.Sequence,materialKind=RewardMaterialKind.StarAshFragment,threadsDelta=-ThreadMaterialCost,materialsDelta=1};
-            return CommitCandidate(candidate);
+            if(!CommitCandidate(candidate))return false;
+            PublishRewardMoment(RewardMomentKind.MaterialExchange,materials:1,threads:-ThreadMaterialCost);return true;
         }
 
         public bool AcknowledgeChestReward()
@@ -2306,6 +2312,7 @@ namespace Emberfall
                 return Fail(failure); // The world still owns the item and may retry safely.
             }
             collectedLootIds.Add(item.id);
+            if(!sold&&IsStrictEquipmentUpgrade(item))PublishRewardMoment(RewardMomentKind.StrictUpgrade,item);
             LastError = string.Empty;
             RaiseChanged();
             if (sold) LastError = (overflow ? "背包已满，" : "低品质自动出售：") + item.name + "已自动出售，获得 " + SellValue(item) + " 金币。";
@@ -2702,6 +2709,28 @@ namespace Emberfall
             RaiseChanged();
         }
 
+        public RewardMoment LastRewardMoment {get;private set;}
+        private long rewardMomentSequence;
+        public bool IsStrictEquipmentUpgrade(ItemData item)
+        {
+            if(item==null||!Enum.IsDefined(typeof(ItemSlot),item.slot)||item.level<1||item.level>Profile.level)return false;
+            if(item.mechanic!=EquipmentMechanic.None&&(!Enum.IsDefined(typeof(EquipmentMechanic),item.mechanic)||BuildCatalog.MechanicClass(item.mechanic)!=Profile.heroClass||BuildCatalog.MechanicSlot(item.mechanic)!=item.slot))return false;
+            var current=Equipped(item.slot);if(current==null)return false;
+            if(current.mechanic!=EquipmentMechanic.None&&(current.mechanic!=item.mechanic||current.mechanicVariantUnlocked&&(!item.mechanicVariantUnlocked||current.mechanicVariant!=item.mechanicVariant)))return false;
+            var before=PreviewEquippedItem(current);var after=PreviewEquippedItem(item);
+            return after.attack>=before.attack&&after.defense>=before.defense&&after.health>=before.health&&(after.attack>before.attack||after.defense>before.defense||after.health>before.health);
+        }
+        private void PublishRewardMoment(RewardMomentKind kind,ItemData item=null,FashionData fashion=null,int gold=0,int materials=0,int threads=0)
+        {
+            if(IsPracticeOnly)return;
+            try
+            {
+                LastRewardMoment=new RewardMoment{Sequence=++rewardMomentSequence,SlotId=CurrentSlotId,HeroClass=Profile.heroClass,Kind=kind,
+                    Item=item==null?null:PreviewEquippedItem(item),Fashion=fashion==null?null:JsonUtility.FromJson<FashionData>(JsonUtility.ToJson(fashion,true)),GoldDelta=gold,MaterialsDelta=materials,ThreadsDelta=threads};
+            }
+            catch(Exception error){Debug.LogWarning("Emberfall: reward presentation snapshot unavailable: "+error);}
+        }
+
         private void RaiseChanged()
         {
             var observers=Changed;if(observers==null)return;
@@ -2781,19 +2810,30 @@ namespace Emberfall
             return id == profile.weaponId || id == profile.armorId || id == profile.relicId;
         }
 
+        private const string FrozenRewardReadFailure="冻结奖励记录不可安全恢复；原主档与备份保留。";
+        private static bool IsFrozenRewardReadError(string error)
+        {return error!=null&&error.StartsWith(FrozenRewardReadFailure,StringComparison.Ordinal);}
+        private static bool HasFrozenRewardDocument(string document)
+        {
+            var match=System.Text.RegularExpressions.Regex.Match(document??string.Empty,@"(?<!\\)""pendingChestDraw""\s*:\s*(?<token>null|[^ \t\r\n])");
+            return match.Success&&match.Groups["token"].Value!="null";
+        }
         private static bool TryReadProfile(string path, out GameProfile profile, out string error)
         {
             profile = null;
             error = string.Empty;
+            bool frozenRecord=false;
             try
             {
                 string document;
                 if (!TryReadSaveDocument(path, out document, out error, true)) return false;
+                frozenRecord=HasFrozenRewardDocument(document);
                 SaveFile data = JsonUtility.FromJson<SaveFile>(document);
-                if(data!=null&&data.format==SaveFormat&&(data.version>3||data.profile!=null&&(data.profile.version>1||data.profile.classStateRevision>1||data.profile.chestRulesRevision>2)))
+                frozenRecord=frozenRecord||(data!=null&&data.profile!=null&&data.profile.pendingChestDraw!=null);
+                if(data!=null&&data.format==SaveFormat&&(data.version>3||data.profile!=null&&(data.profile.version>1||data.profile.classStateRevision>1||data.profile.chestRulesRevision>2||data.profile.pendingChestRulesRevision>2||data.profile.pendingChestDraw!=null&&data.profile.pendingChestDraw.rulesRevision>2)))
                 {error="future format";return false;}
                 if (data == null || data.format != SaveFormat || (data.version != 1 && data.version != 2 && data.version != 3) || data.profile == null || data.profile.version != 1)
-                { error = "unsupported format"; return false; }
+                { error = frozenRecord?FrozenRewardReadFailure+" unsupported format":"unsupported format"; return false; }
                 bool balanceChanged = HasLegacyEnhancement(data.profile.inventory) || HasLegacyEnhancement(data.profile.pendingLoot) || HasLegacyEnhancement(data.profile.recoveryLoot);
                 bool masteryMigrated = data.profile.masteryRevision < 1 && data.profile.masteryRanks != null && Array.Exists(data.profile.masteryRanks, rank => rank > 0);
                 int refundedRanks = ValidateProfile(data.profile);
@@ -2804,7 +2844,7 @@ namespace Emberfall
             }
             catch (Exception exception) when (exception is IOException || exception is UnauthorizedAccessException || exception is ArgumentException || exception is NotSupportedException)
             {
-                error = exception.Message;
+                error = frozenRecord?FrozenRewardReadFailure+" "+exception.Message:exception.Message;
                 return false;
             }
         }

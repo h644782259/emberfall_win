@@ -1,0 +1,3 @@
+  Determining projects to restore...
+  Restored /tmp/emberfall-fading-1wax10y8/Validation.csproj (in 123 ms).
+PASS: 48 actual fading-effect managed lifecycle checks (not Unity execution)

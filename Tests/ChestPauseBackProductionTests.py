@@ -52,7 +52,7 @@ namespace Emberfall {
   private bool suppressHotbarMouse,hotbarPointerConfiguring=false,chestDetails;
   private bool PauseUtilityVisible=>false;private bool AndroidBackExitEnabled=>true;
   private ExitStub exitRequest=new ExitStub();private string exitError;
-  private void RefreshLayout(){}private void ReconcileMobileScroll(){}private void ReconcileCollectionPreview(){}
+  private void ClearRewardMoment(){}private void RefreshLayout(){}private void ReconcileMobileScroll(){}private void ReconcileCollectionPreview(){}
   private void ReconcileClassSwitchSurface(){}private void ReconcileBuildPlanSurface(){}private void ReconcileProgressionGoalSurface(){}
   private void CancelMobileCast(){mobileCastFinger=-1000;}private void CancelHotbarPointer(){hotbarPointerSlot=-1;}
   private void BlockUITransition(){transitionBlocks++;}private void ClosePanel(){closeCalls++;panel=Panel.None;}

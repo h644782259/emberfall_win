@@ -1,0 +1,19 @@
+{
+  "checkedUtc": "2026-10-05T12:38:31.021534+00:00",
+  "checks": [
+    {
+      "repository": "win",
+      "package": "UnityEngine.Modules/2021.3.33",
+      "sha512Base64": "ad7eBwkG66RQ0ToAMD/ak8MZ6pfgrYXxcPGftN8H7ydkn5TdrwlU5qgZTkHpjOGYoIJvIk3+77VWq53/UU2dqA==",
+      "bytes": 3386574,
+      "source": "existing pinned local archive, no network retrieval in this task"
+    },
+    {
+      "repository": "ios",
+      "package": "UnityEngine.Modules/2021.3.33",
+      "sha512Base64": "ad7eBwkG66RQ0ToAMD/ak8MZ6pfgrYXxcPGftN8H7ydkn5TdrwlU5qgZTkHpjOGYoIJvIk3+77VWq53/UU2dqA==",
+      "bytes": 3386574,
+      "source": "existing pinned local archive, no network retrieval in this task"
+    }
+  ]
+}

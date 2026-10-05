@@ -1,0 +1,18 @@
+Emberfall: 保存失败：主档含不可回退的奖励记录，原主档和备份均保留。
+Emberfall: 保存失败：主档含不可回退的奖励记录，原主档和备份均保留。
+Emberfall: 保存失败：主档含不可回退的奖励记录，原主档和备份均保留。
+Emberfall: 保存失败：主档含不可回退的奖励记录，原主档和备份均保留。
+Emberfall: 保存失败：主档含不可回退的奖励记录，原主档和备份均保留。
+Emberfall: 保存失败：主档含不可回退的奖励记录，原主档和备份均保留。
+Emberfall: 保存失败：主档含不可回退的奖励记录，原主档和备份均保留。
+PASS 61 actual frozen-save recovery, committed reward moments, strict upgrade and collection eligibility assertions
+PASS compiled reward-polish service negative: nested frozen corruption must not recover undrawn backup: slot
+Traceback (most recent call last):
+  File "/workspace/emberfall_win_polish/Tests/RewardPolishServiceTests.py", line 25, in <module>
+    assert run.returncode!=0 and expected in run.stdout+run.stderr,run.stdout+run.stderr
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Unhandled exception. System.Exception: failed load/save preserves both protected documents: future-pending
+   at RewardPolishServiceTests.C(Boolean ok, String why) in /workspace/emberfall_win_polish/Tests/RewardPolishServiceTests.cs:line 5
+   at RewardPolishServiceTests.Run(String root) in /workspace/emberfall_win_polish/Tests/RewardPolishServiceTests.cs:line 20
+   at Program.Main(String[] a) in /tmp/class-enemy-kill-srpr_1cj/project/Program.cs:line 1
+

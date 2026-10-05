@@ -25,7 +25,7 @@ namespace Emberfall
             string identity=reward.Rarity.HasValue?GameBalance.RarityName(reward.Rarity.Value)+" · "+reward.Name+"\n":"";
             string gain=reward.hasCurrencyDeltas?"到账 +"+reward.goldDelta+" 金币 · +"+reward.threadsDelta+" 星纹":"金币奖励 "+reward.Gold+"（旧记录未保存实际增量）";
             if(reward.hasCurrencyDeltas&&reward.materialKind==RewardMaterialKind.StarAshFragment)gain+=" · +"+reward.materialsDelta+" 星烬碎片";
-            return identity+Outcome(reward)+"\n\n"+gain+"\n星纹余额 "+threads+" / "+ProgressionService.FashionChoiceCost+" · "+(threads>=ProgressionService.FashionChoiceCost?"可在营地自选传说":"攒满可在营地自选传说");
+            return identity+Outcome(reward)+"\n\n"+gain+"\n星纹余额 "+threads+" / "+ProgressionService.FashionChoiceCost+" · "+"可在收藏页查看兑换缺口";
         }
         public const string ChoiceDisclosure = "金币、星烬碎片与星纹稳定收获；时装40%额外掉落，非必出（60%无时装），按同品质补齐缺口。";
         public static int CollectionCount(GameProfile profile,FashionSlot slot)
@@ -51,10 +51,20 @@ namespace Emberfall
         public static string ResultWithCollection(ChestReward reward,GameProfile profile)
         {
             string result=Result(reward,profile==null?0:profile.fashionThreads);
+            result+="\n"+LegendaryExchangeHint(profile);
             if(IsSupplyReceipt(reward))result="补给 · 更多金币（×1.5，向下取整）\n"+result;
             if(reward!=null&&reward.Rarity.HasValue&&reward.Slot.HasValue&&Enum.IsDefined(typeof(FashionSlot),reward.Slot.Value))
                 result+="\n当前"+CollectionProgress(profile,reward.Slot.Value);
             return result;
+        }
+        public static string LegendaryExchangeHint(GameProfile profile)
+        {
+            if(profile==null)return "收藏状态未知，请查看收藏页";
+            bool weapon=profile.fashions!=null&&profile.fashions.Exists(f=>f!=null&&f.slot==FashionSlot.Weapon&&f.rarity==Rarity.Legendary);
+            bool wings=profile.fashions!=null&&profile.fashions.Exists(f=>f!=null&&f.slot==FashionSlot.Wings&&f.rarity==Rarity.Legendary);
+            if(weapon&&wings)return "两部位传说已收藏 · 星纹仍可手动换碎片";
+            string missing=weapon?"羽翼":wings?"兵装":"兵装 / 羽翼";
+            return profile.fashionThreads>=ProgressionService.FashionChoiceCost?"可在营地兑换缺少的传说"+missing:"传说"+missing+"尚缺 · 距兑换还差 "+(ProgressionService.FashionChoiceCost-profile.fashionThreads)+"星纹";
         }
         public static float Travel(float progress)
         {float t=Math.Max(0,Math.Min(1,(progress-.15f)/.65f));return t*t*(3-2*t);}

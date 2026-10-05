@@ -15,7 +15,7 @@ namespace Emberfall
         private float chestRevealedAt;
         private bool rewardSoundPlayed;
         private string chestReceiptId;
-        private float ChestDuration { get { var reward=session.Progression.LastChestReward; return EffectPreferences.ReducedEffects ? .15f : reward == null || !reward.Rarity.HasValue ? .95f : 1.1f + (int)reward.Rarity.Value * .28f; } }
+        private float ChestDuration { get { var reward=session.Progression.LastChestReward; return EffectPreferences.ReducedEffects ? .15f : reward != null && reward.Duplicate ? .7f : reward == null || !reward.Rarity.HasValue ? .95f : 1.1f + (int)reward.Rarity.Value * .28f; } }
         private bool ChestAnimationDone { get { return chestRevealResult != null && Time.unscaledTime-chestRevealedAt >= ChestDuration; } }
 
         private void ResetChestReveal()
@@ -53,7 +53,7 @@ namespace Emberfall
             var reward=revealed?savedReward:null;
             Color accent=reward!=null&&reward.Rarity.HasValue?GameBalance.RarityColor(reward.Rarity.Value):gold;
             if(revealed&&complete&&!rewardSoundPlayed)
-            {rewardSoundPlayed=true;GameAudio.Play(reward==null||!reward.Rarity.HasValue?SoundCue.UI:reward.Rarity.Value==Rarity.Legendary?SoundCue.Victory:reward.Rarity.Value==Rarity.Epic?SoundCue.LevelUp:reward.Rarity.Value==Rarity.Rare?SoundCue.Loot:SoundCue.Cast);}
+            {rewardSoundPlayed=true;GameAudio.Play(reward==null||!reward.Rarity.HasValue||reward.Duplicate?SoundCue.UI:reward.Rarity.Value==Rarity.Legendary?SoundCue.Victory:reward.Rarity.Value==Rarity.Epic?SoundCue.LevelUp:reward.Rarity.Value==Rarity.Rare?SoundCue.Loot:SoundCue.Cast);}
             Fill(new Rect(0,0,width,height),new Color(.018f,.025f,.045f,.9f));
             float ww=Mathf.Min(860,width-32),wh=Mathf.Min(550,height-24);
             Rect w=new Rect((width-ww)*.5f,(height-wh)*.5f,ww,wh);
@@ -116,6 +116,7 @@ namespace Emberfall
             Rect origin=chestRevealOrigin.width>0?chestRevealOrigin:destination;
             Rect moving=new Rect(Mathf.Lerp(origin.x,destination.x,travel),Mathf.Lerp(origin.y,destination.y,travel),Mathf.Lerp(origin.width,destination.width,travel),Mathf.Lerp(origin.height,destination.height,travel));
             DrawRewardChest(moving,true,1,progress);
+            if(reward!=null&&reward.Duplicate&&reward.hasCurrencyDeltas)DrawChestResourceVisuals(moving,reward);
             if(progress>.35f){GUI.BeginGroup(moving);DrawRewardRadiance(new Rect(0,0,moving.width,moving.height),accent,progress);GUI.EndGroup();}
         }
 

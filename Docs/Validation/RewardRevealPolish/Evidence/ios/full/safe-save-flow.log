@@ -1,0 +1,3 @@
+
+Emberfall: 保存失败：临时存档路径被目录占用，未覆盖原文件或备份。
+PASS: 41 manual-save, cancel, stable-load and isolated staging assertions

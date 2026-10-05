@@ -4,7 +4,7 @@ namespace Emberfall
     public sealed partial class GameUI
     {
         private int mobileFashionSlot;
-        private Vector2 mobileFashionScroll, mobileChestScroll;
+        private Vector2 mobileFashionScroll, mobileChestScroll, mobileChestArtScroll;
         private string mobileChestError, mobileChestOdds;
         private string mobileFashionStatus, mobileFashionProfile;
         private bool mobileFashionFailed;
@@ -96,9 +96,9 @@ namespace Emberfall
             // Switching profiles or reloading a persisted receipt must restore the
             // saved result, never replay the random grant or keep another slot's UI.
             if (progression.Profile.pendingChestReveal && savedReward != null && chestReceiptId != savedReward.Id)
-            { ResetChestReveal(); mobileChestError = null; mobileChestScroll = Vector2.zero; }
+            { ResetChestReveal(); mobileChestError = null; mobileChestScroll = mobileChestArtScroll = Vector2.zero; }
             if (!progression.Profile.pendingChestReveal && chestRevealResult != null)
-            { ResetChestReveal(); mobileChestError = null; mobileChestScroll = Vector2.zero; }
+            { ResetChestReveal(); mobileChestError = null; mobileChestScroll = mobileChestArtScroll = Vector2.zero; }
             bool revealed = chestRevealResult != null && progression.Profile.pendingChestReveal;
             bool complete = revealed && ChestAnimationDone;
             var reward = revealed ? savedReward : null;
@@ -106,7 +106,7 @@ namespace Emberfall
             if (revealed && complete && !rewardSoundPlayed)
             {
                 rewardSoundPlayed = true;
-                GameAudio.Play(reward == null || !reward.Rarity.HasValue ? SoundCue.UI : reward.Rarity.Value == Rarity.Legendary ? SoundCue.Victory : reward.Rarity.Value == Rarity.Epic ? SoundCue.LevelUp : reward.Rarity.Value == Rarity.Rare ? SoundCue.Loot : SoundCue.Cast);
+                GameAudio.Play(reward == null || !reward.Rarity.HasValue || reward.Duplicate ? SoundCue.UI : reward.Rarity.Value == Rarity.Legendary ? SoundCue.Victory : reward.Rarity.Value == Rarity.Epic ? SoundCue.LevelUp : reward.Rarity.Value == Rarity.Rare ? SoundCue.Loot : SoundCue.Cast);
             }
             var layout = MobilePanelGeometry();
             string title = chestDetails ? "奖励规则" : revealed ? complete ? "宝箱奖励" : "开启宝箱" : "遗迹馈赠";
@@ -153,7 +153,7 @@ namespace Emberfall
             {
                 chestRevealOrigin=ChestChoiceArt(TouchRect(layout.Body.X+8,layout.Body.Y+disclosure+errors-mobileChestScroll.y/TouchRatio,bodyWidth-16,cardHeight),TouchRatio);
                 revealedChest=0;chestRevealResult=result;chestRevealedAt=Time.unscaledTime;chestDetails=false;rewardSoundPlayed=false;
-                chestReceiptId=session.Progression.LastChestReward.Id;mobileChestError=null;mobileChestScroll=Vector2.zero;GameAudio.Play(SoundCue.Cast);
+                chestReceiptId=session.Progression.LastChestReward.Id;mobileChestError=null;mobileChestScroll=mobileChestArtScroll=Vector2.zero;GameAudio.Play(SoundCue.Cast);
             }
             BlockUITransition();return true;
         }
@@ -164,7 +164,10 @@ namespace Emberfall
             if(!complete){DrawChestRevealTransition(MobilePanelRect(layout.Body),reward,TouchRect(layout.BodyLeft.X+8,layout.BodyLeft.Y+8,layout.BodyLeft.Width-16,layout.BodyLeft.Height-16));return;}
             var art = layout.BodyLeft;
             Fill(MobilePanelRect(art), new Color(.055f, .08f, .11f)); Border(MobilePanelRect(art), accent);
-            DrawChestCommittedReward(TouchRect(art.X+8,art.Y+8,art.Width-16,art.Height-16),reward,accent);
+            float artHeight=Mathf.Max(art.Height-16,reward!=null&&reward.Rarity.HasValue?300:144);
+            mobileChestArtScroll=BeginTouchScroll("mobile-chest-art",MobilePanelRect(art),mobileChestArtScroll,new Rect(0,0,(art.Width-8)*TouchRatio,(artHeight+16)*TouchRatio));
+            DrawChestCommittedReward(TouchRect(8,8,art.Width-24,artHeight),reward,accent);
+            EndTouchScroll();
             if (progress > .35f)
             {
                 Rect clip = TouchRect(art.X + 8, art.Y + 8, art.Width - 16, art.Height - 16);
