@@ -1,0 +1,24 @@
+/tmp/inventory-back-g378e936/project/Program.cs(11,31): warning CS0649: Field 'GameUI.bindingReturnPanel' is never assigned to, and will always have its default value [/tmp/inventory-back-g378e936/project/Validation.csproj]
+/tmp/inventory-back-g378e936/project/Program.cs(13,26): warning CS0414: The field 'GameUI.rebindingSlot' is assigned but its value is never used [/tmp/inventory-back-g378e936/project/Validation.csproj]
+
+Build succeeded.
+
+/tmp/inventory-back-g378e936/project/Program.cs(11,31): warning CS0649: Field 'GameUI.bindingReturnPanel' is never assigned to, and will always have its default value [/tmp/inventory-back-g378e936/project/Validation.csproj]
+/tmp/inventory-back-g378e936/project/Program.cs(13,26): warning CS0414: The field 'GameUI.rebindingSlot' is assigned but its value is never used [/tmp/inventory-back-g378e936/project/Validation.csproj]
+    2 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.81
+PASS: 106 production inventory ClosePanel assertions
+/tmp/inventory-back-j40r6npy/project/Program.cs(11,31): warning CS0649: Field 'GameUI.bindingReturnPanel' is never assigned to, and will always have its default value [/tmp/inventory-back-j40r6npy/project/Validation.csproj]
+/tmp/inventory-back-j40r6npy/project/Program.cs(13,26): warning CS0414: The field 'GameUI.rebindingSlot' is assigned but its value is never used [/tmp/inventory-back-j40r6npy/project/Validation.csproj]
+
+Build succeeded.
+
+/tmp/inventory-back-j40r6npy/project/Program.cs(11,31): warning CS0649: Field 'GameUI.bindingReturnPanel' is never assigned to, and will always have its default value [/tmp/inventory-back-j40r6npy/project/Validation.csproj]
+/tmp/inventory-back-j40r6npy/project/Program.cs(13,26): warning CS0414: The field 'GameUI.rebindingSlot' is assigned but its value is never used [/tmp/inventory-back-j40r6npy/project/Validation.csproj]
+    2 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.82
+PASS: mandatory legacy negative control compiled, then failed precisely at first-Back combat-blocking assertion

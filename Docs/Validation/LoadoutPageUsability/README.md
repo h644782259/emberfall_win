@@ -49,7 +49,7 @@ Windows 另一次冻结全量执行 279 项，其中唯一失败是寻路分配�
 - 本次冻结全量：[Windows 报告](Evidence/final/windows/report.json)、[iOS 报告](Evidence/final/ios/report.json)，同目录包括全部逐项日志、`frozen-sources.json` 和 `input-comparison.json`。输入对比仅含本次 BuildPlans 入口修复、两份整页几何测试、引用替换测试所需的折叠状态字段及聚合器注册。
 - [导航回放日志](Evidence/navigation.log)；[全部证据哈希清单](Evidence/manifest.json)；[可执行校验器](verify-evidence.py)。校验器同时核实原始失败、复跑覆盖、冻结输入及当前检出源码；Windows/iOS 仅保留既有 IOSBuild.cs 与 MobileFeedbackFontSourceTests.py 两份平台差异。
 
-冻结全量运行状态：正在执行。iOS 279 项全部通过；Windows 清洁复跑尚未完成，不声明全量通过。当前阶段可运行 `python Docs/Validation/LoadoutPageUsability/verify-evidence.py --allow-pending` 校验证据和源码；默认模式要求两个最终完整报告均存在。旧 [results.json](results.json) 保留首次验证与定向修复的历史说明；以最终原始报告为本次修复验证依据。没有借用远端 CI 结果。
+冻结后两仓各 **279 项完整检查全部通过**，`sourceChangedDuringRun=[]`，退出码 0；Windows 与 iOS 条件源码编译均为零警告、零错误。旧 [results.json](results.json) 保留首次验证与定向修复的历史说明；以最终原始报告为本次修复验证依据。没有借用远端 CI 结果。
 
 ## Unity 验收边界与待验项目
 

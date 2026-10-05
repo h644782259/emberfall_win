@@ -1,0 +1,12 @@
+/tmp/emberfall-touch-replay-2q0qsu3t/Replay.cs(53,18): warning CS0414: The field 'MobileControls.worldPointerOwner' is assigned but its value is never used [/tmp/emberfall-touch-replay-2q0qsu3t/project/Validation.csproj]
+/tmp/emberfall-touch-replay-2q0qsu3t/Replay.cs(53,36): warning CS0414: The field 'MobileControls.worldPointerTarget' is assigned but its value is never used [/tmp/emberfall-touch-replay-2q0qsu3t/project/Validation.csproj]
+
+Build succeeded.
+
+/tmp/emberfall-touch-replay-2q0qsu3t/Replay.cs(53,18): warning CS0414: The field 'MobileControls.worldPointerOwner' is assigned but its value is never used [/tmp/emberfall-touch-replay-2q0qsu3t/project/Validation.csproj]
+/tmp/emberfall-touch-replay-2q0qsu3t/Replay.cs(53,36): warning CS0414: The field 'MobileControls.worldPointerTarget' is assigned but its value is never used [/tmp/emberfall-touch-replay-2q0qsu3t/project/Validation.csproj]
+    2 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.46
+PASS: 26 production multi-pointer lifecycle assertions (11/12/13 at 1s and 110s)

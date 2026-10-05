@@ -1,0 +1,3 @@
+/tmp/caster-charge-hipdkfhu/Fixture.cs(34,18): warning CS0414: The field 'CombatModel.blenderPilot' is assigned but its value is never used [/tmp/caster-charge-hipdkfhu/Test.csproj]
+PASS: 186 production caster charge/family/commit checks (managed transforms, not rendered animation)
+PASS: wrong-skill and old generic charge compiled negative controls fail exact handoff assertion
