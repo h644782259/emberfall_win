@@ -497,6 +497,7 @@ namespace Emberfall
             error = "该存档的删除尚未完成，请在存档列表确认清理剩余文件。";
             if (File.Exists(primary + DeletionSuffix)) return false;
             if (TryReadProfile(primary, out profile, out error)) return true;
+            if(error=="future format")return false;
             if (!TryReadProfile(primary + ".bak", out profile, out error)) return false;
             recovered = true;
             error = "主存档无法读取，已恢复上一次备份。" + (string.IsNullOrEmpty(error) ? "" : " " + error);
@@ -572,7 +573,7 @@ namespace Emberfall
                 if (Directory.Exists(temporary)) throw new IOException("临时存档路径被目录占用，未覆盖原文件或备份。");
                 if (File.Exists(temporary) && TryReadProfile(temporary, out pendingWrite, out pendingError))
                     throw new IOException("发现可恢复的临时存档，已保留且未覆盖。请先备份整个存档目录，再处理临时存档恢复。");
-                var save = new SaveFile { format = SaveFormat, version = 1, profile = profile };
+                var save = new SaveFile { format = SaveFormat, version = profile.classStateRevision>0?2:1, profile = profile };
                 string json = JsonUtility.ToJson(save, true);
                 if (Encoding.UTF8.GetByteCount(json) > MaximumSaveBytes)
                     throw new IOException("存档超过 4 MiB 安全大小，未覆盖原文件或备份。请保留现有文件。");
@@ -1414,6 +1415,15 @@ namespace Emberfall
         {
             if(string.IsNullOrEmpty(id))return string.Empty;var names=new List<string>();
             for(int i=0;i<BuildPresetCount;i++)if(HasBuildPreset(i))for(int slot=0;slot<3;slot++)if(PresetItemId(Profile.buildPresets[i],slot)==id){names.Add(i==0?"方案 A":"方案 B");break;}
+            if(Profile.classStates!=null)for(int hero=0;hero<Profile.classStates.Length;hero++)
+            {
+                var state=Profile.classStates[hero];if(hero==(int)Profile.heroClass||state==null||!state.initialized||state.buildPresets==null)continue;
+                for(int i=0;i<state.buildPresets.Length;i++)
+                {
+                    var preset=state.buildPresets[i];if(preset==null||!preset.populated)continue;
+                    for(int slot=0;slot<3;slot++)if(PresetItemId(preset,slot)==id){names.Add(GameBalance.ClassName((HeroClass)hero)+" · "+(i==0?"方案 A":"方案 B"));break;}
+                }
+            }
             return string.Join(" / ",names.ToArray());
         }
         public string BulkSalePresetImpact()
@@ -1531,6 +1541,116 @@ namespace Emberfall
             // of its null-element behavior. The populated bit owns slot identity.
             for (int i = 0; i < BuildPresetCount; i++)
                 if (profile.buildPresets[i] == null) profile.buildPresets[i] = new BuildPreset();
+        }
+
+        // Active profile fields are authoritative for the current class. Archives are
+        // authoritative only for inactive classes. The active entry is a marker, never a
+        // second serialized authority that can lag behind direct fields or event callbacks.
+        private static ClassBuildState CaptureClassState(GameProfile p)
+        {
+            var state=new ClassBuildState
+            {
+                initialized=true,heroClass=p.heroClass,skillRanks=p.skillRanks,masteryRanks=p.masteryRanks,
+                masteryCore=p.masteryCore,specialization=p.specialization,summonerRoute=p.summonerRoute,
+                equippedSkills=p.equippedSkills,hotbarKeys=p.hotbarKeys,hotbarPage=p.hotbarPage,buildPresets=p.buildPresets,
+                tutorialMask=p.tutorialMask,classTutorialCompleted=p.classTutorialCompleted,
+                progressionGoal=p.progressionGoal,progressionGoalItemId=p.progressionGoalItemId,
+                progressionGoalTier=p.progressionGoalTier,progressionGoalMechanic=p.progressionGoalMechanic,
+                progressionGoalMinimumRarity=p.progressionGoalMinimumRarity,progressionGoalLevel=p.progressionGoalLevel
+            };
+            return JsonUtility.FromJson<ClassBuildState>(JsonUtility.ToJson(state,true));
+        }
+        private static void RestoreClassState(GameProfile p,ClassBuildState state)
+        {
+            p.skillRanks=state.skillRanks;p.masteryRanks=state.masteryRanks;p.masteryCore=state.masteryCore;
+            p.specialization=state.specialization;p.summonerRoute=state.summonerRoute;
+            p.equippedSkills=state.equippedSkills;p.hotbarKeys=state.hotbarKeys;p.hotbarPage=state.hotbarPage;p.buildPresets=state.buildPresets;
+            p.tutorialMask=state.tutorialMask;p.classTutorialCompleted=state.classTutorialCompleted;
+            p.progressionGoal=state.progressionGoal;p.progressionGoalItemId=state.progressionGoalItemId;
+            p.progressionGoalTier=state.progressionGoalTier;p.progressionGoalMechanic=state.progressionGoalMechanic;
+            p.progressionGoalMinimumRarity=state.progressionGoalMinimumRarity;p.progressionGoalLevel=state.progressionGoalLevel;
+        }
+        private static void NormalizeClassStates(GameProfile profile)
+        {
+            if(profile.classStateRevision<0||profile.classStateRevision>1)throw new ArgumentException("职业存档版本不受支持，请使用较新版本。");
+            if(profile.classStateRevision==0)
+            {
+                profile.classStates=new ClassBuildState[4];
+                for(int i=0;i<4;i++)profile.classStates[i]=new ClassBuildState{heroClass=(HeroClass)i};
+                profile.classStateRevision=1;
+            }
+            if(profile.classStates==null||profile.classStates.Length!=4)throw new ArgumentException("职业存档必须包含四个固定位置；原文件已保留。");
+            for(int i=0;i<4;i++)
+            {
+                var state=profile.classStates[i];
+                if(state==null||!state.initialized){profile.classStates[i]=new ClassBuildState{heroClass=(HeroClass)i};continue;}
+                if(state.version!=1||state.heroClass!=(HeroClass)i)throw new ArgumentException("职业存档版本或位置不符；原文件已保留。");
+                if(i==(int)profile.heroClass)continue;
+                if(state.skillRanks==null||state.skillRanks.Length!=GameBalance.SkillCount||state.masteryRanks==null||state.masteryRanks.Length!=4)
+                    throw new ArgumentException("其他职业的配点结构无效；原文件已保留。");
+                int spent=0;
+                for(int slot=0;slot<GameBalance.SkillCount;slot++)
+                {
+                    int rank=state.skillRanks[slot];
+                    if(rank<0||rank>3||rank>0&&profile.level<GameBalance.SkillRankRequiredLevel(slot,rank))throw new ArgumentException("其他职业技能阶数无效；原文件已保留。");
+                    spent+=rank;
+                }
+                foreach(int rank in state.masteryRanks){if(rank<0||rank>MasteryCap(profile.level))throw new ArgumentException("其他职业精通投入无效；原文件已保留。");spent+=rank;}
+                if(spent>GameBalance.SkillPointBudget(profile.level))throw new ArgumentException("其他职业配点超出共享等级预算；原文件已保留。");
+                if(state.buildPresets!=null&&state.buildPresets.Length>BuildPresetCount)throw new ArgumentException("其他职业方案超过安全容量；原文件已保留。");
+            }
+            profile.classStates[(int)profile.heroClass]=new ClassBuildState{initialized=true,heroClass=profile.heroClass};
+        }
+        internal sealed class ClassSwitchTransaction
+        {
+            internal ProgressionService Owner;internal GameProfile Source,Candidate;internal string Fingerprint;
+            internal bool Committed,Published;
+            public HeroClass Target {get{return Candidate.heroClass;}}
+            internal StatBlock PreviewStats {get{return new ProgressionService(Candidate).GetStats();}}
+            internal string PreviewSummary {get{return new ProgressionService(Candidate).CurrentBuildSummary();}}
+        }
+        internal ClassSwitchTransaction PrepareClassSwitch(HeroClass target,bool inCamp)
+        {
+            if(IsPracticeOnly||!inCamp||!Enum.IsDefined(typeof(HeroClass),target)||target==Profile.heroClass)
+            {Fail("请在安全营地选择另一职业。");return null;}
+            var candidate=Snapshot();ValidateProfile(candidate);
+            candidate.classStates[(int)candidate.heroClass]=CaptureClassState(candidate);
+            var state=candidate.classStates[(int)target];
+            if(!state.initialized)
+            {
+                // First visit maps the already-legal shared skill indices and mastery budget.
+                // Equipment, economy, world progress, receipts and pending draws stay shared.
+                state=CaptureClassState(candidate);state.heroClass=target;
+                state.specialization=ElementalistSpecialization.None;state.summonerRoute=SummonerRoute.Bonded;
+                state.tutorialMask=0;state.classTutorialCompleted=false;state.buildPresets=new[]{new BuildPreset(),new BuildPreset()};
+                state.progressionGoal=ProgressionGoalKind.None;state.progressionGoalItemId=null;state.progressionGoalMechanic=EquipmentMechanic.None;
+                state.progressionGoalTier=1;state.progressionGoalLevel=0;state.progressionGoalMinimumRarity=Rarity.Common;
+            }
+            candidate.heroClass=target;RestoreClassState(candidate,state);ValidateProfile(candidate);
+            LastError=string.Empty;
+            return new ClassSwitchTransaction{Owner=this,Source=Profile,Candidate=candidate,Fingerprint=BuildStateFingerprint()};
+        }
+        internal bool CommitClassSwitch(ClassSwitchTransaction transaction,bool inCamp)
+        {
+            lock(StorageGate)
+            {
+            if(transaction==null||transaction.Owner!=this||transaction.Committed||!inCamp||IsPracticeOnly||transaction.Source!=Profile||transaction.Fingerprint!=BuildStateFingerprint())
+                return Fail("职业切换预览已过期，请重新打开。");
+            string failure;
+            // Bootstrap the current class using the new envelope before a first switch.
+            // The subsequent atomic replacement therefore leaves a v2 backup too: an old
+            // client cannot fall back to a v1 backup and erase multiple class archives.
+            if(!TryWriteAttachedProfile(Snapshot(),out failure)||!TryWriteAttachedProfile(transaction.Candidate,out failure))return Fail(failure);
+            Profile=transaction.Candidate;transaction.Committed=true;LastError=string.Empty;
+            // Intentionally no Changed event until the session has installed the prepared hero.
+            return true;
+            }
+        }
+        internal void PublishClassSwitch(ClassSwitchTransaction transaction)
+        {
+            if(transaction==null||transaction.Owner!=this||!transaction.Committed||transaction.Published||transaction.Candidate!=Profile)return;
+            transaction.Published=true;bool prior=IsApplyingBuildDraft;IsApplyingBuildDraft=true;
+            try{RaiseChanged();}finally{IsApplyingBuildDraft=prior;}
         }
 
         private GameProfile Snapshot() { return JsonUtility.FromJson<GameProfile>(JsonUtility.ToJson(Profile, true)); }
@@ -1821,10 +1941,10 @@ namespace Emberfall
         {
             var learned=new List<EquipmentMechanic>();
             if(profile.variantKnowledge!=null)foreach(var mechanic in profile.variantKnowledge)
-                if(BuildCatalog.HasMechanicVariant(mechanic)&&BuildCatalog.MechanicClass(mechanic)==profile.heroClass&&!learned.Contains(mechanic))learned.Add(mechanic);
+                if(BuildCatalog.HasMechanicVariant(mechanic)&&!learned.Contains(mechanic))learned.Add(mechanic);
             var items=new List<ItemData>(profile.inventory);items.AddRange(profile.pendingLoot);items.AddRange(profile.recoveryLoot);
             if(profile.variantKnowledgeRevision<1)foreach(var item in items)
-                if(item.mechanicVariantUnlocked&&BuildCatalog.HasMechanicVariant(item.mechanic)&&BuildCatalog.MechanicClass(item.mechanic)==profile.heroClass&&item.slot==BuildCatalog.MechanicSlot(item.mechanic)&&!learned.Contains(item.mechanic))learned.Add(item.mechanic);
+                if(item.mechanicVariantUnlocked&&BuildCatalog.HasMechanicVariant(item.mechanic)&&item.slot==BuildCatalog.MechanicSlot(item.mechanic)&&!learned.Contains(item.mechanic))learned.Add(item.mechanic);
             profile.variantKnowledge=learned;
             foreach(var item in items)
             {item.mechanicVariantUnlocked=learned.Contains(item.mechanic);if(!item.mechanicVariantUnlocked)item.mechanicVariant=0;}
@@ -2634,7 +2754,9 @@ namespace Emberfall
                 string document;
                 if (!TryReadSaveDocument(path, out document, out error, true)) return false;
                 SaveFile data = JsonUtility.FromJson<SaveFile>(document);
-                if (data == null || data.format != SaveFormat || data.version != 1 || data.profile == null || data.profile.version != 1)
+                if(data!=null&&data.format==SaveFormat&&(data.version>2||data.profile!=null&&(data.profile.version>1||data.profile.classStateRevision>1)))
+                {error="future format";return false;}
+                if (data == null || data.format != SaveFormat || (data.version != 1 && data.version != 2) || data.profile == null || data.profile.version != 1)
                 { error = "unsupported format"; return false; }
                 bool balanceChanged = HasLegacyEnhancement(data.profile.inventory) || HasLegacyEnhancement(data.profile.pendingLoot) || HasLegacyEnhancement(data.profile.recoveryLoot);
                 bool masteryMigrated = data.profile.masteryRevision < 1 && data.profile.masteryRanks != null && Array.Exists(data.profile.masteryRanks, rank => rank > 0);
@@ -2879,6 +3001,7 @@ namespace Emberfall
                 else throw new ArgumentException("珍贵装备超过安全容量；保留原存档，请从备份恢复。");
                 items.RemoveAt(index);
             }
+            NormalizeClassStates(profile);
             return refundedRanks;
         }
 

@@ -168,7 +168,7 @@ namespace Emberfall
             ReconcileCollectionPreview();
             if (session == null || session.BackgroundPaused) return;
             if(session.PracticeActive){if(Input.GetKeyDown(KeyCode.Escape))session.EndPractice("主动离开 · 记录提前结束");return;}
-            ReconcileBuildPlanSurface();
+            ReconcileBuildPlanSurface();ReconcileClassSwitchSurface();
             ReconcileProgressionGoalSurface();
             bool gameplayBackAllowed=GameplayBackAllowed;
             if(Input.GetKeyDown(KeyCode.Escape))backConsumedFrame=Time.frameCount;
@@ -465,6 +465,7 @@ namespace Emberfall
             Fill(new Rect(x, y, 1040, 438), new Color(.048f, .074f, .112f, 1f));
             Border(new Rect(x, y, 1040, 438), new Color(.22f, .33f, .43f, 1f));
             Text(new Rect(x + 32, y + 24, 976, 43), "选择职业", 32, Color.white, true);
+            Text(new Rect(x+280,y+36,720,24),"初选职业可在安全营地自由切换 · 同一角色共享成长",14,muted);
             Fill(new Rect(x + 32, y + 81, 976, 1), new Color(.2f, .3f, .39f, 1f));
             string[] roles = { "近战 · 范围斩击 · 耐久", "远程 · 控制 · 法术爆发", "远程 · 灵活 · 群体射击", "召唤 · 协同 · 灵兽守护" };
             for (int i = 0; i < 4; i++)
@@ -1817,6 +1818,7 @@ namespace Emberfall
             if(CloseMobileInventoryDetail())return;
             if(CloseMobileSkillDetail())return;
             if(CloseProgressionGoalSurface())return;
+            if(CloseClassSwitchSurface())return;
             if(CloseBuildPlanSurface())return;
             if(CloseTravelMap())return;
             if(CancelSaveDeletion())return;

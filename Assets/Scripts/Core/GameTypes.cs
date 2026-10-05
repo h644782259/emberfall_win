@@ -260,11 +260,33 @@ namespace Emberfall
         public int equipmentMechanicKnownMask;
     }
 
+    /// <summary>Fixed class-local allocations. Inventory, equipment identity and rewards live only on GameProfile.</summary>
+    [Serializable]
+    public sealed class ClassBuildState
+    {
+        public int version=1;
+        public bool initialized;
+        public HeroClass heroClass;
+        public int[] skillRanks,masteryRanks,equippedSkills,hotbarKeys;
+        public int masteryCore=-1,hotbarPage,tutorialMask;
+        public ElementalistSpecialization specialization;
+        public SummonerRoute summonerRoute;
+        public BuildPreset[] buildPresets;
+        public bool classTutorialCompleted;
+        public ProgressionGoalKind progressionGoal;
+        public string progressionGoalItemId;
+        public int progressionGoalTier,progressionGoalLevel;
+        public EquipmentMechanic progressionGoalMechanic;
+        public Rarity progressionGoalMinimumRarity;
+    }
+
     public enum ProgressionGoalKind { None, Core, Variant, Ascension, SecondPreset, Tier, Reforge, ClassTutorial }
 
     [Serializable]
     public class GameProfile
     {
+        public int classStateRevision;
+        public ClassBuildState[] classStates;
         public int version = 1;
         public HeroClass heroClass;
         public int level = 1;

@@ -31,7 +31,7 @@ namespace Emberfall {
   bool presetSaleOpen;bool mobileInventoryDetail=true,saveSelectionFromPause,chestDetails,bindingReturnPause,saveReturnPause,controlsReturnPause;
   int mobileInventoryTab,rebindingSlot,blocks,cancels;float mobileInventoryListScroll=173,mobileInventoryDetailScroll=81,chestRevealedAt;
   const float ChestDuration=1;bool ChestAnimationDone=>true;
-  bool CloseMobileSkillDetail()=>false;bool CloseChapterSelection()=>false;bool CloseRouteSkill()=>false;bool CloseProgressionGoalSurface()=>false;bool CloseBuildPlanSurface()=>false;bool CloseTravelMap()=>false;bool CancelSaveDeletion()=>false;bool CancelActiveSaveFlow()=>false;
+  bool CloseMobileSkillDetail()=>false;bool CloseChapterSelection()=>false;bool CloseRouteSkill()=>false;bool CloseProgressionGoalSurface()=>false;bool CloseClassSwitchSurface()=>false;bool CloseBuildPlanSurface()=>false;bool CloseTravelMap()=>false;bool CancelSaveDeletion()=>false;bool CancelActiveSaveFlow()=>false;
   void BlockUITransition(){blocks++;}void CancelMobileScroll(){cancels++;}void FinishChestReveal(){}void ReturnToInventory(){panel=Panel.Inventory;}
   CLOSE
   public static void Main(){int n=0;Action<bool,string> check=(ok,why)=>{n++;if(!ok)throw new Exception(why);};

@@ -183,7 +183,8 @@ namespace Emberfall
             if(saveSlotsDirty)RefreshSaveSlots();var l=MobileControls.Layout;
             Fill(new Rect(0,0,width,height),new Color(.018f,.029f,.048f,1));
             float x=(l.Width-528)/2,y=(l.Height-300)/2;
-            Text(TouchRect(x,y,528,35),"星烬纪元",TouchFont(25),pale,true);
+            Text(TouchRect(x,y,528,30),"星烬纪元",TouchFont(25),pale,true);
+            Text(TouchRect(x,y+31,528,16),"初选职业可在安全营地自由切换",TouchFont(11),muted);
             for(int i=0;i<4;i++)
             {
                 var hero=(HeroClass)i;Color tint=GameBalance.ClassColor(hero);Rect r=TouchRect(x+i*134,y+50,126,166);

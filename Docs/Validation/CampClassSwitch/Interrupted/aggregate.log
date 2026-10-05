@@ -1,0 +1,118 @@
+{
+  "passed": true,
+  "scope": "All authored Assets files/folders and meta identities; no Unity import or external reference resolution",
+  "assetFiles": 449,
+  "assetFolders": 25,
+  "metaFiles": 474,
+  "validUniqueGuidCount": 474,
+  "emptyFolderMetas": [],
+  "failures": []
+}
+PASS asset-meta-guids
+PASS metadata audit fixture: valid
+PASS metadata audit fixture: short
+PASS metadata audit fixture: long
+PASS metadata audit fixture: nonhex
+PASS metadata audit fixture: empty
+PASS metadata audit fixture: zero
+PASS metadata audit fixture: missing declaration
+PASS metadata audit fixture: multiple declarations
+PASS metadata audit fixture: nested reference/BOM/CRLF
+PASS metadata audit fixture: missing file meta
+PASS metadata audit fixture: missing folder meta
+PASS metadata audit fixture: orphan file meta
+PASS metadata audit fixture: folder/file mismatch
+PASS metadata audit fixture: invalid folder marker
+PASS metadata audit fixture: empty folder preserved
+PASS metadata audit fixture: case-insensitive file/folder collision
+PASS metadata audit fixture: hidden assets included
+PASS metadata audit fixture: symlink rejected
+PASS metadata scanner controls: 18 fixtures; all intended failures detected
+PASS asset-meta-guid-controls
+PASS: 2650 assertions across 151 isolated progression scenarios.
+PASS progression
+PASS: 937 skill combat, catalog, paging, and binding assertions.
+PASS skills
+PASS: 480 assertions across 20 upgrade progression scenarios.
+PASS upgrade-progression
+PASS: 375 boss policy and imminent-dodge timing assertions
+PASS boss-attack-policy
+PASS: 292 player upgrade assertions
+PASS player-upgrades
+PASS: 577051 seeded encounter budget, composition, spacing and environment assertions.
+PASS encounter-plans
+PASS: 27444 run-choice assertions
+PASS run-choices
+PASS: 56 pause-state assertions
+PASS application-pause-state
+PASS: 68039 combat-balance assertions
+PASS combat-balance
+PASS: 353 rebalance progression assertions in 17 isolated scenarios.
+PASS rebalance-progression
+PASS: 514 companion rules assertions
+PASS companion-rules
+10181 mobile control geometry assertions passed
+PASS mobile-layout
+PASS: 25 safe-exit preservation, rejection, cancel, exception and repeated-confirm assertions
+PASS safe-exit
+27 mobile direct-skill/auto-target/touch ownership assertions passed
+PASS mobile-skills
+Mobile camera ownership, threshold, density, pitch and cancel tests passed
+PASS mobile-camera
+30 touch scroll 2D cancellation, vertical motion, release, ownership and panel-reset assertions passed
+PASS touch-scroll
+PASS: 51061 room objectives, 540 seeds, 54 combinations and 1000 consecutive-run assertions (not playtesting)
+PASS room-chain
+Large boss phase checks: 45
+PASS large-boss-phases
+Terminal adventure late-damage/kill and scene identity tests passed
+PASS adventure-results
+PASS: 118 shared combat sight policy assertions
+PASS combat-sight
+PASS: 84 shared ordinary/trial/large-expedition tier reward assertions
+PASS tier-reward-bands
+PASS: 10 pointer-specific transition-release assertions
+PASS touch-release-latch
+135 HUD/portal/lifecycle assertions passed
+PASS interface-safety
+PASS: 3219 destructible rule/impact assertions
+PASS destructible-props
+PASS: 19 dynamic traversal handle assertions
+PASS destructible-traversal
+Emberfall: 保存失败：临时存档路径被目录占用，未覆盖原文件或备份。
+PASS: 41 manual-save, cancel, stable-load and isolated staging assertions
+PASS safe-save-flow
+4930 hub travel and atomic economy assertions passed
+PASS hub-economy
+14 atomic mode reward/receipt assertions passed
+PASS mode-rewards
+PASS: 4096 run-combat modifier, cooldown-reset and control-budget assertions
+PASS run-combat-rules
+Emberfall: 保存失败：当前存档已删除或移走。请读取其他存档或创建新角色。
+23 attention, equipment-level and stable save destination assertions passed
+PASS progression-attention
+PASS: 7765 expedition-mode assertions
+PASS expedition-modes
+PASS: 655 recap presentation/layout assertions
+PASS run-recap
+Filled VFX recipe checks: 23858
+PASS filled-vfx
+PASS: 133674 procedural geometry assertions (no rendered-frame validation)
+PASS procedural-visuals
+Traceback (most recent call last):
+  File "/workspace/emberfall_win/Tools/cloud-validation.py", line 535, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/workspace/emberfall_win/Tools/cloud-validation.py", line 346, in main
+    passed = run_check(name, commands, env, output, report)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/emberfall_win/Tools/cloud-validation.py", line 521, in run_check
+    result = subprocess.run(command, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 550, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 1196, in communicate
+    stdout = self.stdout.read()
+             ^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt

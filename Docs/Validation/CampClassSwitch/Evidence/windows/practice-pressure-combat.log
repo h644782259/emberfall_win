@@ -1,0 +1,63 @@
+/tmp/practice-pressure-6a_rs6qj/Actual.cs(248,16): warning CS0472: The result of the expression is always 'true' since a value of type 'bool' is never equal to 'null' of type 'bool?' [/tmp/practice-pressure-6a_rs6qj/Test.csproj]
+PASS 38 actual Enemy Update/Prepare/Resolve/WorldTraversal/Projectile pressure assertions; rendering and final recipient are managed boundaries
+
+/tmp/practice-pressure-6a_rs6qj/Actual.cs(248,16): warning CS0472: The result of the expression is always 'true' since a value of type 'bool' is never equal to 'null' of type 'bool?' [/tmp/practice-pressure-6a_rs6qj/Test.csproj]
+
+Build succeeded.
+
+/tmp/practice-pressure-6a_rs6qj/Actual.cs(248,16): warning CS0472: The result of the expression is always 'true' since a value of type 'bool' is never equal to 'null' of type 'bool?' [/tmp/practice-pressure-6a_rs6qj/Test.csproj]
+    1 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.82
+
+Unhandled exception. System.Exception: legacy passive targets preserve sustained training health
+   at Program.C(Boolean v, String s) in /tmp/practice-pressure-6a_rs6qj/Program.cs:line 1
+   at Program.Main() in /tmp/practice-pressure-6a_rs6qj/Program.cs:line 12
+
+PASS compiled old behavior rejected: legacy passive targets preserve sustained training health
+/tmp/practice-pressure-6a_rs6qj/Actual.cs(248,16): warning CS0472: The result of the expression is always 'true' since a value of type 'bool' is never equal to 'null' of type 'bool?' [/tmp/practice-pressure-6a_rs6qj/Test.csproj]
+
+Build succeeded.
+
+/tmp/practice-pressure-6a_rs6qj/Actual.cs(248,16): warning CS0472: The result of the expression is always 'true' since a value of type 'bool' is never equal to 'null' of type 'bool?' [/tmp/practice-pressure-6a_rs6qj/Test.csproj]
+    1 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.88
+
+Unhandled exception. System.Exception: lethal slam cannot resolve remaining ally damage against restored original companions
+   at Program.C(Boolean v, String s) in /tmp/practice-pressure-6a_rs6qj/Program.cs:line 1
+   at Program.Main() in /tmp/practice-pressure-6a_rs6qj/Program.cs:line 11
+
+PASS compiled old behavior rejected: lethal slam cannot resolve remaining ally damage against restored original companions
+/tmp/practice-pressure-6a_rs6qj/Actual.cs(248,16): warning CS0472: The result of the expression is always 'true' since a value of type 'bool' is never equal to 'null' of type 'bool?' [/tmp/practice-pressure-6a_rs6qj/Test.csproj]
+
+Build succeeded.
+
+/tmp/practice-pressure-6a_rs6qj/Actual.cs(248,16): warning CS0472: The result of the expression is always 'true' since a value of type 'bool' is never equal to 'null' of type 'bool?' [/tmp/practice-pressure-6a_rs6qj/Test.csproj]
+    1 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.87
+
+Unhandled exception. System.Exception: real pressure ordinary AI resolves actual damage dispatch
+   at Program.C(Boolean v, String s) in /tmp/practice-pressure-6a_rs6qj/Program.cs:line 1
+   at Program.Main() in /tmp/practice-pressure-6a_rs6qj/Program.cs:line 6
+
+PASS compiled old behavior rejected: real pressure ordinary AI resolves actual damage dispatch
+/tmp/practice-pressure-6a_rs6qj/Actual.cs(248,16): warning CS0472: The result of the expression is always 'true' since a value of type 'bool' is never equal to 'null' of type 'bool?' [/tmp/practice-pressure-6a_rs6qj/Test.csproj]
+
+Build succeeded.
+
+/tmp/practice-pressure-6a_rs6qj/Actual.cs(248,16): warning CS0472: The result of the expression is always 'true' since a value of type 'bool' is never equal to 'null' of type 'bool?' [/tmp/practice-pressure-6a_rs6qj/Test.csproj]
+    1 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.99
+
+Unhandled exception. System.Exception: practice retains ordinary initialized health
+   at Program.C(Boolean v, String s) in /tmp/practice-pressure-6a_rs6qj/Program.cs:line 1
+   at Program.Main() in /tmp/practice-pressure-6a_rs6qj/Program.cs:line 4
+
+PASS compiled old behavior rejected: practice retains ordinary initialized health

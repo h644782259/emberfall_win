@@ -1,0 +1,4 @@
+PASS 264314 actual authored resource -> decoder -> FilledSkillVfx -> lease/clip/motion/tier/fallback/cleanup checks; managed, not Unity.
+PASS negative control: AuthoredSpellBases.cs real loaded anchored landing
+PASS negative control: FilledSkillVfx.cs actual authored tier cap
+PASS negative control: AnchoredImpactMesh.cs authored anchored vertex stays on visible side

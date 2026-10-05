@@ -1,0 +1,54 @@
+  Determining projects to restore...
+  Restored /tmp/chapter-transactions-3jx95or3/Test.csproj (in 101 ms).
+PASS: 1514 reward revision production assertions (all rolls, receipts, failure/retry/reload, six first clears and legacy migration)
+PASS: 37 actual SaveSlotTransition failed-chest identity/isolation/receipt/restart-boundary checks
+NEGATIVE CONTROL: baseline real SaveSlotTransition replaces service without pending-draw context
+Unhandled exception. System.Exception: same-slot real staged replacement retains failed choice
+   at RewardLoadTransitionTests.Check(Boolean value, String why) in /tmp/chapter-transactions-3jx95or3/RewardLoadTransitionTests.cs:line 8
+   at RewardLoadTransitionTests.Run(String directory) in /tmp/chapter-transactions-3jx95or3/RewardLoadTransitionTests.cs:line 29
+   at Program.<Main>$(String[] args) in /tmp/chapter-transactions-3jx95or3/Program.cs:line 1
+
+NEGATIVE CONTROL: ProgressionService.cs choice == 2 ? baseGold * 3 / 2 : baseGold
+Unhandled exception. System.Exception: supply floors each original gold roll times 1.5
+   at RewardRevisionTests.Check(Boolean value, String reason) in /tmp/chapter-transactions-3jx95or3/RewardRevisionTests.cs:line 9
+   at RewardRevisionTests.Run(String root) in /tmp/chapter-transactions-3jx95or3/RewardRevisionTests.cs:line 63
+   at Program.<Main>$(String[] args) in /tmp/chapter-transactions-3jx95or3/Program.cs:line 1
+
+NEGATIVE CONTROL: ProgressionService.Chapter.cs ChapterProgression.GrantDifficultyRewards(candidate, ChapterProgression.DifficultyRewardBit(receipt.Node, receipt.Difficulty));
+Unhandled exception. System.Exception: base fragments independent plus exact 4 first difficulty bonus
+   at RewardRevisionTests.Check(Boolean value, String reason) in /tmp/chapter-transactions-3jx95or3/RewardRevisionTests.cs:line 9
+   at RewardRevisionTests.Run(String root) in /tmp/chapter-transactions-3jx95or3/RewardRevisionTests.cs:line 93
+   at Program.<Main>$(String[] args) in /tmp/chapter-transactions-3jx95or3/Program.cs:line 1
+
+NEGATIVE CONTROL: ChapterProgression.cs proven & 63 & ~profile.chapterDifficultyRewardMask
+Unhandled exception. System.Exception: real repeat grants only base fragments
+   at RewardRevisionTests.Check(Boolean value, String reason) in /tmp/chapter-transactions-3jx95or3/RewardRevisionTests.cs:line 9
+   at RewardRevisionTests.Run(String root) in /tmp/chapter-transactions-3jx95or3/RewardRevisionTests.cs:line 95
+   at Program.<Main>$(String[] args) in /tmp/chapter-transactions-3jx95or3/Program.cs:line 1
+
+ACTUAL BASELINE CONTROL: 5d85e47b9fab2489d5b06963a0b896ec19112740
+Unhandled exception. System.Exception: baseline supply must not roll fashion
+   at RewardRevisionTests.Check(Boolean value, String reason) in /tmp/chapter-transactions-3jx95or3/RewardRevisionTests.cs:line 9
+   at RewardRevisionTests.BaselineSupply(String root) in /tmp/chapter-transactions-3jx95or3/RewardRevisionTests.cs:line 38
+   at Program.<Main>$(String[] args) in /tmp/chapter-transactions-3jx95or3/Program.cs:line 1
+
+PASS: 212 actual chapter save/receipt/sequence/difficulty/reload assertions
+PASS: 917 chapter presentation, shared definitions and reward-boundary checks
+14 atomic mode reward/receipt assertions passed
+PASS: 103 shared adventure, preset variant and tutorial persistence checks (managed fixtures)
+Emberfall: 保存失败：发现可恢复的临时存档，已保留且未覆盖。请先备份整个存档目录，再处理临时存档恢复。
+Emberfall: 保存失败：临时存档路径被目录占用，未覆盖原文件或备份。
+Emberfall: 保存失败：当前存档已删除或移走。请读取其他存档或创建新角色。
+Emberfall: 保存失败：当前存档已删除或移走。请读取其他存档或创建新角色。
+Emberfall: 保存失败：存档路径是链接，未修改该路径或其目标。请保留原文件并检查存档目录。
+Emberfall: 保存失败：存档路径是链接，未修改该路径或其目标。请保留原文件并检查存档目录。
+Emberfall: 保存失败：存档路径是链接，未修改该路径或其目标。请保留原文件并检查存档目录。
+Emberfall: 保存失败：当前存档已删除或移走。请读取其他存档或创建新角色。
+Emberfall: 保存失败：存档路径是链接，未修改该路径或其目标。请保留原文件并检查存档目录。
+Emberfall: 保存失败：存档路径是链接，未修改该路径或其目标。请保留原文件并检查存档目录。
+Emberfall: 保存失败：当前存档已删除或移走。请读取其他存档或创建新角色。
+PASS: 149 idempotent-save assertions in 23 isolated scenarios
+PASS: 480 assertions across 20 upgrade progression scenarios.
+Emberfall: 保存失败：临时存档路径被目录占用，未覆盖原文件或备份。
+PASS: 41 manual-save, cancel, stable-load and isolated staging assertions
+PASS: actual baseline supply and first-bonus/idempotence negative controls rejected
