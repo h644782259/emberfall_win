@@ -1,0 +1,28 @@
+/workspace/emberfall_ios/Tests/MobileSkillNavigationTests.cs(15,170): warning CS0649: Field 'GameUI.invisibleButton' is never assigned to, and will always have its default value null [/tmp/a07-yuiegihp/p/Validation.csproj]
+/workspace/emberfall_ios/Tests/MobileSkillNavigationTests.cs(16,18): warning CS0414: The field 'GameUI.routeSkillOwner' is assigned but its value is never used [/tmp/a07-yuiegihp/p/Validation.csproj]
+/workspace/emberfall_ios/Tests/MobileSkillNavigationTests.cs(16,49): warning CS0414: The field 'GameUI.routeSkillSlot' is assigned but its value is never used [/tmp/a07-yuiegihp/p/Validation.csproj]
+
+Build succeeded.
+
+/workspace/emberfall_ios/Tests/MobileSkillNavigationTests.cs(15,170): warning CS0649: Field 'GameUI.invisibleButton' is never assigned to, and will always have its default value null [/tmp/a07-yuiegihp/p/Validation.csproj]
+/workspace/emberfall_ios/Tests/MobileSkillNavigationTests.cs(16,18): warning CS0414: The field 'GameUI.routeSkillOwner' is assigned but its value is never used [/tmp/a07-yuiegihp/p/Validation.csproj]
+/workspace/emberfall_ios/Tests/MobileSkillNavigationTests.cs(16,49): warning CS0414: The field 'GameUI.routeSkillSlot' is assigned but its value is never used [/tmp/a07-yuiegihp/p/Validation.csproj]
+    3 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.21
+PASS: 39 production mobile skill navigation assertions
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.09
+PASS: 156643 production skill icon raster/cache assertions (not rendered readability)
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.27
+PASS: 223 mechanic badge eligibility/variant assertions

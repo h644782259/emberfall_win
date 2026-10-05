@@ -1,0 +1,19 @@
+PASS metadata audit fixture: valid
+PASS metadata audit fixture: short
+PASS metadata audit fixture: long
+PASS metadata audit fixture: nonhex
+PASS metadata audit fixture: empty
+PASS metadata audit fixture: zero
+PASS metadata audit fixture: missing declaration
+PASS metadata audit fixture: multiple declarations
+PASS metadata audit fixture: nested reference/BOM/CRLF
+PASS metadata audit fixture: missing file meta
+PASS metadata audit fixture: missing folder meta
+PASS metadata audit fixture: orphan file meta
+PASS metadata audit fixture: folder/file mismatch
+PASS metadata audit fixture: invalid folder marker
+PASS metadata audit fixture: empty folder preserved
+PASS metadata audit fixture: case-insensitive file/folder collision
+PASS metadata audit fixture: hidden assets included
+PASS metadata audit fixture: symlink rejected
+PASS metadata scanner controls: 18 fixtures; all intended failures detected

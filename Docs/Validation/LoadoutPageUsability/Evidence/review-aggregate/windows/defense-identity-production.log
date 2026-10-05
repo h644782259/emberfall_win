@@ -1,0 +1,4 @@
+PASS actual 3 guard blocks x 3 ranks and 4 passive true triggers -> actual ProtectionCage mesh; paused/state end/death/epoch; immediate lease release; same-frame child rerent isolated; missing asset fallback. Managed not Unity.
+PASS compiled negative control missing-identity
+PASS compiled negative control lost-body-envelope
+PASS compiled negative control stale-state

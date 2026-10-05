@@ -1,0 +1,29 @@
+/tmp/enemy-silhouette-production-93nefd4y/export/Model.cs(720,76): warning CS0414: The field 'CombatModel.floating' is assigned but its value is never used [/tmp/enemy-silhouette-production-93nefd4y/export/Export.csproj]
+/tmp/enemy-silhouette-production-93nefd4y/export/Model.cs(10,40): warning CS0414: The field 'CombatModel.quadruped' is assigned but its value is never used [/tmp/enemy-silhouette-production-93nefd4y/export/Export.csproj]
+/tmp/enemy-silhouette-production-93nefd4y/export/Model.cs(720,76): warning CS0414: The field 'CombatModel.floating' is assigned but its value is never used [/tmp/enemy-silhouette-production-93nefd4y/export/Export.csproj]
+/tmp/enemy-silhouette-production-93nefd4y/export/Model.cs(771,76): warning CS0414: The field 'CombatModel.slime' is assigned but its value is never used [/tmp/enemy-silhouette-production-93nefd4y/export/Export.csproj]
+/tmp/enemy-silhouette-production-93nefd4y/export/Model.cs(10,40): warning CS0414: The field 'CombatModel.quadruped' is assigned but its value is never used [/tmp/enemy-silhouette-production-93nefd4y/export/Export.csproj]
+/tmp/enemy-silhouette-production-93nefd4y/export/Model.cs(10,22): warning CS0414: The field 'CombatModel.articulatedEnemy' is assigned but its value is never used [/tmp/enemy-silhouette-production-93nefd4y/export/Export.csproj]
+FACE Slime badgeTop=0.35467002 eyeBottom=0.5
+FACE Wisp badgeTop=1.262105 eyeBottom=1.405
+WARD Goblin boss=False finTop=1.6659201 shoulderTop=1.3840001
+CLEARANCE Guardian boss=False badgeBack=0.6375141 outerShellFront=0.60950005 worldGap=0.028014064
+WARD Guardian boss=False finTop=2.3947601 shoulderTop=2.0683677
+CLEARANCE Guardian boss=True badgeBack=0.82045275 outerShellFront=0.7844 worldGap=0.036052763
+WARD Guardian boss=True finTop=3.081952 shoulderTop=2.6618993
+PASS actual Enemy factory + real tactical adapter + decoded bytes: 40 enemy/state compositions, guardian outer-shell clearance, unique slot count and hide. Managed, NOT Unity.
+PASS compiled torso-only socket regression rejected against real guardian geometry
+PASS compiled buried support-fin socket regression rejected against real shoulder geometry
+/tmp/enemy-silhouette-production-93nefd4y/export/Model.cs(771,76): warning CS0414: The field 'CombatModel.slime' is assigned but its value is never used [/tmp/enemy-silhouette-production-93nefd4y/export/Export.csproj]
+/tmp/enemy-silhouette-production-93nefd4y/export/Model.cs(720,76): warning CS0414: The field 'CombatModel.floating' is assigned but its value is never used [/tmp/enemy-silhouette-production-93nefd4y/export/Export.csproj]
+/tmp/enemy-silhouette-production-93nefd4y/export/Model.cs(10,40): warning CS0414: The field 'CombatModel.quadruped' is assigned but its value is never used [/tmp/enemy-silhouette-production-93nefd4y/export/Export.csproj]
+/tmp/enemy-silhouette-production-93nefd4y/export/Model.cs(10,22): warning CS0414: The field 'CombatModel.articulatedEnemy' is assigned but its value is never used [/tmp/enemy-silhouette-production-93nefd4y/export/Export.csproj]
+/tmp/enemy-silhouette-production-93nefd4y/export/AnchorFixture.cs(10,177): warning CS0414: The field 'LargeExpeditionBoss.unprovenAnchorRemoval' is assigned but its value is never used [/tmp/enemy-silhouette-production-93nefd4y/export/Export.csproj]
+BUDGET Slime boss=False parts=8 triangles=2768 sharedMaterials=6 F2=0
+BUDGET Goblin boss=False parts=31 triangles=8812 sharedMaterials=14 F2=4
+BUDGET Wisp boss=False parts=9 triangles=2392 sharedMaterials=5 F2=0
+BUDGET Guardian boss=False parts=34 triangles=9504 sharedMaterials=16 F2=4
+BUDGET Guardian boss=True parts=36 triangles=9600 sharedMaterials=17 F2=4
+PASS: 108 production F2 factory/decoder/cache/fallback/anchor-state assertions; managed engine boundaries only
+PASS compiled missing enemy factory hook rejected
+PASS compiled missing anchor factory hook rejected

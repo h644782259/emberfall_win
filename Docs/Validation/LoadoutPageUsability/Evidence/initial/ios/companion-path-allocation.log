@@ -1,0 +1,101 @@
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.18
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.09
+{
+  "current": [
+    {
+      "traceSha256": "77BC1C942E80CF71124D1EDB545C0D5BD72C69AC8DD1B4E0229BBFE4A09365D0",
+      "scenario": "open-moving",
+      "companions": 1,
+      "enemies": 6,
+      "queryTicks": 240,
+      "bytes": 0,
+      "bytesPerTick": 0,
+      "checksum": 20291.814392089844
+    },
+    {
+      "traceSha256": "EAE69813AC5785A66BA526C8B85C9061AA1B3D5BE771919C38EE52DCCD4E5C26",
+      "scenario": "open-moving",
+      "companions": 4,
+      "enemies": 6,
+      "queryTicks": 240,
+      "bytes": 0,
+      "bytesPerTick": 0,
+      "checksum": 81060.32430648804
+    },
+    {
+      "traceSha256": "1671AE94C1B5F80B288D6E5B8C1E94CDB3E1EF03AD3F41C45182F858FCC34E56",
+      "scenario": "blocked-moving",
+      "companions": 1,
+      "enemies": 6,
+      "queryTicks": 240,
+      "bytes": 1742080,
+      "bytesPerTick": 7258.666666666667,
+      "checksum": 19829.6446685791
+    },
+    {
+      "traceSha256": "35F4460593133479566151D40D680A4D6E4DA559C9F31A0FB2405FCEFED59D9C",
+      "scenario": "blocked-moving",
+      "companions": 4,
+      "enemies": 6,
+      "queryTicks": 240,
+      "bytes": 7186080,
+      "bytesPerTick": 29942,
+      "checksum": 79506.83010482788
+    }
+  ],
+  "legacy": [
+    {
+      "traceSha256": "77BC1C942E80CF71124D1EDB545C0D5BD72C69AC8DD1B4E0229BBFE4A09365D0",
+      "scenario": "open-moving",
+      "companions": 1,
+      "enemies": 6,
+      "queryTicks": 240,
+      "bytes": 0,
+      "bytesPerTick": 0,
+      "checksum": 20291.814392089844
+    },
+    {
+      "traceSha256": "EAE69813AC5785A66BA526C8B85C9061AA1B3D5BE771919C38EE52DCCD4E5C26",
+      "scenario": "open-moving",
+      "companions": 4,
+      "enemies": 6,
+      "queryTicks": 240,
+      "bytes": 0,
+      "bytesPerTick": 0,
+      "checksum": 81060.32430648804
+    },
+    {
+      "traceSha256": "1671AE94C1B5F80B288D6E5B8C1E94CDB3E1EF03AD3F41C45182F858FCC34E56",
+      "scenario": "blocked-moving",
+      "companions": 1,
+      "enemies": 6,
+      "queryTicks": 240,
+      "bytes": 1746560,
+      "bytesPerTick": 7277.333333333333,
+      "checksum": 19829.6446685791
+    },
+    {
+      "traceSha256": "35F4460593133479566151D40D680A4D6E4DA559C9F31A0FB2405FCEFED59D9C",
+      "scenario": "blocked-moving",
+      "companions": 4,
+      "enemies": 6,
+      "queryTicks": 240,
+      "bytes": 7204560,
+      "bytesPerTick": 30019,
+      "checksum": 79506.83010482788
+    }
+  ]
+}
+PASS: 1 wolves saved 4480 B across 40 searches (0.257%); exact target/direction trace unchanged
+PASS: 4 wolves saved 18480 B across 165 searches (0.257%); exact target/direction trace unchanged
+PASS: four warmed production-algorithm scenarios match compiled legacy target/direction traces; open queries allocate zero

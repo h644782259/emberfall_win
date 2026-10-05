@@ -30,6 +30,9 @@ namespace Emberfall
         private void RequestBuildPlanAction(BuildPlanAction action,int slot=0)
         {
             var p=session.Progression;
+            // Shortcuts may open a confirmation directly from the workshop.
+            // Only external entry resets disclosures; internal confirmations preserve them.
+            if(!buildPlansOpen){buildPlanDetails=-1;practiceChoicesOpen=false;}
             buildPlansOpen=true;buildPlanOwner=p;buildPlanSource=p.Profile;
             buildPlanHero=session.Player;buildPlanCharacterId=p.CurrentSlotId;
             buildPlanAction=action;buildPlanSlot=slot;buildPlanFingerprint=p.BuildStateFingerprint();
@@ -44,7 +47,7 @@ namespace Emberfall
             if(allocationDraft!=null)CancelAllocationDraft();
             else if(buildPlanChoosing){buildPlanChoosing=false;}
             else if(buildPlanAction!=BuildPlanAction.None)buildPlanAction=BuildPlanAction.None;
-            else buildPlansOpen=false;
+            else {buildPlansOpen=false;buildPlanDetails=-1;practiceChoicesOpen=false;}
             buildPlanError=null;buildPlanScroll=Vector2.zero;
             CancelMobileScroll();BlockUITransition();return true;
         }

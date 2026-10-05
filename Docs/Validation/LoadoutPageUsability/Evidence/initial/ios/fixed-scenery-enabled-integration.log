@@ -1,0 +1,7 @@
+PASS:3 explicit source-link guards for unexecuted water/bank wiring and1 noncombat damage boundary
+PASS 76778 enabled actual assembly/module/fallback/dynamic-nav/physics/occlusion assertions across 116 actual six-group factory runs; 27 resources x missing/corrupt, all occurrences; actual NPC/WorldMotion/CameraOcclusionSurface. Managed, not Unity.
+ 
+PASS compiled negative control: exact mapped module for NPC sleeve
+PASS compiled negative control: full navigation membership matches fallback
+PASS compiled negative control: all material slots get owned fade clones
+PASS compiled negative control: all original material references restored
