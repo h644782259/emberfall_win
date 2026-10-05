@@ -1,0 +1,29 @@
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.85
+PASS: 5247 economy quote, migration, cap and atomicity assertions
+PASS: 353 rebalance progression assertions in 17 isolated scenarios.
+PASS: 480 assertions across 20 upgrade progression scenarios.
+PASS: 103 shared adventure, preset variant and tutorial persistence checks (managed fixtures)
+PASS: 52 production goal identity, qualification, failure transaction and replay checks
+Emberfall: 保存失败：配装方案超过2份安全容量；保留原存档，请从备份恢复。
+PASS: 136 combined-respec/build-preset assertions in isolated fake saves
+2204 mastery/refund/ascension/tier transaction assertions passed
+PASS: 2005 entry reward truth assertions (no completion-time or player-experience claim)
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.69
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.51
+PASS: compiled legacy current-level goal mutation fails the exact fixed-target production assertion
+PASS: compiled legacy mastery clearing mutation fails the exact retained-investment assertion

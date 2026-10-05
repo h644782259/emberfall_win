@@ -27,7 +27,7 @@ with tempfile.TemporaryDirectory(prefix='class-switch-tests-') as directory:
  old=[]
  for name in core:
   path=p/(name+'.cs');path.write_text(subprocess.check_output(['git','show',ref+':Assets/Scripts/Core/'+name+'.cs'],cwd=root,text=True));old.append(path)
- old.append(root/'Tests/ProgressionTests.cs')
+ old_fixture=p/'OldProgressionTests.cs';old_fixture.write_text(subprocess.check_output(['git','show',ref+':Tests/ProgressionTests.cs'],cwd=root,text=True));old.append(old_fixture)
  program='''using System;using System.IO;using Emberfall;class Program{static void Main(string[] args){var p=new ProgressionService(args[0]);string before=File.ReadAllText(p.SaveFilePath),backup=File.ReadAllText(p.SaveFilePath+".bak");if(p.Load())throw new Exception("old reader must reject class archive");p.Save();if(File.ReadAllText(p.SaveFilePath)!=before||File.ReadAllText(p.SaveFilePath+".bak")!=backup)throw new Exception("old writer silently erased class archive");Console.WriteLine("PASS immutable pre-class reader and writer refuse both v2 documents");}}'''
  project=cv.write_project(p/'old',old,program)
  directory=(p/'saves/old-reader-directory.txt').read_text()

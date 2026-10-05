@@ -1,0 +1,46 @@
+/tmp/venom-launch-7w6nxsot/Projectile.cs(5,25): warning CS0169: The field 'CombatProjectile.dodgeOrigin' is never used [/tmp/venom-launch-7w6nxsot/Test.csproj]
+/tmp/venom-launch-7w6nxsot/Projectile.cs(7,21): warning CS0169: The field 'CombatProjectile.dodgeEpoch' is never used [/tmp/venom-launch-7w6nxsot/Test.csproj]
+/tmp/venom-launch-7w6nxsot/Projectile.cs(21,52): warning CS0169: The field 'CombatProjectile.energyAwarded' is never used [/tmp/venom-launch-7w6nxsot/Test.csproj]
+/tmp/venom-launch-7w6nxsot/Projectile.cs(8,22): warning CS0169: The field 'CombatProjectile.pendingDodge' is never used [/tmp/venom-launch-7w6nxsot/Test.csproj]
+/tmp/venom-launch-7w6nxsot/Projectile.cs(6,23): warning CS0169: The field 'CombatProjectile.dodgeDeadline' is never used [/tmp/venom-launch-7w6nxsot/Test.csproj]
+/tmp/venom-launch-7w6nxsot/Projectile.cs(19,38): warning CS0169: The field 'CombatProjectile.age' is never used [/tmp/venom-launch-7w6nxsot/Test.csproj]
+
+Build succeeded.
+
+/tmp/venom-launch-7w6nxsot/Projectile.cs(5,25): warning CS0169: The field 'CombatProjectile.dodgeOrigin' is never used [/tmp/venom-launch-7w6nxsot/Test.csproj]
+/tmp/venom-launch-7w6nxsot/Projectile.cs(7,21): warning CS0169: The field 'CombatProjectile.dodgeEpoch' is never used [/tmp/venom-launch-7w6nxsot/Test.csproj]
+/tmp/venom-launch-7w6nxsot/Projectile.cs(21,52): warning CS0169: The field 'CombatProjectile.energyAwarded' is never used [/tmp/venom-launch-7w6nxsot/Test.csproj]
+/tmp/venom-launch-7w6nxsot/Projectile.cs(8,22): warning CS0169: The field 'CombatProjectile.pendingDodge' is never used [/tmp/venom-launch-7w6nxsot/Test.csproj]
+/tmp/venom-launch-7w6nxsot/Projectile.cs(6,23): warning CS0169: The field 'CombatProjectile.dodgeDeadline' is never used [/tmp/venom-launch-7w6nxsot/Test.csproj]
+/tmp/venom-launch-7w6nxsot/Projectile.cs(19,38): warning CS0169: The field 'CombatProjectile.age' is never used [/tmp/venom-launch-7w6nxsot/Test.csproj]
+    6 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.71
+/tmp/venom-launch-7w6nxsot/Projectile.cs(6,23): warning CS0169: The field 'CombatProjectile.dodgeDeadline' is never used [/tmp/venom-launch-7w6nxsot/Test.csproj]
+/tmp/venom-launch-7w6nxsot/Projectile.cs(8,22): warning CS0169: The field 'CombatProjectile.pendingDodge' is never used [/tmp/venom-launch-7w6nxsot/Test.csproj]
+/tmp/venom-launch-7w6nxsot/Projectile.cs(5,25): warning CS0169: The field 'CombatProjectile.dodgeOrigin' is never used [/tmp/venom-launch-7w6nxsot/Test.csproj]
+/tmp/venom-launch-7w6nxsot/Projectile.cs(21,52): warning CS0169: The field 'CombatProjectile.energyAwarded' is never used [/tmp/venom-launch-7w6nxsot/Test.csproj]
+/tmp/venom-launch-7w6nxsot/Projectile.cs(7,21): warning CS0169: The field 'CombatProjectile.dodgeEpoch' is never used [/tmp/venom-launch-7w6nxsot/Test.csproj]
+/tmp/venom-launch-7w6nxsot/Projectile.cs(19,38): warning CS0169: The field 'CombatProjectile.age' is never used [/tmp/venom-launch-7w6nxsot/Test.csproj]
+
+Build succeeded.
+
+/tmp/venom-launch-7w6nxsot/Projectile.cs(6,23): warning CS0169: The field 'CombatProjectile.dodgeDeadline' is never used [/tmp/venom-launch-7w6nxsot/Test.csproj]
+/tmp/venom-launch-7w6nxsot/Projectile.cs(8,22): warning CS0169: The field 'CombatProjectile.pendingDodge' is never used [/tmp/venom-launch-7w6nxsot/Test.csproj]
+/tmp/venom-launch-7w6nxsot/Projectile.cs(5,25): warning CS0169: The field 'CombatProjectile.dodgeOrigin' is never used [/tmp/venom-launch-7w6nxsot/Test.csproj]
+/tmp/venom-launch-7w6nxsot/Projectile.cs(21,52): warning CS0169: The field 'CombatProjectile.energyAwarded' is never used [/tmp/venom-launch-7w6nxsot/Test.csproj]
+/tmp/venom-launch-7w6nxsot/Projectile.cs(7,21): warning CS0169: The field 'CombatProjectile.dodgeEpoch' is never used [/tmp/venom-launch-7w6nxsot/Test.csproj]
+/tmp/venom-launch-7w6nxsot/Projectile.cs(19,38): warning CS0169: The field 'CombatProjectile.age' is never used [/tmp/venom-launch-7w6nxsot/Test.csproj]
+    6 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.40
+PASS original projectile Update SHA preserved after excluding only explicit B-only steering/selection/filter.
+PASS 24 actual cast/factory checks; managed Unity boundaries
+
+Unhandled exception. System.Exception: all ranks nonpiercing zero explosion no fan volley
+   at Program.C(Boolean b, String m) in /tmp/venom-launch-7w6nxsot/Test.cs:line 16
+   at Program.Main(String[] args) in /tmp/venom-launch-7w6nxsot/Test.cs:line 19
+
+PASS compiled piercing regression rejected

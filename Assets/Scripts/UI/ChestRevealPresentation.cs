@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 namespace Emberfall
 {
-    public enum ChestResultKind { Gold, FirstCollection, Duplicate }
+    public enum ChestResultKind { Gold, FirstCollection, Duplicate, Resources }
     // Presentation reads the committed receipt; progress/skip never grant a reward.
     public static class ChestRevealPresentation
     {
@@ -13,20 +13,21 @@ namespace Emberfall
         }
         public static float UnselectedOpacity(float progress){return Math.Max(0,1-Math.Max(0,progress)/.4f);}
         public static ChestResultKind Kind(ChestReward reward)
-        {return reward==null||!reward.Rarity.HasValue?ChestResultKind.Gold:reward.Duplicate?ChestResultKind.Duplicate:ChestResultKind.FirstCollection;}
+        {return reward==null||!reward.Rarity.HasValue?(reward!=null&&reward.materialKind==RewardMaterialKind.StarAshFragment?ChestResultKind.Resources:ChestResultKind.Gold):reward.Duplicate?ChestResultKind.Duplicate:ChestResultKind.FirstCollection;}
         public static string Outcome(ChestReward reward)
         {
             switch(Kind(reward))
-            {case ChestResultKind.FirstCollection:return "首次收藏 · 外观已入藏";case ChestResultKind.Duplicate:return "重复收藏 · 已转金币与星纹";default:return "金币奖励 · 已入账";}
+            {case ChestResultKind.Resources:return "通关资源 · 已入账";case ChestResultKind.FirstCollection:return "首次收藏 · 外观已入藏";case ChestResultKind.Duplicate:return "重复收藏 · 已转金币与星纹";default:return "金币奖励 · 已入账";}
         }
         public static string Result(ChestReward reward,int threads)
         {
             if(reward==null)return "正在读取已保存的奖励";
             string identity=reward.Rarity.HasValue?GameBalance.RarityName(reward.Rarity.Value)+" · "+reward.Name+"\n":"";
             string gain=reward.hasCurrencyDeltas?"到账 +"+reward.goldDelta+" 金币 · +"+reward.threadsDelta+" 星纹":"金币奖励 "+reward.Gold+"（旧记录未保存实际增量）";
+            if(reward.hasCurrencyDeltas&&reward.materialKind==RewardMaterialKind.StarAshFragment)gain+=" · +"+reward.materialsDelta+" 星烬碎片";
             return identity+Outcome(reward)+"\n\n"+gain+"\n星纹余额 "+threads+" / "+ProgressionService.FashionChoiceCost+" · "+(threads>=ProgressionService.FashionChoiceCost?"可在营地自选传说":"攒满可在营地自选传说");
         }
-        public const string ChoiceDisclosure = "兵装 / 羽翼：40% 时装，非必出；补给：更多金币，无时装。";
+        public const string ChoiceDisclosure = "金币、星烬碎片与星纹稳定收获；时装40%额外掉落，非必出（60%无时装），按同品质补齐缺口。";
         public static int CollectionCount(GameProfile profile,FashionSlot slot)
         {
             var ranks=new HashSet<Rarity>();

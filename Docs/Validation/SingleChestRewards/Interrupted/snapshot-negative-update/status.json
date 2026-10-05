@@ -1,0 +1,5 @@
+{
+  "exitCode": 130,
+  "completed": false,
+  "reason": "Targeted old negative only deleted process-local inheritance; new durable snapshot independently preserves draw, so the negative no longer represented loss. Stop before changing fixture. Actual 22 positive assertions passed."
+}

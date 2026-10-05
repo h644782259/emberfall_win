@@ -25,7 +25,7 @@ with tempfile.TemporaryDirectory(prefix='chapter-transactions-') as folder:
     print('NEGATIVE CONTROL: baseline real SaveSlotTransition replaces service without pending-draw context',flush=True);print(failed.stdout+failed.stderr,flush=True)
     assert failed.returncode and 'same-slot real staged replacement retains failed choice' in failed.stdout+failed.stderr
     stage.write_text(actual_stage);(folder/'Program.cs').write_text(transition_program)
-    mutations=[('ProgressionService.cs','choice == 2 ? baseGold * 3 / 2 : baseGold','baseGold','supply floors each original gold roll'),
+    mutations=[('ProgressionService.cs','protectLegacy?gold*3/2:gold','gold','legacy undrawn qualification floors protected base gold times1.5'),
         ('ProgressionService.Chapter.cs','ChapterProgression.GrantDifficultyRewards(candidate, ChapterProgression.DifficultyRewardBit(receipt.Node, receipt.Difficulty));','/* baseline: no first difficulty grant */','base fragments independent plus exact 4'),
         ('ChapterProgression.cs','proven & 63 & ~profile.chapterDifficultyRewardMask','proven & 63','real repeat grants only base fragments')]
     for filename,old,new,expected in mutations:
@@ -47,7 +47,9 @@ with tempfile.TemporaryDirectory(prefix='chapter-transactions-') as folder:
     baseline=subprocess.check_output(['git','show',baseline_ref+':Assets/Scripts/Core/ProgressionService.cs'],cwd=root,text=True)
     assert hashlib.sha256(method(baseline).encode()).hexdigest()=='a2ed81e3d2b2cad7cbce2b6a4aead584bb139e75cdb6c9d6a914e3a2bb04f581','historical baseline method changed'
     p=folder/'ProgressionService.cs';original=p.read_text();program=(folder/'Program.cs').read_text()
-    p.write_text(original.replace(method(original),method(baseline)))
+    a=original.index('        public string OpenDungeonChest(int ');b=original.index('{',a)+1;depth=1
+    while depth:depth+=(original[b]=='{')-(original[b]=='}');b+=1
+    p.write_text(original[:a]+method(baseline)+original[b:])
     (folder/'Program.cs').write_text('RewardRevisionTests.BaselineSupply(args[0]);')
     result=subprocess.run(command,capture_output=True,text=True)
     print('ACTUAL BASELINE CONTROL:',baseline_ref,flush=True);print(result.stdout+result.stderr,flush=True)

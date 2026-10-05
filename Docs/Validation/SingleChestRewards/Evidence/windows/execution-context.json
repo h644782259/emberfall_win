@@ -1,0 +1,6 @@
+{
+  "exitCode": null,
+  "exitStatusObservation": "Original tool session handle was lost on environment reconnection; completed report and terminal aggregate output are retained. No direct process exit-code claim.",
+  "DOTNET_TieredCompilation": "0",
+  "UnityEditorExecuted": false
+}

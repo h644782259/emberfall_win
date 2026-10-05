@@ -1,0 +1,200 @@
+{
+  "passed": true,
+  "scope": "All authored Assets files/folders and meta identities; no Unity import or external reference resolution",
+  "assetFiles": 450,
+  "assetFolders": 25,
+  "metaFiles": 475,
+  "validUniqueGuidCount": 475,
+  "emptyFolderMetas": [],
+  "failures": []
+}
+PASS asset-meta-guids
+PASS metadata audit fixture: valid
+PASS metadata audit fixture: short
+PASS metadata audit fixture: long
+PASS metadata audit fixture: nonhex
+PASS metadata audit fixture: empty
+PASS metadata audit fixture: zero
+PASS metadata audit fixture: missing declaration
+PASS metadata audit fixture: multiple declarations
+PASS metadata audit fixture: nested reference/BOM/CRLF
+PASS metadata audit fixture: missing file meta
+PASS metadata audit fixture: missing folder meta
+PASS metadata audit fixture: orphan file meta
+PASS metadata audit fixture: folder/file mismatch
+PASS metadata audit fixture: invalid folder marker
+PASS metadata audit fixture: empty folder preserved
+PASS metadata audit fixture: case-insensitive file/folder collision
+PASS metadata audit fixture: hidden assets included
+PASS metadata audit fixture: symlink rejected
+PASS metadata scanner controls: 18 fixtures; all intended failures detected
+PASS asset-meta-guid-controls
+PASS: 2650 assertions across 151 isolated progression scenarios.
+PASS progression
+PASS: 937 skill combat, catalog, paging, and binding assertions.
+PASS skills
+PASS: 480 assertions across 20 upgrade progression scenarios.
+PASS upgrade-progression
+PASS: 375 boss policy and imminent-dodge timing assertions
+PASS boss-attack-policy
+PASS: 292 player upgrade assertions
+PASS player-upgrades
+PASS: 577051 seeded encounter budget, composition, spacing and environment assertions.
+PASS encounter-plans
+PASS: 27444 run-choice assertions
+PASS run-choices
+PASS: 56 pause-state assertions
+PASS application-pause-state
+PASS: 68039 combat-balance assertions
+PASS combat-balance
+PASS: 353 rebalance progression assertions in 17 isolated scenarios.
+PASS rebalance-progression
+PASS: 514 companion rules assertions
+PASS companion-rules
+10181 mobile control geometry assertions passed
+PASS mobile-layout
+PASS: 25 safe-exit preservation, rejection, cancel, exception and repeated-confirm assertions
+PASS safe-exit
+27 mobile direct-skill/auto-target/touch ownership assertions passed
+PASS mobile-skills
+Mobile camera ownership, threshold, density, pitch and cancel tests passed
+PASS mobile-camera
+30 touch scroll 2D cancellation, vertical motion, release, ownership and panel-reset assertions passed
+PASS touch-scroll
+PASS: 51061 room objectives, 540 seeds, 54 combinations and 1000 consecutive-run assertions (not playtesting)
+PASS room-chain
+Large boss phase checks: 45
+PASS large-boss-phases
+Terminal adventure late-damage/kill and scene identity tests passed
+PASS adventure-results
+PASS: 118 shared combat sight policy assertions
+PASS combat-sight
+PASS: 84 shared ordinary/trial/large-expedition tier reward assertions
+PASS tier-reward-bands
+PASS: 10 pointer-specific transition-release assertions
+PASS touch-release-latch
+135 HUD/portal/lifecycle assertions passed
+PASS interface-safety
+PASS: 3219 destructible rule/impact assertions
+PASS destructible-props
+PASS: 19 dynamic traversal handle assertions
+PASS destructible-traversal
+Emberfall: 保存失败：临时存档路径被目录占用，未覆盖原文件或备份。
+PASS: 41 manual-save, cancel, stable-load and isolated staging assertions
+PASS safe-save-flow
+4930 hub travel and atomic economy assertions passed
+PASS hub-economy
+14 atomic mode reward/receipt assertions passed
+PASS mode-rewards
+PASS: 4103 run-combat modifier, cooldown-reset and control-budget assertions
+PASS run-combat-rules
+Emberfall: 保存失败：当前存档已删除或移走。请读取其他存档或创建新角色。
+23 attention, equipment-level and stable save destination assertions passed
+PASS progression-attention
+PASS: 7765 expedition-mode assertions
+PASS expedition-modes
+PASS: 655 recap presentation/layout assertions
+PASS run-recap
+Filled VFX recipe checks: 23858
+PASS filled-vfx
+PASS: 133674 procedural geometry assertions (no rendered-frame validation)
+PASS procedural-visuals
+Emberfall: 保存失败：当前存档已删除或移走。请读取其他存档或创建新角色。
+Emberfall: 保存失败：当前存档已删除或移走。请读取其他存档或创建新角色。
+Emberfall: 保存失败：当前存档已删除或移走。请读取其他存档或创建新角色。
+Emberfall: 保存失败：已达到 64 份存档/临时恢复文件上限。请先备份目录并处理恢复文件；未覆盖或清理现有文件。
+Emberfall: 保存失败：已达到 64 份存档/临时恢复文件上限。请先备份目录并处理恢复文件；未覆盖或清理现有文件。
+Emberfall: 保存失败：The file '/tmp/EmberfallCloudValidation-3flxeaek/saves/deletion-6ae5ad82f8d343d3abb7296b46a354f4/case-14/emberfall-save-5f5b2854dbc5439fb8dd80bc4e1aaf82.json' already exists.
+Emberfall: 保存失败：发现可恢复的临时存档，已保留且未覆盖。请先备份整个存档目录，再处理临时存档恢复。
+PASS: 406 save-deletion/storage assertions in 15 isolated scenarios.
+PASS save-deletion
+Scheduled tick checks: 2337
+PASS scheduled-ticks
+Combat pacing/contract checks: 77
+PASS combat-pacing-followup
+PASS: 94 production combat-sight/traversal assertions (managed geometry)
+PASS combat-sight-traversal
+2512 deterministic combo/resource/pet budget checks passed across 48 scenarios
+PASS combo-resource-budgets
+PASS: 68 per-skill coefficient and shared-volley budget assertions
+PASS skill-damage-budgets
+418 mobile skills/workshop compact phone and tablet geometry assertions passed
+PASS mobile-skills-workshop-layout
+388 mobile inventory/reward geometry assertions passed
+PASS mobile-collection-layout
+2540 mobile save path Unicode/wrapping and compact action geometry assertions passed
+PASS mobile-save-location
+Emberfall: 保存失败：发现可恢复的临时存档，已保留且未覆盖。请先备份整个存档目录，再处理临时存档恢复。
+Emberfall: 保存失败：临时存档路径被目录占用，未覆盖原文件或备份。
+Emberfall: 保存失败：当前存档已删除或移走。请读取其他存档或创建新角色。
+Emberfall: 保存失败：当前存档已删除或移走。请读取其他存档或创建新角色。
+Emberfall: 保存失败：存档路径是链接，未修改该路径或其目标。请保留原文件并检查存档目录。
+Emberfall: 保存失败：存档路径是链接，未修改该路径或其目标。请保留原文件并检查存档目录。
+Emberfall: 保存失败：存档路径是链接，未修改该路径或其目标。请保留原文件并检查存档目录。
+Emberfall: 保存失败：当前存档已删除或移走。请读取其他存档或创建新角色。
+Emberfall: 保存失败：存档路径是链接，未修改该路径或其目标。请保留原文件并检查存档目录。
+Emberfall: 保存失败：存档路径是链接，未修改该路径或其目标。请保留原文件并检查存档目录。
+Emberfall: 保存失败：当前存档已删除或移走。请读取其他存档或创建新角色。
+PASS: 149 idempotent-save assertions in 23 isolated scenarios
+PASS save-idempotence
+95 equipment identity/eligibility checks; managed 16,384-read allocation probe passed (not Unity profiling)
+PASS equipment-lookups
+PASS: 98 explicit-action rollback/retry/durable-state assertions in14 fake fixtures
+PASS explicit-action-persistence
+Unhandled exception. System.Exception: next real clear grants next earned band
+   at ProgressionGrowthTests.Check(Boolean value, String message) in /workspace/emberfall_win_rewards/Tests/ProgressionGrowthTests.cs:line 11
+   at ProgressionGrowthTests.TierAndClear(String root) in /workspace/emberfall_win_rewards/Tests/ProgressionGrowthTests.cs:line 162
+   at ProgressionGrowthTests.Run(String directory) in /workspace/emberfall_win_rewards/Tests/ProgressionGrowthTests.cs:line 23
+   at Program.Main(String[] args) in /tmp/EmberfallCloudValidation-3flxeaek/progression-growth/Program.cs:line 1
+FAIL progression-growth
+Emberfall: 保存失败：临时存档路径被目录占用，未覆盖原文件或备份。
+Emberfall: 保存失败：发现可恢复的临时存档，已保留且未覆盖。请先备份整个存档目录，再处理临时存档恢复。
+Emberfall: 保存失败：主存档与备份均无法验证，当前进度尚未保存。原文件已保留，请先备份整个目录并恢复可用存档。
+Emberfall: 保存失败：当前存档已删除或移走。请读取其他存档或创建新角色。
+Emberfall: 保存失败：当前存档已删除或移走。请读取其他存档或创建新角色。
+PASS: 170 earned-kill reward assertions in 20 isolated scenarios
+PASS enemy-kill-rewards
+PASS: 184 loot retry/receipt-boundary assertions in isolated fake saves
+PASS world-loot-receipts
+Emberfall: 保存失败：配装方案超过2份安全容量；保留原存档，请从备份恢复。
+PASS: 136 combined-respec/build-preset assertions in isolated fake saves
+PASS build-presets
+PASS: 103 shared adventure, preset variant and tutorial persistence checks (managed fixtures)
+PASS adventure-progression
+PASS: 21 pure build-size policy checks (no Unity build executed).
+PASS build-size-policy
+PASS: 52 production goal identity, qualification, failure transaction and replay checks
+PASS progression-goal-identity
+PASS: 47 route layer and shared HUD priority checks
+PASS progression-route-layers
+688 chest presentation and real receipt lifecycle checks passed
+PASS chest-reveal-presentation
+PASS: 60 side reward transaction/restart/bounded receipt checks (recent32 only; host must reject stale epochs)
+PASS side-event-rewards
+PASS: 2005 entry reward truth assertions (no completion-time or player-experience claim)
+PASS adventure-entry-truth
+PASS: 171 mobile room-objective presentation assertions (text/state/layout, not rendered UI)
+PASS mobile-room-objective
+PASS: 55 shared hazard geometry/time, true wall LOS, capture segments, label and camera protection checks (not Unity rendering)
+PASS environment-readability
+PASS: 5193 Escape formation, true traversal and post-policy checks (managed; no playtest claim)
+PASS escape-room-formation
+PASS: 48 room region / actual traversal LOS / support / capture preservation checks (managed, not Unity play)
+PASS tactical-room-region
+Traceback (most recent call last):
+  File "/workspace/emberfall_win_rewards/Tools/cloud-validation.py", line 535, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/workspace/emberfall_win_rewards/Tools/cloud-validation.py", line 346, in main
+    passed = run_check(name, commands, env, output, report)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/emberfall_win_rewards/Tools/cloud-validation.py", line 521, in run_check
+    result = subprocess.run(command, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 550, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 1196, in communicate
+    stdout = self.stdout.read()
+             ^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt

@@ -1,0 +1,8 @@
+/tmp/whole-plan-geometry-7ip8qsct/Boundary.cs(23,110): warning CS0649: Field 'GameUI.pale' is never assigned to, and will always have its default value [/tmp/whole-plan-geometry-7ip8qsct/project/Validation.csproj]
+/tmp/whole-plan-geometry-7ip8qsct/Boundary.cs(23,115): warning CS0649: Field 'GameUI.muted' is never assigned to, and will always have its default value [/tmp/whole-plan-geometry-7ip8qsct/project/Validation.csproj]
+/tmp/whole-plan-geometry-7ip8qsct/Boundary.cs(13,51): warning CS0649: Field 'PlayerController.model' is never assigned to, and will always have its default value null [/tmp/whole-plan-geometry-7ip8qsct/project/Validation.csproj]
+/tmp/whole-plan-geometry-7ip8qsct/Boundary.cs(23,100): warning CS0649: Field 'GameUI.gold' is never assigned to, and will always have its default value [/tmp/whole-plan-geometry-7ip8qsct/project/Validation.csproj]
+/tmp/whole-plan-geometry-7ip8qsct/Boundary.cs(23,105): warning CS0649: Field 'GameUI.jade' is never assigned to, and will always have its default value [/tmp/whole-plan-geometry-7ip8qsct/project/Validation.csproj]
+/tmp/whole-plan-geometry-7ip8qsct/Boundary.cs(13,119): warning CS0414: The field 'PlayerController.coreWardTime' is assigned but its value is never used [/tmp/whole-plan-geometry-7ip8qsct/project/Validation.csproj]
+PASS 8066 full build-plan/card/confirmation/footer geometry assertions; managed font and scroll boundaries only, NOT Unity rendering or touch acceptance
+POLICY: desktop button15 logical units; mobile Round(15*TouchRatio); physical coordinates use actual RefreshLayout and OnGUI matrix. Small physical viewports prove bounds only, not readability or minimum physical touch size.

@@ -158,12 +158,12 @@ public static class ProgressionGrowthTests
         Check(!p.TryCompleteDungeonRun(Guid.NewGuid().ToString("N"),40,100,0)&&State(p)==before,"new reward cannot replace unopened old entitlement");
         Check(p.LoadSlot(p.CurrentSlotId)&&p.TryCompleteDungeonRun(receipt,5,270,200)&&p.Profile.clearedRuns==1,"receipt survives reload");
         Check(p.PrepareDungeonChest(100)&&p.Profile.pendingChestTier==5&&p.Profile.mechanicMaterials==4,"repeat preparation cannot upgrade earned tier or regrant materials");
-        Check(p.OpenDungeonChest(0)!=null&&p.LastChestReward.Gold>=85&&p.AcknowledgeChestReward(),"storedtier controls chest gold");
-        receipt=Guid.NewGuid().ToString("N");Check(p.TryCompleteDungeonRun(receipt,40,100,0)&&p.Profile.mechanicMaterials==11&&p.Profile.bestFloor==40&&p.Profile.pendingChestTier==40,"next real clear grants next earned band");
+        Check(p.OpenDungeonChest()!=null&&p.LastChestReward.Gold>=85&&p.AcknowledgeChestReward(),"storedtier controls chest gold");
+        receipt=Guid.NewGuid().ToString("N");Check(p.TryCompleteDungeonRun(receipt,40,100,0)&&p.Profile.mechanicMaterials==12&&p.Profile.bestFloor==40&&p.Profile.pendingChestTier==40,"next real clear grants next earned band");
         p.Profile.bestFloor=1;p.Save(); // Menus/profile milestone cannot down-reroll the pending reward.
-        Check(p.OpenDungeonChest(2)!=null&&p.LastChestReward.Gold>=160&&p.LastChestReward.Gold<=1000,"chest uses captured tier with bounded total gold");
+        Check(p.OpenDungeonChest()!=null&&p.LastChestReward.Gold>=160&&p.LastChestReward.Gold<=1000,"chest uses captured tier with bounded total gold");
         string chest=p.LastChestReward.Id;disk=File.ReadAllText(p.SaveFilePath);
-        Check(p.OpenDungeonChest(1)==null&&p.LastChestReward.Id==chest&&File.ReadAllText(p.SaveFilePath)==disk,"repeated reveal cannot reroll reward");
+        Check(p.OpenDungeonChest()==null&&p.LastChestReward.Id==chest&&File.ReadAllText(p.SaveFilePath)==disk,"repeated reveal cannot reroll reward");
         p.LastChestReward.gold=1000;p.Save();Check(p.LoadSlot(p.CurrentSlotId)&&p.LastChestReward!=null&&p.LastChestReward.Gold==1000,"new legitimate high-tier duplicate-gold receipt survives migration bound");
         before=State(p);Check(!p.TryCompleteDungeonRun("bad",1,1,1)&&!p.TryCompleteDungeonRun(Guid.NewGuid().ToString("N"),101,1,1)&&!p.TryCompleteDungeonRun(Guid.NewGuid().ToString("N"),1,-1,1)&&State(p)==before,"invalid receipt,tier,budget rejected");
         var mode=Fresh(root);string modeReceipt=Guid.NewGuid().ToString("N");

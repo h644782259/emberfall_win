@@ -16,9 +16,11 @@ with tempfile.TemporaryDirectory(prefix='chest-saveas-retry-') as tmp:
  source=p/'ProgressionService.cs';original=source.read_text()
  seam='if (!newCharacter) pendingChestContexts.TryGetValue(SaveFilePath, out snapshotDraw);'
  assert original.count(seam)==1
- source.write_text(original.replace(seam,'/* regression: copied role loses its failed draw */'))
+ durable='GameProfile snapshot = Snapshot();'
+ assert original.count(durable)==1
+ source.write_text(original.replace(seam,'/* regression: copied role loses process draw */').replace(durable,'GameProfile snapshot = JsonUtility.FromJson<GameProfile>(JsonUtility.ToJson(Profile, true));'))
  result=subprocess.run(command[:-1]+[str(p/'negative-saves')],env=env,capture_output=True,text=True)
- print('NEGATIVE CONTROL: drop save-as pending draw inheritance',flush=True)
+ print('NEGATIVE CONTROL: drop both durable and process save-as pending draw inheritance',flush=True)
  print(result.stdout+result.stderr,flush=True)
- assert result.returncode and 'save-as snapshot must preserve failed draw choice' in result.stdout+result.stderr
+ assert result.returncode and 'save-as snapshot must preserve failed draw identity' in result.stdout+result.stderr
  print('PASS: compiled lost snapshot draw negative control rejected')

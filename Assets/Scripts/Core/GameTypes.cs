@@ -172,13 +172,20 @@ namespace Emberfall
 
     /// <summary>Durable chest receipt. Unity serializes the fields; nullable view properties
     /// let the reveal UI distinguish a gold-only reward without unsupported nullable fields.</summary>
+    public enum RewardMaterialKind { None, StarAshFragment }
+    public enum ChestRewardKind { Legacy, SingleChest }
+    [Serializable]
+    public class MaterialExchangeReceipt
+    { public string id;public long sequence;public RewardMaterialKind materialKind;public int threadsDelta,materialsDelta; }
     [Serializable]
     public class ChestReward
     {
         // Zero is the historical identical-chest schema; never infer it from choice.
         public int rulesRevision;
         public bool hasCurrencyDeltas;
-        public int goldDelta, threadsDelta;
+        public int goldDelta, threadsDelta,materialsDelta;
+        public ChestRewardKind rewardKind;public RewardMaterialKind materialKind;
+        public int materials,baseGold,duplicateGold,baseThreads,duplicateThreads;public bool legacyGoldProtection;
         public string id;
         public int choice;
         public int gold;
@@ -358,6 +365,9 @@ namespace Emberfall
         public List<FashionData> fashions = new List<FashionData>();
         public string wingsFashionId;
         public string weaponFashionId;
+        public int chestRulesRevision,pendingChestRulesRevision;public bool pendingChestLegacyGoldProtection;
+        public string pendingChestQualificationId;public ChestReward pendingChestDraw;
+        public long threadMaterialSequence;public MaterialExchangeReceipt lastThreadMaterialReceipt;
         public bool pendingFashionChest;
         public int pendingChestTier = 1;
         public ChestReward lastChestReward;

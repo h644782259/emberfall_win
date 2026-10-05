@@ -110,9 +110,11 @@ namespace Emberfall
         // the exact slot path. It never enters GameProfile or a durable save file.
         private Dictionary<string,PendingChestContext> pendingChestContexts=new Dictionary<string,PendingChestContext>(StringComparer.Ordinal);
         private static ChestReward CopyChestRoll(ChestReward roll)
-        {return new ChestReward{rulesRevision=roll.rulesRevision,id=roll.id,choice=roll.choice,gold=roll.gold,rarityIndex=roll.rarityIndex};}
+        {return JsonUtility.FromJson<ChestReward>(JsonUtility.ToJson(roll,true));}
         private void RestorePendingChestRoll()
         {
+            if(Profile.pendingFashionChest&&Profile.pendingChestDraw!=null)
+                pendingChestContexts[SaveFilePath]=new PendingChestContext(CopyChestRoll(Profile.pendingChestDraw),Profile.clearedRuns,Profile.pendingChestTier);
             PendingChestContext context;
             if(!pendingChestContexts.TryGetValue(SaveFilePath,out context))return;
             if(!Profile.pendingFashionChest||Profile.pendingChestReveal||context.Clears!=Profile.clearedRuns||context.Tier!=Profile.pendingChestTier)
@@ -384,7 +386,7 @@ namespace Emberfall
             {
                 // Validate/write a deep snapshot, never mutate the current profile
                 // while attempting a save that can still fail.
-                GameProfile snapshot = JsonUtility.FromJson<GameProfile>(JsonUtility.ToJson(Profile, true));
+                GameProfile snapshot = Snapshot();
                 if (snapshot == null) return Fail("无法创建当前角色的存档快照。");
                 return CreateSlot(snapshot, false);
             }
@@ -507,10 +509,11 @@ namespace Emberfall
         public void Save()
         {
             string failure;
-            if (TryWriteAttachedProfile(Profile, out failure))
+            var candidate=pendingChestRoll!=null&&Profile.pendingFashionChest?Snapshot():Profile;
+            if (TryWriteAttachedProfile(candidate, out failure))
             {
                 LastError = string.Empty;
-                lastLoggedSaveError = null;
+                lastLoggedSaveError = null;Profile=candidate;
             }
             else
             {
@@ -573,7 +576,7 @@ namespace Emberfall
                 if (Directory.Exists(temporary)) throw new IOException("临时存档路径被目录占用，未覆盖原文件或备份。");
                 if (File.Exists(temporary) && TryReadProfile(temporary, out pendingWrite, out pendingError))
                     throw new IOException("发现可恢复的临时存档，已保留且未覆盖。请先备份整个存档目录，再处理临时存档恢复。");
-                var save = new SaveFile { format = SaveFormat, version = profile.classStateRevision>0?2:1, profile = profile };
+                var save = new SaveFile { format = SaveFormat, version = profile.chestRulesRevision>=2?3:profile.classStateRevision>0?2:1, profile = profile };
                 string json = JsonUtility.ToJson(save, true);
                 if (Encoding.UTF8.GetByteCount(json) > MaximumSaveBytes)
                     throw new IOException("存档超过 4 MiB 安全大小，未覆盖原文件或备份。请保留现有文件。");
@@ -1653,7 +1656,17 @@ namespace Emberfall
             try{RaiseChanged();}finally{IsApplyingBuildDraft=prior;}
         }
 
-        private GameProfile Snapshot() { return JsonUtility.FromJson<GameProfile>(JsonUtility.ToJson(Profile, true)); }
+        private GameProfile Snapshot()
+        {
+            var copy=JsonUtility.FromJson<GameProfile>(JsonUtility.ToJson(Profile,true));
+            if(copy.pendingFashionChest&&pendingChestRoll!=null&&pendingChestRollPath==SaveFilePath&&pendingChestRollClears==copy.clearedRuns&&pendingChestRollTier==copy.pendingChestTier)
+            {
+                copy.pendingChestDraw=CopyChestRoll(pendingChestRoll);copy.chestRulesRevision=2;
+                copy.pendingChestRulesRevision=pendingChestRoll.rulesRevision;copy.pendingChestLegacyGoldProtection=pendingChestRoll.legacyGoldProtection;
+                if(string.IsNullOrEmpty(copy.pendingChestQualificationId))copy.pendingChestQualificationId=pendingChestRoll.id;
+            }
+            return copy;
+        }
         // True only while publishing a successfully persisted draft candidate.
         // Nested non-draft transactions get their own false scope.
         internal bool IsApplyingBuildDraft { get; private set; }
@@ -1710,6 +1723,7 @@ namespace Emberfall
             if (!inCamp || !Enum.IsDefined(typeof(FashionSlot), slot)) return Fail("请在营地选择有效的时装部位。");
             string id = "fashion-" + (int)slot + "-3";
             if (Profile.fashions.Exists(x => x.id == id)) return Fail("已拥有该部位传说外观，无需兑换。");
+            RestorePendingChestRoll();if(pendingChestRoll!=null)return Fail("请先继续开启已冻结的宝箱。");
             if (Profile.fashionThreads < FashionChoiceCost) return Fail("需要30缕星纹；每次开箱+1，重复时装额外增加。");
             GameProfile candidate = Snapshot(); candidate.fashionThreads -= FashionChoiceCost;
             candidate.fashions.Add(new FashionData { id = id, slot = slot, rarity = Rarity.Legendary, name = FashionName(slot, Rarity.Legendary) });
@@ -1757,110 +1771,132 @@ namespace Emberfall
             return CommitCandidate(candidate);
         }
 
+        public string ChestOpenCaption {get{return pendingChestRoll!=null||Profile.pendingChestDraw!=null?"继续开启":"开启宝箱";}}
+        public const int SingleChestRulesRevision=2,ThreadMaterialCost=6;
         public static string ChestChoiceName(int choice)
-        { return choice == 0 ? "兵装" : choice == 1 ? "羽翼" : "补给"; }
-        public static string DungeonChestRules(int tier, ChestReward savedReward = null)
+        { return choice == 0 ? "兵装" : choice == 1 ? "羽翼" : "补给"; } // Historical revision 1 only.
+        public static string DungeonChestRules(int tier,ChestReward savedReward=null)
         {
-            int minimum = TierRewardRules.ChestGoldMinimum(tier);
-            return (savedReward != null && savedReward.rulesRevision == 0 ? "当前展示旧版已保存奖励：箱号不代表新箱型，金币不追加补给加成。以下规则仅适用于新开箱。\n\n" : "") + "三选一：兵装 / 羽翼 / 补给。\n兵装与羽翼：金币 " + minimum + "～" + (minimum + 40)
-                + "；抽到时装时固定所选部位，并非必出。\n普通22% · 稀有12% · 史诗5% · 传说1% · 无时装60%"
-                + "\n补给：不抽时装，原金币×1.5向下取整（" + (minimum * 3 / 2) + "～" + ((minimum + 40) * 3 / 2) + "）。"
-                + "\n每箱均增加1基础星纹；重复时装转金币及额外星纹，收藏规则不变。基础通关碎片独立结算。"
-                + "\n奖励先保存再展示；旧回执原样保留，跳过动画不重抽。";
+            int minimum=TierRewardRules.ChestGoldMinimum(tier);
+            return (savedReward!=null&&savedReward.rulesRevision<2?"旧版已保存奖励按原回执展示，不追加新箱收益。\n\n":"")+
+                "一个通关宝箱，直接开启。金币 "+minimum+"～"+(minimum+40)+" + 1星烬碎片 + 1基础星纹。\n"+
+                "额外时装：普通22% · 稀有12% · 史诗5% · 传说1% · 无时装60%。先抽品质，再随机补齐该品质尚缺的兵装或羽翼；两部位齐全才随机重复。\n"+
+                "重复时装仍转为原金币与额外星纹。未抽签的旧资格仅此箱保留金币×1.5；已冻结抽签只继续原结果。\n"+
+                "营地可手动用6星纹换1碎片，或30星纹自选未有传说；不自动兑换。实际到账受余额上限影响。基础通关碎片独立结算，跳过动画不改变收益。";
         }
-
-        public bool PrepareDungeonChest(int tier = 1)
+        private static void NewChestQualification(GameProfile candidate,int tier,string id)
         {
-            if (Profile.pendingFashionChest && Profile.clearedRuns <= Profile.materialRewardedClears)
-            { LastError = string.Empty; return true; }
-            GameProfile candidate = Snapshot();
-            if (!candidate.pendingFashionChest) candidate.pendingChestTier = TierRewardRules.ClampTier(tier);
-            candidate.pendingFashionChest = true;
-            if (candidate.clearedRuns > candidate.materialRewardedClears)
-            {
-                candidate.mechanicMaterials = Clamp(candidate.mechanicMaterials + TierRewardRules.ClearMaterials(tier), 0, 999999);
-                candidate.materialRewardedClears = candidate.clearedRuns;
-            }
-            if (!candidate.firstClearRewardClaimed && candidate.clearedRuns > 0) candidate.pendingFirstClearReward = true;
+            candidate.chestRulesRevision=SingleChestRulesRevision;
+            candidate.pendingFashionChest=true;candidate.pendingChestTier=TierRewardRules.ClampTier(tier);
+            candidate.pendingChestRulesRevision=SingleChestRulesRevision;candidate.pendingChestLegacyGoldProtection=false;
+            candidate.pendingChestQualificationId=id;candidate.pendingChestDraw=null;
+        }
+        public bool PrepareDungeonChest(int tier=1)
+        {
+            if(Profile.pendingFashionChest&&Profile.clearedRuns<=Profile.materialRewardedClears){LastError=string.Empty;return true;}
+            var candidate=Snapshot();
+            if(!candidate.pendingFashionChest)NewChestQualification(candidate,tier,Guid.NewGuid().ToString("N"));
+            if(candidate.clearedRuns>candidate.materialRewardedClears)
+            {candidate.mechanicMaterials=Clamp(candidate.mechanicMaterials+TierRewardRules.ClearMaterials(tier),0,999999);candidate.materialRewardedClears=candidate.clearedRuns;}
+            if(!candidate.firstClearRewardClaimed&&candidate.clearedRuns>0)candidate.pendingFirstClearReward=true;
             return CommitCandidate(candidate);
         }
-
-        // Exactly-once reward transaction: roll and grant in a detached snapshot,
-        // durably save its receipt, then publish it to the animation/UI. A failed write
-        // cannot consume the chest, expose a reward, mutate currency or emit a change.
-        public string OpenDungeonChest(int choice)
+        internal static ChestReward BuildSingleChestRoll(GameProfile profile,int qualityRoll,int slotRoll,int goldRoll,bool protectLegacy,string id)
+        {
+            if(slotRoll<0||slotRoll>1||goldRoll<0||goldRoll>40)throw new ArgumentOutOfRangeException("roll");
+            var rarity=RollFashionRarity(qualityRoll);int gold=TierRewardRules.ChestGoldMinimum(profile.pendingChestTier)+goldRoll;
+            var roll=new ChestReward{rulesRevision=2,rewardKind=ChestRewardKind.SingleChest,id=id,choice=-1,gold=protectLegacy?gold*3/2:gold,
+                rarityIndex=rarity.HasValue?(int)rarity.Value:-1,materialKind=RewardMaterialKind.StarAshFragment,materials=1,legacyGoldProtection=protectLegacy};
+            if(rarity.HasValue)
+            {
+                bool weapon=profile.fashions.Exists(x=>x.slot==FashionSlot.Weapon&&x.rarity==rarity.Value);
+                bool wings=profile.fashions.Exists(x=>x.slot==FashionSlot.Wings&&x.rarity==rarity.Value);
+                FashionSlot slot=weapon&&!wings?FashionSlot.Wings:wings&&!weapon?FashionSlot.Weapon:(FashionSlot)slotRoll;
+                roll.slotIndex=(int)slot;roll.duplicate=weapon&&wings;roll.name=FashionName(slot,rarity.Value);
+            }
+            return roll;
+        }
+        // Kept solely for an already-frozen legacy request. Integers 0/1/2 never
+        // acquire the meaning of a new reward kind or select a new draw.
+        public string OpenDungeonChest(int legacyChoice)
+        {
+            RestorePendingChestRoll();
+            if(pendingChestRoll==null||pendingChestRoll.rulesRevision>=2||pendingChestRoll.choice!=legacyChoice)
+            {Fail(pendingChestRoll==null?"请直接开启通关宝箱。":"上次开箱已冻结，请使用继续开启；旧抽签不改变结果。");return null;}
+            return OpenDungeonChest();
+        }
+        public string OpenDungeonChest()
         {
             if(IsPracticeOnly){Fail("试招期间不能开启真实宝箱。");return null;}
-            if (choice < 0 || choice >= 3 || !Profile.pendingFashionChest)
-            {
-                Fail("当前没有可开启的通关宝箱。");
-                return null;
-            }
-            if (Profile.pendingChestReveal)
-            {
-                Fail("请先收起上一次的宝箱奖励展示；该奖励已保存，不会重新抽取。");
-                return null;
-            }
+            if(!Profile.pendingFashionChest||Profile.pendingChestReveal){Fail("当前没有可开启的宝箱；已保存奖励不会重抽。");return null;}
             RestorePendingChestRoll();
-            if (pendingChestRoll != null && (pendingChestRollPath != SaveFilePath || pendingChestRollClears != Profile.clearedRuns || pendingChestRollTier != Profile.pendingChestTier))
-                pendingChestRoll = null;
-            if (pendingChestRoll != null && pendingChestRoll.choice != choice)
-            { Fail("上次开箱尚未保存，请重试「" + ChestChoiceName(pendingChestRoll.choice) + "」箱；不会重新抽取。"); return null; }
-            if (pendingChestRoll == null)
+            if(pendingChestRoll!=null&&(pendingChestRollPath!=SaveFilePath||pendingChestRollClears!=Profile.clearedRuns||pendingChestRollTier!=Profile.pendingChestTier))pendingChestRoll=null;
+            if(pendingChestRoll==null)
             {
-                int baseGold = TierRewardRules.ChestGoldMinimum(Profile.pendingChestTier) + random.Next(41);
-                Rarity? draw = choice == 2 ? (Rarity?)null : RollFashionRarity(random.Next(100));
-                pendingChestRoll = new ChestReward { rulesRevision = 1, id = Guid.NewGuid().ToString("N"), choice = choice,
-                    gold = choice == 2 ? baseGold * 3 / 2 : baseGold, rarityIndex = draw.HasValue ? (int)draw.Value : -1 };
-                pendingChestRollPath = SaveFilePath; pendingChestRollClears = Profile.clearedRuns; pendingChestRollTier = Profile.pendingChestTier;
+                if(Profile.gold>=MaximumGold&&Profile.fashionThreads>=999999&&Profile.mechanicMaterials>=999999)
+                {Fail("金币、星纹与碎片均已满，请先使用资源再开启。");return null;}
+                bool legacy=Profile.pendingChestRulesRevision<2;
+                pendingChestRoll=BuildSingleChestRoll(Profile,random.Next(100),random.Next(2),random.Next(41),legacy,Guid.NewGuid().ToString("N"));
+                pendingChestRollPath=SaveFilePath;pendingChestRollClears=Profile.clearedRuns;pendingChestRollTier=Profile.pendingChestTier;
                 pendingChestContexts[SaveFilePath]=new PendingChestContext(CopyChestRoll(pendingChestRoll),pendingChestRollClears,pendingChestRollTier);
             }
-            GameProfile candidate = JsonUtility.FromJson<GameProfile>(JsonUtility.ToJson(Profile, true));
-            candidate.pendingFashionChest = false;
-            candidate.fashionThreads = Clamp(candidate.fashionThreads + 1, 0, 999999);
-            var receipt = new ChestReward { rulesRevision = 1, id = pendingChestRoll.id, choice = choice, gold = pendingChestRoll.gold, name = "金币" };
-            Rarity? rarity = pendingChestRoll.Rarity;
-            if (!rarity.HasValue) receipt.summary = ChestChoiceName(choice) + "箱：获得 " + receipt.gold + " 金币";
-            else
+            // Persist the exact draw before consuming eligibility or granting anything.
+            // A failed first write retains the same process-local roll; a failed grant
+            // can also retry after restart from the durable frozen qualification.
+            if(Profile.pendingChestDraw==null)
             {
-                FashionSlot slot = choice == 0 ? FashionSlot.Weapon : FashionSlot.Wings;
-                string id = "fashion-" + (int)slot + "-" + (int)rarity.Value;
-                FashionData owned = candidate.fashions.Find(value => value != null && value.id == id);
-                receipt.rarityIndex = (int)rarity.Value;
-                receipt.slotIndex = (int)slot;
-                receipt.name = FashionName(slot, rarity.Value);
-                receipt.duplicate = owned != null;
-                if (receipt.duplicate)
-                {
-                    int duplicateGold = new[] { 40, 100, 250, 800 }[(int)rarity.Value];
-                    candidate.fashionThreads = Clamp(candidate.fashionThreads + new[] { 1, 2, 4, 8 }[(int)rarity.Value], 0, 999999);
-                    receipt.summary = ChestChoiceName(choice) + "箱：" + receipt.name + " 已拥有，转化 " + duplicateGold + " 金币；另得 " + receipt.gold + " 金币";
-                    receipt.gold += duplicateGold;
-                }
-                else
-                {
-                    candidate.fashions.Add(new FashionData { id = id, slot = slot, rarity = rarity.Value, name = receipt.name });
-                    receipt.summary = ChestChoiceName(choice) + "箱：获得" + GameBalance.RarityName(rarity.Value) + "时装「" + receipt.name + "」及 " + receipt.gold + " 金币";
-                }
+                var frozen=Snapshot();string freezeFailure;
+                if(!TryWriteAttachedProfile(frozen,out freezeFailure)){Fail(freezeFailure);return null;}
+                Profile=frozen;
             }
-            receipt.summary += " · 星纹 " + candidate.fashionThreads + "/30";
-            candidate.gold = (int)Math.Min(MaximumGold, (long)candidate.gold + receipt.gold);
-            receipt.hasCurrencyDeltas = true;
-            receipt.goldDelta = candidate.gold - Profile.gold;
-            receipt.threadsDelta = candidate.fashionThreads - Profile.fashionThreads;
-            candidate.lastChestReward = receipt;
-            candidate.pendingChestReveal = true;
-            string failure;
-            if (!TryWriteAttachedProfile(candidate, out failure))
+            var candidate=Snapshot();var roll=pendingChestRoll;
+            var receipt=new ChestReward{rulesRevision=roll.rulesRevision,rewardKind=roll.rewardKind,id=roll.id,choice=roll.choice,gold=roll.gold,
+                baseGold=roll.gold,baseThreads=1,materialKind=roll.materialKind,materials=roll.materials,legacyGoldProtection=roll.legacyGoldProtection,name=roll.rulesRevision>=2?"通关资源":"金币"};
+            var rarity=roll.Rarity;
+            if(rarity.HasValue)
             {
-                Fail(failure);
-                return null;
+                FashionSlot slot=roll.rulesRevision>=2?(FashionSlot)roll.slotIndex:roll.choice==0?FashionSlot.Weapon:FashionSlot.Wings;
+                string id="fashion-"+(int)slot+"-"+(int)rarity.Value;
+                bool owned=candidate.fashions.Exists(x=>x.id==id);
+                receipt.rarityIndex=(int)rarity.Value;receipt.slotIndex=(int)slot;receipt.name=FashionName(slot,rarity.Value);
+                receipt.duplicate=roll.rulesRevision>=2?roll.duplicate:owned;
+                if(!receipt.duplicate&&owned){Fail("冻结奖励的收藏状态已改变，请保留存档并恢复原资格；不会重抽。");return null;}
+                if(receipt.duplicate)
+                {receipt.duplicateGold=new[]{40,100,250,800}[(int)rarity.Value];receipt.duplicateThreads=new[]{1,2,4,8}[(int)rarity.Value];receipt.gold+=receipt.duplicateGold;}
+                else candidate.fashions.Add(new FashionData{id=id,slot=slot,rarity=rarity.Value,name=receipt.name});
             }
-            pendingChestRoll = null;pendingChestContexts.Remove(SaveFilePath);
-            Profile = candidate;
-            LastError = string.Empty;
-            RaiseChanged();
-            return receipt.summary;
+            candidate.gold=(int)Math.Min(MaximumGold,(long)candidate.gold+receipt.gold);
+            candidate.fashionThreads=Clamp(candidate.fashionThreads+receipt.baseThreads+receipt.duplicateThreads,0,999999);
+            candidate.mechanicMaterials=Clamp(candidate.mechanicMaterials+receipt.materials,0,999999);
+            receipt.hasCurrencyDeltas=true;receipt.goldDelta=candidate.gold-Profile.gold;receipt.threadsDelta=candidate.fashionThreads-Profile.fashionThreads;
+            receipt.materialsDelta=candidate.mechanicMaterials-Profile.mechanicMaterials;
+            if(receipt.goldDelta==0&&receipt.threadsDelta==0&&receipt.materialsDelta==0&&(!rarity.HasValue||receipt.duplicate))
+            {Fail("本次冻结奖励的资源已达上限，请先使用资源；宝箱资格保留。");return null;}
+            receipt.summary=(receipt.rulesRevision>=2?"通关宝箱":ChestChoiceName(receipt.choice)+"箱")+"：金币 +"+receipt.goldDelta+" · 星纹 +"+receipt.threadsDelta+
+                (receipt.materialKind==RewardMaterialKind.StarAshFragment?" · 星烬碎片 +"+receipt.materialsDelta:"")+(rarity.HasValue?" · "+receipt.name+(receipt.duplicate?"（重复转化）":""):"");
+            candidate.pendingFashionChest=false;candidate.pendingChestDraw=null;candidate.lastChestReward=receipt;candidate.pendingChestReveal=true;
+            string failure;if(!TryWriteAttachedProfile(candidate,out failure)){Fail(failure);return null;}
+            pendingChestRoll=null;pendingChestContexts.Remove(SaveFilePath);Profile=candidate;LastError=string.Empty;RaiseChanged();return receipt.summary;
+        }
+        public sealed class ThreadMaterialQuote
+        {
+            internal ProgressionService Owner;internal GameProfile Source;internal string Fingerprint,Slot;
+            public string Id {get;internal set;}public long Sequence {get;internal set;}
+        }
+        public ThreadMaterialQuote QuoteThreadMaterialExchange()
+        {return new ThreadMaterialQuote{Owner=this,Source=Profile,Fingerprint=BuildStateFingerprint(),Slot=CurrentSlotId,Id=Guid.NewGuid().ToString("N"),Sequence=Profile.threadMaterialSequence+1};}
+        public string ThreadMaterialExchangeLockReason(bool inCamp)
+        {return IsPracticeOnly||!inCamp?"只能在营地兑换。":Profile.mechanicMaterials>=999999?"星烬碎片已达上限。":Profile.fashionThreads<ThreadMaterialCost?"需要6星纹。":Profile.threadMaterialSequence==long.MaxValue?"兑换流水已达上限。":string.Empty;}
+        public bool ExchangeThreadsForMaterial(ThreadMaterialQuote quote,bool inCamp)
+        {
+            if(IsPracticeOnly||!inCamp)return Fail("只能在营地兑换。");
+            if(quote==null)return Fail("兑换请求无效。");
+            if(Profile.lastThreadMaterialReceipt!=null&&Profile.lastThreadMaterialReceipt.id==quote.Id&&Profile.lastThreadMaterialReceipt.sequence==quote.Sequence){LastError=string.Empty;return true;}
+            string reason=ThreadMaterialExchangeLockReason(inCamp);if(reason.Length>0)return Fail(reason);
+            if(quote.Owner!=this||quote.Source!=Profile||quote.Slot!=CurrentSlotId||quote.Fingerprint!=BuildStateFingerprint()||quote.Sequence!=Profile.threadMaterialSequence+1)return Fail("兑换预览已过期，请重新核对。");
+            var candidate=Snapshot();candidate.chestRulesRevision=2;candidate.fashionThreads-=ThreadMaterialCost;candidate.mechanicMaterials++;candidate.threadMaterialSequence=quote.Sequence;
+            candidate.lastThreadMaterialReceipt=new MaterialExchangeReceipt{id=quote.Id,sequence=quote.Sequence,materialKind=RewardMaterialKind.StarAshFragment,threadsDelta=-ThreadMaterialCost,materialsDelta=1};
+            return CommitCandidate(candidate);
         }
 
         public bool AcknowledgeChestReward()
@@ -2093,7 +2129,7 @@ namespace Emberfall
             candidate.xp = candidate.level >= MaximumLevel ? 0 : (int)xp;
             candidate.mechanicMaterials = Math.Min(999999, candidate.mechanicMaterials + TierRewardRules.ClearMaterials(tier));
             candidate.materialRewardedClears = candidate.clearedRuns;
-            candidate.pendingFashionChest = true; candidate.pendingChestTier = tier;
+            NewChestQualification(candidate,tier,rewardId);
             candidate.pendingFirstClearReward = !candidate.firstClearRewardClaimed;
             candidate.lastDungeonRewardId = rewardId;
             candidate.lastDungeonRewardDetails=CaptureRewardPresentation(rewardId,Profile,candidate);
@@ -2705,7 +2741,7 @@ namespace Emberfall
 
         private static GameProfile CreateProfile(HeroClass heroClass)
         {
-            var profile = new GameProfile { heroClass = heroClass, chapterDifficultyRewardRevision = 1, variantKnowledgeRevision = 1 };
+            var profile = new GameProfile { heroClass = heroClass,chestRulesRevision=2, chapterDifficultyRewardRevision = 1, variantKnowledgeRevision = 1 };
             profile.skillRanks[0] = 1;
             for (int slot = 0; slot < 3; slot++) AddStarterItem(profile, (ItemSlot)slot);
             return profile;
@@ -2754,9 +2790,9 @@ namespace Emberfall
                 string document;
                 if (!TryReadSaveDocument(path, out document, out error, true)) return false;
                 SaveFile data = JsonUtility.FromJson<SaveFile>(document);
-                if(data!=null&&data.format==SaveFormat&&(data.version>2||data.profile!=null&&(data.profile.version>1||data.profile.classStateRevision>1)))
+                if(data!=null&&data.format==SaveFormat&&(data.version>3||data.profile!=null&&(data.profile.version>1||data.profile.classStateRevision>1||data.profile.chestRulesRevision>2)))
                 {error="future format";return false;}
-                if (data == null || data.format != SaveFormat || (data.version != 1 && data.version != 2) || data.profile == null || data.profile.version != 1)
+                if (data == null || data.format != SaveFormat || (data.version != 1 && data.version != 2 && data.version != 3) || data.profile == null || data.profile.version != 1)
                 { error = "unsupported format"; return false; }
                 bool balanceChanged = HasLegacyEnhancement(data.profile.inventory) || HasLegacyEnhancement(data.profile.pendingLoot) || HasLegacyEnhancement(data.profile.recoveryLoot);
                 bool masteryMigrated = data.profile.masteryRevision < 1 && data.profile.masteryRanks != null && Array.Exists(data.profile.masteryRanks, rank => rank > 0);
@@ -2845,9 +2881,19 @@ namespace Emberfall
             profile.materialRewardedClears = Clamp(profile.materialRewardedClears, 0, profile.clearedRuns);
             profile.pendingFirstClearReward = (profile.clearedRuns > 0 || (profile.chapterCompletedMask&(1<<(int)ChapterNode.StarPlatform))!=0 || profile.chapterPriorAdventureTier>0 || profile.highestAdventureTier>profile.chapterHighestAdventureTier) && !profile.firstClearRewardClaimed;
             profile.pendingChestTier = TierRewardRules.ClampTier(profile.pendingChestTier);
+            if(profile.chestRulesRevision<0||profile.chestRulesRevision>2||profile.pendingChestRulesRevision<0||profile.pendingChestRulesRevision>2)throw new ArgumentException("宝箱规则版本不受支持，原文件保留。");
+            if(profile.pendingChestDraw!=null)
+            {
+                var draw=profile.pendingChestDraw;
+                if(!profile.pendingFashionChest||string.IsNullOrEmpty(draw.id)||draw.id.Length>80||draw.rulesRevision<1||draw.rulesRevision>2||draw.gold<60||draw.gold>300||draw.rarityIndex< -1||draw.rarityIndex>3||
+                    draw.rulesRevision==1&&(draw.choice<0||draw.choice>2)||draw.rulesRevision==2&&(draw.rewardKind!=ChestRewardKind.SingleChest||draw.choice!=-1||draw.materialKind!=RewardMaterialKind.StarAshFragment||draw.materials!=1||draw.rarityIndex>=0&&(draw.slotIndex<0||draw.slotIndex>1)))
+                    throw new ArgumentException("冻结宝箱记录无效，未重新抽签；请保留原文件。");
+            }
+            if(profile.threadMaterialSequence<0||profile.threadMaterialSequence>0&&(profile.lastThreadMaterialReceipt==null||profile.lastThreadMaterialReceipt.sequence!=profile.threadMaterialSequence||string.IsNullOrEmpty(profile.lastThreadMaterialReceipt.id)||profile.lastThreadMaterialReceipt.materialKind!=RewardMaterialKind.StarAshFragment||profile.lastThreadMaterialReceipt.threadsDelta!=-6||profile.lastThreadMaterialReceipt.materialsDelta!=1))
+                throw new ArgumentException("星纹兑换流水无效，原文件保留。");
             ChestReward receipt = profile.lastChestReward;
             if (receipt == null || string.IsNullOrWhiteSpace(receipt.id) || receipt.id.Length > 80 ||
-                receipt.gold < 60 || receipt.gold > 1000 || receipt.rarityIndex < -1 || receipt.rarityIndex > 3 ||
+                receipt.gold < 60 || receipt.gold > (receipt.rulesRevision>=2?1100:1000) || receipt.rarityIndex < -1 || receipt.rarityIndex > 3 ||
                 (receipt.rarityIndex >= 0 && (receipt.slotIndex < 0 || receipt.slotIndex > 1)))
             {
                 profile.lastChestReward = null;
@@ -2855,8 +2901,9 @@ namespace Emberfall
             }
             else
             {
-                receipt.choice = Clamp(receipt.choice, 0, 2);
-                if (receipt.rarityIndex < 0) { receipt.slotIndex = -1; receipt.duplicate = false; receipt.name = "金币"; }
+                if(receipt.rulesRevision<2)receipt.choice = Clamp(receipt.choice, 0, 2);
+                else if(receipt.rulesRevision!=2||receipt.rewardKind!=ChestRewardKind.SingleChest||receipt.choice!=-1||receipt.materialKind!=RewardMaterialKind.StarAshFragment||receipt.materialsDelta<0||receipt.materialsDelta>1)throw new ArgumentException("宝箱回执类型或增量无效。");
+                if (receipt.rarityIndex < 0) { receipt.slotIndex = -1; receipt.duplicate = false; receipt.name = receipt.rulesRevision>=2?"通关资源":"金币"; }
                 else receipt.name = FashionName((FashionSlot)receipt.slotIndex, (Rarity)receipt.rarityIndex);
                 if (string.IsNullOrWhiteSpace(receipt.summary)) receipt.summary = receipt.name + " · " + receipt.gold + " 金币";
                 if (receipt.summary.Length > 240) receipt.summary = receipt.summary.Substring(0, 240);

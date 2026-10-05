@@ -58,7 +58,7 @@ public static class ClassSwitchProductionTests
             var reload=new ProgressionService(p.SaveDirectory);Check(reload.Load(),"multi-class reload");Switch(reload,to);
             Check(reload.Profile.skillRanks[0]==2&&!reload.HasBuildPreset(0)&&reload.HasBuildPreset(1),"target independent state survives reload");
             foreach(string path in new[]{reload.SaveFilePath,reload.SaveFilePath+".bak"})
-                using(var doc=JsonDocument.Parse(File.ReadAllText(path)))Check(doc.RootElement.GetProperty("version").GetInt32()==2,"primary and recovery envelope reject old readers");
+                using(var doc=JsonDocument.Parse(File.ReadAllText(path)))Check(doc.RootElement.GetProperty("version").GetInt32()==3,"primary and recovery envelope reject old readers");
         }
         {
             var p=New(root,HeroClass.Vanguard);p.Changed+=()=>{p.Profile.tutorialMask|=1;p.Profile.classTutorialCompleted=true;};
@@ -93,11 +93,11 @@ public static class ClassSwitchProductionTests
         }
         {
             var p=New(root,HeroClass.Vanguard);p.Profile.pendingFashionChest=true;p.Save();
-            Directory.CreateDirectory(p.SaveFilePath+".tmp");Check(p.OpenDungeonChest(0)==null,"failed pending draw created");Directory.Delete(p.SaveFilePath+".tmp");
+            Directory.CreateDirectory(p.SaveFilePath+".tmp");Check(p.OpenDungeonChest()==null,"failed pending draw created");Directory.Delete(p.SaveFilePath+".tmp");
             var field=typeof(ProgressionService).GetField("pendingChestRoll",BindingFlags.Instance|BindingFlags.NonPublic);var pending=field.GetValue(p);int gold=p.Profile.gold,threads=p.Profile.fashionThreads;
             Switch(p,HeroClass.Summoner);Check(ReferenceEquals(pending,field.GetValue(p))&&p.Profile.pendingFashionChest&&!p.Profile.pendingChestReveal&&p.Profile.gold==gold&&p.Profile.fashionThreads==threads,"class switch neither rerolls nor grants pending chest");
             Check(p.OpenDungeonChest(1)==null,"pending choice identity survives class switch");
-            Check(p.OpenDungeonChest(0)!=null&&p.Profile.pendingChestReveal,"original pending draw can commit after class switch");
+            Check(p.OpenDungeonChest()!=null&&p.Profile.pendingChestReveal,"original pending draw can commit after class switch");
             string reward=Json(p.Profile.lastChestReward);Switch(p,HeroClass.Arcanist);Check(Json(p.Profile.lastChestReward)==reward&&p.Profile.pendingChestReveal,"unseen durable receipt survives another class switch");
         }
         // A real legacy document migrates exactly its current class; other slots remain uninitialized.

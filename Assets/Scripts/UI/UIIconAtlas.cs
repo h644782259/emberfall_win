@@ -133,6 +133,16 @@ namespace Emberfall
             texture = ink.Finish("Utility " + name); cache[key] = texture; return texture;
         }
 
+        public static Texture2D Reward(int kind)
+        {
+            int key=-1000-kind;Texture2D texture;if(cache.TryGetValue(key,out texture))return texture;
+            var ink=new Icon(Color.white);
+            if(kind==0){ink.Disc(32,34,22);ink.color=new Color(.5f,.5f,.5f);ink.Ring(32,34,16,3);ink.Line(32,23,32,45,4);}
+            else if(kind==1){ink.Polygon(new[]{V(32,5),V(48,28),V(39,57),V(20,51),V(14,24)});ink.color=new Color(.55f,.55f,.55f);ink.Line(32,7,28,49,3);ink.Line(16,25,46,28,3);}
+            else if(kind==2){ink.Arc(32,32,21,-65,245,5);ink.Arc(32,32,12,115,425,4);for(int i=0;i<5;i++)ink.Radial(i*72-90,3,12,3);}
+            else{ink.Line(19,51,19,13,5);ink.Line(32,51,32,24,5);ink.Line(45,51,45,34,5);ink.Arrow(13,23,40,9);}
+            texture=ink.Finish("Reward resource "+kind);cache[key]=texture;return texture;
+        }
         public static void Clear() { foreach (Texture2D texture in cache.Values) if (texture != null) Object.Destroy(texture); cache.Clear(); }
         private static Vector2 V(float x, float y) { return new Vector2(x, y); }
         private sealed class Icon

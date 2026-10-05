@@ -1,0 +1,29 @@
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.53
+PASS 14 actual mobile pause transition assertions
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.34
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.43
+Unhandled exception. System.Exception: near enemy preserves pause
+   at Emberfall.Program.Check(Boolean v, String why) in /tmp/mobile-pause-transitions-9talnn3w/Program.cs:line 64
+   at Emberfall.Program.Main() in /tmp/mobile-pause-transitions-9talnn3w/Program.cs:line 65
+
+PASS compiled old-behavior negative: near enemy preserves pause
+Unhandled exception. System.Exception: already dungeon preserves pause
+   at Emberfall.Program.Check(Boolean v, String why) in /tmp/mobile-pause-transitions-9talnn3w/Program.cs:line 64
+   at Emberfall.Program.Main() in /tmp/mobile-pause-transitions-9talnn3w/Program.cs:line 71
+
+PASS compiled old-behavior negative: already dungeon preserves pause

@@ -23,8 +23,8 @@ namespace Emberfall{
  void DrawRewardChest(Rect r,bool open,float alpha,float progress){chests++;}
  void DrawChestGold(Rect r,Color c){}void SetCollectionAngle(FashionSlot s){}void DrawCollectionModel(Rect r,FashionData f,bool interactive){lastModel=f;}
  MODEL
- public static void CheckCard(Rect r,int choice,GameProfile p,float scale){var ui=new GameUI();ui.DrawChestChoiceCard(r,choice,p,scale);
- if(ui.chests!=1||!ui.texts.Contains(ProgressionService.ChestChoiceName(choice))||!ui.texts.Contains(ChestRevealPresentation.ChoiceDetail(p,choice)))throw new Exception("real card uses actual choice detail");
+ public static void CheckCard(Rect r,int choice,GameProfile p,float scale){var ui=new GameUI();ui.DrawSingleChestCard(r,scale);
+ if(ui.chests!=1||!ui.texts.Contains("通关宝箱"))throw new Exception("real card uses actual choice detail");
  foreach(var f in ui.fills)if(f.width<=0||f.height<=0||f.x<r.x-.01f||f.y<r.y-.01f||f.x+f.width>r.x+r.width+.01f||f.yMax>r.yMax+.01f)throw new Exception("card foreground bounds");}
  public static string EmblemTrace(int choice){var ui=new GameUI();ui.DrawChestChoiceEmblem(new Rect(0,0,100,100),choice,ui.gold);return string.Join(";",ui.fills.ConvertAll(f=>$"{f.x},{f.y},{f.width},{f.height}"));}
  public static FashionData Model(ChestReward receipt){var ui=new GameUI();ui.DrawChestRewardModel(new Rect(0,0,200,200),receipt);return ui.lastModel;}
@@ -35,9 +35,9 @@ class Program{static void Main(string[] args){ChestChoicePresentationTests.Run(a
 # Check both production callers use the executed shared drawing and receipt presentation.
 for filename in ['GameUI.Rewards.cs','GameUI.MobileRewards.cs']:
  source=(r/'Assets/Scripts/UI'/filename).read_text()
- assert 'DrawChestChoiceCard(' in source and 'ChestRevealPresentation.ChoiceDisclosure' in source
+ assert ('DrawSingleChestCard(' in source) and 'ChestRevealPresentation.ChoiceDisclosure' in source
  assert 'ChestRevealPresentation.ResultWithCollection(reward,session.Progression.Profile)' in source
- assert 'DrawChestGoldReward(' in source
+ assert 'DrawChestCommittedReward(' in source
 core=['SafeSaveFlow','GameTypes','ProgressionService','ProgressionService.Reforge','ReforgeQuote','ProgressionService.Chapter','ChapterProgression','RoomTactics','CombatBalance','HubTravelRules','MasteryCoreRuntime','CastFirstHitReceipt','TierRewardRules','TierRewardBand','ProgressionGoalState']
 with tempfile.TemporaryDirectory(prefix='h03-chest-ui-') as tmp:
  p=Path(tmp)

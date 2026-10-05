@@ -1,0 +1,3 @@
+PASS: 34 production visual-child/root-invariance and sword-endpoint checks (managed, not GPU)
+PASS: production decorative/physical Slash dispatch and per-swing identity
+PASS: 3 compiled duplicate-swing, stale-sampling and decorative-Slash negative controls

@@ -15,7 +15,7 @@ public static class RewardLoadTransitionTests
     static ChestReward FailDraw(ProgressionService p,int choice)
     {
         string before=File.ReadAllText(p.SaveFilePath);int gold=p.Profile.gold,threads=p.Profile.fashionThreads,fashions=p.Profile.fashions.Count;
-        Directory.CreateDirectory(p.SaveFilePath+".tmp");Check(p.OpenDungeonChest(choice)==null,"actual disk failure freezes uncommitted draw");Directory.Delete(p.SaveFilePath+".tmp");
+        Directory.CreateDirectory(p.SaveFilePath+".tmp");Check(p.OpenDungeonChest()==null,"actual disk failure freezes uncommitted draw");Directory.Delete(p.SaveFilePath+".tmp");
         Check(File.ReadAllText(p.SaveFilePath)==before&&p.Profile.gold==gold&&p.Profile.fashionThreads==threads&&p.Profile.fashions.Count==fashions,"failed draw changes no durable currency collection or profile");return Pending(p);
     }
     public static string Run(string directory)
@@ -31,7 +31,7 @@ public static class RewardLoadTransitionTests
         var retried=FailDraw(staged,0);
         Check(retried.id==original.id&&retried.gold==original.gold&&retried.rarityIndex==original.rarityIndex,"staged retry retains exact id amount rarity despite new RNG");
         var stagedAgain=Stage(staged,a);Rng(stagedAgain,40,0);
-        Check(stagedAgain.OpenDungeonChest(0)!=null&&stagedAgain.LastChestReward.id==original.id&&stagedAgain.LastChestReward.gold==original.gold&&stagedAgain.LastChestReward.rarityIndex==original.rarityIndex,"second real stage commits original draw once");
+        Check(stagedAgain.OpenDungeonChest()!=null&&stagedAgain.LastChestReward.id==original.id&&stagedAgain.LastChestReward.gold==original.gold&&stagedAgain.LastChestReward.rarityIndex==original.rarityIndex,"second real stage commits original draw once");
         Check(stagedAgain.Profile.gold==gold+original.gold&&stagedAgain.Profile.fashionThreads==threads+1,"staged success grants one currency delta");
         var committed=Stage(stagedAgain,a);Check(committed.OpenDungeonChest(0)==null&&committed.LastChestReward.id==original.id&&committed.Profile.gold==gold+original.gold,"durable receipt defeats same-slot subsequent reload replay");
         // A second slot must preserve its own draw and carry A back without leaking either.
@@ -39,23 +39,23 @@ public static class RewardLoadTransitionTests
         committed.Profile.pendingFashionChest=true;committed.Save();Rng(committed,5,39);var drawB=FailDraw(committed,1);
         var backA=Stage(committed,a);backA.Profile.pendingFashionChest=true;backA.Profile.clearedRuns++;backA.Save();Rng(backA,2,50);var drawA=FailDraw(backA,2);
         var backB=Stage(backA,b);Rng(backB,40,0);
-        Check(backB.OpenDungeonChest(0)==null&&backB.OpenDungeonChest(1)!=null&&backB.LastChestReward.id==drawB.id&&backB.LastChestReward.Slot==FashionSlot.Wings,"A to B restores only B draw and wing slot");
+        Check(backB.OpenDungeonChest(0)==null&&backB.OpenDungeonChest()!=null&&backB.LastChestReward.id==drawB.id&&backB.LastChestReward.Slot==FashionSlot.Wings,"A to B restores only B draw and wing slot");
         var backAgainA=Stage(backB,a);Rng(backAgainA,40,0);
-        Check(backAgainA.OpenDungeonChest(0)==null&&backAgainA.OpenDungeonChest(2)!=null&&backAgainA.LastChestReward.id==drawA.id&&!backAgainA.LastChestReward.Rarity.HasValue,"B to A retains A supply draw without B contamination");
+        Check(backAgainA.OpenDungeonChest(0)==null&&backAgainA.OpenDungeonChest()!=null&&backAgainA.LastChestReward.id==drawA.id&&!backAgainA.LastChestReward.Rarity.HasValue,"B to A retains A supply draw without B contamination");
         // Failed stage / discarded candidate cannot consume live pending roll.
         backAgainA.AcknowledgeChestReward();backAgainA.Profile.pendingFashionChest=true;backAgainA.Profile.clearedRuns++;backAgainA.Save();Rng(backAgainA,3,18);var retained=FailDraw(backAgainA,0);
         ProgressionService invalid;string error;Check(!SaveSlotTransition.TryStage(backAgainA,Guid.NewGuid().ToString("N"),out invalid,out error)&&invalid==null,"missing target rejects stage");
         var abandoned=Stage(backAgainA,a);abandoned.NewGame(HeroClass.Vanguard); // In-memory context copy must not erase original's pending draw.
         // Restore the original saved character fixture after deliberate new-game cancellation.
         backAgainA.Save();var fromOriginal=Stage(backAgainA,a);
-        Check(fromOriginal.OpenDungeonChest(1)==null&&fromOriginal.OpenDungeonChest(0)!=null&&fromOriginal.LastChestReward.id==retained.id,"abandoned candidate map clearing does not mutate source draw");
+        Check(fromOriginal.OpenDungeonChest(1)==null&&fromOriginal.OpenDungeonChest()!=null&&fromOriginal.LastChestReward.id==retained.id,"abandoned candidate map clearing does not mutate source draw");
         // Actual committed new game is an explicit fresh role, even at the same path.
         fromOriginal.AcknowledgeChestReward();fromOriginal.Profile.pendingFashionChest=true;fromOriginal.Save();FailDraw(fromOriginal,0);
         fromOriginal.NewGame(HeroClass.Ranger);fromOriginal.Profile.pendingFashionChest=true;fromOriginal.Save();var fresh=Stage(fromOriginal,a);
-        Check(fresh.OpenDungeonChest(1)!=null,"new game clears retained draw at same path");
+        Check(fresh.OpenDungeonChest()!=null,"new game clears retained draw at same path");
         // A genuinely new service without a transition models a process restart.
         fresh.AcknowledgeChestReward();fresh.Profile.pendingFashionChest=true;fresh.Profile.clearedRuns++;fresh.Save();FailDraw(fresh,0);
-        var restart=new ProgressionService(fresh.SaveDirectory);Check(restart.LoadSlot(a)&&restart.OpenDungeonChest(1)!=null,"unwritten draw is intentionally not promised across process restart");
+        var restart=new ProgressionService(fresh.SaveDirectory);Check(restart.LoadSlot(a)&&restart.OpenDungeonChest()!=null,"unwritten draw is intentionally not promised across process restart");
         return "PASS: "+checks+" actual SaveSlotTransition failed-chest identity/isolation/receipt/restart-boundary checks";
     }
 }

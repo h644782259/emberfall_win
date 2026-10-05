@@ -66,6 +66,17 @@ namespace Emberfall
                 return (collectionViewing.Trial(FashionSlot.Wings)!=null&&collectionViewing.Trial(FashionSlot.Weapon)!=null?"两部位试穿均保留 · ":"")+EquipmentComparisonPresentation.CollectionState(p.Profile.fashions.Exists(x=>x!=null&&x.id==collectionTrial.id),worn!=null&&worn.id==collectionTrial.id,strongest!=null&&strongest.id==collectionTrial.id);
             }
         }
+        private float threadExchangeNextClick;
+        private void ExchangeThreadMaterial()
+        {
+            if(Time.unscaledTime<threadExchangeNextClick)return;
+            threadExchangeNextClick=Time.unscaledTime+.35f;
+            var p=session.Progression;bool saved=p.ExchangeThreadsForMaterial(p.QuoteThreadMaterialExchange(),session.IsInCamp);
+            collectionNotice=saved?"星纹 −6 · 星烬碎片 +1":p.LastError;
+            if(MobileControls.Active)MobileFashionResult(saved,collectionNotice);else Feedback(saved,collectionNotice);
+            BlockUITransition();
+        }
+
         private void DrawDesktopCollection()
         {
             var p=session.Progression;var profile=p.Profile;
@@ -95,6 +106,7 @@ namespace Emberfall
             }
             if(Button(new Rect(x,w.y+547,124,33),"卸下外观",muted,worn!=null)){bool accepted=p.UnequipFashion(slot);collectionNotice=accepted?"已卸下 · 收藏属性保留":p.LastError;Feedback(accepted,collectionNotice);}
             Text(new Rect(x+136,w.y+549,width-136,36),collectionNotice??("星纹 "+profile.fashionThreads+" · 未获得的外观也可试穿"),12,muted,false,true);
+            if(Button(new Rect(stage.x,stage.yMax+122,270,36),"6星纹 → 1星烬碎片",jade,string.IsNullOrEmpty(p.ThreadMaterialExchangeLockReason(session.IsInCamp))))ExchangeThreadMaterial();
             bool ownedLegendary=profile.fashions.Exists(f=>f!=null&&f.slot==slot&&f.rarity==Rarity.Legendary);
             if(Button(new Rect(x,w.y+592,382,30),"30星纹 · 自选传说"+(slot==FashionSlot.Wings?"翅膀":"兵装"),gold,session.IsInCamp&&!ownedLegendary&&profile.fashionThreads>=ProgressionService.FashionChoiceCost))
             {bool accepted=p.ChooseLegendaryFashion(slot,session.IsInCamp);collectionNotice=accepted?"传说收藏已解锁":p.LastError;Feedback(accepted,collectionNotice);}

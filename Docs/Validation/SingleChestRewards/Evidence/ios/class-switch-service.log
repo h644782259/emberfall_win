@@ -1,0 +1,4 @@
+PASS 712 class-state transaction, 12 directed switches, thresholds, reload, shared gear/reward, cross-class sale and legacy assertions
+Emberfall: 保存失败：主存档与备份均无法验证，当前进度尚未保存。原文件已保留，请先备份整个目录并恢复可用存档。
+PASS immutable pre-class reader and writer refuse both v2 documents
+PASS compiled active-class mirror regression rejected; callback/save authority assertion unchanged

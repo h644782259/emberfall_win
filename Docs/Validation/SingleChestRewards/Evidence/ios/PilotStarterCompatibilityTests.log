@@ -1,0 +1,3 @@
+PASS: 50 actual starter creation and pilot compatibility assertions
+PASS: compiled legacy-all-gear-fallback fails exact admission assertion
+PASS: compiled broad-starter-fallback fails exact admission assertion

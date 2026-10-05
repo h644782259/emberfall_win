@@ -59,7 +59,7 @@ namespace Emberfall
             Rect w=new Rect((width-ww)*.5f,(height-wh)*.5f,ww,wh);
             Fill(w,new Color(.045f,.064f,.095f,.99f));Border(w,new Color(.52f,.60f,.67f,.3f));
             Text(new Rect(w.x+28,w.y+20,w.width-56,18),"F A L L E N   S T A R",10,gold,true);
-            Text(new Rect(w.x+28,w.y+45,w.width-248,42),revealed?(complete?"星光已归你所有":"封印正在苏醒"):"遗迹馈赠",28,pale,true);
+            Text(new Rect(w.x+28,w.y+45,w.width-248,42),revealed?(complete?"宝箱奖励":"开启宝箱"):"遗迹馈赠",28,pale,true);
             Text(new Rect(w.x+28,w.y+92,w.width-56,24),revealed?(complete?ChestRevealPresentation.Outcome(reward):"已保存奖励 · 可以跳过揭晓动画"):ChestRevealPresentation.ChoiceDisclosure,14,muted);
             if(Button(new Rect(w.xMax-200,w.y+43,78,36),"菜单",jade)){session.SetPaused(true);BlockUITransition();return;}
             if(Button(new Rect(w.xMax-110,w.y+43,82,36),chestDetails?"收起规则":"奖励规则",muted))chestDetails=!chestDetails;
@@ -69,24 +69,20 @@ namespace Emberfall
             else if(revealed)DrawChestRevealTransition(body,reward,new Rect(body.x,body.y,ChestRevealPresentation.DesktopArtSize(body.height),ChestRevealPresentation.DesktopArtSize(body.height)));
             else
             {
-                float cardWidth=(body.width-24)/3;
-                for(int i=0;i<3;i++)
+                Rect r=new Rect(body.x,body.y,body.width,body.height);
+                DrawSingleChestCard(r,1);
+                if(Button(new Rect(r.x+12,r.yMax-54,r.width-24,42),progression.ChestOpenCaption,gold,!chestOpening&&progression.Profile.pendingFashionChest&&!progression.Profile.pendingChestReveal))
                 {
-                    Rect r=new Rect(body.x+i*(cardWidth+12),body.y,cardWidth,body.height);
-                    bool hover=r.Contains(Mouse)&&GUI.enabled;
-                    DrawChestChoiceCard(r,i,progression.Profile,1);
-                    if(Button(new Rect(r.x+12,r.yMax-54,r.width-24,42),"开启",gold,!chestOpening&&progression.Profile.pendingFashionChest&&!progression.Profile.pendingChestReveal,null,hover))
-                    {
-                        chestOpening=true;string result=progression.OpenDungeonChest(i);
-                        if(result==null){chestOpening=false;Feedback(false,"宝箱暂时无法开启");}
-                        else {chestRevealOrigin=ChestChoiceArt(r,1);revealedChest=i;chestRevealResult=result;chestRevealedAt=Time.unscaledTime;chestDetails=false;rewardSoundPlayed=false;chestReceiptId=progression.LastChestReward.Id;desktopChestResultScroll=Vector2.zero;GameAudio.Play(SoundCue.Cast);}
-                        BlockUITransition();return;
-                    }
+                    chestOpening=true;string result=progression.OpenDungeonChest();
+                    if(result==null){chestOpening=false;Feedback(false,"宝箱暂时无法开启");}
+                    else {chestRevealOrigin=ChestChoiceArt(r,1);revealedChest=0;chestRevealResult=result;chestRevealedAt=Time.unscaledTime;chestDetails=false;rewardSoundPlayed=false;chestReceiptId=progression.LastChestReward.Id;desktopChestResultScroll=Vector2.zero;GameAudio.Play(SoundCue.Cast);}
+                    BlockUITransition();return;
                 }
             }
+
             if(revealed)
             {
-                Text(new Rect(w.x+28,w.yMax-55,w.width-430,36),complete?"奖励已保存":"未选宝箱逐渐封存，不再参与抽取",13,muted,false,true);
+                Text(new Rect(w.x+28,w.yMax-55,w.width-430,36),complete?"奖励已保存":"正在揭晓已保存的奖励",13,muted,false,true);
                 if(complete&&CanTrialChestReward(reward)&&Button(new Rect(w.xMax-396,w.yMax-58,180,42),"收下并试穿",jade)){AcceptChestForTrial();return;}
                 if(Button(new Rect(w.xMax-208,w.yMax-58,180,42),complete?"收下":"跳过动画",jade,!chestDetails,null,true))
                 {if(!complete)chestRevealedAt=Time.unscaledTime-ChestDuration;else FinishChestReveal();BlockUITransition();}
@@ -103,7 +99,7 @@ namespace Emberfall
         {
             float size=ChestRevealPresentation.DesktopArtSize(r.height);
             Rect art=new Rect(r.x,r.y,size,size);Fill(art,new Color(.025f,.045f,.07f));Border(art,accent);
-            if(!DrawChestRewardModel(art,reward))DrawChestGoldReward(art,reward,accent);
+            DrawChestCommittedReward(art,reward,accent);
             Rect details=new Rect(art.xMax+24,r.y,r.width-size-24,r.height);
             string result=ChestRevealPresentation.ResultWithCollection(reward,session.Progression.Profile);
             string error=session.Progression.LastError;
@@ -115,15 +111,7 @@ namespace Emberfall
         private void DrawChestRevealTransition(Rect r,ChestReward reward,Rect destination)
         {
             float progress=ChestRevealPresentation.Progress(Time.unscaledTime-chestRevealedAt,ChestDuration);
-            float cardWidth=(r.width-16)/3;
             Color accent=reward!=null&&reward.Rarity.HasValue?GameBalance.RarityColor(reward.Rarity.Value):gold;
-            float fading=ChestRevealPresentation.UnselectedOpacity(progress);
-            for(int i=0;i<3;i++)
-            {
-                if(i==revealedChest||fading<=0)continue;
-                Rect cardRect=new Rect(r.x+i*(cardWidth+8),r.y,cardWidth,r.height);
-                DrawRewardChest(new Rect(cardRect.x+6,cardRect.y+8,cardRect.width-12,cardRect.height-38),false,fading,0);
-            }
             float travel=ChestRevealPresentation.Travel(progress);
             Rect origin=chestRevealOrigin.width>0?chestRevealOrigin:destination;
             Rect moving=new Rect(Mathf.Lerp(origin.x,destination.x,travel),Mathf.Lerp(origin.y,destination.y,travel),Mathf.Lerp(origin.width,destination.width,travel),Mathf.Lerp(origin.height,destination.height,travel));
