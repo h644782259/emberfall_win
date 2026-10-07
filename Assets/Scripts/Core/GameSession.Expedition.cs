@@ -212,7 +212,7 @@ namespace Emberfall
             if (RoomChainRun!=null?!SideEventRun.HasRoomCapacity(Enemies.Count):Enemies.Count>EncounterPlan.MaximumSimultaneous-2) { Notify("先清理部分敌人，再唤醒2名晶核守卫；战术房最多8敌。"); return false; }
             Vector3 guardPosition, wispPosition;
             if (!TrySafeSpawn(sideEventPosition+new Vector3(-2,0,2),.65f,5.5f,out guardPosition) ||
-                !TrySafeSpawn(sideEventPosition+new Vector3(-1,0,6),.5f,5.5f,out wispPosition) ||
+                !TrySafeSpawn(sideEventPosition+new Vector3(-1,0,6),.5f,5.5f,out wispPosition,guardPosition,2.5f) ||
                 Vector3.Distance(guardPosition,wispPosition)<2.5f)
             { Notify("晶核附近暂时没有安全来袭位置，请拉开距离后重试。"); return false; }
             sideEventRun=new SideEventRun(SideEventContext,Player,Player.CombatEpoch,System.Guid.NewGuid().ToString("N"));

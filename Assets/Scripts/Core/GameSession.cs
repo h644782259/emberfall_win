@@ -437,7 +437,7 @@ namespace Emberfall
             objectiveHealedThisWave=false;
         }
 
-        private bool TrySafeSpawn(Vector3 preferred,float radius,float playerDistance,out Vector3 position)
+        private bool TrySafeSpawn(Vector3 preferred,float radius,float playerDistance,out Vector3 position,Vector3? reservedPosition=null,float reservedClearance=0f)
         {
             for(int attempt=0;attempt<48;attempt++)
             {
@@ -445,6 +445,8 @@ namespace Emberfall
                 candidate=WorldTraversal.NearestWalkable(candidate,radius);
                 if(candidate.magnitude>ArenaRadius-radius-1||!WorldTraversal.IsWalkable(candidate,radius))continue;
                 if(Player!=null && Vector3.Distance(candidate,Player.transform.position)<playerDistance)continue;
+                // A multi-enemy encounter reserves earlier candidates before either enemy is spawned.
+                if(reservedPosition.HasValue&&Vector3.Distance(candidate,reservedPosition.Value)<reservedClearance)continue;
                 // This deliberately requires a clear traversable approach; it rejects
                 // unreachable river banks and sealed pockets, not just visible ground.
                 if(WorldTraversal.FindPath(candidate,InDungeon?Vector3.zero:new Vector3(0,0,-10),radius).Count==0)continue;

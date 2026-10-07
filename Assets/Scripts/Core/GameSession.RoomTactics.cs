@@ -63,26 +63,26 @@ namespace Emberfall
         private void BuildRoomObjective()
         {
             roomSupplier=null;roomObjectiveMarker=null;roomSealMarkers[0]=roomSealMarkers[1]=null;
-            var plan=RoomChainRun.Room;
+            RoomGenerationStage("北门路线");var plan=RoomChainRun.Room;
             if(plan.Interlude||plan.Boss)return;
             if(!WorldTraversal.IsWalkable(new Vector3(0,0,14),.65f)||!WorldTraversal.CanReach(TacticalRoomGeometry.Entrance,new Vector3(0,0,14),.65f))
-            {RoomChainRun.Fail(RoomFailureReason.GenerationOrPathFailure);Notify("房间路线不可达，已安全结束远征");return;}
+            {FailRoomGeneration("北门路线不可达");return;}
             if(plan.Objective==RoomObjective.Hunt)return;
-            Vector3 first=RoomObjectivePoint;
+            RoomGenerationStage("目标路线");Vector3 first=RoomObjectivePoint;
             Vector3 second=new Vector3(RoomTactics.Mirror(RoomRunSeed)*8,0,9);
             if(!WorldTraversal.CanReach(TacticalRoomGeometry.Entrance,first,.65f)||!WorldTraversal.CanReach(first,second,.65f))
-            {RoomChainRun.Fail(RoomFailureReason.GenerationOrPathFailure);Notify("目标路线不可达，已安全结束远征");return;}
+            {FailRoomGeneration("目标路线不可达");return;}
             if(plan.Objective==RoomObjective.Purify)
             {
                 for(int i=0;i<2;i++)
                 {
-                    Vector3 point=RoomSealPoint(i);
-                    if(!WorldTraversal.CanReach(TacticalRoomGeometry.Entrance,point,.65f)){RoomChainRun.Fail(RoomFailureReason.GenerationOrPathFailure);return;}
-                    var marker=WorldBuilder.MakeRoomObjective(point,true);marker.transform.SetParent(world.transform,true);roomSealMarkers[i]=marker;TacticalCaptureVisual.AttachRoomSeal(marker,this,i);
+                    RoomGenerationStage("印记路线 "+(i+1));Vector3 point=RoomSealPoint(i);
+                    if(!WorldTraversal.CanReach(TacticalRoomGeometry.Entrance,point,.65f)){FailRoomGeneration("印记路线不可达");return;}
+                    RoomGenerationStage("印记模型与进度 "+(i+1));var marker=WorldBuilder.MakeRoomObjective(point,true);marker.transform.SetParent(world.transform,true);roomSealMarkers[i]=marker;TacticalCaptureVisual.AttachRoomSeal(marker,this,i);
                 }
                 roomObjectiveMarker=roomSealMarkers[0];return;
             }
-            roomObjectiveMarker=WorldBuilder.MakeRoomObjective(first);
+            RoomGenerationStage("突围目标模型与进度");roomObjectiveMarker=WorldBuilder.MakeRoomObjective(first);
             roomObjectiveMarker.name="Room objective: stand within 2.4m";
             roomObjectiveMarker.transform.SetParent(world.transform,true);
             TacticalCaptureVisual.Attach(roomObjectiveMarker,this);

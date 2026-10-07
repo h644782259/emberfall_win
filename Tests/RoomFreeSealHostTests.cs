@@ -1,7 +1,7 @@
 // Actual room host/state/traversal; scene, save IO and unrelated systems are explicit doubles.
 using System;using System.Collections.Generic;using UnityEngine;using Emberfall;
 namespace UnityEngine {
- public static class Debug {public static void LogException(Exception error)=>throw new InvalidOperationException("Ordinary room fixture raised a lifecycle exception",error);}
+ public static class Debug {public static Exception LastException;public static string LastError;public static void LogException(Exception error){LastException=error;}public static void LogError(object message){LastError=message.ToString();}}
  public class Object {public static void Destroy(Object o){if(o is GameObject g)g.SetActive(false);}}
  public class MonoBehaviour:Object {}
  public class GameObject:Object {public string name;public bool activeInHierarchy=true;public Transform transform;public GameObject(string n=""){name=n;transform=new Transform{gameObject=this};}public void SetActive(bool on){activeInHierarchy=on;}}
@@ -23,7 +23,7 @@ namespace Emberfall {
  public static class WorldBuilder {
   public static GameObject MakeLootBeacon(Vector3 p,Color c)=>new GameObject();
   public static GameObject MakeRoomObjective(Vector3 p,bool indexed=false){var o=new GameObject();o.transform.position=p;return o;}
-  public static GameObject Build(ZoneKind kind,int layout,int tier){WorldTraversal.Reset(kind);if(layout>=20&&layout<=25)TacticalRoomGeometry.Register(layout);return new GameObject("world");}
+  public static GameObject Build(ZoneKind kind,int layout,int tier){WorldTraversal.Reset(kind);if(layout>=20&&layout<=25){for(int side=-1;side<=1;side+=2){WorldTraversal.AddBox(new Vector3(side*16,0,0),new Vector2(1.1f,29));WorldTraversal.AddBox(new Vector3(side*3.4f,0,15),new Vector2(1.4f,1.4f));}TacticalRoomGeometry.Register(layout);for(int side=-1;side<=1;side+=2){var rubble=new Vector3(side*13.3f,0,2.2f);if(WorldTraversal.IsWalkable(rubble,.7f))WorldTraversal.AddDynamicCircle(rubble,.7f);}}return new GameObject("world");}
  }
  public class ChapterDouble {public bool DoorUnlocked;public RoomObjective Objective;public int Seals;public float Progress;}
  public sealed partial class GameSession:MonoBehaviour {
@@ -38,7 +38,7 @@ namespace Emberfall {
   private class RoomEnemyReceipt {public RoomChainPlan Plan;public int Index;}
   private Dictionary<EnemyController,RoomEnemyReceipt> roomEnemies=new Dictionary<EnemyController,RoomEnemyReceipt>();
   public bool DungeonRewardPending=false,ModeRewardPending=false;bool TrySettleSideEventRewards()=>true;bool TrySettleDungeonReward()=>true;bool TrySettleArenaReward()=>true;bool PreserveWorldLoot()=>true;
-  void Notify(string s){}void LogSystem(string s){}void UpdateTimeScale(){}void SuspendInputs(){}void AbandonSideEvent(){}void RetireWorldLootReceipts(int e){}void BuildSideEvent(){}void FinalizeRoomChain(){}
+  public string LastNotice;void Notify(string s){LastNotice=s;}void LogSystem(string s){}void UpdateTimeScale(){}void SuspendInputs(){}void AbandonSideEvent(){}void RetireWorldLootReceipts(int e){}void BuildSideEvent(){}void FinalizeRoomChain(){}
   bool TrySafeSpawn(Vector3 desired,float radius,float safe,out Vector3 p){p=desired;return true;}
   void SpawnEnemy(EnemyKind kind,int level,Vector3 p,bool boss){var e=new EnemyController{Kind=kind,IsBoss=boss};e.transform.position=p;Enemies.Add(e);}
   public GameObject[] Markers=>roomSealMarkers;public bool WorldAlive=>world.activeInHierarchy;

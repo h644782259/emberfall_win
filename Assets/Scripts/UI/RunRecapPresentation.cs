@@ -18,7 +18,7 @@ namespace Emberfall
         public readonly int EmberCreated,EmberEffective,FrostCreated,FrostEffective;
         public readonly bool Won, InDungeon, Challenge, PendingChest, FirstClearChoice;
         public readonly int Tier, Wave, TotalWaves, Seed, Materials, ExchangeCost, GoldLost;
-        public readonly string LastDamageSource, ModeName, FailureReason;
+        public readonly string LastDamageSource, ModeName, FailureReason, GenerationFailureDetail;
         public readonly int RewardGold, RewardExperience, RewardMaterials;
         public readonly bool RewardDetailsUnavailable;
         public readonly float LastDamageAmount;
@@ -29,10 +29,10 @@ namespace Emberfall
             int materials, int exchangeCost, string damageSource, float damageAmount,
             IEnumerable<KeyValuePair<string,int>> actions, IEnumerable<string> mechanics, IEnumerable<string> blessings,
             bool pendingChest, bool firstClearChoice, int goldLost = 0, string modeName = null, string failureReason = null,
-            int rewardGold = 0, int rewardExperience = 0, int rewardMaterials = 0,RunFailureEvidence evidence=null,int[] mechanismCounts=null,bool rewardDetailsUnavailable=false)
+            int rewardGold = 0, int rewardExperience = 0, int rewardMaterials = 0,RunFailureEvidence evidence=null,int[] mechanismCounts=null,bool rewardDetailsUnavailable=false,string generationFailureDetail=null)
         {
             EmberCreated=mechanismCounts!=null&&mechanismCounts.Length==4?mechanismCounts[0]:0;EmberEffective=mechanismCounts!=null&&mechanismCounts.Length==4?mechanismCounts[1]:0;FrostCreated=mechanismCounts!=null&&mechanismCounts.Length==4?mechanismCounts[2]:0;FrostEffective=mechanismCounts!=null&&mechanismCounts.Length==4?mechanismCounts[3]:0;
-            Evidence=evidence;RewardDetailsUnavailable=rewardDetailsUnavailable;
+            GenerationFailureDetail=generationFailureDetail??"";Evidence=evidence;RewardDetailsUnavailable=rewardDetailsUnavailable;
             Won=won; InDungeon=dungeon; Challenge=challenge; Tier=Math.Max(1,tier);
             TotalWaves=Math.Max(1,totalWaves); Wave=Math.Max(0,Math.Min(TotalWaves,wave)); Seed=seed;
             Materials=Math.Max(0,materials); ExchangeCost=Math.Max(1,exchangeCost); GoldLost=Math.Max(0,goldLost);
@@ -95,7 +95,7 @@ namespace Emberfall
         }
         private static string ChooseTip(RunRecapSnapshot snapshot)
         {
-            if(snapshot.FailureReason=="GenerationOrPathFailure")return "本次路线或生成异常；返回营地重新进入，不必更换配装";
+            if(snapshot.FailureReason=="GenerationOrPathFailure")return string.IsNullOrEmpty(snapshot.GenerationFailureDetail)?"本次路线或生成异常；返回营地重新进入，不必更换配装":snapshot.GenerationFailureDetail+"；返回营地可重新进入";
             if((snapshot.FailureReason=="Timeout"||snapshot.FailureReason=="TimeExpired")&&snapshot.Evidence!=null&&snapshot.Evidence.Objective.Length>0)return "时限结束时："+snapshot.Evidence.Objective+"；优先推进该目标";
             if(snapshot.FailureReason=="TimeExpired"||snapshot.FailureReason=="Timeout")return snapshot.ModeName.Contains("守望")?"留在中心占领圈，先清理圈边敌人":"减少阶段间空档，优先清理远程敌人";
             if(snapshot.FailureReason=="SpawnBlocked")return "回营重新进入，生成新的来袭位置";

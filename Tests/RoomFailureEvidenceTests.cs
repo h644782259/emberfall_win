@@ -18,6 +18,9 @@ public static class RoomFailureEvidenceTests
    if(reason==RoomFailureReason.Timeout)Check(view.Tip.Contains("当前进度"),"timeout uses actual objective progress");
    session.RoomChainRun.Fail(RoomFailureReason.Abandoned);Check(session.RoomChainRun.Failure==reason,"terminal reason never overwritten by later cleanup");
   }
+  var generated=new GameSession();generated.RoomChainRun=new RoomChainState(12345);generated.RoomChainRun.Fail(RoomFailureReason.GenerationOrPathFailure);generated.RoomGenerationFailureDetail="生成失败 · 印记模型与进度 2 · 种子 12345 / 房间 3 / 布局 21 / 守印";generated.Build(false);
+  string detail=generated.RoomGenerationFailureDetail;generated.RoomGenerationFailureDetail=null;
+  Check(generated.LastRunRecap.GenerationFailureDetail==detail&&new RunRecapPresentation(generated.LastRunRecap).Tip.Contains(detail),"actual recap freezes generation stage and seed even after live state is reset");
   var legacy=new GameSession();legacy.modeRewardDetailsUnavailable=true;legacy.Build(true);
   Check(legacy.LastRunRecap.RewardDetailsUnavailable&&new RunRecapPresentation(legacy.LastRunRecap).HasProgress,"real summary preserves visible unknown reward receipt state");
   Check(GameSession.RewardCardHeight(legacy.LastRunRecap)==88,"actual recap card reserves legacy-detail explanation height");
@@ -49,7 +52,7 @@ namespace Emberfall
  {
   public bool IsDead,ChallengeRun;public bool HasStarted=true,InDungeon=true;public bool SpecialAdventure=>RoomChainRun!=null;
   public int DungeonTier=1,DungeonWave=1,TotalWaves=5,runSeed,recapGoldLost,modeGoldReward,modeXpReward,modeMaterialReward;
-  public string ModeName="回廊远征",LastRunSummary;public RoomChainState RoomChainRun;public FakeMode ModeRun;
+  public string ModeName="回廊远征",LastRunSummary,RoomGenerationFailureDetail;public RoomChainState RoomChainRun;public FakeMode ModeRun;
   public ProgressionService Progression=new ProgressionService();public RunChoices RunChoices=new RunChoices();
   public RunRecapSnapshot LastRunRecap;private string lastDamageSource="未记录";private float lastDamageAmount,runDamageTaken,runHealingReceived;
   private Dictionary<string,int> combatActions=new Dictionary<string,int>();public void Build(bool won){BuildRunSummary(won);}
