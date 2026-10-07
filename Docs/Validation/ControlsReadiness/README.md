@@ -13,3 +13,11 @@ The compile uses pinned UnityEngine 2021.3.33 reference assemblies, not the proj
 ## Frozen full validation
 
 Completed 2026-10-07T11:17:31.770711+00:00: **251/288 passed**, 37 failed; `sourceChangedDuringRun` is empty. Every final failure matches the archived main baseline: **False**. See `full/report.json` and `full/baseline-comparison.json`. False requires investigation; it is never a passing certification. No Unity/native/device acceptance is claimed.
+
+## Follow-up scope and retained failures
+
+The full report above is frozen at `9453ac87cf06b996038e3f717393a1c3a9a5b5e9` and excludes subsequent fixture repairs. The original failures remain unchanged. Returning-counter and practice-action settlement fixtures now include the split production target-reason method; actual behavior and compiled negative controls pass in the separately archived affected runs. These follow-ups did not rerun the entire suite.
+
+The room-branch failure also reproduces on main (archived under allocation-investigation). The allocation test failure does not reproduce in two default main replays; all test/production input hashes match. Both main and candidate pass with fixed JIT configuration, but this does not convert the original full failure into a baseline match or full pass.
+
+Unity Editor, native platform builds, real rendering and device input/performance acceptance remain not run.
