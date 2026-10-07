@@ -1,0 +1,9 @@
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:02.88
+PASS 2016 actual recap measurement/draw/toggle/scroll assertions; font and GUI delivery are managed boundaries
+PASS compiled negative: wrapped diagnostic text is never clipped to fixed height
+PASS compiled negative: scroll extent tracks expanded details
