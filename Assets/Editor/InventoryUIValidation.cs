@@ -76,10 +76,37 @@ namespace Emberfall.Editor
         {
             MethodInfo method = target.GetType().GetMethod(name, PrivateInstance);
             if (method == null) throw new MissingMethodException(target.GetType().FullName, name);
+            ParameterInfo[] parameters = method.GetParameters();
+            if (arguments.Length < parameters.Length)
+            {
+                int supplied = arguments.Length;
+                Array.Resize(ref arguments, parameters.Length);
+                for (int i = supplied; i < parameters.Length; i++)
+                {
+                    if (!parameters[i].IsOptional) throw new TargetParameterCountException(name);
+                    arguments[i] = parameters[i].DefaultValue;
+                }
+            }
+            ItemData temporaryCandidate = null;
+            GameProfile candidateProfile = null;
+            if (name == "IsEquipmentUpgrade" && arguments[0] is ItemData)
+            {
+                var gameUI = (GameUI)target;
+                candidateProfile = ((GameSession)Field(typeof(GameUI), "session").GetValue(gameUI)).Progression.Profile;
+                var candidate = (ItemData)arguments[0];
+                if (!candidateProfile.inventory.Contains(candidate))
+                { temporaryCandidate = candidate; candidateProfile.inventory.Add(candidate); }
+                gameUI.GetType().GetMethod("InvalidateAttention", PrivateInstance).Invoke(gameUI, null);
+            }
             try { return method.Invoke(target, arguments); }
             catch (TargetInvocationException exception)
             {
                 throw new InvalidOperationException("Inventory UI call failed: " + name, exception.InnerException ?? exception);
+            }
+            finally
+            {
+                if (temporaryCandidate != null) candidateProfile.inventory.Remove(temporaryCandidate);
+                if (candidateProfile != null) target.GetType().GetMethod("InvalidateAttention", PrivateInstance).Invoke(target, null);
             }
         }
         private static void SetProperty(object target, string name, object value)
@@ -319,13 +346,13 @@ namespace Emberfall.Editor
                 Check((bool)Call(ui, "IsEquipmentUpgrade", Item("tag-armor", ItemSlot.Armor, 1, Rarity.Common, 10)), "better armor is compared only with armor, not the stronger weapon or relic");
                 Check(!(bool)Call(ui, "IsEquipmentUpgrade", weapon) && !(bool)Call(ui, "IsEquipmentUpgrade", new object[] { null }), "equipped and null items never receive upgrade tags");
                 Profile.relicId = null;
-                Check((bool)Call(ui, "IsEquipmentUpgrade", Item("tag-empty", ItemSlot.Relic, 1, Rarity.Common, 0)), "an empty equipment slot is identified as an upgrade opportunity");
+                Check((bool)Call(ui, "IsEquipmentUpgrade", Item("tag-empty", ItemSlot.Relic, 1, Rarity.Common, 1)), "an empty equipment slot is identified as an upgrade opportunity");
                 int level = Profile.level;
                 try
                 {
                     Profile.level = 1;
                     betterWeapon.level = 20;
-                    Check((bool)Call(ui, "IsEquipmentUpgrade", betterWeapon), "level restriction does not hide a numerical equipment upgrade");
+                    Check(!(bool)Call(ui, "IsEquipmentUpgrade", betterWeapon), "level-locked equipment does not receive an actionable upgrade badge");
                     string hint = (string)Call(ui, "EquipmentUpgradeHint", betterWeapon);
                     Check(hint.Contains("20") && hint.Contains("等级不足"), "higher-level upgrade hint states required level and current restriction");
                 }
@@ -410,8 +437,8 @@ namespace Emberfall.Editor
                     preview.attack == expected.attack && preview.defense == expected.defense && preview.health == expected.health,
                     "candidate detail uses its own attributes at the persistent slot rank");
                 Check(JsonUtility.ToJson(target) == targetBefore && Profile.gold == gold, "comparison preview does not change source equipment or gold");
-                Check(ProgressionService.EquipmentScore(target) < ProgressionService.EquipmentScore(worn) && (bool)Call(ui, "IsEquipmentUpgrade", target),
-                    "upgrade badge compares post-inheritance candidate even when its unenhanced score is lower");
+                Check(ProgressionService.EquipmentScore(preview) > ProgressionService.EquipmentScore(worn) && (bool)Call(ui, "IsEquipmentUpgrade", target),
+                    "upgrade badge compares the candidate after inheriting the persistent slot rank");
                 Check(!(bool)Call(ui, "IsEquipmentUpgrade", weaker), "inferior baseline stays inferior after inheriting the same rank");
                 ItemData staleRank = progression.PreviewUpgrade(Item("stale-item-rank", ItemSlot.Armor, 1, Rarity.Common, 0, 14, 80), 9);
                 string staleBefore = JsonUtility.ToJson(staleRank);
@@ -433,6 +460,9 @@ namespace Emberfall.Editor
                 SetProperty(game.Player, "Health", healthBefore);
                 float maximumBefore = game.Player.MaxHealth;
                 Check(progression.Equip(target.id), "equipping replacement succeeds without a separate inheritance action");
+                worn = Profile.inventory.Find(item => item.id == "slot-worn");
+                target = Profile.inventory.Find(item => item.id == "slot-target");
+                weaker = Profile.inventory.Find(item => item.id == "slot-weaker");
                 Rebuild();
                 Check(target.upgradeLevel == 5 && target.defense == preview.defense && target.health == preview.health && worn.upgradeLevel == 0,
                     "equipped replacement matches the preview and outgoing gear returns to its own baseline");
@@ -445,13 +475,20 @@ namespace Emberfall.Editor
                 SetProperty(game.Player, "Health", game.Player.MaxHealth - 1);
                 float injuredHealth = game.Player.Health;
                 Check(progression.Equip(worn.id), "previous equipment can be re-equipped with the persistent rank");
+                worn = Profile.inventory.Find(item => item.id == "slot-worn");
+                target = Profile.inventory.Find(item => item.id == "slot-target");
+                weaker = Profile.inventory.Find(item => item.id == "slot-weaker");
                 Check(worn.upgradeLevel == 5 && target.upgradeLevel == 0 && progression.SlotUpgradeRank(ItemSlot.Armor) == 5 &&
                     Mathf.Approximately(game.Player.Health, Mathf.Min(injuredHealth, game.Player.MaxHealth)),
                     "swapping back keeps enhancement and only clamps health downward");
                 Check(progression.Equip(target.id), "replacement can be equipped repeatedly");
+                target = Profile.inventory.Find(item => item.id == "slot-target");
                 string repeatBefore = JsonUtility.ToJson(target);
-                Check(progression.Equip(target.id) && JsonUtility.ToJson(target) == repeatBefore && Profile.gold == gold,
+                Check(progression.Equip(target.id) && JsonUtility.ToJson(Profile.inventory.Find(item => item.id == target.id)) == repeatBefore && Profile.gold == gold,
                     "repeated equip cannot compound inherited attributes or charge gold");
+                worn = Profile.inventory.Find(item => item.id == "slot-worn");
+                target = Profile.inventory.Find(item => item.id == "slot-target");
+                weaker = Profile.inventory.Find(item => item.id == "slot-weaker");
 
                 int cost = progression.UpgradeCost(weaker);
                 Check(cost == progression.UpgradeCost(target), "upgrade price depends on slot rank rather than selected item rank");

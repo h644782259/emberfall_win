@@ -41,13 +41,16 @@ namespace Emberfall.Editor
                 double dspBefore = AudioSettings.dspTime;
                 float mixedPeak = 0;
                 float[] output = new float[1024];
-                double deadline = EditorApplication.timeSinceStartup + .45;
-                while (EditorApplication.timeSinceStartup < deadline)
+                // Native audio may warm up asynchronously after the editor enters Play Mode.
+                double deadline = EditorApplication.timeSinceStartup + 3;
+                while (EditorApplication.timeSinceStartup < deadline &&
+                    (mixedPeak <= .000001f || AudioSettings.dspTime <= dspBefore || background.timeSamples == firstBackgroundSample))
                 {
                     background.GetOutputData(output, 0);
                     foreach (float value in output) mixedPeak = Mathf.Max(mixedPeak, Mathf.Abs(value));
                     yield return null;
                 }
+                log("AUDIO diagnostics: DSP=" + dspBefore + " -> " + AudioSettings.dspTime + "; samples=" + firstBackgroundSample + " -> " + background.timeSamples + "; peak=" + mixedPeak + "; editorPaused=" + EditorApplication.isPaused + "; editorMute=" + typeof(EditorUtility).GetProperty("audioMasterMute", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)?.GetValue(null));
                 check(AudioSettings.dspTime > dspBefore, "Audio: Unity DSP clock advances during playback");
                 check(background.timeSamples != firstBackgroundSample, "Audio: native background playback advances through its PCM samples");
                 check(mixedPeak > .000001f, "Audio: playing background source produces nonzero native output samples");

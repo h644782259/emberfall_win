@@ -383,8 +383,9 @@ namespace Emberfall.Editor
                 first.enabled = second.enabled = false;
                 check(ownerStates.Contains(retired) && companions.Contains(first) && companions.Contains(second),
                     "Retirement fixture owns one bond and both companion entries before destruction");
+                int destroyFrame = Time.frameCount;
                 UnityEngine.Object.Destroy(ownedRoot);
-                yield return null;
+                while (Time.frameCount <= destroyFrame) yield return null;
                 check(retired == null && !ReferenceEquals(retired, null) && !ownerStates.Contains(retired),
                     "Actual destroyed Unity owner releases its managed dictionary key");
                 check(!companions.Contains(first) && !companions.Contains(second) &&

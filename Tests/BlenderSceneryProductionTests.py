@@ -4,6 +4,7 @@ from pathlib import Path
 import os,subprocess,tempfile,sys
 root=Path(__file__).resolve().parents[1];dotnet=sys.argv[1] if len(sys.argv)>1 else os.environ.get('DOTNET','dotnet')
 fixture=(root/'Tests/BlenderPilotAdapterProductionFixture.cs').read_text().split('namespace Emberfall{')[0]
+fixture=fixture.replace('g.transform.localPosition=transform.localPosition;', 'g.transform.localPosition=transform.localPosition;g.transform.localScale=transform.localScale;')
 fixture=fixture.replace('if(Bound)LayerFixture.ApplyClip(g,name,t/length);','')
 fixture=fixture.replace('public bool activeInHierarchy=>','public T GetComponent<T>()where T:Component=>Components.OfType<T>().FirstOrDefault();public bool activeInHierarchy=>')
 fixture=fixture.replace('var v=g.AddComponent<Renderer>();v.enabled=r.enabled;v.sharedMaterial=r.sharedMaterial;','var v=c is MeshRenderer?g.AddComponent<MeshRenderer>():g.AddComponent<Renderer>();v.enabled=r.enabled;v.sharedMaterial=r.sharedMaterial;v.sharedMaterials=(Material[])r.sharedMaterials.Clone();')
@@ -24,9 +25,9 @@ class Test {
  static GameObject Source(string slot="Clay"){var g=new GameObject("resource");g.AddComponent<MeshFilter>().sharedMesh=new Mesh{vertices=new[]{new Vector3(0,0,0),new Vector3(1,0,0),new Vector3(0,1,0)},indices=new[]{new[]{0,1,2}}};var r=g.AddComponent<MeshRenderer>();r.sharedMaterials=new[]{new Material{name=slot}};return g;}
  static void Main(){var owner=new GameObject("owner");var r=new WorldResources();
  C(BlenderSceneryArt.Create("missing",owner.transform,Vector3.zero,r)==null,"missing falls back");
- var source=Source();Resources.Items["BlenderScenery/pot"]=source;
+ var source=Source();source.transform.localScale=new Vector3(100,100,100);Resources.Items["BlenderScenery/pot"]=source;
  BlenderSceneryArt.Enabled=false;int loads=Resources.Loads;C(BlenderSceneryArt.Create("pot",owner.transform,Vector3.zero,r)==null&&Resources.Loads==loads,"opt out avoids load");BlenderSceneryArt.Enabled=true;
- var made=BlenderSceneryArt.Create("pot",owner.transform,new Vector3(1,2,3),r);C(made!=null&&made.transform.parent==owner.transform&&made.transform.localPosition==new Vector3(1,2,3),"preserves parent and authored placement");C(made.GetComponentsInChildren<MeshRenderer>(true)[0].sharedMaterials[0].name=="Stone","binds shared world surface");C(source.GetComponentsInChildren<MeshRenderer>(true)[0].sharedMaterials[0].name=="Clay","never mutates resource material slots");
+ var made=BlenderSceneryArt.Create("pot",owner.transform,new Vector3(1,2,3),r);C(made!=null&&made.transform.parent==owner.transform&&made.transform.localPosition==new Vector3(1,2,3),"preserves parent and authored placement");C(made.transform.localScale==Vector3.one&&source.transform.localScale==new Vector3(100,100,100),"instance root scale normalized without mutating source");C(made.GetComponentsInChildren<MeshRenderer>(true)[0].sharedMaterials[0].name=="Stone","binds shared world surface");C(source.GetComponentsInChildren<MeshRenderer>(true)[0].sharedMaterials[0].name=="Clay","never mutates resource material slots");
  source.AddComponent<Collider>();C(BlenderSceneryArt.Create("pot",owner.transform,Vector3.zero,r)==null,"collider resource rejected");
  Resources.Items["BlenderScenery/pot"]=Source("unknown");int before=GameObject.All.Count;C(BlenderSceneryArt.Create("pot",owner.transform,Vector3.zero,r)==null,"unknown imported material rejected");C(GameObject.All.Skip(before).All(g=>!g.activeSelf&&g.destroyed),"rejected partial instance hidden and destroyed");
  foreach(string slot in new[]{"Clay","Ochre","Stone","Bark","Leaf"}){Resources.Items["BlenderScenery/pot"]=Source(slot);C(BlenderSceneryArt.Create("pot",owner.transform,Vector3.zero,r)!=null,"accept palette "+slot);}

@@ -1,0 +1,26 @@
+{
+  "baseline": "483b47b0ba2462e24ca9099696beb19f9e96385a",
+  "changedProductionFiles": [
+    "Assets/Editor/AudioValidation.cs",
+    "Assets/Editor/InventoryUIValidation.cs",
+    "Assets/Editor/MobileValidation.cs",
+    "Assets/Editor/RuntimeValidation.cs",
+    "Assets/Editor/SummonerValidation.cs",
+    "Assets/Editor/TraversalValidation.cs",
+    "Assets/Scripts/Combat/FilledSkillVfx.cs",
+    "Assets/Scripts/Core/GameAudio.cs",
+    "Assets/Scripts/Core/ProgressionService.cs",
+    "Assets/Scripts/UI/MobileControls.cs",
+    "Assets/Scripts/World/WorldLabelPresentation.cs"
+  ],
+  "changedExistingTests": [
+    "Tests/BlenderSceneryProductionTests.py",
+    "Tests/BlenderSkillVfxProductionTests.py",
+    "Tests/FilledVfxPoolProductionTests.cs",
+    "Tests/FilledVfxPoolProductionTests.py",
+    "Tests/SingleChestUIBoundary.cs",
+    "Tests/WorldLabelProductionFixture.cs"
+  ],
+  "platformPackagesResourcesPriorEditorFixUnchanged": true,
+  "androidProductionExactSource": null
+}

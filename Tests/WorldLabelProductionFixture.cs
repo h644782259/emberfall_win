@@ -18,12 +18,13 @@ namespace UnityEngine {
  public static class Mathf {public static float Abs(float f)=>Math.Abs(f);}
  public struct Color {public Color(float a,float b,float c){}}
  public enum TextAnchor {MiddleCenter}public enum TextAlignment {Center}
- public class TextMesh:Component {public string text="标签";public int fontSize;public float characterSize;public TextAnchor anchor;public TextAlignment alignment;public Color color;}
+ public class Font {}
+ public class TextMesh:Component {public Font font;public string text="标签";public int fontSize;public float characterSize;public TextAnchor anchor;public TextAlignment alignment;public Color color;}
  public enum RuntimeInitializeLoadType {SubsystemRegistration}
  public class RuntimeInitializeOnLoadMethodAttribute:Attribute {public RuntimeInitializeOnLoadMethodAttribute(RuntimeInitializeLoadType t){}}
 }
 namespace Emberfall {
- public static class GameFont {public static int calls;public static void Apply(UnityEngine.TextMesh text){calls++;}}
+ public static class GameFont {public static int calls;public static void Apply(UnityEngine.TextMesh text){calls++;text.font=new UnityEngine.Font();}}
  public class EnemyController:UnityEngine.MonoBehaviour{}
  public class GameSession:UnityEngine.MonoBehaviour {public HashSet<EnemyController> enemies=new HashSet<EnemyController>();public bool IsSideEventEnemy(EnemyController e)=>enemies.Contains(e);public int SideEventEnemiesRemaining=>enemies.Count;}
 }
@@ -32,6 +33,7 @@ public static class WorldLabelProductionTests {
  static UnityEngine.GameObject Label(int priority,float x=0,float z=10){var go=new UnityEngine.GameObject("label");go.transform.position=new UnityEngine.Vector3(x,0,z);go.AddComponent<WorldLabelPresentation>().Initialize(go.AddComponent<UnityEngine.TextMesh>(),priority);return go;}
  static void Tick(UnityEngine.GameObject go){UnityEngine.Time.frameCount++;UnityEngine.GameObject.Call(go.GetComponent<WorldLabelPresentation>(),"LateUpdate");}
  public static void Main(){
+ var existing=new UnityEngine.GameObject("font-test");var configured=existing.AddComponent<UnityEngine.TextMesh>();var font=new UnityEngine.Font();configured.font=font;int before=GameFont.calls;existing.AddComponent<WorldLabelPresentation>().Initialize(configured);Check(object.ReferenceEquals(configured.font,font)&&GameFont.calls==before,"preserves authored world font");configured.font=null;existing.GetComponent<WorldLabelPresentation>().Initialize(configured);Check(configured.font!=null&&GameFont.calls==before+1,"missing font receives fallback");existing.SetActive(false);
  UnityEngine.Camera.main=new UnityEngine.GameObject("camera").AddComponent<UnityEngine.Camera>();var low=Label(0);var high=Label(2);Tick(low);Check(!low.GetComponent<UnityEngine.Renderer>().enabled&&high.GetComponent<UnityEngine.Renderer>().enabled,"objective priority suppresses overlapping scenery label");
  high.transform.position=new UnityEngine.Vector3(0,0,-10);Tick(low);Check(!high.GetComponent<UnityEngine.Renderer>().enabled&&low.GetComponent<UnityEngine.Renderer>().enabled,"behind-camera hidden and lower priority restored");
  high.transform.position=new UnityEngine.Vector3(0,0,40);Tick(low);Check(!high.GetComponent<UnityEngine.Renderer>().enabled,"distant label hidden rather than enlarged");
