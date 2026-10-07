@@ -5,9 +5,9 @@ public static class MobileSkillPolicyTests
  static int n;static void Check(bool b,string m){n++;if(!b)throw new Exception(m);}
  public static string Run()
  {
-  n=0;for(int i=0;i<10;i++)Check(MobileSkillPolicy.SkillAtButton(i)==i,"all ten fixed IDs directly visible");
+  n=0;int[] active={0,1,2,4,5,6,7,9};for(int i=0;i<active.Length;i++)Check(MobileSkillPolicy.SkillAtButton(i)==active[i],"only active skill IDs directly visible");
   Check(!MobileSkillPolicy.IsActiveSkill(3)&&!MobileSkillPolicy.IsActiveSkill(8)&&MobileSkillPolicy.IsActiveSkill(9),"passives noninteractive and ultimate reachable");
-  Check(MobileSkillPolicy.SkillAtButton(-1)==-1&&MobileSkillPolicy.SkillAtButton(10)==-1,"bounds");
+  Check(MobileSkillPolicy.SkillAtButton(-1)==-1&&MobileSkillPolicy.SkillAtButton(8)==-1,"bounds");
   var targets=new[]{new MobileSkillPolicy.Candidate(4,true,false),new MobileSkillPolicy.Candidate(25,true,true),new MobileSkillPolicy.Candidate(1,false,false)};
   Check(MobileSkillPolicy.SelectTarget(targets,8)==1,"current valid focus takes priority");
   Check(MobileSkillPolicy.SelectTarget(targets,4)==0,"out-of-range focus falls back to nearest");

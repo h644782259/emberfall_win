@@ -117,12 +117,14 @@ namespace Emberfall
             texture = ink.Finish("Skill icon " + key); cache[key] = texture; return texture;
         }
 
+        public static Texture2D ControlDisc()
+        {const int key=2000000;Texture2D texture;if(cache.TryGetValue(key,out texture))return texture;var ink=new Icon(Color.white,48);ink.Disc(32,32,30);texture=ink.Finish("Circular battle control");cache[key]=texture;return texture;}
         public static Texture2D Utility(string name)
         {
             if (name == "inventory") name = "bag";
             if (name == "camp") name = "home";
             if (name == "blink") name = "dodge";
-            string[] names = { "bag", "skills", "home", "portal", "attack", "dodge", "potion", "pause", "help", "confirm", "cancel", "jump" };
+            string[] names = { "bag", "skills", "home", "portal", "attack", "dodge", "potion", "pause", "help", "confirm", "cancel", "jump", "codex" };
             int id = System.Array.IndexOf(names, name);
             if (id < 0) id = 1;
             int key = 100 + id;
@@ -140,6 +142,7 @@ namespace Emberfall
             else if (id == 8) { ink.Arc(32, 23, 13, 190, 470, 5); ink.Line(32, 36, 32, 42, 5); ink.Disc(32, 52, 3); }
             else if (id == 9) { ink.Line(10, 32, 26, 48, 6); ink.Line(26, 48, 54, 16, 6); }
             else if (id == 10) { ink.Line(16, 16, 48, 48, 6); ink.Line(16, 48, 48, 16, 6); }
+            else if(id==12){ink.color=new Color(.58f,.83f,1f);ink.Polygon(new[]{V(8,13),V(28,17),V(32,22),V(36,17),V(56,13),V(56,49),V(36,53),V(32,57),V(28,53),V(8,49)});ink.color=new Color(1f,.78f,.28f);ink.Line(32,22,32,54,4);ink.Line(14,24,24,27,3);ink.Line(40,27,50,24,3);}
             else { ink.Arrow(32, 46, 32, 10); ink.Line(15, 55, 49, 55, 4); }
             texture = ink.Finish("Utility " + name); cache[key] = texture; return texture;
         }

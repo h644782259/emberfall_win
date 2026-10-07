@@ -2,13 +2,14 @@ using System;
 using System.Collections.Generic;
 namespace Emberfall
 {
-    /// <summary>All ten skill identities are directly reachable, independent of desktop pages.</summary>
+    /// <summary>All eight active skill identities are directly reachable, independent of desktop pages.</summary>
     public static class MobileSkillPolicy
     {
-        public const int ButtonCount=10;
+        public const int ButtonCount=8;
+        private static readonly int[] activeSkills={0,1,2,4,5,6,7,9};
         public static int SkillAtButton(int button)
-        { return button<0||button>=ButtonCount?-1:button; }
-        public static bool IsActiveSkill(int skill){return skill>=0&&skill<ButtonCount&&skill!=3&&skill!=8;}
+        { return button<0||button>=ButtonCount?-1:activeSkills[button]; }
+        public static bool IsActiveSkill(int skill){return skill>=0&&skill<10&&skill!=3&&skill!=8;}
         public struct Candidate
         {
             public float DistanceSquared;public bool Valid,CurrentFocus;

@@ -1131,7 +1131,7 @@ namespace Emberfall
             float y = height - 54;
             DrawHubActions(x, y - 50);
             Rect catalog=new Rect(x-46,y,38,38);
-            if(IconButton(catalog,"skills","","图鉴 / 待领",gold)){panel=Panel.Camp;campTab=1;session.SetUIBlocking(true);}
+            if(IconButton(catalog,"codex","","图鉴 / 待领",gold)){panel=Panel.Camp;campTab=1;session.SetUIBlocking(true);}
             Badge(catalog,Attention.Rewards);
             if (IconButton(new Rect(x, y, 38, 38), "inventory", "I", "行囊 · I\n查看属性、穿戴装备与时装，使用已有补给。交易请找商人，强化请找铁匠。", jade))
                 TogglePanel(Panel.Inventory);

@@ -14,9 +14,9 @@ namespace Emberfall
         }
         public readonly float Scale, Width, Height;
         public readonly bool Tablet;
-        public readonly Area Joystick, MoveZone, Attack, Dodge, Potion, Jump, Cancel, Menu, Inventory, SkillsMenu, Interact;
-        public readonly Area EncounterText, BossHealth, Notice, AdventureStatus, FocusCommand, RecallCommand, CombatView;
-        public readonly Area[] Skills = new Area[10];
+        public readonly Area Joystick, MoveZone, Attack, Dodge, Potion, Jump, Cancel, Menu, Inventory, SkillsMenu, Catalog, Interact;
+        public readonly Area EncounterText, BossHealth, Notice, AdventureStatus, FocusCommand, RecallCommand, CombatView, PlayerStatus, Map;
+        public readonly Area[] Skills = new Area[8];
         public readonly Area[] SkillOpportunities = new Area[10];
         public readonly Area CounterOpportunity, ComboOpportunity;
         public MobileControlLayout(float pixelWidth,float pixelHeight,float dpi,int positionPreset=0)
@@ -31,43 +31,43 @@ namespace Emberfall
             Width=pixelWidth/Scale;Height=pixelHeight/Scale;
             Joystick=Centered(90,Height-86,128);
             MoveZone=new Area(12,Height-172,175,160);
-            Attack=Centered(Width-61,Height-57,84);
-            Dodge=Centered(Width-152,Height-56,62);
-            Jump=Centered(Width-224,Height-56,56);
-            Cancel=Jump; // Same thumb position, mutually exclusive with jump.
-            Potion=Centered(50,Height-211,54);
-            Interact=new Area(102,82,60,48);
-            float groupShift=positionPreset<0?-Math.Min(16,Height-316):positionPreset>0?2:0;
+            Attack=Centered(Width-98,Height-55,76);
+            Dodge=Centered(Width-30,Height-30,48);
+            Jump=Centered(Width-30,Height-99,48);Cancel=Jump;
+            Potion=Centered(214,Height-28,48);
+            // Width already excludes Screen.safeArea insets. Never subtract them again.
+            Menu=Centered(Width-30,32,48);Inventory=Centered(Width-84,32,48);
+            SkillsMenu=Centered(Width-138,32,48);Catalog=Centered(Width-192,32,48);
+            Interact=new Area(Width-68,92,60,48);
+            float shift=positionPreset<0?-Math.Min(8,Math.Max(0,Height-320)):positionPreset>0?0:0;
+            float[] dx={180,180,98,234,234,180,288,240};
+            float[] dy={30,97,163,97,163,163,97,30};
+            int[] identities={0,1,2,4,5,6,7,9};
             for(int i=0;i<Skills.Length;i++)
-                Skills[i]=Centered(Width-252+(i%5)*54,Height-(i<5?204:140)+groupShift,48);
-            for(int i=0;i<Skills.Length;i++)SkillOpportunities[i]=new Area(Skills[i].X,Skills[i].Y+Skills[i].Height+1,Skills[i].Width,14);
+            {
+                float size=i==7?54:48;
+                Skills[i]=Centered(Width-dx[i],Height-dy[i]+shift,size);
+                Area key=Skills[i];
+                SkillOpportunities[identities[i]]=i==7?new Area(key.X-28,key.Y+17,24,14):
+                    new Area(key.X,i==0?key.Y-15:key.Y+key.Height+1,key.Width/2,14);
+            }
             CounterOpportunity=new Area(Attack.X,Attack.Y+Attack.Height+1,Attack.Width/2,13);
             ComboOpportunity=new Area(Attack.X+Attack.Width/2,Attack.Y+Attack.Height+1,Attack.Width/2,13);
-            FocusCommand=new Area(Skills[0].X-102,Skills[0].Y+1,48,48);
-            RecallCommand=new Area(Skills[0].X-50,Skills[0].Y+1,48,48);
-            Menu=Centered(Width-32,32,48);
-            Inventory=Centered(Width-91,32,48);
-            SkillsMenu=Centered(Width-150,32,48);
-            // Keep encounter feedback below the menu row, above the skill strip.
-            // A centered bar at y=98 crosses the first skill row on 320-unit phones.
-            EncounterText=new Area(Width-184,62,172,18);
-            BossHealth=new Area(Width-184,83,172,5);
-            // Four short objective lines + a real capture bar. At 568x320 the
-            // card ends at y=84, above interaction and the first skill row.
-            float objectiveWidth=Math.Min(236,Width-380);
-            AdventureStatus=new Area((Width-objectiveWidth)/2,8,objectiveWidth,76);
-            // The short feedback card uses the gap between the movement zone and
-            // jump button, below the skill strip, never covering an action target.
-            Notice=new Area(198,Height-106+Math.Max(0,groupShift),Math.Min(320,Jump.X-210),94-Math.Max(0,groupShift));
-            float viewLeft=MoveZone.X+MoveZone.Width+3,viewTop=FocusCommand.Y+FocusCommand.Height+4;
-            CombatView=ChooseCombatView(viewLeft,viewTop,Skills[0].X-viewLeft-4,Notice.Y-viewTop-4);
+            FocusCommand=new Area(204,Height-170,48,48);RecallCommand=new Area(204,Height-120,48,48);
+            PlayerStatus=new Area(90,12,175,58);Map=new Area(12,12,72,56);
+            AdventureStatus=new Area(12,70,188,76);
+            // Transient notices replace this left-side information slot, never the battlefield.
+            Notice=AdventureStatus;
+            EncounterText=new Area(Width-172,60,164,18);BossHealth=new Area(Width-172,81,164,5);
+            CombatView=ChooseCombatView(Width*.5f-12,Height*.3f-32,96,64);
         }
+
         private Area ChooseCombatView(float x,float y,float w,float h)
         {
             Area best=new Area(x+(w-96)/2,y+(h-64)/2,96,64);float bestScore=float.MaxValue;
-            for(int i=-1;i<25;i++)
+            for(int i=-1;i<121;i++)
             {
-                float cx=i<0?best.X+48:Width*(.35f+(i%5)*.075f),cy=i<0?best.Y+32:Height*(.35f+(i/5)*.075f);
+                float cx=i<0?best.X+48:Width*(.25f+(i%11)*.05f),cy=i<0?best.Y+32:Height*(.25f+(i/11)*.05f);
                 Area candidate=new Area(cx-48,cy-32,96,64);
                 if(!ClearView(candidate))continue;
                 float dx=cx/Width-.5f,dy=cy/Height-.5f,score=dx*dx+dy*dy;
@@ -78,7 +78,7 @@ namespace Emberfall
         private bool ClearView(Area area)
         {
             if(area.X<0||area.Y<0||area.X+area.Width>Width||area.Y+area.Height>Height)return false;
-            foreach(var control in new[]{MoveZone,Attack,Dodge,Potion,Jump,Menu,Inventory,SkillsMenu,Interact,FocusCommand,RecallCommand,Notice,BossHealth,EncounterText,AdventureStatus,new Area(12,12,175,58)})
+            foreach(var control in new[]{MoveZone,Attack,Dodge,Potion,Jump,Menu,Inventory,SkillsMenu,Catalog,Interact,FocusCommand,RecallCommand,Notice,BossHealth,EncounterText,AdventureStatus,PlayerStatus,Map})
                 if(area.Overlaps(control))return false;
             foreach(var skill in Skills)if(area.Overlaps(skill))return false;
             foreach(var hint in SkillOpportunities)if(area.Overlaps(hint))return false;

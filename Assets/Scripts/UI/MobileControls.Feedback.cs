@@ -26,12 +26,16 @@ namespace Emberfall
             var hero=session.Player;
             string potionState=MobileCombatPresentation.Potion(PotionCount,LimitedHealing,hero.Health>=hero.MaxHealth-.5f);
             string dodgeState=MobileCombatPresentation.Dodge(hero.DodgeCooldown,hero.IsJumping);
-            if(potionState.Length>0)Circle(Potion,new Color(.015f,.035f,.04f,.67f),"");
+            // The bottle remains visible even at full health; state is outside its icon.
             if(dodgeState.Length>0)Circle(Dodge,new Color(.015f,.035f,.04f,.67f),"");
-            LabelControl(Potion,LimitedHealing?"疗 "+PotionCount:"×"+PotionCount,false);
+            Rect potionVisual=VisualRect(Potion);
+            Rect countBadge=new Rect(potionVisual.xMax-20,potionVisual.yMax-16,20,16);
+            GUI.color=new Color(.015f,.025f,.04f,EffectPreferences.TouchOpacity);GUI.DrawTexture(countBadge,Texture2D.whiteTexture);GUI.color=Color.white;
+            GUI.Label(countBadge,PotionCount.ToString(),controlLabel);
+            string failure=session.ControlFailure("potion");
+            string potionCaption=!string.IsNullOrEmpty(failure)?failure:potionState;
+            if(potionCaption.Length>0)GUI.Label(new Rect(Potion.x-8,Potion.y-18,Potion.width+16,16),potionCaption,controlLabel);
             if(dodgeState.Length>0)LabelControl(Dodge,hero.DodgeCooldown>.01f?hero.DodgeCooldown.ToString("0.0"):dodgeState,true);
-            string failure=session.ControlFailure("potion");if(!string.IsNullOrEmpty(failure))LabelControl(Potion,failure,true);
-            else if(potionState=="满血")LabelControl(Potion,potionState,true);
             var combo=hero.BasicOpportunityWindow(true);var ca=Layout.ComboOpportunity;
             comboMeter.Draw(new Rect(ca.X,ca.Y,ca.Width,ca.Height),combo,hero,hero.CombatEpoch,1,EffectPreferences.TouchOpacity);
             var counter=hero.BasicOpportunityWindow();var co=Layout.CounterOpportunity;

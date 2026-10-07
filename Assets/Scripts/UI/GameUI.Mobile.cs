@@ -13,7 +13,12 @@ namespace Emberfall
         private bool MobileButton(MobileControlLayout.Area area,string label,Color color)
         { Rect r=TouchRect(area);blockedRects.Add(r);return Button(r,label,color); }
         private bool MobileIcon(MobileControlLayout.Area area,string icon,Color color)
-        { Rect r=TouchRect(area);blockedRects.Add(r);return IconButton(r,icon,"","",color); }
+        {
+            Rect r=TouchRect(area);blockedRects.Add(r);
+            float size=28*TouchRatio;DrawIcon(new Rect(r.center.x-size*.5f,r.center.y-size*.5f,size,size),UIIconAtlas.Utility(icon),color);
+            Badge(r,icon=="inventory"?NewEquipmentAttention||Attention.LootPending:icon=="skills"?Attention.Skills:false);
+            return GUI.Button(r,GUIContent.none,invisibleButton);
+        }
 
         public void CancelMobileCast(){mobileTap.Cancel();}
         private bool BeginMobileCast(int finger,Vector2 screen)
@@ -87,42 +92,39 @@ namespace Emberfall
         {
             var l=MobileControls.Layout;GameProfile p=session.Progression.Profile;
             Color accent=GameBalance.ClassColor(p.heroClass);
-            Rect status=TouchRect(12,12,175,58);blockedRects.Add(status);Box(status,accent,false);
-            Text(TouchRect(22,17,68,18),GameBalance.ClassName(p.heroClass)+" "+p.level,TouchFont(12),pale,true);
+            Rect status=TouchRect(l.PlayerStatus);blockedRects.Add(status);Box(status,accent,false);
+            Text(TouchRect(100,17,68,18),GameBalance.ClassName(p.heroClass)+" "+p.level,TouchFont(12),pale,true);
             float hp=session.Player==null?0:session.Player.Health,max=session.Player==null?1:session.Player.MaxHealth;
-            Text(TouchRect(90,17,87,18),Mathf.CeilToInt(hp)+"/"+Mathf.CeilToInt(max),TouchFont(11),pale,true,false,TextAnchor.MiddleRight);
-            Bar(TouchRect(22,39,155,8),hp/Mathf.Max(1,max),jade);
-            Bar(TouchRect(22,52,155,5),session.Player==null?0:session.Player.Energy/Mathf.Max(1,session.Player.MaxEnergy),new Color(.35f,.63f,1));
+            Text(TouchRect(168,17,87,18),Mathf.CeilToInt(hp)+"/"+Mathf.CeilToInt(max),TouchFont(11),pale,true,false,TextAnchor.MiddleRight);
+            Bar(TouchRect(MobilePassiveStatusLayout.HealthBar),hp/Mathf.Max(1,max),jade);
+            Bar(TouchRect(MobilePassiveStatusLayout.EnergyBar),session.Player==null?0:session.Player.Energy/Mathf.Max(1,session.Player.MaxEnergy),new Color(.35f,.63f,1));
             if(MobileIcon(l.Inventory,"inventory",jade))TogglePanel(Panel.Inventory);
             if(MobileIcon(l.SkillsMenu,"skills",p.skillPoints>0?gold:jade))TogglePanel(Panel.Skills);
             if(MobileIcon(l.Menu,"pause",muted))session.SetPaused(true);
-            Rect map=TouchRect(l.Width*.5f-44,12,88,60);
+            if(MobileIcon(l.Catalog,"codex",gold)){panel=Panel.Camp;campTab=1;session.SetUIBlocking(true);}
+            Badge(TouchRect(l.Catalog),Attention.Rewards);
+            Rect map=TouchRect(l.Map);blockedRects.Add(map);Box(map,jade,false);DrawMinimapTerrain(map);
+            if(!session.InDungeon){MapDot(map,new Vector3(0,0,11),jade,4*TouchRatio);for(int npc=0;npc<3;npc++)MapDot(map,GameSession.HubNpcPosition(npc),gold,3*TouchRatio);}
+            else MapDot(map,new Vector3(0,0,-16),jade,4*TouchRatio);
+            if(session.Player!=null)MapDot(map,session.Player.transform.position,jade,4*TouchRatio);
+            foreach(var enemy in session.Enemies)if(enemy!=null&&!enemy.IsDead)MapDot(map,enemy.transform.position,enemy.IsBoss?gold:new Color(1,.4f,.3f),2*TouchRatio);
+            if(GUI.Button(map,GUIContent.none,invisibleButton))OpenTravelMap();
             string growthTitle,growthStep;
-            if(session.ChapterActive||session.SpecialAdventure)DrawMobileModeStatus(session.ChapterActive||session.RoomChainRun!=null||session.ModeRun!=null&&session.ModeRun.Mode==ExpeditionModeKind.HoldPoint?TouchRect(l.AdventureStatus):TouchRect(l.Width*.5f-86,12,172,58));
-            else if(TryGrowthHudHint(out growthTitle,out growthStep))
+            if(string.IsNullOrEmpty(session.Notification))
             {
-                Rect goal=TouchRect(l.AdventureStatus);blockedRects.Add(goal);Box(goal,jade,false);
-                Text(new Rect(goal.x+6*TouchRatio,goal.y+4*TouchRatio,goal.width-12*TouchRatio,20*TouchRatio),growthTitle,TouchFont(11),gold,true,true);
-                Text(new Rect(goal.x+6*TouchRatio,goal.y+25*TouchRatio,goal.width-12*TouchRatio,46*TouchRatio),growthStep,TouchFont(10),pale,false,true);
-            }
-            else
-            {
-                blockedRects.Add(map);Box(map,jade,false);DrawMinimapTerrain(map);
-                if(!session.InDungeon)
+                if(session.ChapterActive||session.SpecialAdventure)DrawMobileModeStatus(TouchRect(l.AdventureStatus));
+                else if(TryGrowthHudHint(out growthTitle,out growthStep))
                 {
-                    MapDot(map,new Vector3(0,0,11),jade,5*TouchRatio);
-                    for(int npc=0;npc<3;npc++)MapDot(map,GameSession.HubNpcPosition(npc),gold,3*TouchRatio);
+                    Rect goal=TouchRect(l.AdventureStatus);blockedRects.Add(goal);Box(goal,jade,false);
+                    Text(new Rect(goal.x+6*TouchRatio,goal.y+4*TouchRatio,goal.width-12*TouchRatio,20*TouchRatio),growthTitle,TouchFont(11),gold,true,true);
+                    Text(new Rect(goal.x+6*TouchRatio,goal.y+25*TouchRatio,goal.width-12*TouchRatio,46*TouchRatio),growthStep,TouchFont(10),pale,false,true);
                 }
-                else MapDot(map,new Vector3(0,0,-16),jade,5*TouchRatio);
-                if(session.Player!=null)MapDot(map,session.Player.transform.position,jade,4*TouchRatio);
-                foreach(var enemy in session.Enemies)if(enemy!=null&&!enemy.IsDead)MapDot(map,enemy.transform.position,enemy.IsBoss?gold:new Color(1,.4f,.3f),2*TouchRatio);
-                if(GUI.Button(map,GUIContent.none,invisibleButton))OpenTravelMap();
             }
             if(session.InDungeon&&!session.SpecialAdventure)
             {blockedRects.Add(TouchRect(l.EncounterText));Text(TouchRect(l.EncounterText),session.DungeonCleared?"遗迹肃清":"第 "+session.DungeonWave+" / "+session.TotalWaves+" 波",TouchFont(12),pale,true,false,TextAnchor.MiddleCenter);}
             DrawMobileHotbar();
             DrawCompanionCommands();
-            Text(TouchRect(22,71,155,11),CurrentCombatResult(),TouchFont(9),pale,true);
+
             string interaction=session.NearChapterExit?"沿星路前进":session.NearRoomExit?"进入下一间":session.SideEventAvailable?"晶核挑战":session.NearbyHubNpc!=HubNpcKind.None?HubNpcMobileLabel(session.NearbyHubNpc):session.IsInCamp?"营地工坊":session.InDungeon?"返回营地":session.IsNearDungeonEntrance?"进入副本":"靠近入口";
             if(MobileInteractionVisible)
             {
@@ -131,7 +133,7 @@ namespace Emberfall
             // This is presentation only: a second IMGUI Button here would dispatch
             // again after a room transition changed the context on pointer release.
             Box(interact,CanMobileInteract?gold:muted,false);
-            Text(interact,interaction,TouchFont(12),CanMobileInteract?gold:muted,true,false,TextAnchor.MiddleCenter);
+            Text(interact,interaction,TouchFont(11),CanMobileInteract?gold:muted,true,true,TextAnchor.MiddleCenter);
 
             }
             EnemyController boss=null;foreach(var e in session.Enemies)if(e!=null&&e.IsBoss&&!e.IsDead){boss=e;break;}
@@ -146,15 +148,37 @@ namespace Emberfall
             var l=MobileControls.Layout;GameProfile p=session.Progression.Profile;
             for(int i=0;i<MobileSkillPolicy.ButtonCount;i++)
             {
-                Rect hit=hotbarSlots[i];blockedRects.Add(hit);Rect r=MobileVisualRect(hit);int skill=MobileSkillPolicy.SkillAtButton(i);bool learned=p.skillRanks[skill]>0;bool passive=GameBalance.IsPassive(skill);
-                bool ready=!passive&&session.Player!=null&&session.Player.IsSkillAvailable(skill);
-                Fill(r,new Color(.035f,.075f,.105f,.92f));Border(r,ready?jade:!learned?muted*.25f:UIIconAtlas.SkillColor(p.heroClass,skill),ready?2*TouchRatio:1);
-                float iconSize=Mathf.Min(r.width-4*TouchRatio,Mathf.Min(r.height-17*TouchRatio,30*TouchRatio));DrawSkillIdentity(new Rect(r.center.x-iconSize*.5f,r.y+TouchRatio,iconSize,iconSize),p.heroClass,skill,p.skillRanks[skill],learned,iconSize/TouchRatio<=24?24:32);
-                if(passive||!learned)Text(new Rect(r.x,r.yMax-15*TouchRatio,r.width,15*TouchRatio),passive?"被动":"Lv."+GameBalance.SkillRequiredLevels[skill],TouchFont(9),passive?new Color(.8f,.7f,1):muted,true,false,TextAnchor.MiddleCenter);
+                Rect hit=hotbarSlots[i];blockedRects.Add(hit);Rect r=MobileVisualRect(hit);int skill=MobileSkillPolicy.SkillAtButton(i);
+                bool ready=session.Player!=null&&session.Player.IsSkillAvailable(skill);
+                bool pressed=mobileTap.Skill==skill&&mobileTap.Active;
+                DrawIcon(r,UIIconAtlas.ControlDisc(),ready?UIIconAtlas.SkillColor(p.heroClass,skill)*.55f:new Color(.025f,.045f,.06f,.34f));
+                if(skill==9)
+                {
+                    float pulse=ready?.72f+.18f*Mathf.Sin(Time.unscaledTime*4f):.28f;
+                    DrawIcon(r,UIIconAtlas.ControlDisc(),new Color(.2f,1f,.65f,pulse));
+                    DrawIcon(new Rect(r.x+3*TouchRatio,r.y+3*TouchRatio,r.width-6*TouchRatio,r.height-6*TouchRatio),UIIconAtlas.ControlDisc(),new Color(.015f,.08f,.06f,.94f));
+                }
+                float iconSize=Mathf.Min(r.width,r.height)*.76f;
+                Rect icon=new Rect(r.center.x-iconSize*.5f,r.center.y-iconSize*.5f,iconSize,iconSize);
+                // Floating transparent glyph: the entire identity carries availability.
+                Color tint=pressed&&ready?gold:ready?Color.white:new Color(.38f,.42f,.46f,.58f);
+                DrawIcon(icon,UIIconAtlas.Skill(p.heroClass,skill,48),tint);
+                if(skill==9)Text(new Rect(r.x,r.yMax-13*TouchRatio,r.width,12*TouchRatio),"终极",TouchFont(9),ready?new Color(.3f,1f,.72f):muted,true,false,TextAnchor.MiddleCenter);
                 DrawMobileSkillAvailability(r,skill);
-                if(mobileTap.Skill==skill&&mobileTap.Active)Border(r,gold,2*TouchRatio);
             }
+            DrawMobilePassiveIdentities();
             controlOpacity=priorOpacity;
+        }
+        private void DrawMobilePassiveIdentities()
+        {
+            var profile=session.Progression.Profile;
+            for(int i=0;i<MobilePassiveStatusLayout.Count;i++)
+            {
+                int skill=MobilePassiveStatusLayout.SkillAtIndicator(i),rank=profile.skillRanks[skill];
+                Rect area=TouchRect(MobilePassiveStatusLayout.Indicator(i));blockedRects.Add(area);
+                DrawSkillIdentity(new Rect(area.x,area.y,area.width,24*TouchRatio),profile.heroClass,skill,rank,rank>0,24);
+                Text(new Rect(area.x,area.y+24*TouchRatio,area.width,10*TouchRatio),rank>0?"被动":"未学",TouchFont(9),rank>0?pale:muted,false,false,TextAnchor.MiddleCenter);
+            }
         }
         private string mobileNoticeDetail;
         private Vector2 mobileNoticeScroll;
