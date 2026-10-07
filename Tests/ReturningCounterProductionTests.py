@@ -10,7 +10,7 @@ s=(r/'Assets/Scripts/Combat/PlayerController.cs').read_text()
 timers=''.join(line for line in s.splitlines(True) if line.strip().startswith(('counterTime = Mathf.Max(0, counterTime - dt);','perfectDodgeCounterTime = Mathf.Max(0, perfectDodgeCounterTime - dt);')))
 methods=''.join(member(s,k) for k in ['private void BasicAttack(','private bool Melee(','public void NotifyPerfectDodge(','private bool ReturningCounterVariant','private bool ReturningCounterReady'])
 focus=(r/'Assets/Scripts/Combat/PlayerController.MobileFocus.cs').read_text()
-methods+=''.join(member(focus,k) for k in ['public EnemyController MobilePinnedTarget','internal void ClearMobilePinnedTarget(','internal bool PinMobileTarget(','internal bool MobilePinAppliesToSkill(','internal string MobilePinnedActionReason(','internal bool MobilePinnedActionAllowed('])
+methods+=''.join(member(focus,k) for k in ['public EnemyController MobilePinnedTarget','internal void ClearMobilePinnedTarget(','internal bool PinMobileTarget(','internal bool MobilePinAppliesToSkill(','internal string MobilePinnedActionReason(','private string MobilePinnedActionReasonFor(','internal bool MobilePinnedActionAllowed('])
 # Execute the unchanged complete proc branch separately; surrounding on-hit features are independent.
 branch=member(s,'if (HeroClass == HeroClass.Vanguard && HasMechanic(EquipmentMechanic.ReturningBlade) && !ReturningCounterVariant)')
 math=(r/'Tests/DestructibleTraversalTests.cs').read_text();math=math[math.index('namespace UnityEngine'):]
