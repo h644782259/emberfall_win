@@ -41,7 +41,7 @@ fixture=fixture.replace('public Vector3 position,forward=', 'public Quaternion l
 fixture=fixture[:fixture.index('\nnamespace Emberfall{public partial class EnemyController{')]+fixture[fixture.index('\nnamespace Emberfall{public static class MobileControls'):]
 methods=''.join(member(player,k) for k in ['private void BasicAttack(','private bool Melee(','internal void OnBasicAttackHitTarget(','public void TakeDamageFrom(','internal void HitArea(','private bool ReturningCounterVariant','private bool ReturningCounterReady'])
 focus=(root/'Assets/Scripts/Combat/PlayerController.MobileFocus.cs').read_text()
-methods+=''.join(member(focus,k) for k in ['public EnemyController MobilePinnedTarget','internal void ClearMobilePinnedTarget(','internal bool PinMobileTarget(','internal bool MobilePinAppliesToSkill(','internal string MobilePinnedActionReason(','internal bool MobilePinnedActionAllowed('])
+methods+=''.join(member(focus,k) for k in ['public EnemyController MobilePinnedTarget','internal void ClearMobilePinnedTarget(','internal bool PinMobileTarget(','internal bool MobilePinAppliesToSkill(','internal string MobilePinnedActionReason(','private string MobilePinnedActionReasonFor(','internal bool MobilePinnedActionAllowed('])
 # Extract unchanged real practice early branches. Other modes are an explicit throwing boundary.
 session=''
 for path,key in [('GameSession.cs','public void OnEnemyKilled('),('GameSession.cs','public void OnPlayerDied('),('GameSession.Expedition.cs','public void RecordCombatAction('),('GameSession.Expedition.cs','public void RecordIncomingDamage(')]:

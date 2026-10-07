@@ -1,1 +1,3 @@
 The full controls run revealed a fixture compile error: the extracted MobilePinnedActionReason now delegates to MobilePinnedActionReasonFor. Include that real production method in the fixture. The actual counter/basic/melee/dodge/ground suite passes 40 assertions and all six compiled negative controls; gameplay code is unchanged. The original full-run failure remains archived; this affected rerun is separate managed evidence.
+
+The practice-action settlement fixture also needs the split production target-reason method. Its actual settlement/input isolation tests and compiled negative controls pass after adding that method; this is an affected rerun, not a replacement for the old full report.
