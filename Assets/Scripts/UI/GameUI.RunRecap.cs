@@ -7,6 +7,7 @@ namespace Emberfall
     {
         private Vector2 recapScroll;
         private string recapError;
+        private bool recapGenerationDetailsExpanded;
         private RunRecapSnapshot renderedRecap;
         private RunRecapPresentation recapPresentation;
 
@@ -19,7 +20,7 @@ namespace Emberfall
             RunRecapSnapshot snapshot=session.LastRunRecap;
             if(!object.ReferenceEquals(renderedRecap,snapshot))
             {
-                renderedRecap=snapshot; recapScroll=Vector2.zero;
+                renderedRecap=snapshot; recapScroll=Vector2.zero;recapGenerationDetailsExpanded=false;
                 recapPresentation=snapshot==null?null:new RunRecapPresentation(snapshot);
             }
             string latestError=session.Progression.LastError;
@@ -96,6 +97,7 @@ namespace Emberfall
                 Text(new Rect(57*unit,(y+14)*unit,(w-73)*unit,35*unit),data.FailureLabel,Mathf.RoundToInt(23*unit),pale,true,false,TextAnchor.MiddleLeft);
                 y+=76;
             }
+            if(data.HasGenerationFailure)y=DrawRecapTip(data,y,w,unit);
             if(data.HasDamage)
             {
                 Rect cause=new Rect(0,y*unit,w*unit,66*unit);Fill(cause,new Color(.16f,.085f,.08f));
@@ -172,12 +174,36 @@ namespace Emberfall
             y=DrawRecapChips("机制装备",data.Mechanics,y,w,unit,gold);
             y=DrawRecapChips("本局祝福",data.Blessings,y,w,unit,jade);
             y=DrawRecapChips("更多操作",data.ExtraActions,y,w,unit,muted);
-            if(!string.IsNullOrEmpty(data.Tip))
+            if(!data.HasGenerationFailure)DrawRecapTip(data,y,w,unit);
+        }
+
+        private float RecapTextHeight(string text,float width,float unit,int font)
+        {return Mathf.Ceil(Style(Mathf.RoundToInt(font*unit),false,true).CalcHeight(new GUIContent(text),Mathf.Max(1,width*unit))/unit);}
+        private float RecapTipHeight(RunRecapPresentation data,float width,float unit,bool expanded)
+        {
+            if(string.IsNullOrEmpty(data.Tip))return 0;
+            float height=Mathf.Max(56,RecapTextHeight(data.Tip,width-64,unit,15)+18);
+            if(data.GenerationFailureDetails.Length>0)
+            {height+=56;if(expanded)height+=RecapTextHeight(data.GenerationFailureDetails,width-24,unit,14)+20;}
+            return height;
+        }
+        private float DrawRecapTip(RunRecapPresentation data,float y,float width,float unit)
+        {
+            if(string.IsNullOrEmpty(data.Tip))return y;
+            bool expanded=recapGenerationDetailsExpanded;
+            float summary=Mathf.Max(56,RecapTextHeight(data.Tip,width-64,unit,15)+18);
+            float height=RecapTipHeight(data,width,unit,expanded);
+            Fill(new Rect(0,y*unit,width*unit,height*unit),new Color(.055f,.11f,.13f));
+            DrawIcon(new Rect(13*unit,(y+16)*unit,24*unit,24*unit),UIIconAtlas.Utility("help"),jade);
+            Text(new Rect(49*unit,(y+9)*unit,(width-64)*unit,(summary-18)*unit),data.Tip,Mathf.RoundToInt(15*unit),pale,false,true,TextAnchor.MiddleLeft);
+            if(data.GenerationFailureDetails.Length>0)
             {
-                Fill(new Rect(0,y*unit,w*unit,56*unit),new Color(.055f,.11f,.13f));
-                DrawIcon(new Rect(13*unit,(y+16)*unit,24*unit,24*unit),UIIconAtlas.Utility("help"),jade);
-                Text(new Rect(49*unit,(y+9)*unit,(w-64)*unit,39*unit),data.Tip,Mathf.RoundToInt(15*unit),pale,false,true,TextAnchor.MiddleLeft);
+                if(Button(new Rect(12*unit,(y+summary+4)*unit,(width-24)*unit,44*unit),expanded?"收起异常详情":"查看异常详情",jade))
+                    recapGenerationDetailsExpanded=!expanded;
+                // Use the measured state for this IMGUI event; the next event applies a toggle.
+                if(expanded)Text(new Rect(12*unit,(y+summary+66)*unit,(width-24)*unit,(height-summary-76)*unit),data.GenerationFailureDetails,Mathf.RoundToInt(14*unit),muted,false,true,TextAnchor.MiddleLeft);
             }
+            return y+height;
         }
 
         private void RecapSection(string title,float y,float w,float unit)
@@ -207,7 +233,7 @@ namespace Emberfall
             if(data.HasProgress)result+=28+ProgressCardHeight(data.Snapshot)+18;
             foreach(string[] values in new[]{data.MechanismEvidence,data.Mechanics,data.Blessings,data.ExtraActions})
                 if(values.Length>0)result+=28+RunRecapChipLayout.Height(RunRecapChipLayout.Pack(values,layout.ContentWidth))+18;
-            return result+(!string.IsNullOrEmpty(data.Tip)?56:0)+6;
+            return result+RecapTipHeight(data,layout.ContentWidth,MobileControls.Active?TouchRatio:1,recapGenerationDetailsExpanded)+6;
         }
     }
 }

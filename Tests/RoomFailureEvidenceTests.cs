@@ -18,9 +18,16 @@ public static class RoomFailureEvidenceTests
    if(reason==RoomFailureReason.Timeout)Check(view.Tip.Contains("当前进度"),"timeout uses actual objective progress");
    session.RoomChainRun.Fail(RoomFailureReason.Abandoned);Check(session.RoomChainRun.Failure==reason,"terminal reason never overwritten by later cleanup");
   }
-  var generated=new GameSession();generated.RoomChainRun=new RoomChainState(12345);generated.RoomChainRun.Fail(RoomFailureReason.GenerationOrPathFailure);generated.RoomGenerationFailureDetail="生成失败 · 印记模型与进度 2 · 种子 12345 / 房间 3 / 布局 21 / 守印";generated.Build(false);
-  string detail=generated.RoomGenerationFailureDetail;generated.RoomGenerationFailureDetail=null;
-  Check(generated.LastRunRecap.GenerationFailureDetail==detail&&new RunRecapPresentation(generated.LastRunRecap).Tip.Contains(detail),"actual recap freezes generation stage and seed even after live state is reset");
+  for(int mask=1;mask<=3;mask++)
+  {
+   var generated=new GameSession();generated.runSeed=12345;generated.RoomChainRun=new RoomChainState(12345);generated.RoomChainRun.Fail(RoomFailureReason.GenerationOrPathFailure);
+   generated.RoomGenerationFailureDetail="构建异常\n发生位置：印记模型与进度 2\n房间 3 · 守印";
+   var evidenceOwner=new object();if((mask&1)!=0)generated.MechanismEvidence.Register(evidenceOwner,1,0);if((mask&2)!=0)generated.MechanismEvidence.Register(evidenceOwner,1,1);
+   generated.Build(false);string detail=generated.RoomGenerationFailureDetail;generated.RoomGenerationFailureDetail=null;
+   var presentation=new RunRecapPresentation(generated.LastRunRecap);
+   Check(presentation.HasGenerationFailure&&presentation.Tip.StartsWith("构建异常")&&!presentation.Tip.Contains("下次"),"generation failure overrides unused ember and frost advice");
+   Check(presentation.GenerationFailureDetails==detail&&generated.LastRunRecap.Seed==12345&&!presentation.Tip.Contains("种子")&&!presentation.GenerationFailureDetails.Contains("种子"),"actual recap retains readable generation details and separate seed after live reset");
+  }
   var legacy=new GameSession();legacy.modeRewardDetailsUnavailable=true;legacy.Build(true);
   Check(legacy.LastRunRecap.RewardDetailsUnavailable&&new RunRecapPresentation(legacy.LastRunRecap).HasProgress,"real summary preserves visible unknown reward receipt state");
   Check(GameSession.RewardCardHeight(legacy.LastRunRecap)==88,"actual recap card reserves legacy-detail explanation height");

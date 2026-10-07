@@ -35,6 +35,8 @@ fixture=replace_required(fixture,'void FinalizeRoomChain(){}','void FinalizeRoom
 fixture=fixture.replace('RoomChainRun=new RoomChainState(seed);','DungeonTier=1+seed%4;ChallengeRun=seed%2==1;ResetRoomChain(true);')
 # Actual ChangeZone + ResetExpedition participate; unrelated chapter/arena/world/IO are explicit boundaries.
 methods+='\n'+member(source('Assets/Scripts/Core/GameSession.Expedition.cs'),'private void ResetExpedition(bool dungeon)')
+methods+='\n'+member(source('Assets/Scripts/Core/GameSession.Expedition.cs'),'public void ConfirmDungeonSelection()')
+fixture=fixture.replace('public void Tick(){','public bool SelectionOpen=>DungeonSelectionOpen;private bool SelectedChallengeMode;private string ModeName=>\"回廊远征\";private bool NearPortal()=>true;public void SelectDungeonForTest(){DungeonSelectionOpen=true;SelectedArenaMode=3;SelectedChallengeMode=true;ConfirmDungeonSelection();}public void Tick(){')
 fixture=fixture.replace('public static GameObject Build','public static bool FailNextBuild;public static GameObject Build').replace('{WorldTraversal.Reset(kind);','{if(FailNextBuild){FailNextBuild=false;throw new Exception("injected world failure");}WorldTraversal.Reset(kind);')
 fixture=fixture.replace('public void Tick(){','''public void Fresh(){ChangeZone(false);SelectedArenaMode=3;ChangeZone(true);}
  public void Fail(){RoomChainRun.Fail(RoomFailureReason.Death);IsDead=true;}
@@ -61,13 +63,14 @@ fixture=fixture.replace('private bool objectiveHealedThisWave,changingZone;','''
 fixture+='\nnamespace Emberfall{public class ChapterBoundary{public int Tier=1,Layout;public UnityEngine.Vector3 Entrance;}public static class ChapterRoomGeometry{public static ChapterBoundary Plan(int n,int i,int s)=>new ChapterBoundary();}public enum ExpeditionModeFailure{Abandoned}public class ArenaBoundary{public void Fail(ExpeditionModeFailure f){}}public class RunMechanismEvidence{public void Reset(){}}}\nnamespace UnityEngine{public static class Random{public static int Calls;public static int Range(int a,int b){Calls++;return 999;}}}'
 fixture=fixture.replace('public bool Fail;public string LastError;', 'public int FailOnSave=-1;public bool Fail;public string LastError;').replace('LastError=Fail?', 'LastError=(Fail||Saves==FailOnSave)?')
 fixture=fixture.replace('public static GameObject MakeRoomObjective(Vector3 p,bool indexed=false){', 'public static int FailSealNumber,SealCalls;public static GameObject MakeRoomObjective(Vector3 p,bool indexed=false){if(indexed&&++SealCalls==FailSealNumber)throw new InvalidOperationException("injected seal model failure");')
+fixture=fixture.replace('public static GameObject MakeLootBeacon(Vector3 p,Color c)=>new GameObject();','public static bool FailNextBeacon;public static GameObject MakeLootBeacon(Vector3 p,Color c){if(FailNextBeacon){FailNextBeacon=false;throw new InvalidOperationException("injected gate model failure");}return new GameObject();}')
 from RoomWorldFixture import attach
 fixture,math=attach(root,fixture,math,originals,member)
 probe=source('Tests/RoomBranchProductionTests.cs')
 with tempfile.TemporaryDirectory(prefix='room-branch-') as temporary:
  base=Path(temporary)
  env=dict(os.environ,DOTNET_CLI_HOME=str(base/'cli'),DOTNET_NOLOGO='1')
- for mode,expected in [('current',None),('old-third-room','selected objective replaces old seed objective'),('reroll-retry','retry retains seed branch and conditions'),('double-save-branch','single preflight enters selected room despite second-write fault'),('double-save-retry','retry uses one saved preflight despite second-write fault')]:
+ for mode,expected in [('current',None),('old-third-room','selected objective replaces old seed objective'),('reroll-retry','retry retains seed branch and conditions'),('double-save-branch','single preflight enters selected room despite second-write fault'),('double-save-retry','retry uses one saved preflight despite second-write fault'),('first-entry-success-overwrite','first entry success notice never overwrites generation failure')]:
   p=base/mode;p.mkdir(exist_ok=True)
   for name,s in originals.items():
    if mode=='double-save-branch' and name=='GameSession.RoomBranch.cs':s=replace_required(s,'UpdateTimeScale();return EnterNextRoomAfterSave();','UpdateTimeScale();return EnterNextRoom();')
@@ -75,6 +78,7 @@ with tempfile.TemporaryDirectory(prefix='room-branch-') as temporary:
    (p/name).write_text(s)
   body=replace_required(methods,'if(retryingRoomChain)runSeed=roomRetrySeed;','if(retryingRoomChain)runSeed=roomRetrySeed+1;') if mode=='reroll-retry' else methods
   if mode=='double-save-retry':body=replace_required(body,' && !retryingRoomChain && !SaveBeforeLeaving()', ' && !SaveBeforeLeaving()')
+  if mode=='first-entry-success-overwrite':body=replace_required(body,'if(RoomChainRun!=null&&RoomChainRun.Failed)return;','')
   (p/'Methods.cs').write_text('using UnityEngine;using System.Collections.Generic;namespace Emberfall{public sealed partial class GameSession{'+body+'}}')
   (p/'Fixture.cs').write_text(fixture);(p/'Math.cs').write_text(math);(p/'Probe.cs').write_text(probe)
   project=p/'Probe.csproj';project.write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net8.0</TargetFramework><OutputType>Exe</OutputType><NuGetAudit>false</NuGetAudit><NoWarn>0649;0414</NoWarn></PropertyGroup></Project>');(p/'NuGet.Config').write_text('<configuration><packageSources><clear /></packageSources></configuration>')

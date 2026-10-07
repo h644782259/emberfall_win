@@ -53,6 +53,8 @@ namespace Emberfall
         public readonly KeyValuePair<string,int>[] Metrics, Rewards;
         public readonly string[] ExtraActions, Mechanics, Blessings, MechanismEvidence;
         public readonly string Tip, FailureLabel;
+        public bool HasGenerationFailure { get { return !Snapshot.Won&&Snapshot.FailureReason=="GenerationOrPathFailure"; } }
+        public string GenerationFailureDetails { get { return HasGenerationFailure?Snapshot.GenerationFailureDetail:""; } }
         public bool HasFailureBanner { get { return FailureLabel.Length>0&&Snapshot.FailureReason!="PlayerDefeated"&&Snapshot.FailureReason!="Death"; } }
         public bool HasDamage { get { return !Snapshot.Won && !HasFailureBanner && Snapshot.LastDamageAmount>0 && !string.IsNullOrWhiteSpace(Snapshot.LastDamageSource) && Snapshot.LastDamageSource!="未记录"; } }
         public bool HasProgress { get { return Snapshot.RewardDetailsUnavailable || Snapshot.Materials>0 || Snapshot.PendingChest || Snapshot.FirstClearChoice || Snapshot.GoldLost>0 || Rewards.Length>0; } }
@@ -76,7 +78,7 @@ namespace Emberfall
             for(int i=Metrics.Length;i<actions.Count;i++)extra.Add(actions[i].Key+" "+actions[i].Value);
             ExtraActions=extra.ToArray(); Mechanics=Clean(snapshot.Mechanics); Blessings=Clean(snapshot.Blessings);
             MechanismEvidence=snapshot.EmberCreated+snapshot.FrostCreated==0?new string[0]:new[]{"烬地 · 生成 "+snapshot.EmberCreated+" / 生效 "+snapshot.EmberEffective,"霜环回响 · 生成 "+snapshot.FrostCreated+" / 生效 "+snapshot.FrostEffective};
-            Tip=snapshot.EmberCreated>snapshot.EmberEffective?"烬地有未造成生命损失的实例；下次把落点放在敌人推进路线上。":snapshot.FrostCreated>snapshot.FrostEffective?"霜环回响有未造成生命损失的实例；下次留意回响延迟与敌人位置。":snapshot.Won?"":ChooseTip(snapshot);
+            Tip=HasGenerationFailure?ChooseTip(snapshot):snapshot.EmberCreated>snapshot.EmberEffective?"烬地有未造成生命损失的实例；下次把落点放在敌人推进路线上。":snapshot.FrostCreated>snapshot.FrostEffective?"霜环回响有未造成生命损失的实例；下次留意回响延迟与敌人位置。":snapshot.Won?"":ChooseTip(snapshot);
         }
         private static int Priority(string action)
         {
@@ -95,7 +97,12 @@ namespace Emberfall
         }
         private static string ChooseTip(RunRecapSnapshot snapshot)
         {
-            if(snapshot.FailureReason=="GenerationOrPathFailure")return string.IsNullOrEmpty(snapshot.GenerationFailureDetail)?"本次路线或生成异常；返回营地重新进入，不必更换配装":snapshot.GenerationFailureDetail+"；返回营地可重新进入";
+            if(snapshot.FailureReason=="GenerationOrPathFailure")
+            {
+                string cause=snapshot.GenerationFailureDetail;int line=cause.IndexOf('\n');
+                if(line>=0)cause=cause.Substring(0,line);
+                return (string.IsNullOrEmpty(cause)?"本次路线或生成异常":cause)+"；可原条件重试或返回营地重新进入。";
+            }
             if((snapshot.FailureReason=="Timeout"||snapshot.FailureReason=="TimeExpired")&&snapshot.Evidence!=null&&snapshot.Evidence.Objective.Length>0)return "时限结束时："+snapshot.Evidence.Objective+"；优先推进该目标";
             if(snapshot.FailureReason=="TimeExpired"||snapshot.FailureReason=="Timeout")return snapshot.ModeName.Contains("守望")?"留在中心占领圈，先清理圈边敌人":"减少阶段间空档，优先清理远程敌人";
             if(snapshot.FailureReason=="SpawnBlocked")return "回营重新进入，生成新的来袭位置";
