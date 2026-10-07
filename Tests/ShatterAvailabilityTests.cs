@@ -52,7 +52,7 @@ namespace Emberfall
  public class SkillChargeController {public bool IsCharging,ConsumedThisFrame;}
  public class FakeRuntime {public float Cooldown;public float Remaining(int skill)=>Cooldown;}
  public class FakeProgression {public GameProfile Profile=new GameProfile();}
- public class GameSession {public PlayerController Player;public bool HasStarted=true,InputBlocked;public float ArenaRadius=25;public List<EnemyController> Enemies=new List<EnemyController>();public FakeProgression Progression=new FakeProgression();}
+ public class GameSession {public PlayerController Player;public bool ChallengeRun,InDungeon;public int HealingCharges=3;public bool HasStarted=true,InputBlocked;public float ArenaRadius=25;public List<EnemyController> Enemies=new List<EnemyController>();public FakeProgression Progression=new FakeProgression();}
  public static class CompanionRules {public const float CommandOpportunityDuration=16f;}
  public class Status {public float FrostWindowDuration=4,BurnWindowDuration=3,PoisonWindowDuration=2;public float FrostTime=4,BurnTime=3;public float FrostRemaining=>HasFrostMark?FrostTime:0;public float BurnRemaining=>IsBurning?BurnTime:0;public bool OwnedBurn=true;public float OwnBurnRemaining(PlayerController source)=>OwnedBurn?BurnRemaining:0;public float OwnPoisonOpportunityRemaining(PlayerController source)=>PoisonStacks>=3?2:0;public bool HasFrostMark,IsBurning,IsMarked;public int PoisonStacks;}
  public class EnemyController {public bool IsDead,IsBoss;public float HitFootprintBonus;public Transform transform=new Transform();public GameObject gameObject=new GameObject();public Status StatusEffects=new Status();public EnemyController(float distance,bool frost){transform.position=new Vector3(0,0,distance);StatusEffects.HasFrostMark=frost;}}
@@ -60,7 +60,7 @@ namespace Emberfall
  public static class CombatSight
  {public static float Wall=float.PositiveInfinity;public static bool Direct(Vector3 a,Vector3 b)=>a.z<=Wall&&b.z<=Wall;public static bool Area(Vector3 a,Vector3 b)=>Direct(a,b);public static Vector3 GroundPoint(Vector3 a,Vector3 b)=>new Vector3(b.x,b.y,Math.Min(b.z,Wall));}
  public static class WorldTraversal {public static bool CanLeap(Vector3 a,Vector3 b,float radius)=>true;}
- public static class SummonedCompanion {public static float Opportunity;public static bool EmpoweredHitFeedback(PlayerController p,out int sequence,out int hits,out float age){sequence=hits=0;age=0;return false;}public static EnemyController ExplicitFocus(PlayerController p)=>null;public static void DescribeRoster(PlayerController p,out int count,out float life){count=0;life=0;}public static float CommandOpportunityRemaining(PlayerController p)=>Opportunity;}
+ public static class SummonedCompanion {public static bool HasHealingTarget(PlayerController p)=>false;public static float Opportunity;public static bool EmpoweredHitFeedback(PlayerController p,out int sequence,out int hits,out float age){sequence=hits=0;age=0;return false;}public static EnemyController ExplicitFocus(PlayerController p)=>null;public static void DescribeRoster(PlayerController p,out int count,out float life){count=0;life=0;}public static float CommandOpportunityRemaining(PlayerController p)=>Opportunity;}
  public partial class GameUI {private GameSession session;private PlayerController opportunityOwner;private int opportunityEpoch;public GameUI(GameSession value){session=value;}public string Read()=>CurrentCombatOpportunity();}
  public sealed partial class PlayerController
  { private int burnFeedbackCast;
@@ -68,7 +68,7 @@ namespace Emberfall
   public bool PinAllowed=true;internal bool MobilePinnedActionAllowed(int skill,bool feedback)=>PinAllowed;
   public float attackCooldown;public class Recovery{public bool Blocked;}public Recovery skillBasicRecovery=new Recovery();
   public SkillTargetingController targeting=new SkillTargetingController();
-  public EnemyController MobilePinnedTarget=>null;internal bool MobilePinAppliesToSkill(int skill)=>false;
+  public float Health=100,MaxHealth=100;private EnemyController ReadMobilePinnedTarget()=>null;internal string ReadMobilePinnedActionReason(int skill)=>PinAllowed?"":"blocked";public EnemyController MobilePinnedTarget=>null;internal bool MobilePinAppliesToSkill(int skill)=>false;
   public int CombatEpoch=1;public float CounterOpportunityRemaining;public float CounterOpportunityDuration=2;public bool IsJumping=>jumping;
   public T GetComponent<T>() where T:class {return charge as T;}
   public float SkillCooldownRemaining(int skill)=>skillRuntime.Remaining(skill);

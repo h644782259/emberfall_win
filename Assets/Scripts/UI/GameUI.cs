@@ -85,6 +85,12 @@ namespace Emberfall
         {
             if (session == null || !session.HasStarted || session.InputBlocked || panel != Panel.None) return true;
             if (MobileControls.IsScreenPointOverControls(point)) return true;
+            return IsScreenPointOverHUD(point);
+        }
+        // UI priority without calling back into movement-zone hit testing.
+        public bool IsScreenPointOverHUD(Vector2 point)
+        {
+            if (session == null || !session.HasStarted || session.InputBlocked || panel != Panel.None) return true;
             Vector2 position = ScreenToUI(point);
             foreach (Rect rect in blockedRects) if (rect.Contains(position)) return true;
             return false;
@@ -153,10 +159,10 @@ namespace Emberfall
                 return;
             }
             float barWidth = mobile ? 362 : 282;
-            hotbarBounds = new Rect((width - barWidth) * .5f, height - (mobile ? 177 : 165), barWidth, mobile ? 165 : 153);
+            hotbarBounds = new Rect((width - barWidth) * .5f, height - (mobile ? 177 : 143), barWidth, mobile ? 165 : 131);
             for (int slot = 0; slot < hotbarSlots.Length; slot++)
                 hotbarSlots[slot] = new Rect(hotbarBounds.x + 10 + (slot % 5) * (mobile ? 69 : 53),
-                    hotbarBounds.y + (mobile ? 27 : 39) + (1 - slot / 5) * (mobile ? 65 : 62), mobile ? 64 : 48, mobile ? 61 : 46);
+                    hotbarBounds.y + (mobile ? 27 : 17) + (1 - slot / 5) * (mobile ? 65 : 62), mobile ? 64 : 48, mobile ? 61 : 46);
         }
 
         private bool PauseUtilityVisible {get{return panel==Panel.Controls&&controlsReturnPause||panel==Panel.SaveLocation&&saveReturnPause||panel==Panel.Bindings&&(bindingReturnPause||bindingReturnPanel==Panel.Controls&&controlsReturnPause)||panel==Panel.TravelMap&&travelReturnPause;}}
@@ -903,7 +909,8 @@ namespace Emberfall
             float y = bar.y;
             blockedRects.Add(bar);
             Box(bar, jade);
-            Text(new Rect(x+10,y+4,bar.width-20,18),mobile?"技能快捷栏":DesktopBasicOpportunityCaption(),10,pale,true,false,TextAnchor.MiddleCenter);
+            string basicCaption=mobile?"":DesktopBasicOpportunityCaption();
+            if(!string.IsNullOrEmpty(basicCaption))Text(new Rect(x+10,y-19,bar.width-20,18),basicCaption,10,pale,true,false,TextAnchor.MiddleCenter);
             for (int slotIndex = 0; slotIndex < GameBalance.HotbarSize; slotIndex++)
             {
                 int skill = LearnedSkillAtSlot(p, slotIndex);
@@ -923,14 +930,13 @@ namespace Emberfall
 
                 Color accent = empty ? muted : potion ? gold : UIIconAtlas.SkillColor(p.heroClass, skill);
                 Fill(slot, locked ? new Color(.04f, .06f, .085f) : card);
-                Border(slot, new Color(accent.r, accent.g, accent.b, locked ? .23f : .55f));
-                if (hotbarDragging && !hotbarPointerConfiguring && (slotIndex == hotbarPointerSlot || slot.Contains(Mouse))) Border(slot, gold, 2);
+                bool ready=skill>=0&&session.Player!=null&&session.Player.IsSkillAvailable(skill);
                 if (!empty)
                 {
-                    float identitySize=mobile?44:32;
-                    Rect identity=new Rect(slot.center.x-identitySize*.5f,slot.y+(mobile?8:1),identitySize,identitySize);
-                    if(potion)DrawIcon(identity,HotbarIcon(p,skill),locked?new Color(.4f,.4f,.4f):Color.white);
-                    else DrawSkillIdentity(identity,p.heroClass,skill,rank,!locked&&!lacksEnergy,32);
+                    // The slot owns its only frame; the glyph uses the whole interior.
+                    Rect identity=new Rect(slot.x+1,slot.y+1,slot.width-2,slot.height-2);
+                    DrawIcon(identity,potion?HotbarIcon(p,skill):UIIconAtlas.Skill(p.heroClass,skill,48),
+                        locked||lacksEnergy?new Color(.5f,.55f,.6f,.85f):Color.white);
                 }
                 else Text(new Rect(slot.x, slot.y + 9, slot.width, 32), "+", 20, new Color(.34f, .44f, .53f), false, false, TextAnchor.MiddleCenter);
                 if (cooldown > .01f)
@@ -948,12 +954,12 @@ namespace Emberfall
                 if (lacksEnergy) Fill(new Rect(slot.x + 2, slot.yMax - 3, slot.width - 4, 2), new Color(.45f, .64f, 1f));
                 if (potion)
                 {
-                    string count = (session.ChallengeRun && session.InDungeon ? session.HealingCharges : p.potions).ToString();
+                    string count = "×"+(session.ChallengeRun && session.InDungeon ? session.HealingCharges : p.potions).ToString();
                     float countWidth = Mathf.Max(17, count.Length * 8 + 4);
                     Fill(new Rect(slot.xMax - countWidth - 2, slot.yMax - 17, countWidth, 15), new Color(.015f, .025f, .04f, .94f));
                     Text(new Rect(slot.xMax - countWidth - 3, slot.yMax - 18, countWidth, 17), count, 11, locked ? muted : pale, true, false, TextAnchor.MiddleRight);
                 }
-                if(actionable)Border(slot,jade,2);
+
                 if(actionCaption.Length>0)
                 {
                     Rect caption=new Rect(slot.x+2,slot.yMax-12,slot.width-4,11);
@@ -961,9 +967,10 @@ namespace Emberfall
                     Text(caption,actionCaption,8,actionable?jade:gold,true,false,TextAnchor.MiddleCenter);
                 }
                 bool hover = slot.Contains(Mouse);
+                bool selected=hover&&GUI.enabled||hotbarDragging&&!hotbarPointerConfiguring&&(slotIndex==hotbarPointerSlot||hover);
+                Border(slot,selected?gold:ready?jade:new Color(accent.r,accent.g,accent.b,locked?.23f:.55f),selected||ready?2:1);
                 if (hover && GUI.enabled)
                 {
-                    Border(slot, gold);
                     tooltip = empty ? "未配置" : potion ? PotionTooltip(p) : SkillTooltip(p, skill, rank);
                 }
                 if (!session.PracticeActive && !mobile && hover && GUI.enabled && Event.current.type == EventType.MouseDown && Event.current.button == 1)

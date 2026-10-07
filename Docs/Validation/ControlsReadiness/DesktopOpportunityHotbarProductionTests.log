@@ -1,0 +1,8 @@
+PASS: 66 real desktop DrawHotbar remapping/priority/input-state observations (managed drawing, not Unity)
+PASS: compiled old/miswired desktop behavior fails exact assertion: ready window caption renders once outside the slot
+PASS: compiled old/miswired desktop behavior fails exact assertion: actual remapped meteor slot reads skill identity not slot index
+PASS: compiled old/miswired desktop behavior fails exact assertion: glyph fills slot interior regardless of transient status
+PASS: compiled old/miswired desktop behavior fails exact assertion: readiness border and skill icon stay on remapped actual slot
+PASS: compiled old/miswired desktop behavior fails exact assertion: authoritative unavailable state removes readiness border
+PASS: compiled old/miswired desktop behavior fails exact assertion: actual remapped meteor slot reads skill identity not slot index
+PASS: compiled old/miswired desktop behavior fails exact assertion: desktop basic control names left click and actual counter window

@@ -12,10 +12,10 @@ def extract(path,signature):
  return s[a:b]
 with tempfile.TemporaryDirectory(prefix='mobile-pin-production-') as t:
  p=Path(t)
- for path in ['Core/CombatImpactBatch.cs','Core/SkillRuntime.cs','Core/GameTypes.cs','Core/CombatBalance.cs','Core/MobileCameraGesture.cs','Core/SkillDamageBudgets.cs','Combat/MobileSkillPolicy.cs','Combat/PlayerController.MobileFocus.cs','Combat/SkillChargeController.cs','UI/MobileControlLayout.cs','Core/CombatOpportunityState.cs','UI/MobileControls.OpportunityInput.cs','Core/CastFirstHitReceipt.cs','Combat/PlayerController.CastReceipts.cs']:(p/Path(path).name).write_text((r/'Assets/Scripts'/path).read_text())
+ for path in ['Combat/PlayerController.SkillAvailability.cs','Core/CombatImpactBatch.cs','Core/SkillRuntime.cs','Core/GameTypes.cs','Core/CombatBalance.cs','Core/MobileCameraGesture.cs','Core/SkillDamageBudgets.cs','Combat/MobileSkillPolicy.cs','Combat/PlayerController.MobileFocus.cs','Combat/SkillChargeController.cs','UI/MobileControlLayout.cs','Core/CombatOpportunityState.cs','UI/MobileControls.OpportunityInput.cs','Core/CastFirstHitReceipt.cs','Combat/PlayerController.CastReceipts.cs']:(p/Path(path).name).write_text((r/'Assets/Scripts'/path).read_text())
  (p/'Fixture.cs').write_text((r/'Tests/MobilePinnedTargetProductionTests.cs').read_text())
  player=['internal int NewCastId()','private Vector3 ResolveMobileAim(','internal void PrepareMobileSkillAim(','internal void ResolveMobileSkillAim(','private static bool ValidAimTarget(','private static bool ProjectedBounds(','private void FaceAim(','private EnemyController MagicConeTarget(','private void BasicAttack(','internal bool CastImmediateSkill(','internal bool ConfirmTargetedSkill(','internal bool ExecuteChargedSkill(','private bool CanUseMovementSkill(','internal bool SkillTargetingReady(','internal bool CanBeginSkillTargeting(','internal Vector3 ResolveSkillGroundTarget(','private void CastSkill(','private void CastSkillCore(']
- controls=['public static bool IsScreenPointOverControls(', 'public bool ProcessPointer(','public static void ResetInput()','private void Update()']
+ controls=['private bool IsMovementStart(', 'public static bool IsScreenPointOverControls(', 'public bool ProcessPointer(','public static void ResetInput()','private void Update()']
  target=['public enum Shape','public struct Preview','public static Preview Describe(','public static bool RequiresConfirmation(','public bool Begin(','public void Cancel()']
  (p/'PlayerMethods.cs').write_text('using System.Collections.Generic;using UnityEngine;namespace Emberfall{public sealed partial class PlayerController{'+''.join(extract('Combat/PlayerController.cs',x) for x in player)+'}}')
  (p/'PointerMethods.cs').write_text('using System.Collections.Generic;using UnityEngine;namespace Emberfall{public sealed partial class MobileControls{'+''.join(extract('UI/MobileControls.cs',x) for x in controls)+'}}')
@@ -55,6 +55,16 @@ with tempfile.TemporaryDirectory(prefix='mobile-pin-production-') as t:
  print('PASS: compiled live-team-at-release mutation fails actual contract emitter identity assertion')
  print('PASS: two compiled shared-readiness pin guards fail exact blocked/range committed-charge assertions')
  print('PASS: three compiled old gesture/automatic-selection/action-fallback mutations fail exact production assertions')
+
+ availability=p/'PlayerController.SkillAvailability.cs';goodAvailability=availability.read_text()
+ assert 'if (!movement) return true;' in goodAvailability
+ availability.write_text(goodAvailability.replace('if (!movement) return true;',''))
+ subprocess.run(build,env=env,check=True,stdout=subprocess.DEVNULL)
+ failed=subprocess.run(run,env=env,capture_output=True,text=True)
+ assert failed.returncode and 'readiness observation never mutates companion focus' in failed.stdout+failed.stderr,failed.stdout+failed.stderr
+ availability.write_text(goodAvailability)
+ print('PASS: compiled companion-focus observation mutation rejected')
+
 
 # UI wiring is source evidence, separate from executed combat semantics above.
 feedback=(r/'Assets/Scripts/UI/MobileControls.Feedback.cs').read_text()

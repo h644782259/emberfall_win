@@ -1,0 +1,9 @@
+  Determining projects to restore...
+  Restored /tmp/room-reference-16xik0j8/project/Validation.csproj (in 142 ms).
+  Validation -> /tmp/room-reference-16xik0j8/project/bin/Release/net8.0/Validation.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:04.48

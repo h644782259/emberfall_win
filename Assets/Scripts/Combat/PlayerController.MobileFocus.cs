@@ -16,6 +16,14 @@ namespace Emberfall
                 return mobilePinnedEnemy;
             }
         }
+        private EnemyController ReadMobilePinnedTarget()
+        {
+            return mobilePinnedEnemy!=null && session!=null && session.Player==this && !IsDead && CombatEpoch==mobilePinnedEpoch &&
+                ValidAimTarget(mobilePinnedEnemy) && session.Enemies.Contains(mobilePinnedEnemy) &&
+                CombatFx.Flat(mobilePinnedEnemy.transform.position-transform.position).sqrMagnitude<=14f*14f ? mobilePinnedEnemy : null;
+        }
+        internal string ReadMobilePinnedActionReason(int skill)
+        { return MobilePinnedActionReasonFor(skill,ReadMobilePinnedTarget()); }
         internal void ClearMobilePinnedTarget(){mobilePinnedEnemy=null;mobilePinnedEpoch=CombatEpoch;}
         internal bool PinMobileTarget(EnemyController enemy)
         {
@@ -34,9 +42,11 @@ namespace Emberfall
             return SkillTargetingController.Describe(HeroClass,skill,session.Progression.Profile.skillRanks[skill]).shape!=SkillTargetingController.Shape.Self;
         }
         internal string MobilePinnedActionReason(int skill)
+        { return MobilePinnedActionReasonFor(skill,MobilePinnedTarget); }
+        private string MobilePinnedActionReasonFor(int skill,EnemyController enemy)
         {
             if(!MobileControls.Active||!MobilePinAppliesToSkill(skill))return "";
-            var enemy=MobilePinnedTarget;if(enemy==null)return "";
+            if(enemy==null)return "";
             if(skill<0&&ReturningCounterReady)
             {
                 Vector3 landing;

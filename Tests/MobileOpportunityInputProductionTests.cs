@@ -11,6 +11,7 @@ public static class MobileOpportunityInputProductionTests
    MobileControls.ResetInput();MobileControls.Layout=new MobileControlLayout(568,320,163,preset);
    var session=new GameSession();var hero=new PlayerController(session);var controls=new MobileControls(session,new GameUI());var enemy=new EnemyController(8);session.Enemies.Add(enemy);hero.PinMobileTarget(enemy);
    var area=slot<10?MobileControls.Layout.SkillOpportunities[slot]:slot==10?MobileControls.Layout.CounterOpportunity:MobileControls.Layout.ComboOpportunity;
+   if(area.Width==0||area.Height==0){C(slot==3||slot==8,"only hidden passive identities have no opportunity hit area");continue;}
    foreach(var skillBox in MobileControls.Layout.Skills)C(!area.Overlaps(skillBox),"hint interception never enlarges or replaces a skill button");
    var point=controls.Control(area);C(!MobileControls.IsScreenPointOverControls(point),"invisible hint preserves world hit area");
    if(slot<10)hero.OpportunityWindows[slot]=Window();else if(slot==10)hero.CounterWindow=Window();else hero.ComboWindow=Window();
@@ -30,6 +31,6 @@ public static class MobileOpportunityInputProductionTests
    Tap(controls,87,new Vector2(220,180));C(hero.MobilePinnedTarget==null,"nonhint world tap remains functional");
    var attack=controls.Control(MobileControls.Layout.Attack);controls.ProcessPointer(88,TouchPhase.Began,attack);C(MobileControls.AttackHeld,"original attack button still owns attack");controls.ProcessPointer(88,TouchPhase.Ended,attack);C(!MobileControls.AttackHeld,"original attack release unchanged");
   }
-  return "PASS: "+count+" actual ProcessPointer/IsScreenPointOverControls assertions, 12 areas x 3 presets; opportunity observations and Unity are explicit boundaries";
+  return "PASS: "+count+" actual ProcessPointer/IsScreenPointOverControls assertions, visible areas x 3 presets, hidden passive areas explicitly excluded; opportunity observations and Unity are explicit boundaries";
  }
 }

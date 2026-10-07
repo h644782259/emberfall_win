@@ -63,6 +63,7 @@ namespace Emberfall
 
         // Shared entry point for keyboard and UI. Successful immediate casts return
         // true without ever entering placement mode; rejected requests keep a preview.
+        public bool CanBeginThisFrame { get { return castFrame != Time.frameCount; } }
         public bool Begin(int index)
         {
             if(castFrame==Time.frameCount||owner==null||index<0||index>=GameBalance.SkillCount||GameBalance.IsPassive(index))return false;
