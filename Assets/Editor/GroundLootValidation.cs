@@ -189,9 +189,9 @@ namespace Emberfall.Editor
             EnemyController[] enemies = game.Enemies.ToArray();
             SkillRuntime runtime = (SkillRuntime)Field(typeof(PlayerController), "skillRuntime").GetValue(game.Player);
             runtime.Advance(200); runtime.FillEnergy(); runtime.TryConsume(0, 1);
-            float cooldown = runtime.Remaining(0); int epoch = game.Player.CombatEpoch;
+            float cooldown = runtime.Remaining(0); int epoch = ReadCombatEpoch(game.Player);
             game.Player.transform.position = new Vector3(0, 0, 14);
-            check(game.EnterNextRoom() && game.RoomChainRun.Room.Index == 1 && !world.activeSelf && game.Player.CombatEpoch != epoch &&
+            check(game.EnterNextRoom() && game.RoomChainRun.Room.Index == 1 && !world.activeSelf && ReadCombatEpoch(game.Player) != epoch &&
                 ReceiptCount(game, false) == 0 && ReceiptCount(game, true) == 0 && runtime.Remaining(0) == cooldown,
                 "Successful real room travel retires both receipt sets after old world/epoch and preserves skill cooldown");
             int kills = game.Progression.Profile.kills;
@@ -250,6 +250,12 @@ namespace Emberfall.Editor
             FieldInfo field = type.GetField(name, PrivateInstance);
             if (field == null) throw new MissingFieldException(type.FullName, name);
             return field;
+        }
+        private static int ReadCombatEpoch(PlayerController player)
+        {
+            PropertyInfo property = typeof(PlayerController).GetProperty("CombatEpoch", PrivateInstance);
+            if (property == null) throw new MissingMemberException(typeof(PlayerController).FullName, "CombatEpoch");
+            return (int)property.GetValue(player);
         }
         private static void SetProperty(object owner, string name, object value)
         {
