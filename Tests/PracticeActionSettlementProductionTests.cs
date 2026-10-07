@@ -38,7 +38,7 @@ namespace Emberfall {
  public partial class PlayerController {
   public float Health=100,MaxHealth=100;
   PlayerStats stats=new PlayerStats();float invulnerability,chargedWardTime,guardTime,guardReduction,guardRadius=3,guardPower=1,healingProtectionTime,healingReduction,passiveTime,passiveReduction,hurtTimer,focusTime,blinkBufferTime,dodgeShockTime;
-  int guardRank,guardCastId,openingFrostIdentity;bool jumping;EnemyController focusedEnemy,openingFrostTarget;Targeting targeting;Opening openingFrost=new Opening();CombatProcCooldown openingFrostProc=new CombatProcCooldown();
+  int guardRank,guardCastId,openingFrostIdentity;bool jumping,rangerVault;EnemyController focusedEnemy,openingFrostTarget;Targeting targeting;Opening openingFrost=new Opening();CombatProcCooldown openingFrostProc=new CombatProcCooldown();
   void SettleMasteryCombo(EnemyController e){}void ApplySpellDodgeBoon(EnemyController e){}void Heal(float f){Health=Math.Min(MaxHealth,Health+f);}void TryDefensePassive(){}void CancelCombatPose(){}
   static PlayerController Practice(){var p=Make(true);p.skillRuntime.TryConsume(0,1);p.skillRuntime.RestoreEnergy(100-p.Energy-1);p.skillRuntime.EnergyChanged=p.session.PracticeRecord.Energy;p.session.PracticeRecord.Advance(2);return p;}
   static void PracticeSettlementTests(){

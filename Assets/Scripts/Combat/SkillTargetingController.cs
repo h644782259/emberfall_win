@@ -5,7 +5,7 @@ namespace Emberfall
     /// <summary>Dispatches immediate skills and previews uncommitted ground-target casts.</summary>
     public sealed class SkillTargetingController : MonoBehaviour
     {
-        public enum Shape { Self, Ground, Cone, Lane, Retreat }
+        public enum Shape { Self, Ground, Cone, Lane, Retreat, Leap }
         public struct Preview
         {
             public Shape shape;
@@ -32,7 +32,7 @@ namespace Emberfall
         public string Hint { get {
             string mode = CurrentPreview.shape == Shape.Self ? "以自身为中心" :
                 CurrentPreview.shape == Shape.Ground ? "鼠标选点 · 最远 " + CurrentPreview.distance.ToString("0.0") + " 米" :
-                CurrentPreview.shape == Shape.Retreat ? "鼠标调整朝向 · 向后撤步" : "鼠标调整攻击方向";
+                CurrentPreview.shape == Shape.Leap ? "鼠标调整朝向 · 向前跃击，落地造成范围伤害" : CurrentPreview.shape == Shape.Retreat ? "鼠标调整朝向 · 向后撤步" : "鼠标调整攻击方向";
             return mode + " · 实体遮挡会截断范围   /   左键确认 · 右键单击或 Esc 取消 · 右键拖动镜头";
         } }
 
@@ -216,7 +216,7 @@ namespace Emberfall
                 return new Preview(Shape.Ground, size * r, 9 * r);
             }
             if (skill == 0) return new Preview(Shape.Cone, 0, 23 * r, 50);
-            if (skill == 4) return new Preview(Shape.Retreat, .7f, 5 * r);
+            if (skill == 4) return new Preview(Shape.Leap, 3.2f*r, 5*r);
             // Phantom volleys seek enemies near the selected ground mark; the circle
             // shows the acquisition area, not a claim that arrows hit the whole disk.
             float radius = skill == 1 ? 3 : skill == 2 ? 4.3f : skill == 5 ? 3.7f : skill == 7 ? 10 : 6;
@@ -285,6 +285,11 @@ namespace Emberfall
             {
                 Circle(area, spec.shape == Shape.Self ? origin : TargetPoint, spec.radius,true);
                 Circle(marker, spec.shape == Shape.Self ? origin : TargetPoint, .2f);
+            }
+            else if(spec.shape==Shape.Leap)
+            {
+                Vector3 landing=Vector3.ClampMagnitude(origin+dir*spec.distance,session.ArenaRadius-spec.arenaMargin);
+                Circle(area,landing,spec.radius,true);Circle(marker,landing,.22f);
             }
             else if (spec.shape == Shape.Cone)
             {

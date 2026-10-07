@@ -4,13 +4,12 @@ namespace Emberfall
     {
         private bool CloseMobileInventoryDetail()
         {
-            // Match the visible compact equipment detail, not a stale flag on a
-            // tablet, supply page, or another modal. Preserve both scroll anchors.
-            if(!MobileControls.Active || panel!=Panel.Inventory || session.Paused ||
-                MobileCollectionLayout.SideBySideInventory(MobileControls.Layout.Width) ||
-                mobileInventoryTab==2 || !mobileInventoryDetail)return false;
-            mobileInventoryDetail=false;
-            CancelMobileScroll();BlockUITransition();return true;
+            // Comparison and fashion are inline bag surfaces on every device.
+            if(panel!=Panel.Inventory||session.Paused)return false;
+            if(inventoryFashionOpen){inventoryFashionOpen=false;collectionTrial=null;}
+            else if(inventoryComparisonOpen){inventoryComparisonOpen=false;}
+            else return false;
+            mobileInventoryDetail=false;CancelMobileScroll();BlockUITransition();return true;
         }
     }
 }

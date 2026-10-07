@@ -5,6 +5,8 @@ namespace Emberfall
     {
         private CollectionModelPreview wearModel;
         private bool inventoryFashionOpen;
+        private MobilePanelLayout.Area InventoryArea(Rect area)
+        {float u=TouchRatio;return new MobilePanelLayout.Area(area.x/u,area.y/u,area.width/u,area.height/u);}
         private void DrawCurrentWear(Rect area,float u)
         {
             var p=session.Progression;
@@ -26,7 +28,7 @@ namespace Emberfall
                 if(r.Contains(Mouse)&&item!=null)tooltip=item.name+" · 已穿戴";
             }
             if(Button(new Rect(area.x,area.yMax-44*u,area.width,40*u),"时装穿戴",gold))
-            {if(MobileControls.Active){inventoryFashionOpen=!inventoryFashionOpen;collectionTrial=null;mobileInventoryDetail=false;}else panel=Panel.Fashion;BlockUITransition();}
+            {inventoryFashionOpen=!inventoryFashionOpen;collectionTrial=null;mobileInventoryDetail=false;BlockUITransition();}
         }
         private void DrawBagFashion(MobilePanelLayout.Area area)
         {
@@ -71,30 +73,5 @@ namespace Emberfall
 
         }
 
-        // A body-location map is independent of the selected bag candidate.
-        // Every slot opens the existing real composed model with worn equipment.
-        private string DrawWearMap(Rect area,float u)
-        {
-            float cx=area.center.x,top=area.y;
-            Color body=new Color(.22f,.37f,.43f);
-            Fill(new Rect(cx-9*u,top+6*u,18*u,18*u),body);
-            Fill(new Rect(cx-16*u,top+28*u,32*u,52*u),body);
-            Fill(new Rect(cx-32*u,top+31*u,12*u,53*u),body);
-            Fill(new Rect(cx+20*u,top+31*u,12*u,53*u),body);
-            Fill(new Rect(cx-16*u,top+84*u,12*u,39*u),body);
-            Fill(new Rect(cx+4*u,top+84*u,12*u,39*u),body);
-            string chosen=null;
-            for(int slot=0;slot<3;slot++)
-            {
-                var item=session.Progression.Equipped((ItemSlot)slot);
-                float x=slot==0?area.x:slot==1?cx-24*u:area.xMax-48*u;
-                float y=top+(slot==1?35:73)*u;
-                Rect icon=new Rect(x,y,48*u,48*u);
-                if(Button(icon,"",jade,item!=null))chosen=item.id;
-                DrawIcon(new Rect(x+6*u,y+4*u,36*u,36*u),UIIconAtlas.EquipmentCardIcon((ItemSlot)slot),item==null?muted:GameBalance.RarityColor(item.rarity));
-                Text(new Rect(x-7*u,y+48*u,62*u,20*u),GameBalance.SlotName((ItemSlot)slot),Mathf.RoundToInt(11*u),item==null?muted:jade,true,false,TextAnchor.MiddleCenter);
-            }
-            return chosen;
-        }
     }
 }

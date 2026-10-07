@@ -1235,11 +1235,6 @@ namespace Emberfall
             Text(new Rect(w.x + 789, w.y + 28, 268, 30), Money(p.gold) + " 金币", 21, gold, true, false, TextAnchor.MiddleRight);
             float left = w.x + 24;
             Text(new Rect(left, w.y + 112, 112, 23), "身上装备", 16, jade, true);
-            if (NavigationButton(new Rect(left + 118, w.y + 108, 114, 28), "时装收藏", gold))
-            {
-                panel = Panel.Fashion;
-                return;
-            }
             DrawCurrentWear(new Rect(left,w.y+148,232,232),1);
             StatBlock stats = progression.GetStats();
             Rule(left, w.y + 389, 232, jade);
@@ -1262,7 +1257,12 @@ namespace Emberfall
             }
 
             float middle = w.x + 272;
-            Text(new Rect(middle, w.y + 112, 280, 23), "背包 · " + bagItems.Count + " 件", 16, jade, true);
+            Rect bagArea=new Rect(middle,w.y+144,864,462);
+            if(inventoryFashionOpen){DrawBagFashion(InventoryArea(bagArea));return;}
+            if(TabButton(new Rect(middle+460,w.y+108,76,32),"装备",mobileInventoryTab!=2))mobileInventoryTab=0;
+            if(TabButton(new Rect(middle+544,w.y+108,76,32),"补给",mobileInventoryTab==2))mobileInventoryTab=2;
+            if(mobileInventoryTab==2){DrawBagSupplies(InventoryArea(bagArea));return;}
+            Text(new Rect(middle, w.y + 112, 280, 23), "装备 · " + bagItems.Count + " 件", 16, jade, true);
             Text(new Rect(middle + 280, w.y + 117, 144, 17), "总容量 " + p.inventory.Count + " / " + ProgressionService.InventoryCapacity, 11, muted, false, false, TextAnchor.MiddleRight);
             bool changed = false;
             string[] filters = { "全部", "武器", "护甲", "饰品" };
@@ -1283,7 +1283,7 @@ namespace Emberfall
                     changed = true;
                 }
             if (changed) { RebuildBagItems(); ResolveSelectedItem(); }
-            Rect viewport = new Rect(middle, w.y + 213, inventoryComparisonOpen?424:864, 330);
+            Rect viewport = new Rect(middle, w.y + 213, inventoryComparisonOpen?424:864, 390);
             Fill(viewport, new Color(.025f, .05f, .075f));
             int columns=inventoryComparisonOpen?3:6;
             float cellWidth=(viewport.width-24)/columns-4,cellHeight=100;
@@ -1309,15 +1309,7 @@ namespace Emberfall
             picked = ResolveSelectedItem();
             if (bagItems.Count == 0)
                 Text(new Rect(middle + 22, w.y + 322, 380, 76), inventoryFilter < 0 ? "背包已整理完毕\n继续打怪或探索副本，收集新的战利品。" : "这个分类暂无闲置装备\n切换分类，或继续探索收集战利品。", 16, muted, false, true, TextAnchor.MiddleCenter);
-            if(inventoryComparisonOpen&&picked!=null)DrawInventoryComparison(new Rect(w.x+712,w.y+112,424,431),picked,1);
-            Rect supply = new Rect(left, w.y + 558, 1112, 50);
-            Fill(supply, card);
-            Rect potionSummary = new Rect(supply.x + 15, supply.y + 8, 530, 34);
-            DrawIcon(new Rect(potionSummary.x, potionSummary.y + 2, 30, 30), UIIconAtlas.Utility("potion"), Color.white);
-            Text(new Rect(potionSummary.x + 42, potionSummary.y, potionSummary.width - 42, potionSummary.height), "生命药剂  × " + p.potions, 15, pale, true, false, TextAnchor.MiddleLeft);
-            if (potionSummary.Contains(Mouse)) tooltip = PotionTooltip(p);
-            if (!MobileControls.Active && NavigationButton(new Rect(supply.x + 606, supply.y + 8, 224, 34), "放入快捷栏", jade)) TogglePanel(Panel.PotionAssignment);
-            if(Button(new Rect(supply.x+848,supply.y+8,248,34),"使用",jade,p.potions>0&&session.Player!=null&&session.Player.Health<session.Player.MaxHealth-.5f))session.DrinkPotion();
+            if(inventoryComparisonOpen&&picked!=null)DrawInventoryComparison(new Rect(w.x+712,w.y+112,424,494),picked,1);
         }
 
         private void DrawFashion()

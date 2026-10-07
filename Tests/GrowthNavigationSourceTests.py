@@ -10,7 +10,8 @@ assert fixed(goal),'current progress and action must be outside candidate scroll
 assert not fixed(goal.replace('"progression-goal-current"','"progression-goals"')),'old single-scroll header mutation rejected'
 assert 'case CampRouteAction.Skill:OpenRouteSkill(route.NextSkill);break;' in route
 assert 'RouteSkillReturnAvailable?"返回职业路线"' in skills
-assert 'DrawPersistentMechanismDetail(new Rect(r.x+18,r.y+270,r.width-36,85)' in base,'mechanism uses full visible summary area'
+grid=(r/'GameUI.InventoryGrid.cs').read_text()
+assert 'EquipmentComparisonPresentation.Description(candidate' in grid and 'EquipmentComparisonPresentation.Changes(current,candidate' in grid,'inline comparison must retain mechanic benefits and costs'
 assert all(t in comparison for t in ['将失去','收益：','代价：','MechanicBadgePresentation.Benefit','MechanicBadgePresentation.Cost'])
 assert 'BeginTouchScroll(' not in comparison,'short comparison cannot hide tradeoffs in a 39px scroller'
 assert 'CalcHeight(' in comparison and 'size=10' in comparison,'long compact summaries measured before selecting smaller typography'

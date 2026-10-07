@@ -122,8 +122,7 @@ namespace Emberfall
             y = 8; string selected = null; int filterAction = 0;
             if(equipped)
             {
-                selected=DrawWearMap(TouchRect(8,y,contentWidth-16,150),u);
-                if(selected!=null){}
+                DrawCurrentWear(TouchRect(8,y,contentWidth-16,150),u);
                 y+=158;
             }
             if (wide && !equipped)
