@@ -1,0 +1,12 @@
+  Determining projects to restore...
+  Restored /tmp/room-failure-evidence-bt6vn56q/Test.csproj (in 301 ms).
+/tmp/room-failure-evidence-bt6vn56q/Session.cs(17,625): error CS0103: The name 'RoomGenerationFailureDetail' does not exist in the current context [/tmp/room-failure-evidence-bt6vn56q/Test.csproj]
+
+The build failed. Fix the build errors and run again.
+Traceback (most recent call last):
+  File "/workspace/emberfall_win_progression/Tests/RoomFailureEvidenceTests.py", line 22, in <module>
+    command=[dotnet,'run','--project',str(project),'--no-restore'];subprocess.run(command,check=True)
+                                                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/tmp/emberfall-dotnet/dotnet', 'run', '--project', '/tmp/room-failure-evidence-bt6vn56q/Test.csproj', '--no-restore']' returned non-zero exit status 1.

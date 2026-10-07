@@ -1,0 +1,13 @@
+/tmp/tmp38vld2v9/Actual.cs(26,16): error CS0103: The name 'TabButton' does not exist in the current context [/tmp/tmp38vld2v9/Test.csproj]
+/tmp/tmp38vld2v9/Actual.cs(27,16): error CS0103: The name 'TabButton' does not exist in the current context [/tmp/tmp38vld2v9/Test.csproj]
+/tmp/tmp38vld2v9/Actual.cs(28,16): error CS0103: The name 'ToggleButton' does not exist in the current context [/tmp/tmp38vld2v9/Test.csproj]
+/tmp/tmp38vld2v9/Actual.cs(29,16): error CS0103: The name 'NavigationButton' does not exist in the current context [/tmp/tmp38vld2v9/Test.csproj]
+/tmp/tmp38vld2v9/Fixture.cs(18,43): warning CS0169: The field 'GameUI.gold' is never used [/tmp/tmp38vld2v9/Test.csproj]
+
+The build failed. Fix the build errors and run again.
+Traceback (most recent call last):
+  File "/workspace/emberfall_win_native/Tests/EquipmentAppearanceProductionTests.py", line 56, in <module>
+    subprocess.run(cmd,check=True)
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/tmp/emberfall-dotnet/dotnet', 'run', '--project', '/tmp/tmp38vld2v9/Test.csproj']' returned non-zero exit status 1.

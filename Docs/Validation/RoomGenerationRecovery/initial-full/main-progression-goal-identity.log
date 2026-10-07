@@ -1,0 +1,4 @@
+Unhandled exception. System.Exception: reforge uses current character power without moving selected target
+   at ProgressionGoalIdentityTests.Check(Boolean ok, String why) in /workspace/emberfall_win_native/Tests/ProgressionGoalIdentityTests.cs:line 9
+   at ProgressionGoalIdentityTests.Run(String root) in /workspace/emberfall_win_native/Tests/ProgressionGoalIdentityTests.cs:line 48
+   at Program.Main(String[] args) in /tmp/room-baseline-x2ikukn2/Program.cs:line 1

@@ -1,0 +1,28 @@
+/tmp/returning-save-o1upvpl3/Desktop.cs(31,28): error CS0103: The name 'NavigationButton' does not exist in the current context [/tmp/returning-save-o1upvpl3/p/Validation.csproj]
+/tmp/returning-save-o1upvpl3/Desktop.cs(8,119): warning CS0649: Field 'GameUI.gold' is never assigned to, and will always have its default value [/tmp/returning-save-o1upvpl3/p/Validation.csproj]
+/tmp/returning-save-o1upvpl3/Desktop.cs(8,103): warning CS0649: Field 'GameUI.card' is never assigned to, and will always have its default value [/tmp/returning-save-o1upvpl3/p/Validation.csproj]
+/tmp/returning-save-o1upvpl3/Desktop.cs(8,124): warning CS0649: Field 'GameUI.jade' is never assigned to, and will always have its default value [/tmp/returning-save-o1upvpl3/p/Validation.csproj]
+/tmp/returning-save-o1upvpl3/Desktop.cs(8,137): warning CS0649: Field 'GameUI.Mouse' is never assigned to, and will always have its default value [/tmp/returning-save-o1upvpl3/p/Validation.csproj]
+/tmp/returning-save-o1upvpl3/Desktop.cs(8,113): warning CS0649: Field 'GameUI.muted' is never assigned to, and will always have its default value [/tmp/returning-save-o1upvpl3/p/Validation.csproj]
+/tmp/returning-save-o1upvpl3/Desktop.cs(8,108): warning CS0649: Field 'GameUI.pale' is never assigned to, and will always have its default value [/tmp/returning-save-o1upvpl3/p/Validation.csproj]
+
+Build FAILED.
+
+/tmp/returning-save-o1upvpl3/Desktop.cs(8,119): warning CS0649: Field 'GameUI.gold' is never assigned to, and will always have its default value [/tmp/returning-save-o1upvpl3/p/Validation.csproj]
+/tmp/returning-save-o1upvpl3/Desktop.cs(8,103): warning CS0649: Field 'GameUI.card' is never assigned to, and will always have its default value [/tmp/returning-save-o1upvpl3/p/Validation.csproj]
+/tmp/returning-save-o1upvpl3/Desktop.cs(8,124): warning CS0649: Field 'GameUI.jade' is never assigned to, and will always have its default value [/tmp/returning-save-o1upvpl3/p/Validation.csproj]
+/tmp/returning-save-o1upvpl3/Desktop.cs(8,137): warning CS0649: Field 'GameUI.Mouse' is never assigned to, and will always have its default value [/tmp/returning-save-o1upvpl3/p/Validation.csproj]
+/tmp/returning-save-o1upvpl3/Desktop.cs(8,113): warning CS0649: Field 'GameUI.muted' is never assigned to, and will always have its default value [/tmp/returning-save-o1upvpl3/p/Validation.csproj]
+/tmp/returning-save-o1upvpl3/Desktop.cs(8,108): warning CS0649: Field 'GameUI.pale' is never assigned to, and will always have its default value [/tmp/returning-save-o1upvpl3/p/Validation.csproj]
+/tmp/returning-save-o1upvpl3/Desktop.cs(31,28): error CS0103: The name 'NavigationButton' does not exist in the current context [/tmp/returning-save-o1upvpl3/p/Validation.csproj]
+    6 Warning(s)
+    1 Error(s)
+
+Time Elapsed 00:00:02.20
+Traceback (most recent call last):
+  File "/workspace/emberfall_win_progression/Tests/ReturningCounterPersistenceTests.py", line 12, in <module>
+    p=Path(t);branch=member((r/'Assets/Scripts/UI/GameUI.Expedition.cs').read_text(),'else if(campTab==1)');desktop=p/'Desktop.cs';desktop.write_text((r/'Tests/ReturningCounterDesktopFixture.cs').read_text().replace('// GENERATED_BRANCH','void DrawMechanismWorkshop(){var p=session.Progression;var w=new Rect(0,0,1000,700);'+branch[branch.index('{')+1:-1]+'}'));files.append(desktop);project=cv.write_project(p/'p',files,program='using System;class Program{static void Main(string[] args){Console.WriteLine(Emberfall.GameUI.Verify(args[0]));Console.WriteLine(ReturningCounterPersistenceTests.Run(args[0]));Console.WriteLine(ProgressionGrowthTests.Run(args[0]));}}');c=p/'NuGet.Config';c.write_text('<configuration><packageSources><clear/></packageSources></configuration>');env=dict(os.environ,DOTNET_CLI_HOME=str(p/'cli'),DOTNET_NOLOGO='1');subprocess.run([dotnet,'build',str(project),'--configfile',str(c),'-v:q'],env=env,check=True);subprocess.run([dotnet,str(project.parent/'bin/Debug/net8.0/Validation.dll'),str(p/'save')],env=env,check=True)
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/tmp/emberfall-dotnet/dotnet', 'build', '/tmp/returning-save-o1upvpl3/p/Validation.csproj', '--configfile', '/tmp/returning-save-o1upvpl3/NuGet.Config', '-v:q']' returned non-zero exit status 1.

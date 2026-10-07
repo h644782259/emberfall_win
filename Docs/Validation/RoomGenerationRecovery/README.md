@@ -22,3 +22,9 @@ DOTNET=/path/to/dotnet python3 Tests/SideEventProductionTests.py
 Expected exception output in negative controls is intentional; the runner requires the specific assertion, not a compilation error. Full managed suites were also started and have failures; they are not certified green. The reference compile uses pinned UnityEngine 2021.3.33 APIs, not the project's Unity 6000.6.3f1 editor/native toolchain.
 
 Required native follow-up: tier 15 limited healing, direct Seal versus optional crystal then Seal; live/cleared/repeated/cancelled/retried entry, both mirror layouts, and actual enemy/art construction. Capture the new stage and Unity exception stack for any remaining failure. Draft only; independent review and native verification are still outstanding.
+
+## Initial full run (diagnostic only)
+
+287 checks: 252 passed, 35 failed. Source changed while this initial suite ran, so it is not a frozen acceptance result. `initial-full/report.json` preserves its source hashes and changed-file list. A final full run is in progress on the committed source.
+
+Each unchanged failure was replayed on this platform main; `initial-full/baseline-comparison.json` and paired logs record the same diagnostic signatures. Windows room-failure-evidence was the only introduced fixture failure, repaired and passing in the final targeted run. No unrelated main gameplay/UI changes were replaced to make tests pass.

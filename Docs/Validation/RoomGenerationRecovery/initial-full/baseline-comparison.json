@@ -1,0 +1,549 @@
+[
+  {
+    "name": "progression",
+    "baselineExitCode": 134,
+    "sameFailureSignature": true,
+    "candidateSignature": [
+      "System.Exception: Assertion 35 failed: boss loot has at least rare quality"
+    ],
+    "mainSignature": [
+      "System.Exception: Assertion 35 failed: boss loot has at least rare quality"
+    ]
+  },
+  {
+    "name": "enemy-kill-rewards",
+    "baselineExitCode": 134,
+    "sameFailureSignature": true,
+    "candidateSignature": [
+      "Exception: post-reward loot uses the gained level while rolling alone remains read-only"
+    ],
+    "mainSignature": [
+      "Exception: post-reward loot uses the gained level while rolling alone remains read-only"
+    ]
+  },
+  {
+    "name": "progression-goal-identity",
+    "baselineExitCode": 134,
+    "sameFailureSignature": true,
+    "candidateSignature": [
+      "System.Exception: reforge uses current character power without moving selected target"
+    ],
+    "mainSignature": [
+      "System.Exception: reforge uses current character power without moving selected target"
+    ]
+  },
+  {
+    "name": "chest-pause-back-production",
+    "baselineExitCode": 1,
+    "sameFailureSignature": true,
+    "candidateSignature": [
+      "error CS0103: The name 'HandleHubNpcShortcut' does not exist in the current context ",
+      "error CS0103: The name 'ReconcileHubNpcConversation' does not exist in the current context ",
+      "error CS0117: 'GameUI.Panel' does not contain a definition for 'HubDialogue' ",
+      "error CS0117: 'KeyCode' does not contain a definition for 'G' "
+    ],
+    "mainSignature": [
+      "error CS0103: The name 'HandleHubNpcShortcut' does not exist in the current context ",
+      "error CS0103: The name 'ReconcileHubNpcConversation' does not exist in the current context ",
+      "error CS0117: 'GameUI.Panel' does not contain a definition for 'HubDialogue' ",
+      "error CS0117: 'KeyCode' does not contain a definition for 'G' "
+    ]
+  },
+  {
+    "name": "economy-growth",
+    "baselineExitCode": 1,
+    "sameFailureSignature": true,
+    "candidateSignature": [
+      "System.Exception: reforge uses current character power without moving selected target"
+    ],
+    "mainSignature": [
+      "System.Exception: reforge uses current character power without moving selected target"
+    ]
+  },
+  {
+    "name": "filled-vfx-allocation",
+    "baselineExitCode": 1,
+    "sameFailureSignature": true,
+    "candidateSignature": [
+      "error CS0117: 'Mathf' does not contain a definition for 'Pow' "
+    ],
+    "mainSignature": [
+      "error CS0117: 'Mathf' does not contain a definition for 'Pow' "
+    ]
+  },
+  {
+    "name": "milestone-goal-surface",
+    "baselineExitCode": 1,
+    "sameFailureSignature": true,
+    "candidateSignature": [
+      "error CS0103: The name 'NavigationButton' does not exist in the current context ",
+      "error CS0103: The name 'PrimaryButton' does not exist in the current context ",
+      "error CS0103: The name 'TabButton' does not exist in the current context "
+    ],
+    "mainSignature": [
+      "error CS0103: The name 'NavigationButton' does not exist in the current context ",
+      "error CS0103: The name 'PrimaryButton' does not exist in the current context ",
+      "error CS0103: The name 'TabButton' does not exist in the current context "
+    ]
+  },
+  {
+    "name": "elemental-field-continuity",
+    "baselineExitCode": 1,
+    "sameFailureSignature": true,
+    "candidateSignature": [
+      "error CS0117: 'Mathf' does not contain a definition for 'Pow' "
+    ],
+    "mainSignature": [
+      "error CS0117: 'Mathf' does not contain a definition for 'Pow' "
+    ]
+  },
+  {
+    "name": "mobile-blessing-preview-production",
+    "baselineExitCode": 1,
+    "sameFailureSignature": true,
+    "candidateSignature": [
+      "error CS0103: The name 'HubNpcServiceSubtitle' does not exist in the current context ",
+      "error CS0103: The name 'NavigationButton' does not exist in the current context ",
+      "error CS0103: The name 'PrimaryButton' does not exist in the current context "
+    ],
+    "mainSignature": [
+      "error CS0103: The name 'HubNpcServiceSubtitle' does not exist in the current context ",
+      "error CS0103: The name 'NavigationButton' does not exist in the current context ",
+      "error CS0103: The name 'PrimaryButton' does not exist in the current context "
+    ]
+  },
+  {
+    "name": "room-failure-evidence",
+    "classification": "introduced test fixture dependency; repaired before final targeted pass",
+    "finalTargetedLog": "RoomFailureEvidenceTests.log"
+  },
+  {
+    "name": "chapter-host-production",
+    "baselineExitCode": 1,
+    "sameFailureSignature": true,
+    "candidateSignature": [
+      "error CS0103: The name 'EndHubNpcConversation' does not exist in the current context "
+    ],
+    "mainSignature": [
+      "error CS0103: The name 'EndHubNpcConversation' does not exist in the current context "
+    ]
+  },
+  {
+    "name": "elemental-priority-production",
+    "baselineExitCode": 1,
+    "sameFailureSignature": true,
+    "candidateSignature": [
+      "error CS0117: 'Mathf' does not contain a definition for 'Pow' "
+    ],
+    "mainSignature": [
+      "error CS0117: 'Mathf' does not contain a definition for 'Pow' "
+    ]
+  },
+  {
+    "name": "integrated-player-journey",
+    "baselineExitCode": 1,
+    "sameFailureSignature": true,
+    "candidateSignature": [
+      "error CS0103: The name 'EndHubNpcConversation' does not exist in the current context "
+    ],
+    "mainSignature": [
+      "error CS0103: The name 'EndHubNpcConversation' does not exist in the current context "
+    ]
+  },
+  {
+    "name": "economy-goal-ui",
+    "baselineExitCode": 1,
+    "sameFailureSignature": true,
+    "candidateSignature": [
+      "error CS0103: The name 'NavigationButton' does not exist in the current context ",
+      "error CS0103: The name 'PrimaryButton' does not exist in the current context ",
+      "error CS0103: The name 'TabButton' does not exist in the current context "
+    ],
+    "mainSignature": [
+      "error CS0103: The name 'NavigationButton' does not exist in the current context ",
+      "error CS0103: The name 'PrimaryButton' does not exist in the current context ",
+      "error CS0103: The name 'TabButton' does not exist in the current context "
+    ]
+  },
+  {
+    "name": "reforgeselection",
+    "baselineExitCode": 1,
+    "sameFailureSignature": true,
+    "candidateSignature": [
+      "error CS0103: The name 'NavigationButton' does not exist in the current context ",
+      "error CS0103: The name 'PrimaryButton' does not exist in the current context ",
+      "error CS0103: The name 'TabButton' does not exist in the current context "
+    ],
+    "mainSignature": [
+      "error CS0103: The name 'NavigationButton' does not exist in the current context ",
+      "error CS0103: The name 'PrimaryButton' does not exist in the current context ",
+      "error CS0103: The name 'TabButton' does not exist in the current context "
+    ]
+  },
+  {
+    "name": "desktop-opportunity-hotbar",
+    "baselineExitCode": 1,
+    "sameFailureSignature": true,
+    "candidateSignature": [
+      "error CS0103: The name 'UIIconAtlas' does not exist in the current context "
+    ],
+    "mainSignature": [
+      "error CS0103: The name 'UIIconAtlas' does not exist in the current context "
+    ]
+  },
+  {
+    "name": "collection-compact-geometry",
+    "baselineExitCode": 1,
+    "sameFailureSignature": true,
+    "candidateSignature": [
+      "error CS0103: The name 'TabButton' does not exist in the current context "
+    ],
+    "mainSignature": [
+      "error CS0103: The name 'TabButton' does not exist in the current context "
+    ]
+  },
+  {
+    "name": "equipment-appearance-production",
+    "baselineExitCode": 1,
+    "sameFailureSignature": true,
+    "candidateSignature": [
+      "error CS0103: The name 'NavigationButton' does not exist in the current context ",
+      "error CS0103: The name 'TabButton' does not exist in the current context ",
+      "error CS0103: The name 'ToggleButton' does not exist in the current context "
+    ],
+    "mainSignature": [
+      "error CS0103: The name 'NavigationButton' does not exist in the current context ",
+      "error CS0103: The name 'TabButton' does not exist in the current context ",
+      "error CS0103: The name 'ToggleButton' does not exist in the current context "
+    ]
+  },
+  {
+    "name": "returning-counter-persistence",
+    "baselineExitCode": 1,
+    "sameFailureSignature": true,
+    "candidateSignature": [
+      "error CS0103: The name 'NavigationButton' does not exist in the current context "
+    ],
+    "mainSignature": [
+      "error CS0103: The name 'NavigationButton' does not exist in the current context "
+    ]
+  },
+  {
+    "name": "chest-choice-presentation",
+    "baselineExitCode": 1,
+    "sameFailureSignature": true,
+    "candidateSignature": [],
+    "mainSignature": []
+  },
+  {
+    "name": "practice-hud",
+    "baselineExitCode": 1,
+    "sameFailureSignature": true,
+    "candidateSignature": [
+      "error CS0103: The name 'PrimaryButton' does not exist in the current context "
+    ],
+    "mainSignature": [
+      "error CS0103: The name 'PrimaryButton' does not exist in the current context "
+    ]
+  },
+  {
+    "name": "build-plan-page-geometry",
+    "baselineExitCode": 1,
+    "sameFailureSignature": true,
+    "candidateSignature": [
+      "AssertionError: button font policy changed; update explicit boundary"
+    ],
+    "mainSignature": [
+      "AssertionError: button font policy changed; update explicit boundary"
+    ]
+  },
+  {
+    "name": "class-switch-ui",
+    "baselineExitCode": 1,
+    "sameFailureSignature": true,
+    "candidateSignature": [
+      "error CS0103: The name 'ButtonRole' does not exist in the current context ",
+      "error CS0103: The name 'DangerButton' does not exist in the current context ",
+      "error CS0103: The name 'DrawButton' does not exist in the current context ",
+      "error CS0103: The name 'NavigationButton' does not exist in the current context ",
+      "error CS0103: The name 'PrimaryButton' does not exist in the current context "
+    ],
+    "mainSignature": [
+      "error CS0103: The name 'ButtonRole' does not exist in the current context ",
+      "error CS0103: The name 'DangerButton' does not exist in the current context ",
+      "error CS0103: The name 'DrawButton' does not exist in the current context ",
+      "error CS0103: The name 'NavigationButton' does not exist in the current context ",
+      "error CS0103: The name 'PrimaryButton' does not exist in the current context "
+    ]
+  },
+  {
+    "name": "reward-polish-ui",
+    "baselineExitCode": 1,
+    "sameFailureSignature": true,
+    "candidateSignature": [
+      "error CS0103: The name 'ButtonRole' does not exist in the current context ",
+      "error CS0103: The name 'ChestSectionsHeight' does not exist in the current context ",
+      "error CS0103: The name 'DrawButton' does not exist in the current context ",
+      "error CS0103: The name 'DrawChestSections' does not exist in the current context ",
+      "error CS0103: The name 'NavigationButton' does not exist in the current context ",
+      "error CS0103: The name 'PrimaryButton' does not exist in the current context "
+    ],
+    "mainSignature": [
+      "error CS0103: The name 'ButtonRole' does not exist in the current context ",
+      "error CS0103: The name 'ChestSectionsHeight' does not exist in the current context ",
+      "error CS0103: The name 'DrawButton' does not exist in the current context ",
+      "error CS0103: The name 'DrawChestSections' does not exist in the current context ",
+      "error CS0103: The name 'NavigationButton' does not exist in the current context ",
+      "error CS0103: The name 'PrimaryButton' does not exist in the current context "
+    ]
+  },
+  {
+    "name": "camp-build-draft-production",
+    "baselineExitCode": 1,
+    "sameFailureSignature": true,
+    "candidateSignature": [
+      "error CS0103: The name 'ButtonRole' does not exist in the current context ",
+      "error CS0103: The name 'DangerButton' does not exist in the current context ",
+      "error CS0103: The name 'DrawButton' does not exist in the current context ",
+      "error CS0103: The name 'NavigationButton' does not exist in the current context ",
+      "error CS0103: The name 'PrimaryButton' does not exist in the current context "
+    ],
+    "mainSignature": [
+      "error CS0103: The name 'ButtonRole' does not exist in the current context ",
+      "error CS0103: The name 'DangerButton' does not exist in the current context ",
+      "error CS0103: The name 'DrawButton' does not exist in the current context ",
+      "error CS0103: The name 'NavigationButton' does not exist in the current context ",
+      "error CS0103: The name 'PrimaryButton' does not exist in the current context "
+    ]
+  },
+  {
+    "name": "scenery-presentation-production",
+    "baselineExitCode": 1,
+    "sameFailureSignature": true,
+    "candidateSignature": [
+      "AssertionError: <temporary>: error CS0117: 'GameSession' does not contain a definition for 'Instance' [<temporary>",
+      "error CS0117: 'CombatFx' does not contain a definition for 'Flat' ",
+      "error CS0117: 'GameSession' does not contain a definition for 'Instance' ",
+      "error CS0117: 'Mathf' does not contain a definition for 'Clamp01' ",
+      "error CS0117: 'Mathf' does not contain a definition for 'MoveTowards' ",
+      "error CS0117: 'Quaternion' does not contain a definition for 'LookRotation' ",
+      "error CS0117: 'Quaternion' does not contain a definition for 'RotateTowards' ",
+      "error CS0117: 'Quaternion' does not contain a definition for 'Slerp' ",
+      "error CS0117: 'Time' does not contain a definition for 'unscaledDeltaTime' ",
+      "error CS0246: The type or namespace name 'HubNpcKind' could not be found (are you missing a using directive or an assembly reference?) ",
+      "error CS1061: 'GameSession' does not contain a definition for 'ActiveHubNpc' and no accessible extension method 'ActiveHubNpc' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) ",
+      "error CS1061: 'GameSession' does not contain a definition for 'BackgroundPaused' and no accessible extension method 'BackgroundPaused' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) ",
+      "error CS1061: 'GameSession' does not contain a definition for 'HasStarted' and no accessible extension method 'HasStarted' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) ",
+      "error CS1061: 'GameSession' does not contain a definition for 'IsDead' and no accessible extension method 'IsDead' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) ",
+      "error CS1061: 'GameSession' does not contain a definition for 'Paused' and no accessible extension method 'Paused' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) ",
+      "error CS1061: 'GameSession' does not contain a definition for 'Player' and no accessible extension method 'Player' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) "
+    ],
+    "mainSignature": [
+      "AssertionError: <temporary>: error CS0117: 'GameSession' does not contain a definition for 'Instance' [<temporary>",
+      "error CS0117: 'CombatFx' does not contain a definition for 'Flat' ",
+      "error CS0117: 'GameSession' does not contain a definition for 'Instance' ",
+      "error CS0117: 'Mathf' does not contain a definition for 'Clamp01' ",
+      "error CS0117: 'Mathf' does not contain a definition for 'MoveTowards' ",
+      "error CS0117: 'Quaternion' does not contain a definition for 'LookRotation' ",
+      "error CS0117: 'Quaternion' does not contain a definition for 'RotateTowards' ",
+      "error CS0117: 'Quaternion' does not contain a definition for 'Slerp' ",
+      "error CS0117: 'Time' does not contain a definition for 'unscaledDeltaTime' ",
+      "error CS0246: The type or namespace name 'HubNpcKind' could not be found (are you missing a using directive or an assembly reference?) ",
+      "error CS1061: 'GameSession' does not contain a definition for 'ActiveHubNpc' and no accessible extension method 'ActiveHubNpc' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) ",
+      "error CS1061: 'GameSession' does not contain a definition for 'BackgroundPaused' and no accessible extension method 'BackgroundPaused' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) ",
+      "error CS1061: 'GameSession' does not contain a definition for 'HasStarted' and no accessible extension method 'HasStarted' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) ",
+      "error CS1061: 'GameSession' does not contain a definition for 'IsDead' and no accessible extension method 'IsDead' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) ",
+      "error CS1061: 'GameSession' does not contain a definition for 'Paused' and no accessible extension method 'Paused' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) ",
+      "error CS1061: 'GameSession' does not contain a definition for 'Player' and no accessible extension method 'Player' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) "
+    ]
+  },
+  {
+    "name": "fixed-scenery-production",
+    "baselineExitCode": 1,
+    "sameFailureSignature": true,
+    "candidateSignature": [
+      "error CS0117: 'CombatFx' does not contain a definition for 'Flat' ",
+      "error CS0117: 'GameSession' does not contain a definition for 'Instance' ",
+      "error CS0117: 'Mathf' does not contain a definition for 'Clamp01' ",
+      "error CS0117: 'Mathf' does not contain a definition for 'MoveTowards' ",
+      "error CS0117: 'Quaternion' does not contain a definition for 'LookRotation' ",
+      "error CS0117: 'Quaternion' does not contain a definition for 'RotateTowards' ",
+      "error CS0117: 'Quaternion' does not contain a definition for 'Slerp' ",
+      "error CS0117: 'Time' does not contain a definition for 'unscaledDeltaTime' ",
+      "error CS0246: The type or namespace name 'HubNpcKind' could not be found (are you missing a using directive or an assembly reference?) ",
+      "error CS1061: 'GameSession' does not contain a definition for 'ActiveHubNpc' and no accessible extension method 'ActiveHubNpc' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) ",
+      "error CS1061: 'GameSession' does not contain a definition for 'BackgroundPaused' and no accessible extension method 'BackgroundPaused' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) ",
+      "error CS1061: 'GameSession' does not contain a definition for 'HasStarted' and no accessible extension method 'HasStarted' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) ",
+      "error CS1061: 'GameSession' does not contain a definition for 'IsDead' and no accessible extension method 'IsDead' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) ",
+      "error CS1061: 'GameSession' does not contain a definition for 'Paused' and no accessible extension method 'Paused' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) ",
+      "error CS1061: 'GameSession' does not contain a definition for 'Player' and no accessible extension method 'Player' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) "
+    ],
+    "mainSignature": [
+      "error CS0117: 'CombatFx' does not contain a definition for 'Flat' ",
+      "error CS0117: 'GameSession' does not contain a definition for 'Instance' ",
+      "error CS0117: 'Mathf' does not contain a definition for 'Clamp01' ",
+      "error CS0117: 'Mathf' does not contain a definition for 'MoveTowards' ",
+      "error CS0117: 'Quaternion' does not contain a definition for 'LookRotation' ",
+      "error CS0117: 'Quaternion' does not contain a definition for 'RotateTowards' ",
+      "error CS0117: 'Quaternion' does not contain a definition for 'Slerp' ",
+      "error CS0117: 'Time' does not contain a definition for 'unscaledDeltaTime' ",
+      "error CS0246: The type or namespace name 'HubNpcKind' could not be found (are you missing a using directive or an assembly reference?) ",
+      "error CS1061: 'GameSession' does not contain a definition for 'ActiveHubNpc' and no accessible extension method 'ActiveHubNpc' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) ",
+      "error CS1061: 'GameSession' does not contain a definition for 'BackgroundPaused' and no accessible extension method 'BackgroundPaused' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) ",
+      "error CS1061: 'GameSession' does not contain a definition for 'HasStarted' and no accessible extension method 'HasStarted' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) ",
+      "error CS1061: 'GameSession' does not contain a definition for 'IsDead' and no accessible extension method 'IsDead' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) ",
+      "error CS1061: 'GameSession' does not contain a definition for 'Paused' and no accessible extension method 'Paused' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) ",
+      "error CS1061: 'GameSession' does not contain a definition for 'Player' and no accessible extension method 'Player' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) "
+    ]
+  },
+  {
+    "name": "fixed-scenery-enabled-integration",
+    "baselineExitCode": 1,
+    "sameFailureSignature": true,
+    "candidateSignature": [
+      "error CS0117: 'CombatFx' does not contain a definition for 'Flat' ",
+      "error CS0117: 'GameSession' does not contain a definition for 'Instance' ",
+      "error CS0117: 'Mathf' does not contain a definition for 'Clamp01' ",
+      "error CS0117: 'Mathf' does not contain a definition for 'MoveTowards' ",
+      "error CS0117: 'Quaternion' does not contain a definition for 'LookRotation' ",
+      "error CS0117: 'Quaternion' does not contain a definition for 'RotateTowards' ",
+      "error CS0117: 'Quaternion' does not contain a definition for 'Slerp' ",
+      "error CS0117: 'Time' does not contain a definition for 'unscaledDeltaTime' ",
+      "error CS0246: The type or namespace name 'HubNpcKind' could not be found (are you missing a using directive or an assembly reference?) ",
+      "error CS1061: 'GameSession' does not contain a definition for 'ActiveHubNpc' and no accessible extension method 'ActiveHubNpc' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) ",
+      "error CS1061: 'GameSession' does not contain a definition for 'BackgroundPaused' and no accessible extension method 'BackgroundPaused' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) ",
+      "error CS1061: 'GameSession' does not contain a definition for 'HasStarted' and no accessible extension method 'HasStarted' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) ",
+      "error CS1061: 'GameSession' does not contain a definition for 'IsDead' and no accessible extension method 'IsDead' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) ",
+      "error CS1061: 'GameSession' does not contain a definition for 'Paused' and no accessible extension method 'Paused' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) ",
+      "error CS1061: 'GameSession' does not contain a definition for 'Player' and no accessible extension method 'Player' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) "
+    ],
+    "mainSignature": [
+      "error CS0117: 'CombatFx' does not contain a definition for 'Flat' ",
+      "error CS0117: 'GameSession' does not contain a definition for 'Instance' ",
+      "error CS0117: 'Mathf' does not contain a definition for 'Clamp01' ",
+      "error CS0117: 'Mathf' does not contain a definition for 'MoveTowards' ",
+      "error CS0117: 'Quaternion' does not contain a definition for 'LookRotation' ",
+      "error CS0117: 'Quaternion' does not contain a definition for 'RotateTowards' ",
+      "error CS0117: 'Quaternion' does not contain a definition for 'Slerp' ",
+      "error CS0117: 'Time' does not contain a definition for 'unscaledDeltaTime' ",
+      "error CS0246: The type or namespace name 'HubNpcKind' could not be found (are you missing a using directive or an assembly reference?) ",
+      "error CS1061: 'GameSession' does not contain a definition for 'ActiveHubNpc' and no accessible extension method 'ActiveHubNpc' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) ",
+      "error CS1061: 'GameSession' does not contain a definition for 'BackgroundPaused' and no accessible extension method 'BackgroundPaused' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) ",
+      "error CS1061: 'GameSession' does not contain a definition for 'HasStarted' and no accessible extension method 'HasStarted' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) ",
+      "error CS1061: 'GameSession' does not contain a definition for 'IsDead' and no accessible extension method 'IsDead' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) ",
+      "error CS1061: 'GameSession' does not contain a definition for 'Paused' and no accessible extension method 'Paused' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) ",
+      "error CS1061: 'GameSession' does not contain a definition for 'Player' and no accessible extension method 'Player' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) "
+    ]
+  },
+  {
+    "name": "concentrated-venom-production",
+    "baselineExitCode": 1,
+    "sameFailureSignature": true,
+    "candidateSignature": [
+      "System.Exception: front guard intercept independent of list order",
+      "System.Exception: reforge retainsB"
+    ],
+    "mainSignature": [
+      "System.Exception: front guard intercept independent of list order",
+      "System.Exception: reforge retainsB"
+    ]
+  },
+  {
+    "name": "camp-practice-production",
+    "baselineExitCode": 1,
+    "sameFailureSignature": true,
+    "candidateSignature": [
+      "System.Exception: practice NewGame refuses without exception or profile and disk mutation",
+      "System.Exception: practice cannot open inherited chest receipt",
+      "System.Exception: practice transition rejects before default storage constructor"
+    ],
+    "mainSignature": [
+      "System.Exception: practice NewGame refuses without exception or profile and disk mutation",
+      "System.Exception: practice cannot open inherited chest receipt",
+      "System.Exception: practice transition rejects before default storage constructor"
+    ]
+  },
+  {
+    "name": "camp-practice-session",
+    "baselineExitCode": 1,
+    "sameFailureSignature": true,
+    "candidateSignature": [
+      "error CS0103: The name 'EndHubNpcConversation' does not exist in the current context "
+    ],
+    "mainSignature": [
+      "error CS0103: The name 'EndHubNpcConversation' does not exist in the current context "
+    ]
+  },
+  {
+    "name": "g07-factory-inventory",
+    "baselineExitCode": 1,
+    "sameFailureSignature": true,
+    "candidateSignature": [
+      "error CS0117: 'CombatFx' does not contain a definition for 'Flat' ",
+      "error CS0117: 'GameSession' does not contain a definition for 'Instance' ",
+      "error CS0117: 'Mathf' does not contain a definition for 'Clamp01' ",
+      "error CS0117: 'Mathf' does not contain a definition for 'MoveTowards' ",
+      "error CS0117: 'Quaternion' does not contain a definition for 'LookRotation' ",
+      "error CS0117: 'Quaternion' does not contain a definition for 'RotateTowards' ",
+      "error CS0117: 'Quaternion' does not contain a definition for 'Slerp' ",
+      "error CS0117: 'Time' does not contain a definition for 'unscaledDeltaTime' ",
+      "error CS0246: The type or namespace name 'HubNpcKind' could not be found (are you missing a using directive or an assembly reference?) ",
+      "error CS1061: 'GameSession' does not contain a definition for 'ActiveHubNpc' and no accessible extension method 'ActiveHubNpc' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) ",
+      "error CS1061: 'GameSession' does not contain a definition for 'BackgroundPaused' and no accessible extension method 'BackgroundPaused' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) ",
+      "error CS1061: 'GameSession' does not contain a definition for 'HasStarted' and no accessible extension method 'HasStarted' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) ",
+      "error CS1061: 'GameSession' does not contain a definition for 'IsDead' and no accessible extension method 'IsDead' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) ",
+      "error CS1061: 'GameSession' does not contain a definition for 'Paused' and no accessible extension method 'Paused' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) ",
+      "error CS1061: 'GameSession' does not contain a definition for 'Player' and no accessible extension method 'Player' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) "
+    ],
+    "mainSignature": [
+      "error CS0117: 'CombatFx' does not contain a definition for 'Flat' ",
+      "error CS0117: 'GameSession' does not contain a definition for 'Instance' ",
+      "error CS0117: 'Mathf' does not contain a definition for 'Clamp01' ",
+      "error CS0117: 'Mathf' does not contain a definition for 'MoveTowards' ",
+      "error CS0117: 'Quaternion' does not contain a definition for 'LookRotation' ",
+      "error CS0117: 'Quaternion' does not contain a definition for 'RotateTowards' ",
+      "error CS0117: 'Quaternion' does not contain a definition for 'Slerp' ",
+      "error CS0117: 'Time' does not contain a definition for 'unscaledDeltaTime' ",
+      "error CS0246: The type or namespace name 'HubNpcKind' could not be found (are you missing a using directive or an assembly reference?) ",
+      "error CS1061: 'GameSession' does not contain a definition for 'ActiveHubNpc' and no accessible extension method 'ActiveHubNpc' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) ",
+      "error CS1061: 'GameSession' does not contain a definition for 'BackgroundPaused' and no accessible extension method 'BackgroundPaused' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) ",
+      "error CS1061: 'GameSession' does not contain a definition for 'HasStarted' and no accessible extension method 'HasStarted' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) ",
+      "error CS1061: 'GameSession' does not contain a definition for 'IsDead' and no accessible extension method 'IsDead' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) ",
+      "error CS1061: 'GameSession' does not contain a definition for 'Paused' and no accessible extension method 'Paused' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) ",
+      "error CS1061: 'GameSession' does not contain a definition for 'Player' and no accessible extension method 'Player' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) "
+    ]
+  },
+  {
+    "name": "reward-presentation-exceptions",
+    "baselineExitCode": 1,
+    "sameFailureSignature": true,
+    "candidateSignature": [
+      "Exception: intentional once postcommit observer"
+    ],
+    "mainSignature": [
+      "Exception: intentional once postcommit observer"
+    ]
+  },
+  {
+    "name": "practice-hotbar-navigation",
+    "baselineExitCode": 1,
+    "sameFailureSignature": true,
+    "candidateSignature": [
+      "error CS0103: The name 'UIIconAtlas' does not exist in the current context "
+    ],
+    "mainSignature": [
+      "error CS0103: The name 'UIIconAtlas' does not exist in the current context "
+    ]
+  },
+  {
+    "name": "practice-potion-input",
+    "baselineExitCode": 1,
+    "sameFailureSignature": true,
+    "candidateSignature": [
+      "error CS0103: The name 'EndHubNpcConversation' does not exist in the current context "
+    ],
+    "mainSignature": [
+      "error CS0103: The name 'EndHubNpcConversation' does not exist in the current context "
+    ]
+  }
+]

@@ -1,0 +1,30 @@
+ 
+/workspace/emberfall_win_progression/Assets/Scripts/UI/GameUI.BuildPlans.cs(89,16): error CS0103: The name 'NavigationButton' does not exist in the current context [/tmp/camp-draft-swb75e4c/project/Validation.csproj]
+/workspace/emberfall_win_progression/Assets/Scripts/UI/GameUI.BuildPlans.cs(96,20): error CS0103: The name 'DrawButton' does not exist in the current context [/tmp/camp-draft-swb75e4c/project/Validation.csproj]
+/workspace/emberfall_win_progression/Assets/Scripts/UI/GameUI.BuildPlans.cs(96,125): error CS0103: The name 'ButtonRole' does not exist in the current context [/tmp/camp-draft-swb75e4c/project/Validation.csproj]
+/workspace/emberfall_win_progression/Assets/Scripts/UI/GameUI.BuildPlans.cs(96,143): error CS0103: The name 'ButtonRole' does not exist in the current context [/tmp/camp-draft-swb75e4c/project/Validation.csproj]
+/workspace/emberfall_win_progression/Assets/Scripts/UI/GameUI.BuildPlans.cs(99,41): error CS0103: The name 'DangerButton' does not exist in the current context [/tmp/camp-draft-swb75e4c/project/Validation.csproj]
+/workspace/emberfall_win_progression/Assets/Scripts/UI/GameUI.BuildPlans.cs(173,24): error CS0103: The name 'PrimaryButton' does not exist in the current context [/tmp/camp-draft-swb75e4c/project/Validation.csproj]
+/workspace/emberfall_win_progression/Assets/Scripts/UI/GameUI.BuildPlans.cs(232,16): error CS0103: The name 'NavigationButton' does not exist in the current context [/tmp/camp-draft-swb75e4c/project/Validation.csproj]
+/workspace/emberfall_win_progression/Assets/Scripts/UI/GameUI.BuildPlans.cs(233,16): error CS0103: The name 'DangerButton' does not exist in the current context [/tmp/camp-draft-swb75e4c/project/Validation.csproj]
+/workspace/emberfall_win_progression/Assets/Scripts/UI/GameUI.BuildDraft.cs(47,16): error CS0103: The name 'NavigationButton' does not exist in the current context [/tmp/camp-draft-swb75e4c/project/Validation.csproj]
+/workspace/emberfall_win_progression/Assets/Scripts/UI/GameUI.BuildDraft.cs(49,16): error CS0103: The name 'PrimaryButton' does not exist in the current context [/tmp/camp-draft-swb75e4c/project/Validation.csproj]
+/workspace/emberfall_win_progression/Assets/Scripts/UI/GameUI.ClassSwitch.cs(55,16): error CS0103: The name 'NavigationButton' does not exist in the current context [/tmp/camp-draft-swb75e4c/project/Validation.csproj]
+/workspace/emberfall_win_progression/Assets/Scripts/UI/GameUI.ClassSwitch.cs(59,16): error CS0103: The name 'DrawButton' does not exist in the current context [/tmp/camp-draft-swb75e4c/project/Validation.csproj]
+/workspace/emberfall_win_progression/Assets/Scripts/UI/GameUI.ClassSwitch.cs(59,82): error CS0103: The name 'ButtonRole' does not exist in the current context [/tmp/camp-draft-swb75e4c/project/Validation.csproj]
+/workspace/emberfall_win_progression/Tests/CampBuildDraftUIBoundary.cs(23,113): warning CS0649: Field 'GameUI.jade' is never assigned to, and will always have its default value [/tmp/camp-draft-swb75e4c/project/Validation.csproj]
+/workspace/emberfall_win_progression/Tests/CampBuildDraftUIBoundary.cs(23,123): warning CS0649: Field 'GameUI.muted' is never assigned to, and will always have its default value [/tmp/camp-draft-swb75e4c/project/Validation.csproj]
+/workspace/emberfall_win_progression/Tests/CampBuildDraftUIBoundary.cs(13,51): warning CS0649: Field 'PlayerController.model' is never assigned to, and will always have its default value null [/tmp/camp-draft-swb75e4c/project/Validation.csproj]
+/workspace/emberfall_win_progression/Tests/CampBuildDraftUIBoundary.cs(23,108): warning CS0649: Field 'GameUI.gold' is never assigned to, and will always have its default value [/tmp/camp-draft-swb75e4c/project/Validation.csproj]
+/workspace/emberfall_win_progression/Tests/CampBuildDraftUIBoundary.cs(23,118): warning CS0649: Field 'GameUI.pale' is never assigned to, and will always have its default value [/tmp/camp-draft-swb75e4c/project/Validation.csproj]
+/workspace/emberfall_win_progression/Tests/CampBuildDraftUIBoundary.cs(13,119): warning CS0414: The field 'PlayerController.coreWardTime' is assigned but its value is never used [/tmp/camp-draft-swb75e4c/project/Validation.csproj]
+/workspace/emberfall_win_progression/Tests/ClassSwitchUIBoundary.cs(11,69): warning CS0414: The field 'GameUI.saveSlotsDirty' is assigned but its value is never used [/tmp/camp-draft-swb75e4c/project/Validation.csproj]
+/workspace/emberfall_win_progression/Tests/ClassSwitchUIBoundary.cs(11,42): warning CS0414: The field 'GameUI.mobileWorkshopService' is assigned but its value is never used [/tmp/camp-draft-swb75e4c/project/Validation.csproj]
+ 
+The build failed. Fix the build errors and run again.
+
+Traceback (most recent call last):
+  File "/workspace/emberfall_win_progression/Tests/ClassSwitchUIProductionTests.py", line 26, in <module>
+    q=subprocess.run([dotnet]+args,env=env,capture_output=True,text=True);print(q.stdout,q.stderr);assert q.returncode==0
+                                                                                                          ^^^^^^^^^^^^^^^
+AssertionError

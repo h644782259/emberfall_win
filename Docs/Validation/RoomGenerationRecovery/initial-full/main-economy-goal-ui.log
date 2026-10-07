@@ -1,0 +1,34 @@
+/tmp/economy-goal-ui-c34tfkef/GameUI.ProgressionGoal.cs(44,60): error CS0103: The name 'PrimaryButton' does not exist in the current context [/tmp/economy-goal-ui-c34tfkef/p/Validation.csproj]
+/tmp/economy-goal-ui-c34tfkef/GameUI.ProgressionGoal.cs(49,16): error CS0103: The name 'NavigationButton' does not exist in the current context [/tmp/economy-goal-ui-c34tfkef/p/Validation.csproj]
+/tmp/economy-goal-ui-c34tfkef/GameUI.ProgressionGoal.cs(102,22): error CS0103: The name 'TabButton' does not exist in the current context [/tmp/economy-goal-ui-c34tfkef/p/Validation.csproj]
+/tmp/economy-goal-ui-c34tfkef/GameUI.ProgressionGoal.cs(112,22): error CS0103: The name 'TabButton' does not exist in the current context [/tmp/economy-goal-ui-c34tfkef/p/Validation.csproj]
+/tmp/economy-goal-ui-c34tfkef/GameUI.Reforge.cs(43,16): error CS0103: The name 'NavigationButton' does not exist in the current context [/tmp/economy-goal-ui-c34tfkef/p/Validation.csproj]
+/tmp/economy-goal-ui-c34tfkef/GameUI.Reforge.cs(52,26): error CS0103: The name 'TabButton' does not exist in the current context [/tmp/economy-goal-ui-c34tfkef/p/Validation.csproj]
+/tmp/economy-goal-ui-c34tfkef/MilestoneGoalSurfaceTests.cs(22,75): warning CS0649: Field 'GameUI.gold' is never assigned to, and will always have its default value [/tmp/economy-goal-ui-c34tfkef/p/Validation.csproj]
+/tmp/economy-goal-ui-c34tfkef/MilestoneGoalSurfaceTests.cs(22,80): warning CS0649: Field 'GameUI.muted' is never assigned to, and will always have its default value [/tmp/economy-goal-ui-c34tfkef/p/Validation.csproj]
+/tmp/economy-goal-ui-c34tfkef/MilestoneGoalSurfaceTests.cs(22,65): warning CS0649: Field 'GameUI.jade' is never assigned to, and will always have its default value [/tmp/economy-goal-ui-c34tfkef/p/Validation.csproj]
+/tmp/economy-goal-ui-c34tfkef/MilestoneGoalSurfaceTests.cs(22,70): warning CS0649: Field 'GameUI.pale' is never assigned to, and will always have its default value [/tmp/economy-goal-ui-c34tfkef/p/Validation.csproj]
+
+Build FAILED.
+
+/tmp/economy-goal-ui-c34tfkef/MilestoneGoalSurfaceTests.cs(22,75): warning CS0649: Field 'GameUI.gold' is never assigned to, and will always have its default value [/tmp/economy-goal-ui-c34tfkef/p/Validation.csproj]
+/tmp/economy-goal-ui-c34tfkef/MilestoneGoalSurfaceTests.cs(22,80): warning CS0649: Field 'GameUI.muted' is never assigned to, and will always have its default value [/tmp/economy-goal-ui-c34tfkef/p/Validation.csproj]
+/tmp/economy-goal-ui-c34tfkef/MilestoneGoalSurfaceTests.cs(22,65): warning CS0649: Field 'GameUI.jade' is never assigned to, and will always have its default value [/tmp/economy-goal-ui-c34tfkef/p/Validation.csproj]
+/tmp/economy-goal-ui-c34tfkef/MilestoneGoalSurfaceTests.cs(22,70): warning CS0649: Field 'GameUI.pale' is never assigned to, and will always have its default value [/tmp/economy-goal-ui-c34tfkef/p/Validation.csproj]
+/tmp/economy-goal-ui-c34tfkef/GameUI.ProgressionGoal.cs(44,60): error CS0103: The name 'PrimaryButton' does not exist in the current context [/tmp/economy-goal-ui-c34tfkef/p/Validation.csproj]
+/tmp/economy-goal-ui-c34tfkef/GameUI.ProgressionGoal.cs(49,16): error CS0103: The name 'NavigationButton' does not exist in the current context [/tmp/economy-goal-ui-c34tfkef/p/Validation.csproj]
+/tmp/economy-goal-ui-c34tfkef/GameUI.ProgressionGoal.cs(102,22): error CS0103: The name 'TabButton' does not exist in the current context [/tmp/economy-goal-ui-c34tfkef/p/Validation.csproj]
+/tmp/economy-goal-ui-c34tfkef/GameUI.ProgressionGoal.cs(112,22): error CS0103: The name 'TabButton' does not exist in the current context [/tmp/economy-goal-ui-c34tfkef/p/Validation.csproj]
+/tmp/economy-goal-ui-c34tfkef/GameUI.Reforge.cs(43,16): error CS0103: The name 'NavigationButton' does not exist in the current context [/tmp/economy-goal-ui-c34tfkef/p/Validation.csproj]
+/tmp/economy-goal-ui-c34tfkef/GameUI.Reforge.cs(52,26): error CS0103: The name 'TabButton' does not exist in the current context [/tmp/economy-goal-ui-c34tfkef/p/Validation.csproj]
+    4 Warning(s)
+    6 Error(s)
+
+Time Elapsed 00:00:03.81
+Traceback (most recent call last):
+  File "/workspace/emberfall_win_native/Tests/EconomyGoalUiTests.py", line 27, in <module>
+    subprocess.run(build,env=env,check=True);subprocess.run(run+[str(o/'saves')],env=env,check=True)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/tmp/emberfall-dotnet/dotnet', 'build', '/tmp/economy-goal-ui-c34tfkef/p/Validation.csproj', '--configfile', '/tmp/economy-goal-ui-c34tfkef/NuGet.Config', '-v:q']' returned non-zero exit status 1.
