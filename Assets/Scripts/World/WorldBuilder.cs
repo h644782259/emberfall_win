@@ -232,16 +232,16 @@ namespace Emberfall
                     if (i != 2) Crystal(gallery,r,p+Vector3.up*(height+.75f),.58f,rune);
                     else
                     {
-                        GameObject fallen = Primitive(gallery,"Fallen outer column",PrimitiveType.Cylinder,p+new Vector3(side*1.4f,.7f,1),new Vector3(.9f,1.8f,.9f),border);
+                        GameObject fallen = Primitive(gallery,"Fallen outer column",PrimitiveType.Cylinder,p+new Vector3(side*1.4f,.7f,1),new Vector3(.9f,1.8f,.9f),border,cameraOccluder:true);
                         fallen.transform.rotation=Quaternion.Euler(78,side*20,0);
                     }
                 }
                 for (int i = 0; i < 4; i++)
                 {
                     Vector3 p = new Vector3(side*23,1.3f,-9+i*6);
-                    Primitive(gallery,"Gallery exterior wall",PrimitiveType.Cube,p,new Vector3(.8f,2.6f+(i%2),5.1f),baseStone);
+                    Primitive(gallery,"Gallery exterior wall",PrimitiveType.Cube,p,new Vector3(.8f,2.6f+(i%2),5.1f),baseStone,cameraOccluder:true);
                     if (side < 0)
-                        Primitive(gallery,"Sealed archive shelf",PrimitiveType.Cube,p+new Vector3(-1,1.2f,0),new Vector3(.8f,4.1f,3.4f),westStone);
+                        Primitive(gallery,"Sealed archive shelf",PrimitiveType.Cube,p+new Vector3(-1,1.2f,0),new Vector3(.8f,4.1f,3.4f),westStone,cameraOccluder:true);
                 }
             }
             for (int step = 0; step < 3; step++)
@@ -251,20 +251,20 @@ namespace Emberfall
             diamond.transform.rotation=Quaternion.Euler(0,45,0);
             // The high shrine and broken gateway frame the playable rooms from
             // outside the movement boundary, leaving portal/spawn routes clear.
-            Primitive(altar,"Shrine lower step",PrimitiveType.Cube,new Vector3(0,.4f,22),new Vector3(12,.8f,4.5f),baseStone);
-            Primitive(altar,"Shrine upper step",PrimitiveType.Cube,new Vector3(0,1.05f,23),new Vector3(8,.5f,3),border);
+            Primitive(altar,"Shrine lower step",PrimitiveType.Cube,new Vector3(0,.4f,22),new Vector3(12,.8f,4.5f),baseStone,cameraOccluder:true);
+            Primitive(altar,"Shrine upper step",PrimitiveType.Cube,new Vector3(0,1.05f,23),new Vector3(8,.5f,3),border,cameraOccluder:true);
             Crystal(altar,r,new Vector3(0,3.3f,23),2.3f,rune);
             Pillar(altar,r,new Vector3(-7,0,23),6,true);
             Pillar(altar,r,new Vector3(7,0,23),4.5f,true);
             for(int side=-1;side<=1;side+=2)
             {
                 Pillar(nave,r,new Vector3(side*9,0,-20),5.5f,true);
-                Primitive(nave,"Broken entrance lintel",PrimitiveType.Cube,new Vector3(side*6.5f,5.5f,-20),new Vector3(5.5f,.7f,1.4f),border);
+                Primitive(nave,"Broken entrance lintel",PrimitiveType.Cube,new Vector3(side*6.5f,5.5f,-20),new Vector3(5.5f,.7f,1.4f),border,cameraOccluder:true);
             }
             for (int i = 0; i < 5; i++)
             {
                 float x = (i - 2) * 5.8f;
-                Primitive(parent, "Lost wall", PrimitiveType.Cube, new Vector3(x, 2.8f, 26), new Vector3(5.5f, 5.6f + i % 2, .7f), baseStone);
+                Primitive(parent, "Lost wall", PrimitiveType.Cube, new Vector3(x, 2.8f, 26), new Vector3(5.5f, 5.6f + i % 2, .7f), baseStone,cameraOccluder:true);
             }
             Label(parent, "THE FALLEN SANCTUM", "沉星遗迹", new Vector3(0,.075f,-7), .12f, new Color(.46f,.55f,.72f), true);
             Portal(parent, r, new Vector3(0, 0, -16), r.Material(new Color(.58f,.38f,.94f), true));

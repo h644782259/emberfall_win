@@ -50,9 +50,9 @@ namespace Emberfall
                 if(GUI.Button(cardRect,GUIContent.none,invisibleButton))selectedBlessing=i;
             }
             EndTouchScroll();
-            if(Button(MobilePanelRect(layout.FooterButton(0,2)),"暂停 / 存档",jade))
+            if(NavigationButton(MobilePanelRect(layout.FooterButton(0,2)), "暂停 / 存档", jade))
             {session.SetPaused(true);BlockUITransition();return;}
-            if(Button(MobilePanelRect(layout.FooterButton(1,2)),"确认祝福并继续",gold,selectedBlessing>=0&&selectedBlessing<count))
+            if(PrimaryButton(MobilePanelRect(layout.FooterButton(1,2)), "确认祝福并继续", gold, selectedBlessing>=0&&selectedBlessing<count))
             {
                 if(session.ConfirmBlessing(selectedBlessing)){selectedBlessing=-1;CancelMobileScroll();BlockUITransition();}
             }

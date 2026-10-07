@@ -4,8 +4,6 @@ namespace Emberfall
     public sealed partial class AdventureCamera
     {
         private Camera viewCamera;
-        private GUIStyle occlusionLabel;
-        private Font occlusionFont;
         private void UpdateVisibility()
         {
             var game=GameSession.Instance;
@@ -30,19 +28,6 @@ namespace Emberfall
             CameraOcclusionSurface.Advance(transform.position,game.Player.transform.position+Vector3.up*1.35f,
                 game.Player.transform.position+Vector3.up*.18f,protectTarget?target.transform.position+Vector3.up:Vector3.zero,protectTarget,Time.unscaledDeltaTime);
         }
-        private void RestoreVisibility(){CameraOcclusionSurface.RestoreAll();if(viewCamera!=null)viewCamera.ResetProjectionMatrix();GameFont.Release(ref occlusionFont);occlusionLabel=null;}
-        private void OnGUI()
-        {
-            var game=GameSession.Instance;
-            if(CameraOcclusionSurface.LastHeroOccluders==0||viewCamera==null||game==null||game.Player==null||game.IsDead||game.InputBlocked)return;
-            Vector3 point=viewCamera.WorldToScreenPoint(game.Player.transform.position+Vector3.up*1.25f);if(point.z<=0)return;
-            if(occlusionLabel==null){occlusionFont=GameFont.Shared;occlusionLabel=new GUIStyle(GUI.skin.label){alignment=TextAnchor.MiddleCenter,fontStyle=FontStyle.Bold,fontSize=12,font=occlusionFont};}
-            Matrix4x4 old=GUI.matrix;Color color=GUI.color;int depth=GUI.depth;
-            GUI.matrix=Matrix4x4.identity;GUI.depth=50;float density=MobileControls.Active?MobileControls.Layout.Scale:1;
-            Rect marker=new Rect(point.x-18*density,Screen.height-point.y-10*density,36*density,20*density);
-            GUI.color=new Color(.02f,.05f,.08f,.8f);GUI.DrawTexture(marker,Texture2D.whiteTexture);GUI.color=Color.white;
-            occlusionLabel.fontSize=Mathf.RoundToInt(12*density);occlusionLabel.normal.textColor=Color.white;GUI.Label(marker,"角色",occlusionLabel);
-            GUI.matrix=old;GUI.color=color;GUI.depth=depth;
-        }
+        private void RestoreVisibility(){CameraOcclusionSurface.RestoreAll();if(viewCamera!=null)viewCamera.ResetProjectionMatrix();}
     }
 }

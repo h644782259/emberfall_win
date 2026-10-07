@@ -8,7 +8,7 @@ namespace Emberfall
         private void DrawSkillIdentity(Rect r, HeroClass hero, int skill, int rank, bool available, int rasterSize = 32)
         {
             bool passive = GameBalance.IsPassive(skill);
-            Color accent = passive ? new Color(.75f,.65f,.94f) : GameBalance.ClassColor(hero);
+            Color accent = UIIconAtlas.SkillColor(hero, skill);
             Fill(r, new Color(.035f,.065f,.085f,.9f));
             Border(r, available ? accent : muted * .55f);
             float unit = Mathf.Max(.5f,r.width/32f);

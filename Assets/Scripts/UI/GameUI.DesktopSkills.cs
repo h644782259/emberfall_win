@@ -15,7 +15,7 @@ namespace Emberfall
             bool passive = GameBalance.IsPassive(skill);
             SkillCategory category = GameBalance.GetSkillCategory(p.heroClass, skill);
             bool showOffenseScale = !passive && category != SkillCategory.Healing && category != SkillCategory.Defense;
-            Color accent = Color.Lerp(GameBalance.ClassColor(p.heroClass), gold, skill / 9f);
+            Color accent = UIIconAtlas.SkillColor(p.heroClass, skill);
             Fill(r, card);
             Fill(new Rect(r.x, r.y, r.width, 3), accent);
             DrawSkillIdentity(new Rect(r.x+18,r.y+15,48,48),p.heroClass,skill,rank,rank>0,48);
@@ -46,7 +46,7 @@ namespace Emberfall
                 new Rect(0,0,532,Mathf.Max(viewport.height,evolutionY+evolutionCardHeight+6)));
             Text(new Rect(0,0,530,descriptionHeight),description,13,muted,false,true);
             string[] labels = { "当前冷却", "资源消耗", "初习解锁", "进阶成长" };
-            string[] values = { passive ? "自动生效" : GameBalance.EffectiveCooldown(p.heroClass, skill, rank).ToString("0.#") + " 秒", passive ? "无需消耗" : GameBalance.SkillEnergyCost(p.heroClass, skill).ToString("0") + " " + GameBalance.EnergyName(p.heroClass), "Lv." + GameBalance.SkillRequiredLevels[skill], "强化 → 觉醒" };
+            string[] values = { passive ? "自动生效" : GameBalance.EffectiveCooldown(p.heroClass, skill, rank).ToString("0.#") + " 秒", passive || GameBalance.SkillEnergyCost(p.heroClass, skill) == 0 ? "无需能量" : GameBalance.SkillEnergyCost(p.heroClass, skill).ToString("0") + " " + GameBalance.EnergyName(p.heroClass), "Lv." + GameBalance.SkillRequiredLevels[skill], "强化 → 觉醒" };
             for (int i = 0; i < 4; i++)
             {
                 Rect stat = new Rect(i*134,statsY,128,43);

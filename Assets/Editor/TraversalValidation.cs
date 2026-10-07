@@ -93,6 +93,13 @@ namespace Emberfall.Editor
             typeof(PlayerController).GetField("traversalFrame", Hidden).SetValue(player, -1);
             check((bool)blink.Invoke(player, new object[] { Vector3.forward }) && Vector3.Distance(player.transform.position, landing) < .1f && player.BlinkCooldown > 2,
                 "A valid blink crosses the river immediately and starts its cooldown");
+            player.Teleport(bank);
+            typeof(PlayerController).GetField("traversalFrame", Hidden).SetValue(player, -1);
+            typeof(PlayerController).GetField("jumpInput", Hidden).SetValue(player, Vector3.forward);
+            check((bool)jump.Invoke(player,null), "Moving jump starts from the river bank");
+            typeof(PlayerController).GetField("jumpInput", Hidden).SetValue(player, Vector3.zero);
+            tick.Invoke(player,new object[]{.55f});
+            check(player.transform.position.z>0 && WorldTraversal.IsWalkable(player.transform.position) && WorldTraversal.CanLeap(bank,player.transform.position), "Moving jump crosses narrow river and lands on safe opposite bank");
             player.Teleport(original);
             player.transform.rotation = originalRotation;
             player.enabled = enabled;

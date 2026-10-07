@@ -47,7 +47,7 @@ namespace Emberfall
             float cost = GameBalance.SkillEnergyCost(HeroClass, skill);
             if (Energy < cost) return false;
             Energy -= cost;
-            if(EnergyChanged!=null)EnergyChanged(-cost);
+            if(cost>0 && EnergyChanged!=null)EnergyChanged(-cost);
             cooldowns[skill] = ModifiedCooldown(GameBalance.EffectiveCooldown(HeroClass, skill, rank), cooldownMultiplier);
             return true;
         }

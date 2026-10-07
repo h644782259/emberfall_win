@@ -58,15 +58,14 @@ namespace Emberfall
             if (!string.IsNullOrEmpty(exitError)) Text(new Rect(r.x + 24 * unit, r.y + 150 * unit, r.width - 48 * unit, 52 * unit),
                 exitError, mobile ? TouchFont(13) : 14, gold, false, true);
             float bw = (r.width - 64 * unit) / 2;
-            if (Button(new Rect(r.x + 24 * unit, r.yMax - 68 * unit, bw, 48 * unit), "取消", jade, !exitRequest.Busy))
+            if (NavigationButton(new Rect(r.x + 24 * unit, r.yMax - 68 * unit, bw, 48 * unit), "取消", jade, !exitRequest.Busy))
             {
                 exitRequest.Cancel();
                 exitError = null;
                 BlockUITransition();
                 return;
             }
-            if (Button(new Rect(r.x + 40 * unit + bw, r.yMax - 68 * unit, bw, 48 * unit),
-                exitRequest.ToTitle ? "保存并返回" : "确认退出", gold, !exitRequest.Busy))
+            if (DangerButton(new Rect(r.x + 40 * unit + bw, r.yMax - 68 * unit, bw, 48 * unit), exitRequest.ToTitle ? "保存并返回" : "确认退出", gold, !exitRequest.Busy))
             {
                 try
                 {

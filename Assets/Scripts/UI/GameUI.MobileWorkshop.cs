@@ -27,7 +27,7 @@ namespace Emberfall
             for (int i = 0; i < tabs.Length; i++)
             {
                 Rect tab = MobilePanelRect(layout.Tab(i, tabs.Length));
-                if (Button(tab, tabs[i], campTab == i ? gold : jade) && campTab != i)
+                if (TabButton(tab, tabs[i], campTab == i) && campTab != i)
                 { campTab = i; mobileWorkshopStatus = null; CancelMobileScroll(); BlockUITransition(); }
                 Badge(tab, i == 1 ? Attention.FirstClearClaimable : i == 2 && Attention.LootClaimable);
             }
@@ -37,13 +37,13 @@ namespace Emberfall
                 mobileWorkshopScroll[campTab], new Rect(0, 0, contentWidth * TouchRatio, Mathf.Max(contentHeight, layout.TabbedBody.Height) * TouchRatio));
             DrawMobileWorkshopContent(contentWidth, true);
             EndTouchScroll();
-            if (Button(MobilePanelRect(layout.FooterButton(0, 4)), "返回冒险", jade))
+            if (NavigationButton(MobilePanelRect(layout.FooterButton(0, 4)), "返回冒险", jade))
             { ClosePanel(); BlockUITransition(); return; }
-            if (Button(MobilePanelRect(layout.FooterButton(1, 4)), "技能树", jade))
+            if (NavigationButton(MobilePanelRect(layout.FooterButton(1, 4)), "技能树", jade))
             { panel = Panel.Skills; CancelMobileScroll(); BlockUITransition(); return; }
-            if (Button(MobilePanelRect(layout.FooterButton(2, 4)), "行囊", jade))
+            if (NavigationButton(MobilePanelRect(layout.FooterButton(2, 4)), "行囊", jade))
             { panel = Panel.Inventory; CancelMobileScroll(); BlockUITransition(); }
-            if (Button(MobilePanelRect(layout.FooterButton(3, 4)), "目标", jade))OpenProgressionGoals();
+            if (NavigationButton(MobilePanelRect(layout.FooterButton(3, 4)), "目标", jade))OpenProgressionGoals();
         }
 
         private float DrawMobileWorkshopContent(float width, bool draw)
@@ -62,9 +62,9 @@ namespace Emberfall
             y += 10;
         }
 
-        private void MobileWorkshopAction(ref float y, float width, string caption, Color color, bool enabled, bool draw, Action action)
+        private void MobileWorkshopAction(ref float y, float width, string caption, Color color, bool enabled, bool draw, Action action, ButtonRole role = ButtonRole.Action)
         {
-            if (draw && Button(TouchRect(8, y, width - 16, 48), caption, color, enabled)) action();
+            if (draw && DrawButton(TouchRect(8, y, width - 16, 48), caption, role, enabled)) action();
             y += 58;
         }
 
@@ -81,13 +81,11 @@ namespace Emberfall
         private void DrawMobileWorkshopAbilities(ref float y, float width, bool draw)
         {
             var p = session.Progression;
-            MobileWorkshopAction(ref y,width,"营地 · 切换职业",jade,true,draw,OpenClassSwitch);
+            MobileWorkshopAction(ref y, width, "营地 · 切换职业", jade, true, draw, OpenClassSwitch, ButtonRole.Navigation);
             MobileWorkshopParagraph(ref y, width, "配装方案与免费重置", gold, draw, true, 16);
             MobileWorkshopParagraph(ref y, width, "可返还技能进阶 " + p.RefundableSkillRanks + "点 + 精通 " + p.RefundableMasteryPoints + "点 = " + p.RefundableBuildPoints + "点；保留已学1阶与当前装备。", muted, draw);
-            MobileWorkshopAction(ref y, width, "配装方案 A / B · 记录 / 应用", jade, true, draw, OpenBuildPlans);
-            MobileWorkshopAction(ref y, width, "免费重置配点 · " + p.RefundableBuildPoints + "点", gold,
-                session.IsInCamp && (p.RefundableBuildPoints > 0 || p.Profile.masteryCore >= 0), draw,
-                () => RequestBuildPlanAction(BuildPlanAction.Reset));
+            MobileWorkshopAction(ref y, width, "配装方案 A / B · 记录 / 应用", jade, true, draw, OpenBuildPlans, ButtonRole.Navigation);
+            MobileWorkshopAction(ref y, width, "免费重置配点 · " + p.RefundableBuildPoints + "点", gold, session.IsInCamp && (p.RefundableBuildPoints > 0 || p.Profile.masteryCore >= 0), draw, () => RequestBuildPlanAction(BuildPlanAction.Reset), ButtonRole.Danger);
             MobileWorkshopParagraph(ref y, width, GameBalance.ClassName(p.Profile.heroClass) + " · 职业能力", gold, draw, true, 16);
             MobileWorkshopParagraph(ref y, width, BuildCatalog.ClassSignatureDescription(p.Profile.heroClass), pale, draw);
             for(int i=0;i<2;i++)
@@ -99,7 +97,7 @@ namespace Emberfall
                 MobileWorkshopParagraph(ref y,width,info.Enhancement,muted,draw);
                 MobileWorkshopParagraph(ref y,width,"下一步："+info.NextStep,jade,draw);
                 int route=i;
-                if(info.NextAction!=CampRouteAction.None)MobileWorkshopAction(ref y,width,info.NextStep,gold,session.IsInCamp,draw,()=>FollowCampRouteStep(info,route));
+                if(info.NextAction!=CampRouteAction.None)MobileWorkshopAction(ref y,width,info.NextStep,gold,session.IsInCamp,draw,()=>FollowCampRouteStep(info,route),CampRouteButtonRole(info));
             }
             if(p.Profile.heroClass==HeroClass.Arcanist)
                 MobileWorkshopAction(ref y,width,"恢复均衡专精",jade,session.IsInCamp&&p.Profile.specialization!=ElementalistSpecialization.None,draw,
@@ -116,16 +114,13 @@ namespace Emberfall
                     () => MobileWorkshopResult(p.LearnMastery(mastery), "精通已提高"));
                 string core = p.HasMasteryCore(mastery) ? (p.MasteryCoreTier(mastery) == 2 ? "增强核心 · 已启用" : "初阶核心 · 已启用") :
                     (p.Profile.masteryRanks[i] >= MasteryCoreRules.EnhancedInvestment ? "切换增强核心" : "启用初阶核心 · 需"+MasteryCoreRules.InitialInvestment+"点");
-                MobileWorkshopAction(ref y, width, core, gold, session.IsInCamp && p.Profile.masteryRanks[i] >= MasteryCoreRules.InitialInvestment && !p.HasMasteryCore(mastery), draw,
-                    () => MobileWorkshopResult(p.SelectMasteryCore(mastery, session.IsInCamp), "唯一精通核心已切换"));
+                MobileWorkshopAction(ref y, width, core, gold, session.IsInCamp && p.Profile.masteryRanks[i] >= MasteryCoreRules.InitialInvestment && !p.HasMasteryCore(mastery), draw, () => MobileWorkshopResult(p.SelectMasteryCore(mastery, session.IsInCamp), "唯一精通核心已切换"), ButtonRole.Primary);
             }
             MobileWorkshopParagraph(ref y, width, "免费退还技能2/3阶投入；保留已学1阶、前置和快捷栏，不重置当前冷却。精通重置会退还精通点并关闭核心。", muted, draw);
-            MobileWorkshopAction(ref y, width, "退还技能进阶 · " + p.RefundableSkillRanks + "点", gold, session.IsInCamp && p.RefundableSkillRanks > 0, draw,
-                () => MobileWorkshopResult(p.RefundSkillRanks(session.IsInCamp), "技能进阶点已返还；已学1阶保留"));
+            MobileWorkshopAction(ref y, width, "退还技能进阶 · " + p.RefundableSkillRanks + "点", gold, session.IsInCamp && p.RefundableSkillRanks > 0, draw, () => MobileWorkshopResult(p.RefundSkillRanks(session.IsInCamp), "技能进阶点已返还；已学1阶保留"), ButtonRole.Danger);
             bool invested = p.Profile.masteryCore >= 0;
             foreach (int rank in p.Profile.masteryRanks) invested |= rank > 0;
-            MobileWorkshopAction(ref y, width, "免费重置精通 / 核心", jade, session.IsInCamp && invested, draw,
-                () => MobileWorkshopResult(p.ResetMastery(session.IsInCamp), "精通点已返还，核心已关闭"));
+            MobileWorkshopAction(ref y, width, "免费重置精通 / 核心", jade, session.IsInCamp && invested, draw, () => MobileWorkshopResult(p.ResetMastery(session.IsInCamp), "精通点已返还，核心已关闭"), ButtonRole.Danger);
         }
 
         private void DrawMobileWorkshopMechanics(ref float y, float width, bool draw)
@@ -147,7 +142,7 @@ namespace Emberfall
                 string id = item.id;
                 MobileWorkshopParagraph(ref y, width, "当前穿戴：" + ItemTitle(item) + " · " + GameBalance.RarityName(item.rarity) + " · Lv." + item.level + "\n编号：" + id, jade, draw);
                 MobileWorkshopParagraph(ref y, width, "重铸保留装备身份、机制和部位强化；可以分段成长。", muted, draw);
-                MobileWorkshopAction(ref y,width,"选择重铸档位",jade,session.IsInCamp&&p.QuoteReforge(id)!=null,draw,()=>OpenReforgeSurface(id));
+                MobileWorkshopAction(ref y, width, "选择重铸档位", jade, session.IsInCamp&&p.QuoteReforge(id)!=null, draw, ()=>OpenReforgeSurface(id), ButtonRole.Navigation);
                 if (BuildCatalog.HasMechanicVariant(mechanic))
                 {
                     MobileWorkshopParagraph(ref y, width, "当前变体 " + (item.mechanicVariant == 0 ? "A" : "B") + "；首次解锁4碎片，此后免费切换互斥效果。", muted, draw);
@@ -168,17 +163,15 @@ namespace Emberfall
             MobileWorkshopParagraph(ref y, width, "背包 " + p.Profile.inventory.Count + "/" + ProgressionService.InventoryCapacity + " · 待领取 " + p.Profile.pendingLoot.Count +
                 " · 恢复栏 " + p.RecoveryLootCount, pale, draw, true, 16);
             MobileWorkshopParagraph(ref y, width, "自动出售只处理之后拾取的对应低品质装备；穿戴、锁定、机制及已强化装备受保护。领取装备绕过自动出售。", muted, draw);
-            MobileWorkshopAction(ref y, width, "普通自动出售：" + (p.Profile.autoSellCommon ? "开" : "关"), jade, true, draw,
-                () => MobileWorkshopResult(p.SetAutoSell(Rarity.Common, !p.Profile.autoSellCommon), "普通装备自动出售设置已更新"));
-            MobileWorkshopAction(ref y, width, "稀有自动出售：" + (p.Profile.autoSellRare ? "开" : "关"), jade, true, draw,
-                () => MobileWorkshopResult(p.SetAutoSell(Rarity.Rare, !p.Profile.autoSellRare), "稀有装备自动出售设置已更新"));
+            MobileWorkshopAction(ref y, width, "普通自动出售：" + (p.Profile.autoSellCommon ? "开" : "关"), jade, true, draw, () => MobileWorkshopResult(p.SetAutoSell(Rarity.Common, !p.Profile.autoSellCommon), "普通装备自动出售设置已更新"), p.Profile.autoSellCommon?ButtonRole.ActiveToggle:ButtonRole.Toggle);
+            MobileWorkshopAction(ref y, width, "稀有自动出售：" + (p.Profile.autoSellRare ? "开" : "关"), jade, true, draw, () => MobileWorkshopResult(p.SetAutoSell(Rarity.Rare, !p.Profile.autoSellRare), "稀有装备自动出售设置已更新"), p.Profile.autoSellRare?ButtonRole.ActiveToggle:ButtonRole.Toggle);
             MobileWorkshopAction(ref y, width, "批量出售背包低品质装备", gold, true, draw, () =>
             {
                 RequestPresetSale(null,true);
-            });
+            }, ButtonRole.Danger);
             var mailbox = new List<ItemData>(p.Profile.pendingLoot);
             mailbox.AddRange(p.Profile.recoveryLoot);
-            MobileWorkshopAction(ref y, width, "领取所有可放入背包的装备", gold, mailbox.Count > 0 && p.Profile.inventory.Count < ProgressionService.InventoryCapacity, draw, ClaimMobileWorkshopLoot);
+            MobileWorkshopAction(ref y, width, "领取所有可放入背包的装备", gold, mailbox.Count > 0 && p.Profile.inventory.Count < ProgressionService.InventoryCapacity, draw, ClaimMobileWorkshopLoot, ButtonRole.Primary);
             if (mailbox.Count == 0) MobileWorkshopParagraph(ref y, width, "没有待领取或保管的装备。", muted, draw);
             foreach (ItemData item in mailbox)
             {
@@ -221,10 +214,10 @@ namespace Emberfall
             if(session.Progression.HighestAdventureTier>0||session.Progression.Profile.clearedRuns>0)
             {
                 MobileWorkshopParagraph(ref y,width,"首通整备 · 领取核心、检查路线，再保存配装",jade,draw);
-                MobileWorkshopAction(ref y,width,"机制与核心",gold,true,draw,()=>{campTab=1;CancelMobileScroll();BlockUITransition();});
-                MobileWorkshopAction(ref y,width,"职业路线",jade,true,draw,()=>{campTab=0;CancelMobileScroll();BlockUITransition();});
-                MobileWorkshopAction(ref y,width,"配装方案",jade,true,draw,OpenBuildPlans);
-                MobileWorkshopAction(ref y,width,"选择下一目标",jade,true,draw,OpenProgressionGoals);
+                MobileWorkshopAction(ref y, width, "机制与核心", gold, true, draw, ()=>{campTab=1;CancelMobileScroll();BlockUITransition();}, ButtonRole.Navigation);
+                MobileWorkshopAction(ref y, width, "职业路线", jade, true, draw, ()=>{campTab=0;CancelMobileScroll();BlockUITransition();}, ButtonRole.Navigation);
+                MobileWorkshopAction(ref y, width, "配装方案", jade, true, draw, OpenBuildPlans, ButtonRole.Navigation);
+                MobileWorkshopAction(ref y, width, "选择下一目标", jade, true, draw, OpenProgressionGoals, ButtonRole.Navigation);
             }
         }
     }

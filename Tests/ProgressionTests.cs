@@ -753,7 +753,7 @@ public static class ProgressionTests
                 {
                     float cooldown = GameBalance.SkillCooldown((HeroClass)hero, skill);
                     float cost = GameBalance.SkillEnergyCost((HeroClass)hero, skill);
-                    Check(cooldown > 0 && cooldown <= 90 && cost > 0 && cost <= 100, "each class active skill has finite usable cooldown and energy cost");
+                    Check(cooldown > 0 && cooldown <= 90 && (skill == 9 ? cost == 0 : cost > 0 && cost <= 100), "ultimate is free while other active skills have finite usable costs");
                     Check(GameBalance.EffectiveCooldown((HeroClass)hero, skill, 3) < cooldown, "evolving each active skill improves its class-specific cooldown");
                 }
             }

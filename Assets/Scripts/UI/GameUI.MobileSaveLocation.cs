@@ -48,7 +48,7 @@ namespace Emberfall
                 return;
             }
 #if !UNITY_IOS && !UNITY_ANDROID
-            if (Button(MobilePanelRect(layout.FooterButton(1, buttons)), "打开目录", jade))
+            if (NavigationButton(MobilePanelRect(layout.FooterButton(1, buttons)), "打开目录", jade))
             {
                 try
                 {
@@ -64,7 +64,7 @@ namespace Emberfall
                 return;
             }
 #endif
-            if (Button(MobilePanelRect(layout.FooterButton(buttons - 1, buttons)), saveReturnPause ? "返回暂停菜单" : "返回冒险", jade))
+            if (NavigationButton(MobilePanelRect(layout.FooterButton(buttons - 1, buttons)), saveReturnPause ? "返回暂停菜单" : "返回冒险", jade))
             { ClosePanel(); BlockUITransition(); }
         }
 

@@ -213,6 +213,7 @@ namespace Emberfall
 
         private void DiscardTransientAdventureForLoad()
         {
+            EndHubNpcConversation();
             // Only after staging succeeded and the user chose how to handle the
             // current progress. This path intentionally never saves/settles loot.
             HasStarted = false;
@@ -251,6 +252,7 @@ namespace Emberfall
 
         private void BeginAdventure()
         {
+            EndHubNpcConversation();
             HasStarted = true;
             IsDead = false;
             Paused = false;
@@ -266,6 +268,7 @@ namespace Emberfall
 
         private void Update()
         {
+            if(activeHubNpc!=HubNpcKind.None&&ActiveHubNpc==HubNpcKind.None)EndHubNpcConversation();
             if(PracticeActive){TickPractice();return;} // Practice owns its guarded potion input too.
             if(HasStarted)TickSideEvent();
             if (InputBlocked) return;
@@ -294,8 +297,8 @@ namespace Emberfall
             if (autosaveTimer > 25) { autosaveTimer = 0; if(!DungeonRewardPending||TrySettleDungeonReward())Progression.Save(); }
         }
 
-        public void SetPaused(bool value) { Paused = value; UpdateTimeScale(); }
-        public void SetUIBlocking(bool value) { uiBlocking = value; UpdateTimeScale(); }
+        public void SetPaused(bool value) { Paused = value; if(value)GameAudio.StopNpcGreeting(); UpdateTimeScale(); }
+        public void SetUIBlocking(bool value) { uiBlocking = value; if(!value)EndHubNpcConversation(); UpdateTimeScale(); }
         public bool AssignSkill(int hotbarSlot, int skillIndex)
         {
             if (!CanChangeLoadout) { Notify("请先开始冒险，再配置技能快捷栏。"); return false; }
@@ -328,7 +331,7 @@ namespace Emberfall
             if (!NearPortal()) { Notify("请前往原野北方发光的传送门（小地图菱形），靠近后按 T。"); return; }
             if (Progression.Profile.level < 2) { Notify("遗迹需要 2 级。先在原野战斗，并学习第一个职业技能。"); return; }
             DungeonSelectionOpen = true;
-            SelectedDungeonTier = Mathf.Clamp(SelectedDungeonTier, 1, MaximumDungeonTier);
+            SelectedDungeonTier = MaximumDungeonTier;
             UpdateTimeScale();
         }
 
@@ -361,6 +364,7 @@ namespace Emberfall
             }
             changingZone = true;
             int previousCombatEpoch = Player.CombatEpoch;
+            EndHubNpcConversation();
             if (waveRoutine != null) { StopCoroutine(waveRoutine); waveRoutine = null; }
             foreach (EnemyController enemy in Enemies) if (enemy != null) { enemy.gameObject.SetActive(false); Destroy(enemy.gameObject); }
             Enemies.Clear();
@@ -483,7 +487,7 @@ namespace Emberfall
             SpawnFloatingText(position + Vector3.up * 2, "+" + experience + " XP  +" + gold + " G", new Color(.95f, .83f, .4f));
             if (boss || Random.value < (InDungeon ? .7f : .5f))
             {
-                ItemData loot = Progression.RollLoot(Progression.Profile.level + (boss ? 1 : 0), boss, InDungeon ? DungeonTier : 0);
+                ItemData loot = Progression.RollLoot(Progression.Profile.level, boss, InDungeon ? DungeonTier : 0);
                 DeliverEnemyLoot(loot, position);
             }
             enemy.BeginDeath();
@@ -843,6 +847,7 @@ namespace Emberfall
         {
             if(PracticeActive)EndPractice("会话关闭");
             if (Instance != this) return;
+            EndHubNpcConversation();
             Application.wantsToQuit -= CanQuitSafely;
             PreserveWorldLoot();
             if (Progression != null) { Progression.Changed -= OnProgressChanged; Progression.LeveledUp -= OnLevelUp; }

@@ -156,7 +156,7 @@ namespace Emberfall
         public bool IsPracticeOnly { get; private set; }
         public ProgressionService CreatePracticeCopy() { return CreatePracticeSnapshot(Profile); }
         private ProgressionService CreatePracticeSnapshot(GameProfile source)
-        { var copy=new ProgressionService(JsonUtility.FromJson<GameProfile>(JsonUtility.ToJson(source,true)));copy.IsPracticeOnly=true;return copy; }
+        { var copy=new ProgressionService(CloneProfile(source));copy.IsPracticeOnly=true;return copy; }
         // A practice service has no storage destination at all. It never routes
         // through the public null-directory constructor (which selects real saves).
         private ProgressionService(GameProfile memoryProfile)
@@ -577,7 +577,7 @@ namespace Emberfall
                 if (File.Exists(temporary) && TryReadProfile(temporary, out pendingWrite, out pendingError))
                     throw new IOException("发现可恢复的临时存档，已保留且未覆盖。请先备份整个存档目录，再处理临时存档恢复。");
                 var save = new SaveFile { format = SaveFormat, version = profile.chestRulesRevision>=2?3:profile.classStateRevision>0?2:1, profile = profile };
-                string json = JsonUtility.ToJson(save, true);
+                string json = PreserveOptionalReceiptNulls(JsonUtility.ToJson(save, true), profile);
                 if (Encoding.UTF8.GetByteCount(json) > MaximumSaveBytes)
                     throw new IOException("存档超过 4 MiB 安全大小，未覆盖原文件或备份。请保留现有文件。");
                 // Compare the actual bounded document, never a dirty flag or file
@@ -954,7 +954,7 @@ namespace Emberfall
             if (incoming.Count == 0) { LastError = string.Empty; return true; }
             if (incoming.Count > RecoveryLootCapacity - Profile.recoveryLoot.Count)
                 return Fail("临时保管栏已满，尚未删除地面装备；请领取保管装备后再离开。");
-            GameProfile candidate = JsonUtility.FromJson<GameProfile>(JsonUtility.ToJson(Profile, true));
+            GameProfile candidate = CloneProfile(Profile);
             foreach (ItemData item in incoming)
                 candidate.recoveryLoot.Add(JsonUtility.FromJson<ItemData>(JsonUtility.ToJson(item, true)));
             string failure;
@@ -981,7 +981,7 @@ namespace Emberfall
         {
             if (!Profile.recoveryLoot.Exists(item => item.id == id)) return Fail("找不到临时保管的装备。");
             if (Profile.inventory.Count >= InventoryCapacity) return Fail("背包已满，请先腾出位置再领取保管装备。");
-            GameProfile candidate = JsonUtility.FromJson<GameProfile>(JsonUtility.ToJson(Profile, true));
+            GameProfile candidate = CloneProfile(Profile);
             ItemData item = candidate.recoveryLoot.Find(value => value.id == id);
             candidate.recoveryLoot.Remove(item);
             candidate.inventory.Add(item);
@@ -1001,7 +1001,7 @@ namespace Emberfall
                 Fail(Profile.recoveryLoot.Count == 0 ? "没有临时保管的装备。" : "背包已满，请先腾出位置。");
                 return 0;
             }
-            GameProfile candidate = JsonUtility.FromJson<GameProfile>(JsonUtility.ToJson(Profile, true));
+            GameProfile candidate = CloneProfile(Profile);
             candidate.inventory.AddRange(candidate.recoveryLoot.GetRange(0, count));
             candidate.recoveryLoot.RemoveRange(0, count);
             string failure;
@@ -1015,7 +1015,7 @@ namespace Emberfall
         public ItemData CreateMechanicItem(EquipmentMechanic mechanic)
         {
             if (mechanic == EquipmentMechanic.None || !Enum.IsDefined(typeof(EquipmentMechanic), mechanic)) return null;
-            int level = Clamp(Profile.level, 1, MaximumLevel);
+            int level = EquipmentGenerationLevel(Profile.level);
             ItemSlot slot = BuildCatalog.MechanicSlot(mechanic);
             var item = new ItemData { id = Guid.NewGuid().ToString("N"), name = BuildCatalog.MechanicName(mechanic),
                 level = level, rarity = Rarity.Epic, slot = slot, mechanic = mechanic, locked = true };
@@ -1169,7 +1169,7 @@ namespace Emberfall
                 if(index<0||index>=GameBalance.SkillCount||!SkillChanged(index))return "";
                 int before=OriginalSkillRank(index),after=SkillRank(index);
                 string text=(after<before?"退阶：撤回原阶效果，按新阶能力结算。":"进阶：按新阶能力结算。")+"\n原 "+before+"阶："+owner.SkillEffectSummary(index,before)+"\n新 "+after+"阶："+preview.SkillEffectSummary(index,after);
-                if(!GameBalance.IsPassive(index))text+="\n基础冷却 "+GameBalance.EffectiveCooldown(source.heroClass,index,before).ToString("0.##")+" → "+GameBalance.EffectiveCooldown(source.heroClass,index,after).ToString("0.##")+"秒；消耗 "+GameBalance.SkillEnergyCost(source.heroClass,index).ToString("0.##")+"（不变）";
+                if(!GameBalance.IsPassive(index))text+="\n基础冷却 "+GameBalance.EffectiveCooldown(source.heroClass,index,before).ToString("0.##")+" → "+GameBalance.EffectiveCooldown(source.heroClass,index,after).ToString("0.##")+"秒；"+(GameBalance.SkillEnergyCost(source.heroClass,index)==0?"无需能量":"消耗 "+GameBalance.SkillEnergyCost(source.heroClass,index).ToString("0.##"))+"（不变）";
                 return text;
             }
 
@@ -1661,7 +1661,7 @@ namespace Emberfall
 
         private GameProfile Snapshot()
         {
-            var copy=JsonUtility.FromJson<GameProfile>(JsonUtility.ToJson(Profile,true));
+            var copy=CloneProfile(Profile);
             if(copy.pendingFashionChest&&pendingChestRoll!=null&&pendingChestRollPath==SaveFilePath&&pendingChestRollClears==copy.clearedRuns&&pendingChestRollTier==copy.pendingChestTier)
             {
                 copy.pendingChestDraw=CopyChestRoll(pendingChestRoll);copy.chestRulesRevision=2;
@@ -1908,7 +1908,7 @@ namespace Emberfall
         public bool AcknowledgeChestReward()
         {
             if (!Profile.pendingChestReveal) return Fail("当前没有待展示的宝箱奖励。");
-            GameProfile candidate = JsonUtility.FromJson<GameProfile>(JsonUtility.ToJson(Profile, true));
+            GameProfile candidate = CloneProfile(Profile);
             candidate.pendingChestReveal = false;
             string failure;
             if (!TryWriteAttachedProfile(candidate, out failure)) return Fail(failure);
@@ -2234,7 +2234,7 @@ namespace Emberfall
         /// <summary>Generate an identified drop without putting it into the bag or saving.</summary>
         public ItemData RollLoot(int level, bool boss, int dungeonTier = 0)
         {
-            level = Clamp(level, 1, MaximumLevel);
+            level = EquipmentGenerationLevel(level);
             int roll = random.Next(100);
             Rarity rarity = TierRewardRules.DropRarity(boss, dungeonTier, roll);
             ItemSlot slot = (ItemSlot)random.Next(3);
@@ -2259,10 +2259,14 @@ namespace Emberfall
             return item;
         }
 
+        // New gear advances at level 10, 20, ...; stored items keep their earned stats.
+        public static int EquipmentGenerationLevel(int level)
+        { level=Clamp(level,1,MaximumLevel);return level<10?1:level/10*10; }
+
         private static void SetRolledStats(ItemData item)
         {
-            float multiplier = new[] { 1f, 1.35f, 1.8f, 2.5f }[(int)item.rarity];
-            int level = item.level;
+            float multiplier = new[] { 1f, 1.5f, 2.25f, 3.4f }[(int)item.rarity];
+            int level = EquipmentGenerationLevel(item.level);
             item.attack = item.defense = item.health = 0;
             if (item.slot == ItemSlot.Weapon) item.attack = Round((5 + level * 2.5f) * multiplier);
             else if (item.slot == ItemSlot.Armor)
@@ -2678,7 +2682,7 @@ namespace Emberfall
         public bool SetHotbarKey(int slot, int keyCode)
         {
             if (slot < 0 || slot >= GameBalance.HotbarSize) return Fail("无效的快捷栏位置。");
-            if (!GameBalance.IsBindableKey(keyCode)) return Fail("请选择字母、数字或 F1–F12；移动、药水和面板按键不能绑定。");
+            if (!GameBalance.IsBindableKey(keyCode)) return Fail("请选择字母、数字或 F1–F12；移动、药水、G 对话和面板按键不能绑定。");
             GameProfile candidate=Snapshot();
             int otherSlot = Array.IndexOf(candidate.hotbarKeys, keyCode);
             if (otherSlot >= 0 && otherSlot != slot) candidate.hotbarKeys[otherSlot] = candidate.hotbarKeys[slot];
@@ -2811,6 +2815,42 @@ namespace Emberfall
         }
 
         private const string FrozenRewardReadFailure="冻结奖励记录不可安全恢复；原主档与备份保留。";
+        // Unity inline serialization materializes null classes as empty objects.
+        // Receipt absence is meaningful: an empty draw must never become a frozen reward.
+        private static string PreserveOptionalReceiptNulls(string json, GameProfile profile)
+        {
+            if (profile.pendingChestDraw == null) json = WriteNullReceipt(json, "pendingChestDraw");
+            if (profile.lastChestReward == null) json = WriteNullReceipt(json, "lastChestReward");
+            if (profile.lastThreadMaterialReceipt == null) json = WriteNullReceipt(json, "lastThreadMaterialReceipt");
+            return json;
+        }
+        private static string WriteNullReceipt(string json, string field)
+        {
+            // These receipt types contain scalar fields only, with no nested objects.
+            return System.Text.RegularExpressions.Regex.Replace(json,
+                "(?<!\\\\)\"" + field + "\"\\s*:\\s*\\{(?:[^\"{}]|\"(?:\\\\.|[^\"\\\\])*\")*\\}",
+                "\"" + field + "\": null");
+        }
+        private static void RestoreOptionalReceiptNulls(GameProfile profile, string document)
+        {
+            if (profile == null) return;
+            if (!HasReceiptValue(document, "pendingChestDraw")) profile.pendingChestDraw = null;
+            if (!HasReceiptValue(document, "lastChestReward")) profile.lastChestReward = null;
+            if (!HasReceiptValue(document, "lastThreadMaterialReceipt")) profile.lastThreadMaterialReceipt = null;
+        }
+        private static bool HasReceiptValue(string document, string field)
+        {
+            var match = System.Text.RegularExpressions.Regex.Match(document,
+                "(?<!\\\\)\"" + field + "\"\\s*:\\s*(?<token>null|[^ \\t\\r\\n])");
+            return match.Success && match.Groups["token"].Value != "null";
+        }
+        private static GameProfile CloneProfile(GameProfile source)
+        {
+            string json = PreserveOptionalReceiptNulls(JsonUtility.ToJson(source, true), source);
+            var copy = JsonUtility.FromJson<GameProfile>(json);
+            RestoreOptionalReceiptNulls(copy, json);
+            return copy;
+        }
         private static bool IsFrozenRewardReadError(string error)
         {return error!=null&&error.StartsWith(FrozenRewardReadFailure,StringComparison.Ordinal);}
         private static bool HasFrozenRewardDocument(string document)
@@ -2829,6 +2869,9 @@ namespace Emberfall
                 if (!TryReadSaveDocument(path, out document, out error, true)) return false;
                 frozenRecord=HasFrozenRewardDocument(document);
                 SaveFile data = JsonUtility.FromJson<SaveFile>(document);
+                if (data != null) RestoreOptionalReceiptNulls(data.profile, document);
+                if (frozenRecord && (data == null || data.profile == null || data.profile.pendingChestDraw == null))
+                    throw new ArgumentException("冻结奖励内容不是有效对象；原文件保留。");
                 frozenRecord=frozenRecord||(data!=null&&data.profile!=null&&data.profile.pendingChestDraw!=null);
                 if(data!=null&&data.format==SaveFormat&&(data.version>3||data.profile!=null&&(data.profile.version>1||data.profile.classStateRevision>1||data.profile.chestRulesRevision>2||data.profile.pendingChestRulesRevision>2||data.profile.pendingChestDraw!=null&&data.profile.pendingChestDraw.rulesRevision>2)))
                 {error="future format";return false;}

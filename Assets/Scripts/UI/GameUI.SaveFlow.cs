@@ -103,16 +103,16 @@ namespace Emberfall
             if (!string.IsNullOrEmpty(problem)) Text(new Rect(left, w.yMax - 105 * unit, available, 37 * unit), problem, small, gold, false, true);
             float gap = 12 * unit, buttonY = w.yMax - 62 * unit;
             float buttonWidth = (available - gap * (manual ? 1 : 2)) / (manual ? 2 : 3);
-            if (Button(new Rect(left, buttonY, buttonWidth, 48 * unit), "取消", jade, !saveFlow.Busy, null, true))
+            if (NavigationButton(new Rect(left, buttonY, buttonWidth, 48 * unit), "取消", jade, !saveFlow.Busy, null, true))
             { CancelActiveSaveFlow(); return true; }
             if (manual)
             {
-                if (Button(new Rect(left + buttonWidth + gap, buttonY, buttonWidth, 48 * unit), "确认覆盖保存", gold, !saveFlow.Busy)) ConfirmManualSave();
+                if (PrimaryButton(new Rect(left + buttonWidth + gap, buttonY, buttonWidth, 48 * unit), "确认覆盖保存", gold, !saveFlow.Busy)) ConfirmManualSave();
             }
             else
             {
-                if (Button(new Rect(left + buttonWidth + gap, buttonY, buttonWidth, 48 * unit), "保存并读取", gold, !saveFlow.Busy)) ConfirmPauseLoad(SaveLoadChoice.SaveAndLoad);
-                if (Button(new Rect(left + 2 * (buttonWidth + gap), buttonY, buttonWidth, 48 * unit), "放弃未保存并读取", new Color(1f, .52f, .4f), !saveFlow.Busy)) ConfirmPauseLoad(SaveLoadChoice.DiscardAndLoad);
+                if (PrimaryButton(new Rect(left + buttonWidth + gap, buttonY, buttonWidth, 48 * unit), "保存并读取", gold, !saveFlow.Busy)) ConfirmPauseLoad(SaveLoadChoice.SaveAndLoad);
+                if (DangerButton(new Rect(left + 2 * (buttonWidth + gap), buttonY, buttonWidth, 48 * unit), "放弃未保存并读取", new Color(1f, .52f, .4f), !saveFlow.Busy)) ConfirmPauseLoad(SaveLoadChoice.DiscardAndLoad);
             }
             return true;
         }
@@ -130,16 +130,16 @@ namespace Emberfall
             DrawMobileSaveFlowContent(contentWidth,manual,problem,true);
             EndTouchScroll();
             int count=manual?2:3;
-            if(Button(MobilePanelRect(layout.FooterButton(0,count)),"取消",jade,!saveFlow.Busy,null,true))
+            if(NavigationButton(MobilePanelRect(layout.FooterButton(0,count)), "取消", jade, !saveFlow.Busy, null, true))
             {CancelActiveSaveFlow();return true;}
             if(manual)
             {
-                if(Button(MobilePanelRect(layout.FooterButton(1,count)),"确认覆盖保存",gold,!saveFlow.Busy))ConfirmManualSave();
+                if(PrimaryButton(MobilePanelRect(layout.FooterButton(1,count)), "确认覆盖保存", gold, !saveFlow.Busy))ConfirmManualSave();
             }
             else
             {
-                if(Button(MobilePanelRect(layout.FooterButton(1,count)),"保存并读取",gold,!saveFlow.Busy))ConfirmPauseLoad(SaveLoadChoice.SaveAndLoad);
-                if(Button(MobilePanelRect(layout.FooterButton(2,count)),"放弃未保存并读取",new Color(1,.52f,.4f),!saveFlow.Busy))ConfirmPauseLoad(SaveLoadChoice.DiscardAndLoad);
+                if(PrimaryButton(MobilePanelRect(layout.FooterButton(1,count)), "保存并读取", gold, !saveFlow.Busy))ConfirmPauseLoad(SaveLoadChoice.SaveAndLoad);
+                if(DangerButton(MobilePanelRect(layout.FooterButton(2,count)), "放弃未保存并读取", new Color(1,.52f,.4f), !saveFlow.Busy))ConfirmPauseLoad(SaveLoadChoice.DiscardAndLoad);
             }
             return true;
         }

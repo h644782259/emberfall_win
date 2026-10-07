@@ -50,8 +50,8 @@ namespace Emberfall
         {return new Rect((area.X-origin.x)*scale,(area.Y-origin.y)*scale,area.Width*scale,area.Height*scale);}
         private void DrawCollectionControls(CollectionPreviewLayout layout,Vector2 origin,float scale)
         {
-            for(int i=0;i<3;i++)if(Button(PreviewControlRect(layout.Button(0,i),origin,scale),i==0?"全身":i==1?"武器":"后背",(int)collectionViewing.Mode==i?gold:jade)){collectionViewing.View((CollectionPreviewComposition)i);BlockUITransition();}
-            for(int i=0;i<3;i++)if(Button(PreviewControlRect(layout.Button(1,i),origin,scale),i==0?"待机":i==1?"攻击":"施法",(int)collectionModel.PreviewAction==i?gold:jade))collectionModel.Play((CollectionPreviewAction)i);
+            for(int i=0;i<3;i++)if(TabButton(PreviewControlRect(layout.Button(0,i),origin,scale), i==0?"全身":i==1?"武器":"后背", (int)collectionViewing.Mode==i)){collectionViewing.View((CollectionPreviewComposition)i);BlockUITransition();}
+            for(int i=0;i<3;i++)if(TabButton(PreviewControlRect(layout.Button(1,i),origin,scale), i==0?"待机":i==1?"攻击":"施法", (int)collectionModel.PreviewAction==i))collectionModel.Play((CollectionPreviewAction)i);
             if(Button(PreviewControlRect(layout.Button(2,0),origin,scale),"左转",jade))collectionViewing.Rotate(-45);
             if(Button(PreviewControlRect(layout.Button(2,1),origin,scale),"右转",jade))collectionViewing.Rotate(45);
         }
@@ -81,13 +81,13 @@ namespace Emberfall
         {
             var p=session.Progression;var profile=p.Profile;
             Rect w=Modal(940,638,"时装收藏","试穿与穿戴独立 · 属性来自每部位最高收藏");
-            if(Button(new Rect(w.xMax-69,w.y+20,44,32),"×",jade)){panel=Panel.Inventory;return;}
+            if(NavigationButton(new Rect(w.xMax-69,w.y+20,44,32), "×", jade)){panel=Panel.Inventory;return;}
             Rect stage=new Rect(w.x+24,w.y+110,270,365);DrawCollectionModel(stage,collectionTrial,true);
             Text(new Rect(stage.x,stage.yMax+10,270,26),CollectionTrialTitle,16,pale,true,true);
             Text(new Rect(stage.x,stage.yMax+40,270,36),CollectionTrialState,12,jade,false,true);
             if(Button(new Rect(stage.x,stage.yMax+83,270,36),"恢复当前外观",muted)){collectionTrial=null;collectionViewing.Restore();collectionNotice=null;}
             float x=w.x+314,width=602;
-            for(int i=0;i<2;i++)if(Button(new Rect(x+i*305,w.y+110,297,34),i==0?"翅膀":"武器外观",collectionSlot==i?gold:jade))collectionSlot=i;
+            for(int i=0;i<2;i++)if(TabButton(new Rect(x+i*305,w.y+110,297,34), i==0?"翅膀":"武器外观", collectionSlot==i))collectionSlot=i;
             var slot=(FashionSlot)collectionSlot;var worn=p.EquippedFashion(slot);var strongest=p.StrongestFashion(slot);
             Text(new Rect(x,w.y+153,width,20),"穿戴 · "+(worn==null?"无":worn.name),13,pale,true);
             Text(new Rect(x,w.y+177,width,32),"属性来源 · "+(strongest==null?"尚无收藏":strongest.name+" · "+ProgressionService.FashionBonus(slot,strongest.rarity)),12,jade,false,true);
@@ -110,7 +110,7 @@ namespace Emberfall
             bool ownedLegendary=profile.fashions.Exists(f=>f!=null&&f.slot==slot&&f.rarity==Rarity.Legendary);
             if(Button(new Rect(x,w.y+592,382,30),"30星纹 · 自选传说"+(slot==FashionSlot.Wings?"翅膀":"兵装"),gold,session.IsInCamp&&!ownedLegendary&&profile.fashionThreads>=ProgressionService.FashionChoiceCost))
             {bool accepted=p.ChooseLegendaryFashion(slot,session.IsInCamp);collectionNotice=accepted?"传说收藏已解锁":p.LastError;Feedback(accepted,collectionNotice);}
-            if(Button(new Rect(x+394,w.y+592,208,30),"返回行囊",jade))panel=Panel.Inventory;
+            if(NavigationButton(new Rect(x+394,w.y+592,208,30), "返回行囊", jade))panel=Panel.Inventory;
         }
         private void DrawMobileCollectionPreview(MobilePanelLayout layout)
         {
@@ -132,13 +132,13 @@ namespace Emberfall
             float textEnd=DrawMobileParagraph(8,detailTop,width,detail,14,pale)+16;
             if(Button(TouchRect(8,textEnd,width,48),"恢复当前外观",muted)){collectionTrial=null;collectionViewing.Restore();collectionNotice=null;BlockUITransition();}
             EndTouchScroll();
-            if(Button(MobilePanelRect(layout.FooterButton(0,3)),"浏览收藏",jade)){mobileFashionPreview=false;BlockUITransition();return;}
+            if(NavigationButton(MobilePanelRect(layout.FooterButton(0,3)), "浏览收藏", jade)){mobileFashionPreview=false;BlockUITransition();return;}
             bool owned=collectionTrial!=null&&progression.Profile.fashions.Exists(f=>f!=null&&f.id==collectionTrial.id);
             var worn=collectionTrial==null?null:progression.EquippedFashion(collectionTrial.slot);
             bool current=worn!=null&&worn.id==collectionTrial.id;
             if(Button(MobilePanelRect(layout.FooterButton(1,3)),current?"已穿戴":owned?"穿戴试穿外观":"仅试穿 · 未获得",gold,owned&&!current))
             {MobileFashionResult(progression.EquipFashion(collectionTrial.id),"外观已穿戴");BlockUITransition();return;}
-            if(Button(MobilePanelRect(layout.FooterButton(2,3)),"返回行囊",jade)){panel=Panel.Inventory;BlockUITransition();}
+            if(NavigationButton(MobilePanelRect(layout.FooterButton(2,3)), "返回行囊", jade)){panel=Panel.Inventory;BlockUITransition();}
         }
         private bool DrawChestRewardModel(Rect area,ChestReward reward)
         {

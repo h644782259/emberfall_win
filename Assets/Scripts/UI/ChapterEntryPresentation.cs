@@ -11,17 +11,34 @@ namespace Emberfall
             return "观星员的线索 · "+definition.StoryIntro+"\n目标 · "+definition.Mechanic+"\n完成后 · "+definition.Outcome+"\n下一线索 · "+definition.NextClue;
         }
         public static string TierEffect(ChapterNode node)
-        {return node==ChapterNode.StarPlatform?"星台通关推进共享最高阶，解锁下一阶。":"此节点推进故事与本节点难度，不推进共享最高阶。";}
+        {return node==ChapterNode.StarPlatform?"在当前最高阶通关星台，可解锁下一阶挑战。":"通关普通难度后可挑战困难，通关困难后可挑战英雄。";}
+        public static string UnlockHint(ChapterNode node)
+        {return node==ChapterNode.Redrock?"通关林庭复明后解锁":node==ChapterNode.StarPlatform?"通关赤岩断供后解锁":"第一段星路 · 随时出发";}
+        public static string DifficultyHint(ChapterDifficulty difficulty,bool unlocked)
+        {return unlocked?(difficulty==ChapterDifficulty.Normal?"标准敌人强度":"生命 ×"+ChapterDefinition.HealthMultiplier(difficulty).ToString("0.##",CultureInfo.InvariantCulture)+" · 伤害 ×"+ChapterDefinition.DamageMultiplier(difficulty).ToString("0.##",CultureInfo.InvariantCulture)):
+            difficulty==ChapterDifficulty.Hard?"先通关本节点的普通难度":"先通关本节点的困难难度";}
+        public static int RewardMaterials(GameProfile profile,ChapterNode node,ChapterDifficulty difficulty,int tier)
+        {
+            int bit=ChapterProgression.DifficultyRewardBit(node,difficulty);
+            return ChapterProgression.CompletionMaterials(profile,node,tier)+
+                (bit!=0&&(profile.chapterDifficultyRewardMask&bit)==0?ChapterProgression.DifficultyFirstRewardMaterials:0);
+        }
+        public static string RewardBreakdown(GameProfile profile,ChapterNode node,ChapterDifficulty difficulty,int tier)
+        {
+            int repeat=ChapterProgression.MaterialReward(node,tier),total=ChapterProgression.CompletionMaterials(profile,node,tier);
+            int bonus=RewardMaterials(profile,node,difficulty,tier)-total;
+            return "通关 "+repeat+(total>repeat?"  +  首次通关 1":"")+(bonus>0?"  +  难度首通 "+bonus:"")+"\n完成挑战后获得奖励";
+        }
         public static string MasteryProgress(GameProfile profile,ChapterNode node,ChapterDifficulty difficulty)
         {
             if(profile==null||difficulty==ChapterDifficulty.Normal||(profile.chapterCompletedMask&(1<<(int)node))==0)return "";
             int mask=profile.chapterMasteryMask,required=node==ChapterNode.ForestCourt?1:node==ChapterNode.Redrock?2:12;
             string goal=node==ChapterNode.ForestCourt?"首房至少2敌仍存活时完成双封印":node==ChapterNode.Redrock?"首房其余5敌仍存活时击败断供目标，再成功撤离":
-                "真实打断首领 "+((mask&4)!=0?"✓":"○")+" / 亲自破锚制造暴露 "+((mask&8)!=0?"✓":"○")+"（可分局）";
+                "打断首领 "+((mask&4)!=0?"✓":"○")+" / 亲自破锚制造暴露 "+((mask&8)!=0?"✓":"○")+"（可分次完成）";
             bool earned=(mask&required)==required;int tier=101;
             for(int i=0;i<4;i++)if((required&(1<<i))!=0)tier=System.Math.Min(tier,profile.chapterMasteryTiers!=null&&profile.chapterMasteryTiers.Length>i?profile.chapterMasteryTiers[i]:0);
             string badge=node==ChapterNode.ForestCourt?"双印行者":node==ChapterNode.Redrock?"断供猎手":"星台破局者";
-            return "\n可选精通 · "+goal+"。本次节点成功保存才记录；无战斗加成，不影响普通通关。"+
+            return "\n可选精通 · "+goal+"。达成目标并完成挑战，获得纪念徽记与称号。"+
                 (earned?"\n徽记 / 称号「"+badge+"」 · 记录第 "+tier+" 阶":"\n徽记 / 称号「"+badge+"」尚未取得");
         }
         public static string Preview(GameProfile profile,ChapterNode node,ChapterDifficulty difficulty,int tier,bool limited)
@@ -33,17 +50,17 @@ namespace Emberfall
             int firstDifficulty=rewardBit!=0&&(profile.chapterDifficultyRewardMask&rewardBit)==0?ChapterProgression.DifficultyFirstRewardMaterials:0;
             return DifficultyName(difficulty)+" · 敌人生命 ×"+health+" / 伤害 ×"+damage+"\n"+
                 ChapterDefinition.DifficultyMechanic(node,difficulty)+"\n"+
-                "解锁 · 普通通关解锁困难，困难通关解锁英雄；阶数和治疗规则独立。\n"+
+                "难度解锁 · 通关普通后解锁困难，通关困难后解锁英雄。\n"+
                 (limited?"限疗：初始3次治疗充能。":"普通治疗：使用携带药剂。")+"\n"+
-                "完成奖励 "+(total+firstDifficulty)+" 碎片（重复 "+repeat+(total>repeat?" + 节点首次1":"")+(firstDifficulty>0?" + 本难度首次4":"")+"）；困难/英雄每节点各一次，全章额外最多24；不发旧副本宝箱。\n"+
-                "旧档按合法逐档完成记录一次补领；缺失或非法记录不推断，实际通关后领取。\n"+
-                (!profile.firstClearRewardClaimed?(profile.pendingFirstClearReward?"共享一次首通核心已待领取；本次不重复。\n":(node==ChapterNode.StarPlatform?"星台通关完成整章，可领取共享一次首通核心。\n":"首通核心需完成整章：通关星台；本节点不授予资格。\n")):"")+TierEffect(node)+MasteryProgress(profile,node,difficulty);
+                "完成奖励 "+(total+firstDifficulty)+" 碎片（通关 "+repeat+(total>repeat?" + 首次通关1":"")+(firstDifficulty>0?" + 难度首通4":"")+"）。\n"+
+                "首次通关困难或英雄难度，各额外获得4碎片；每段星路的首通奖励仅领取一次。\n"+
+                (!profile.firstClearRewardClaimed?(profile.pendingFirstClearReward?"首通核心待领取：返回营地领取。\n":"首次通关全部三段星路，可在营地领取首通核心。\n"):"")+TierEffect(node)+MasteryProgress(profile,node,difficulty);
         }
         private static string MechanismReport(ChapterResultSnapshot result)
         {
             if(result.EmberCreated+result.FrostCreated==0)return "";
-            return "\n机制实例（实际扣血才计生效）\n烬地 · 生成 "+result.EmberCreated+" / 生效 "+result.EmberEffective+
-                "\n霜环回响 · 生成 "+result.FrostCreated+" / 生效 "+result.FrostEffective+
+            return "\n机制战绩\n烬地 · 释放 "+result.EmberCreated+" / 命中 "+result.EmberEffective+
+                "\n霜环回响 · 释放 "+result.FrostCreated+" / 命中 "+result.FrostEffective+
                 (result.EmberCreated>result.EmberEffective?"\n下次将烬地落点放在敌人推进路线上。":result.FrostCreated>result.FrostEffective?"\n下次留意霜环回响延迟与敌人位置。":"");
         }
         public static string Result(ChapterResultSnapshot result)
@@ -55,21 +72,21 @@ namespace Emberfall
                 (result.Node==ChapterNode.ForestCourt?"封印 "+result.Seals+"/2 · 一 "+result.FirstSealSeconds.ToString("0.0")+"s · 二 "+result.SecondSealSeconds.ToString("0.0")+"s\n":"")+
                 "最后受击："+(string.IsNullOrEmpty(result.LastHit)?"未记录":result.LastHit)+" · "+result.LastHitAmount.ToString("0.#")+"\n"+
                 (string.IsNullOrEmpty(result.Failure)?"本次挑战未完成。":result.Failure)+"\n本次击杀经验 +"+result.KillExperience+"；未发通关经验。\n节点与难度未解锁；回营重试。"+MechanismReport(result);
-            if(!result.Saved)return text+"节点完成 · 结算尚未保存\n奖励与解锁尚未提交，重试保存后再继续。"+MechanismReport(result);
-            if(result.RewardDetailsUnavailable)return text+"奖励已保存 · 旧回执缺少明细，无法恢复准确数额与本次解锁结果；不会重复发放。"+MechanismReport(result);
+            if(!result.Saved)return text+"挑战完成 · 进度尚未保存\n请重试保存，以领取奖励并记录通关进度。"+MechanismReport(result);
+            if(result.RewardDetailsUnavailable)return text+"通关进度与奖励已保存，可返回营地继续冒险。"+MechanismReport(result);
             text+="奖励已保存 · +"+result.Materials+" 碎片\n击杀经验 +"+result.KillExperience+" · 通关经验 +"+result.CompletionExperience;
             if(result.FirstCompletion)text+="\n"+ChapterDefinition.Get(result.Node).Outcome;
-            if(result.FirstCoreAvailable)text+="\n首通核心已可领取（共享一次）";
+            if(result.FirstCoreAvailable)text+="\n首通核心已可领取：返回营地领取";
             if(result.UnlockedNode>=0)text+="\n新节点："+ChapterDefinition.Get((ChapterNode)result.UnlockedNode).Name;
             if(result.UnlockedDifficulty>=0)text+="\n本节点新难度："+DifficultyName((ChapterDifficulty)result.UnlockedDifficulty);
-            text+=result.SharedAfter>result.SharedBefore?"\n共享最高阶 "+result.SharedBefore+" → "+result.SharedAfter:"\n共享最高阶未变化（"+result.SharedAfter+"）";
+            if(result.SharedAfter>result.SharedBefore)text+="\n已解锁第 "+result.SharedAfter+" 阶挑战";
             if(result.FirstCompletion)text+="\n下一线索 · "+ChapterDefinition.Get(result.Node).NextClue;
             return text+MechanismReport(result);
         }
         public static string Result(ChapterNode node,bool failed,bool pending)
         {
             if(failed)return "本次没有完成节点，故事与难度进度未推进。\n可以回营整备，再次挑战。";
-            if(pending)return "节点战斗已完成，结算尚未保存。\n故事、解锁与奖励尚未提交；重试保存后再继续。";
+            if(pending)return "挑战完成，进度尚未保存。\n请重试保存，以领取奖励并记录通关进度。";
             var definition=ChapterDefinition.Get(node);
             return definition.Outcome+"\n\n下一线索 · "+definition.NextClue+"\n\n"+TierEffect(node)+"\n已解锁节点可回营后独立重玩。";
         }

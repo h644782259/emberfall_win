@@ -6,7 +6,7 @@ namespace Emberfall
     /// <summary>Resolution-independent runtime interface; no scene or package dependencies.</summary>
     public sealed partial class GameUI : MonoBehaviour
     {
-        private enum Panel { None, Inventory, Skills, Bindings, SaveLocation, Controls, SaveSelection, PotionAssignment, Fashion, Chests, Camp, Summary, TravelMap, Notice, Chapter }
+        private enum Panel { None, Inventory, Skills, Bindings, SaveLocation, Controls, SaveSelection, PotionAssignment, Fashion, Chests, Camp, Summary, TravelMap, Notice, Chapter, HubDialogue }
         private GameSession session;
         private Panel panel;
         private HeroClass selectedClass;
@@ -167,6 +167,7 @@ namespace Emberfall
             ReconcileMobileScroll();
             ReconcileCollectionPreview();
             if (session == null || session.BackgroundPaused) return;
+            ReconcileHubNpcConversation();
             if(session.PracticeActive){if(Input.GetKeyDown(KeyCode.Escape))session.EndPractice("主动离开 · 记录提前结束");return;}
             ReconcileBuildPlanSurface();ReconcileClassSwitchSurface();
             ReconcileProgressionGoalSurface();
@@ -230,10 +231,11 @@ namespace Emberfall
                 else session.SetPaused(!session.Paused);
             }
             if (session.Paused || session.DungeonSelectionOpen || session.RunChoices.AwaitingChoice) return;
+            if(panel==Panel.HubDialogue){HandleHubNpcShortcut(Input.GetKeyDown(KeyCode.G));return;}
             if (panel == Panel.Controls || panel == Panel.SaveLocation || panel == Panel.Bindings || panel == Panel.PotionAssignment || panel == Panel.Chests || panel == Panel.Camp || panel == Panel.TravelMap || panel == Panel.Notice || panel == Panel.Chapter) return;
             if (Input.GetKeyDown(KeyCode.I)) TogglePanel(Panel.Inventory);
             if (Input.GetKeyDown(KeyCode.K)) TogglePanel(Panel.Skills);
-
+            HandleHubNpcShortcut(Input.GetKeyDown(KeyCode.G));
         }
 
         private void OnDestroy()
@@ -312,6 +314,7 @@ namespace Emberfall
                 else if (panel == Panel.TravelMap) DrawTravelMap();
                 else if (panel == Panel.Notice) DrawMobileNotice();
                 else if (panel == Panel.Chapter) DrawChapterSelection();
+                else if (panel == Panel.HubDialogue) DrawHubNpcDialogue();
                 DrawNotification();
                 DrawRewardMoment();
             }
@@ -394,8 +397,9 @@ namespace Emberfall
             string venom=BuildCatalog.VenomSkillOverride(profile,skill,rank);
             if(venom.Length>0)result=venom;
             if (GameBalance.IsPassive(skill)) return result;
-            result += "\n冷却 " + GameBalance.EffectiveCooldown(hero, skill, rank).ToString("0.#") + " 秒 · 消耗 " +
-                GameBalance.SkillEnergyCost(hero, skill).ToString("0") + " " + GameBalance.EnergyName(hero);
+            float cost = GameBalance.SkillEnergyCost(hero, skill);
+            result += "\n冷却 " + GameBalance.EffectiveCooldown(hero, skill, rank).ToString("0.#") +
+                (cost == 0 ? " 秒 · 无需能量" : " 秒 · 消耗 " + cost.ToString("0") + " " + GameBalance.EnergyName(hero));
             string budget=BuildCatalog.ConcentratedVenomEquipped(profile)&&hero==HeroClass.Ranger&&skill==0?"":SkillBudgetHint(hero,skill,rank);if(budget.Length>0)result+="\n"+budget;
             float charge = SkillChargeController.Duration(hero, skill);
             if (charge > 0) result += "\n蓄力 " + charge.ToString("0.##") + " 秒";
@@ -436,21 +440,7 @@ namespace Emberfall
 
         private bool Button(Rect rect, string caption, Color accent, bool enabled = true, string hint = null, bool primary = false)
         {
-            enabled = enabled && GUI.enabled;
-            bool hover = rect.Contains(Mouse);
-            Color background = primary ? new Color(accent.r * .32f, accent.g * .36f, accent.b * .39f, 1) : card;
-            if (hover && enabled) background = new Color(accent.r * .28f, accent.g * .32f, accent.b * .35f, 1);
-            if (!enabled) background = new Color(.065f, .085f, .105f, 1);
-            Fill(rect, background);
-            Border(rect, new Color(accent.r, accent.g, accent.b, enabled ? (hover ? .85f : .45f) : .12f));
-            Text(new Rect(rect.x + 4, rect.y, rect.width - 8, rect.height), caption, MobileControls.Active && rect.height>=44*TouchRatio ? TouchFont(15) : 15, enabled ? pale : muted * .7f, true, false, TextAnchor.MiddleCenter);
-            if (hover && GUI.enabled && !string.IsNullOrEmpty(hint)) tooltip = hint;
-            bool prior = GUI.enabled;
-            GUI.enabled = enabled && prior;
-            bool clicked = GUI.Button(rect, GUIContent.none, invisibleButton);
-            GUI.enabled = prior;
-            if (clicked) GameAudio.Play(SoundCue.UI);
-            return clicked;
+            return DrawButton(rect, caption, primary ? ButtonRole.Primary : ButtonRole.Action, enabled, hint);
         }
 
         private void Rule(float x, float y, float length, Color color)
@@ -489,10 +479,10 @@ namespace Emberfall
                 if (GUI.Button(choice, GUIContent.none, invisibleButton)) { selectedClass = hero; GameAudio.Play(SoundCue.UI); }
             }
             bool canContinue = saveSlots.Count > 0;
-            if (Button(new Rect(x + 314, y + 359, 186, 50), "继续冒险", jade, canContinue, canContinue ? "选择要继续的角色存档。" : "创建角色后可从存档选择页继续冒险。")) OpenSaveSelection();
-            if (Button(new Rect(x + 520, y + 359, 206, 50), "开始冒险", gold, true, "以" + GameBalance.ClassName(selectedClass) + "创建独立存档，保留已有角色。", true)) StartSelectedHero();
+            if (NavigationButton(new Rect(x + 314, y + 359, 186, 50), "继续冒险", jade, canContinue, canContinue ? "选择要继续的角色存档。" : "创建角色后可从存档选择页继续冒险。")) OpenSaveSelection();
+            if (PrimaryButton(new Rect(x + 520, y + 359, 206, 50), "开始冒险", gold, true, "以" + GameBalance.ClassName(selectedClass) + "创建独立存档，保留已有角色。", true)) StartSelectedHero();
 #if !UNITY_IOS && !UNITY_ANDROID
-            if(Button(new Rect(x+800,y+359,206,50),"退出游戏",muted))RequestExit(false);
+            if(DangerButton(new Rect(x+800,y+359,206,50), "退出游戏", muted))RequestExit(false);
 #endif
             string titleMessage = !string.IsNullOrEmpty(session.Notification) ? session.Notification : session.Progression.LastError;
             if (!string.IsNullOrEmpty(titleMessage))
@@ -551,7 +541,7 @@ namespace Emberfall
             Fill(new Rect(0, 0, width, height), new Color(.018f, .029f, .048f, 1f));
             Rect w = Modal(900, 570, "选择存档", "");
             Text(new Rect(w.x + 620, w.y + 29, 186, 23), saveSlots.Count + " 份存档", 13, muted, false, false, TextAnchor.MiddleRight);
-            if (Button(new Rect(w.xMax - 69, w.y + 20, 44, 32), "×", jade)) ClosePanel();
+            if (NavigationButton(new Rect(w.xMax - 69, w.y + 20, 44, 32), "×", jade)) ClosePanel();
             Rect viewport = new Rect(w.x + 24, w.y + 113, 852, 347);
             float contentHeight = Mathf.Max(viewport.height, saveSlots.Count * 84);
             saveSelectionScroll = BeginTouchScroll("save-list",viewport,saveSelectionScroll,new Rect(0,0,837,contentHeight));
@@ -581,7 +571,7 @@ namespace Emberfall
             EndTouchScroll();
             if (!string.IsNullOrEmpty(saveSelectionError)) Text(new Rect(w.x + 27, w.y + 469, 846, 26), saveSelectionError, 12, gold, false, true);
             SaveSlotInfo selectedSlot = saveSlots.Find(slot => slot.Id == selectedSaveId && slot.CanLoad);
-            if (Button(new Rect(w.x + 24, w.y + 506, 188, 40), "返回", jade)) ClosePanel();
+            if (NavigationButton(new Rect(w.x + 24, w.y + 506, 188, 40), "返回", jade)) ClosePanel();
             if (Button(new Rect(w.x + 232, w.y + 506, 118, 40), "刷新", muted)) { RefreshSaveSlots(); saveSelectionError = null; }
             DrawDeleteSaveButton(new Rect(w.x + 372, w.y + 506, 246, 40));
             if (Button(new Rect(w.x + 640, w.y + 506, 236, 40), selectedSlot != null && selectedSlot.RecoveredFromBackup ? "从备份读取" : "读取存档", gold, selectedSlot != null, null, true)) ContinueSelectedSave();
@@ -886,8 +876,8 @@ namespace Emberfall
                 Fill(new Rect(victory.x, victory.y, victory.width, 3), gold);
                 Text(new Rect(victory.x + 18, victory.y + 14, victory.width-36, 37), "遗迹肃清", 29, gold, true, false, TextAnchor.MiddleCenter);
                 Text(new Rect(victory.x + 18, victory.y + 63, victory.width-36, 22), session.DungeonRewardPending?"奖励待保存 · 可重试结算或打开存档菜单":"三波挑战完成 · 战利品已解锁", 13, pale, false, false, TextAnchor.MiddleCenter);
-                if (Button(new Rect(victory.center.x+12,victory.y+105,(victory.width-76)*.5f,36), session.DungeonRewardPending?"保存奖励并回营":MobileControls.Active ? "返回营地整备" : "返回营地整备  /  T", gold, true, session.LastRunSummary, true)) session.ReturnToCamp();
-                if(Button(new Rect(victory.x+26,victory.y+105,(victory.width-76)*.5f,36),"战斗复盘",jade)) { panel=Panel.Summary;session.SetUIBlocking(true); }
+                if (PrimaryButton(new Rect(victory.center.x+12,victory.y+105,(victory.width-76)*.5f,36), session.DungeonRewardPending?"保存奖励并回营":MobileControls.Active ? "返回营地整备" : "返回营地整备  /  T", gold, true, session.LastRunSummary, true)) session.ReturnToCamp();
+                if(NavigationButton(new Rect(victory.x+26,victory.y+105,(victory.width-76)*.5f,36), "战斗复盘", jade)) { panel=Panel.Summary;session.SetUIBlocking(true); }
                 return;
             }
             EnemyController boss = null;
@@ -931,7 +921,7 @@ namespace Emberfall
                 var window=mobile||locked||session.Player==null?default(CombatOpportunityState):session.Player.SkillOpportunityWindow(skill);
                 if(window.Window)Text(new Rect(slot.x,slot.y-12,slot.width,11),window.Caption,8,window.Actionable?jade:muted,true,false,TextAnchor.MiddleCenter);
 
-                Color accent = empty ? muted : potion ? gold : GameBalance.ClassColor(p.heroClass);
+                Color accent = empty ? muted : potion ? gold : UIIconAtlas.SkillColor(p.heroClass, skill);
                 Fill(slot, locked ? new Color(.04f, .06f, .085f) : card);
                 Border(slot, new Color(accent.r, accent.g, accent.b, locked ? .23f : .55f));
                 if (hotbarDragging && !hotbarPointerConfiguring && (slotIndex == hotbarPointerSlot || slot.Contains(Mouse))) Border(slot, gold, 2);
@@ -1209,6 +1199,7 @@ namespace Emberfall
 
         private void DrawInventory()
         {
+            if(session.ActiveHubNpc==HubNpcKind.Merchant||session.ActiveHubNpc==HubNpcKind.Blacksmith){DrawHubEquipmentService();return;}
             if(MobileControls.Active){DrawMobileInventory();return;}
             ProgressionService progression = session.Progression;
             GameProfile p = progression.Profile;
@@ -1216,13 +1207,14 @@ namespace Emberfall
             ItemData picked = ResolveSelectedItem();
             Rect w = Modal(1160, 638, HubInventoryTitle, "");
             Text(new Rect(w.x + 24, w.y + 59, 238, 31), HubInventoryHint, 11, muted, false, true);
-            if (Button(new Rect(w.xMax - 69, w.y + 20, 44, 32), "×", jade)) ClosePanel();
+            Text(new Rect(w.x + 530, w.y + 55, 600, 31), HubNpcServiceSubtitle(""), 13, pale, false, true);
+            if (NavigationButton(new Rect(w.xMax - 69, w.y + 20, 44, 32), "×", jade)) ClosePanel();
             Badge(new Rect(w.x+270,w.y+55,245,30),Attention.Rewards);
-            if (Button(new Rect(w.x+270,w.y+55,245,30),"机制图鉴 / 待领取",jade)) { panel=Panel.Camp; campTab=1; }
+            if (NavigationButton(new Rect(w.x+270,w.y+55,245,30), "机制图鉴 / 待领取", jade)) { panel=Panel.Camp; campTab=1; }
             Text(new Rect(w.x + 789, w.y + 28, 268, 30), Money(p.gold) + " 金币", 21, gold, true, false, TextAnchor.MiddleRight);
             float left = w.x + 24;
             Text(new Rect(left, w.y + 112, 112, 23), "身上装备", 16, jade, true);
-            if (Button(new Rect(left + 118, w.y + 108, 114, 28), "时装收藏", gold))
+            if (NavigationButton(new Rect(left + 118, w.y + 108, 114, 28), "时装收藏", gold))
             {
                 panel = Panel.Fashion;
                 return;
@@ -1267,7 +1259,7 @@ namespace Emberfall
             bool changed = false;
             string[] filters = { "全部", "武器", "护甲", "饰品" };
             for (int i = 0; i < filters.Length; i++)
-                if (Button(new Rect(middle + i * 108, w.y + 144, 100, 27), filters[i], inventoryFilter == i - 1 ? gold : jade, true, null, inventoryFilter == i - 1))
+                if (TabButton(new Rect(middle + i * 108, w.y + 144, 100, 27), filters[i], inventoryFilter == i - 1, true, null))
                 {
                     inventoryFilter = i - 1;
                     inventoryScroll = Vector2.zero;
@@ -1276,7 +1268,7 @@ namespace Emberfall
             Text(new Rect(middle, w.y + 184, 33, 18), "排序", 10, muted);
             string[] sorts = { "换装评分 ↓", "等级 ↓", "稀有度 ↓" };
             for (int i = 0; i < sorts.Length; i++)
-                if (Button(new Rect(middle + 38 + i * 129, w.y + 180, 121, 25), sorts[i], inventorySort == i ? gold : muted, true, "评分按自动继承部位强化后的属性降序排列；同分依次按等级、稀有度与物品编号排序。", inventorySort == i))
+                if (TabButton(new Rect(middle + 38 + i * 129, w.y + 180, 121, 25), sorts[i], inventorySort == i, true, "评分按自动继承部位强化后的属性降序排列；同分依次按等级、稀有度与物品编号排序。"))
                 {
                     inventorySort = i;
                     inventoryScroll = Vector2.zero;
@@ -1304,8 +1296,8 @@ namespace Emberfall
                 Color color = GameBalance.RarityColor(item.rarity);
                 Fill(new Rect(row.x, row.y, 3, row.height), color);
                 if (chosen) Border(row, jade * new Color(1, 1, 1, .55f));
-                Text(new Rect(row.x + 12, row.y + 8, improvement ? 188 : 260, 22), ItemTitle(preview), 15, levelLocked?Color.Lerp(color,muted,.65f)*.6f:color, true);
-                Badge(new Rect(row.x+257,row.y+8,14,14),improvement&&!reviewedEquipment.Contains(item.id));
+                Text(new Rect(row.x + 12, row.y + 8, improvement ? 172 : 260, 22), ItemTitle(preview), 15, levelLocked?Color.Lerp(color,muted,.65f)*.6f:color, true);
+                Badge(new Rect(row.x+190,row.y+10,12,12),improvement&&!reviewedEquipment.Contains(item.id));
                 if (improvement) DrawEquipmentUpgradeTag(new Rect(row.x + 208, row.y + 10, 64, 18));
                 Text(new Rect(row.x + 12, row.y + 33, 125, 16), levelLocked?"锁 · 需要 "+item.level+"级":"等级 " + item.level, 11, levelLocked?new Color(.9f,.58f,.4f):muted);
                 Text(new Rect(row.x + 143, row.y + 33, 62, 16), GameBalance.RarityName(item.rarity), 11, color);
@@ -1313,17 +1305,22 @@ namespace Emberfall
                 Text(new Rect(row.x + 12, row.y + 51, 250, 14), "换装评分 " + ProgressionService.EquipmentScore(preview).ToString("0.#")+" · "+session.Progression.PresetReferences(item.id), 10, muted);
                 Rect selectRect = new Rect(row.x, row.y, 278, row.height);
                 if (GUI.Button(selectRect, GUIContent.none, invisibleButton)) {selectedItem = item.id;ReviewEquipment(item);}
-                Rect sellRect = new Rect(row.x + 281, row.y + 13, 106, 40);
+                Rect sellRect = new Rect(row.x + 281, row.y + (item.locked ? 24 : 13), 106, item.locked ? 36 : 40);
+                if (item.locked)
+                {
+                    Rect lockTag = new Rect(row.x + 281, row.y + 5, 106, 16);
+                    Fill(lockTag, new Color(.24f, .18f, .07f));
+                    Border(lockTag, gold * .65f);
+                    Text(lockTag, "锁定保护", 10, gold, true, false, TextAnchor.MiddleCenter);
+                }
                 // Keep the sale target separate from the selection target inside the scroll view.
-                Fill(sellRect, new Color(.14f, .125f, .08f));
-                Border(sellRect, new Color(gold.r, gold.g, gold.b, .42f));
-                Text(new Rect(sellRect.x, sellRect.y + 4, sellRect.width, 15), "出售", 10, gold, true, false, TextAnchor.MiddleCenter);
-                Text(new Rect(sellRect.x, sellRect.y + 21, sellRect.width, 16), progression.SellValue(item) + " 金", 12, pale, true, false, TextAnchor.MiddleCenter);
-                if (GUI.Button(sellRect, GUIContent.none, invisibleButton)) sellId = item.id;
+                if (DangerButton(sellRect, item.locked ? "不可出售" : "出售 " + progression.SellValue(item) + " 金", gold,
+                    !item.locked, item.locked ? "装备已锁定，无法出售。\n选中这件装备，在右侧详情点击‘已锁定’解除保护后即可出售。\n特殊机制装备掉落时会自动锁定，避免误卖。" : "出售这件装备，穿戴与锁定装备受保护。")) sellId = item.id;
                 Rect visibleRow = new Rect(viewport.x + row.x, viewport.y + row.y - inventoryScroll.y, 277, row.height);
                 if (viewport.Contains(Mouse) && visibleRow.Contains(Mouse))
                     tooltip = ItemTitle(preview) + "\n换装后：攻击 " + preview.attack + " · 防御 " + preview.defense + " · 生命 " + preview.health +
                         (improvement ? "\n↑ " + EquipmentUpgradeHint(item) : "") +
+                        (item.locked ? "\n锁定保护 · 不可出售；选中后在右侧详情点击‘已锁定’解锁。" : "") +
                         "\n已计入自动继承的部位强化；数值按本件装备基础属性计算。\n评分不代表实际职业 DPS；右侧价格按钮直接出售。";
             }
             EndTouchScroll();
@@ -1339,7 +1336,7 @@ namespace Emberfall
             DrawIcon(new Rect(potionSummary.x, potionSummary.y + 2, 30, 30), UIIconAtlas.Utility("potion"), Color.white);
             Text(new Rect(potionSummary.x + 42, potionSummary.y, potionSummary.width - 42, potionSummary.height), "生命药剂  × " + p.potions, 15, pale, true, false, TextAnchor.MiddleLeft);
             if (potionSummary.Contains(Mouse)) tooltip = PotionTooltip(p);
-            if (!MobileControls.Active && Button(new Rect(supply.x + 606, supply.y + 8, 224, 34), "放入快捷栏", jade)) TogglePanel(Panel.PotionAssignment);
+            if (!MobileControls.Active && NavigationButton(new Rect(supply.x + 606, supply.y + 8, 224, 34), "放入快捷栏", jade)) TogglePanel(Panel.PotionAssignment);
             if (Button(new Rect(supply.x + 848, supply.y + 8, 248, 34), "购买药剂 · " + ProgressionService.PotionPrice + " 金", gold, p.gold >= ProgressionService.PotionPrice, "购买一瓶生命药剂。"))
                 Feedback(progression.BuyPotion(), "已购买生命药剂 · -" + ProgressionService.PotionPrice + " 金币");
         }
@@ -1354,7 +1351,7 @@ namespace Emberfall
         {
             GameProfile p = session.Progression.Profile;
             Rect w = Modal(820, 366, "生命药剂", "选择十格快捷栏中的位置");
-            if (Button(new Rect(w.xMax - 69, w.y + 20, 44, 32), "×", jade)) ClosePanel();
+            if (NavigationButton(new Rect(w.xMax - 69, w.y + 20, 44, 32), "×", jade)) ClosePanel();
             for (int slot = 0; slot < GameBalance.HotbarSize; slot++)
             {
                 int entry = LearnedSkillAtSlot(p, slot);
@@ -1372,7 +1369,7 @@ namespace Emberfall
                     if (changed) ClosePanel();
                 }
             }
-            if (Button(new Rect(w.xMax - 244, w.y + 289, 220, 42), "返回行囊", jade)) ClosePanel();
+            if (NavigationButton(new Rect(w.xMax - 244, w.y + 289, 220, 42), "返回行囊", jade)) ClosePanel();
         }
 
         private void RebuildBagItems()
@@ -1391,6 +1388,8 @@ namespace Emberfall
 
         private int CompareInventoryItems(ItemData a, ItemData b)
         {
+            int upgradeComparison = IsEquipmentUpgrade(b).CompareTo(IsEquipmentUpgrade(a));
+            if (upgradeComparison != 0) return upgradeComparison;
             int comparison = inventorySort == 1 ? b.level.CompareTo(a.level) : inventorySort == 2 ? b.rarity.CompareTo(a.rarity) : EquipmentPreviewScore(b).CompareTo(EquipmentPreviewScore(a));
             if (comparison != 0) return comparison;
             comparison = b.level.CompareTo(a.level);
@@ -1467,7 +1466,7 @@ namespace Emberfall
             Rect mechanism=new Rect(r.x+18,r.y+270,r.width-36,42);
             if(mechanism.Contains(Mouse))tooltip=mechanic;
             DrawPersistentMechanismDetail(new Rect(r.x+18,r.y+270,r.width-36,85),equipped,item);
-            if(Button(new Rect(r.x+292,r.y+17,114,25),item.locked?"已锁定":"锁定",item.locked?gold:muted,true,"锁定后不可出售，仍可穿戴。")){bool locked=!item.locked;Feedback(progression.SetItemLocked(item.id,locked),locked?"已锁定":"已解锁");}
+            if(ToggleButton(new Rect(r.x+292,r.y+17,114,25), item.locked?"已锁定":"锁定", item.locked, true, "锁定后不可出售，仍可穿戴。")){bool locked=!item.locked;Feedback(progression.SetItemLocked(item.id,locked),locked?"已锁定":"已解锁");}
             bool canEquip = item.level <= progression.Profile.level && !isEquipped;
             string equipCaption = isEquipped ? "已装备" : !canEquip ? "需要 Lv." + item.level : "装备此物品";
             if (Button(new Rect(r.x + 18, r.y + 365, 187, 40), equipCaption, jade, canEquip, null, true)) Feedback(progression.Equip(item.id), "已装备 " + item.name);
@@ -1476,7 +1475,7 @@ namespace Emberfall
             if (Button(new Rect(r.x + 219, r.y + 365, 187, 40), maxUpgrade ? "部位已达 +" + ProgressionService.MaximumUpgrade : "强化部位 · " + upgradeCost + " 金", gold, !maxUpgrade && progression.Profile.gold >= upgradeCost, maxUpgrade ? "此部位已达到强化上限，换装仍会自动继承。" : "消耗 " + upgradeCost + " 金币，将" + GameBalance.SlotName(item.slot) + "部位提升至 +" + (slotRank + 1) + "；当前与以后换上的装备均生效，无需穿戴所选装备。"))
                 Feedback(progression.Upgrade(item.id), GameBalance.SlotName(item.slot) + "部位强化 +" + (slotRank + 1) + " · -" + upgradeCost + " 金币");
             Text(new Rect(r.x + 18, r.y + 409, 220, 18), "属性含强化 · 机制不计分", 11, jade);
-            if(Button(new Rect(r.x+245,r.y+409,160,24),"外观比较",jade)){equipmentAppearanceOpen=true;collectionOwner=session.Player;BlockUITransition();}
+            if(NavigationButton(new Rect(r.x+245,r.y+409,160,24), "外观比较", jade)){equipmentAppearanceOpen=true;collectionOwner=session.Player;BlockUITransition();}
 
         }
 
@@ -1535,12 +1534,12 @@ namespace Emberfall
             GameProfile p = session.Progression.Profile;
             selectedSkill = Mathf.Clamp(selectedSkill, 0, GameBalance.SkillCount - 1);
             Rect w = Modal(1160, 660, GameBalance.ClassName(p.heroClass) + " · 技能树", "");
-            if (Button(new Rect(w.xMax - 69, w.y + 20, 44, 32), "×", jade)) ClosePanel();
+            if (NavigationButton(new Rect(w.xMax - 69, w.y + 20, 44, 32), "×", jade)) ClosePanel();
             Text(new Rect(w.x + 763, w.y + 28, 296, 32), "技能点 " + p.skillPoints + "   /   角色 Lv." + p.level, 18, gold, true, false, TextAnchor.MiddleRight);
             Rect branchHeading = new Rect(w.x + 24, w.y + 112, 267, 24);
             Text(branchHeading, "职业分支", 15, jade, true);
             if (branchHeading.Contains(Mouse)) tooltip = "沿分支从上到下学习，需先掌握前置技能。\n滚动查看高阶技能；每升一级获得 1 技能点。";
-            if (!MobileControls.Active && Button(new Rect(w.x + 325, w.y + 108, 205, 29), "自定义快捷键", gold)) OpenBindings();
+            if (!MobileControls.Active && NavigationButton(new Rect(w.x + 325, w.y + 108, 205, 29), "自定义快捷键", gold)) OpenBindings();
             Rect viewport = new Rect(w.x + 24, w.y + 147, 506, 468);
             Fill(viewport, new Color(.025f, .05f, .075f));
             Rect content = new Rect(0, 0, 490, 738);
@@ -1627,7 +1626,7 @@ namespace Emberfall
         {
             GameProfile p = session.Progression.Profile;
             Rect w = Modal(840, 500, "自定义快捷键", "固定 10 个位置 · 点击槽位，然后按下新的按键");
-            if (Button(new Rect(w.xMax - 69, w.y + 20, 44, 32), "×", jade)) ClosePanel();
+            if (NavigationButton(new Rect(w.xMax - 69, w.y + 20, 44, 32), "×", jade)) ClosePanel();
             Rect pageHeading = new Rect(w.x + 27, w.y + 114, 620, 25);
             Text(pageHeading, "十格技能栏", 15, jade, true);
             if (pageHeading.Contains(Mouse)) tooltip = "可绑定字母、数字与 F1～F12。已占用的按键会交换位置。\n移动及界面功能键保留。固定十格，可自由配置。";
@@ -1643,11 +1642,11 @@ namespace Emberfall
                 if (GUI.Button(tile, GUIContent.none, invisibleButton)) { rebindingSlot = i; GameAudio.Play(SoundCue.UI); }
             }
             if (rebindingSlot >= 0) Text(new Rect(w.x + 27, w.y + 360, 787, 27), "等待 " + GameBalance.KeyName(p.hotbarKeys[rebindingSlot]) + " 槽的新按键…  /  Esc 取消", 14, gold, true);
-            if (Button(new Rect(w.x + 24, w.y + 437, 350, 39), "恢复默认 12345 / ZXCVB", gold, rebindingSlot < 0))
+            if (DangerButton(new Rect(w.x + 24, w.y + 437, 350, 39), "恢复默认 12345 / ZXCVB", gold, rebindingSlot < 0))
             {
                 Feedback(session.Progression.ResetHotbarKeys(), "已恢复默认技能按键");
             }
-            if (Button(new Rect(w.x + 397, w.y + 437, 419, 39), bindingReturnPause ? "返回暂停菜单" : bindingReturnPanel == Panel.Controls ? "返回操作指南" : "返回技能研习", jade)) ClosePanel();
+            if (NavigationButton(new Rect(w.x + 397, w.y + 437, 419, 39), bindingReturnPause ? "返回暂停菜单" : bindingReturnPanel == Panel.Controls ? "返回操作指南" : "返回技能研习", jade)) ClosePanel();
         }
 
         private void DrawPause()
@@ -1659,16 +1658,16 @@ namespace Emberfall
             Text(new Rect(w.x + 32, w.y + 111, 536, 30), session.ZoneName + "  ·  " + ActiveCharacterName(), 17, jade, true, false, TextAnchor.MiddleCenter);
             if (Button(new Rect(w.x + 32, w.y + 156, 536, 48), "继续冒险", jade, true, "Esc 也可继续冒险。", true)) session.SetPaused(false);
             if (Button(new Rect(w.x + 32, w.y + 218, 260, 48), "保存", gold)) RequestManualSave();
-            if (Button(new Rect(w.x + 308, w.y + 218, 260, 48), "读取存档", jade)) OpenSaveSelection();
-            if (Button(new Rect(w.x + 32, w.y + 280, 536, 44), "返回主菜单", muted)) RequestExit(true);
-            if (Button(new Rect(w.x + 32, w.y + 338, 260, 42), GameAudio.Muted ? "声音：已静音" : "声音：已开启", jade))
+            if (NavigationButton(new Rect(w.x + 308, w.y + 218, 260, 48), "读取存档", jade)) OpenSaveSelection();
+            if (DangerButton(new Rect(w.x + 32, w.y + 280, 536, 44), "返回主菜单", muted)) RequestExit(true);
+            if (ToggleButton(new Rect(w.x + 32, w.y + 338, 260, 42), GameAudio.Muted ? "声音：已静音" : "声音：已开启", !GameAudio.Muted))
             { GameAudio.Muted = !GameAudio.Muted; if (!GameAudio.Muted) GameAudio.Play(SoundCue.UI); }
-            if (Button(new Rect(w.x + 308, w.y + 338, 260, 42), "自定义快捷键", gold)) OpenBindings();
-            if (Button(new Rect(w.x + 32, w.y + 394, 260, 42), "存档位置 / 迁移", jade))
+            if (NavigationButton(new Rect(w.x + 308, w.y + 338, 260, 42), "自定义快捷键", gold)) OpenBindings();
+            if (NavigationButton(new Rect(w.x + 32, w.y + 394, 260, 42), "存档位置 / 迁移", jade))
             { saveReturnPause = true; panel = Panel.SaveLocation; session.SetUIBlocking(true); session.SetPaused(false); }
-            if (Button(new Rect(w.x + 308, w.y + 394, 260, 42), "操作指南", jade)) OpenControls();
+            if (NavigationButton(new Rect(w.x + 308, w.y + 394, 260, 42), "操作指南", jade)) OpenControls();
 #if !UNITY_IOS && !UNITY_ANDROID
-            if (Button(new Rect(w.x + 32, w.y + 450, 536, 44), "退出游戏", muted)) RequestExit(false);
+            if (DangerButton(new Rect(w.x + 32, w.y + 450, 536, 44), "退出游戏", muted)) RequestExit(false);
 #endif
             DrawAccessibilityStrip(new Rect(w.x + 32, w.y + 520, 536, 35));
         }
@@ -1686,7 +1685,7 @@ namespace Emberfall
             if(MobileControls.Active){DrawMobileGuide();return;}
             GameProfile p = session.Progression.Profile;
             Rect w = Modal(1060, 638, "操作指南", "键盘与鼠标 · 当前技能键帽会跟随你的自定义设置");
-            if (Button(new Rect(w.xMax - 69, w.y + 20, 44, 32), "×", jade)) ClosePanel();
+            if (NavigationButton(new Rect(w.xMax - 69, w.y + 20, 44, 32), "×", jade)) ClosePanel();
             Rect keyboard = new Rect(w.x + 24, w.y + 112, 650, 442);
             Fill(keyboard, card);
             Text(new Rect(keyboard.x + 18, keyboard.y + 12, 610, 25), "移动与战斗", 16, jade, true);
@@ -1721,8 +1720,8 @@ namespace Emberfall
             Text(new Rect(keyboard.x + 23, keyboard.y + 397, 604, 36), "快捷栏：点击使用，拖动换位；拖到栏外取消。右键打开配置。\n背包内可将生命药剂放入快捷栏。", 12, muted, false, true);
             float right = w.x + 698;
             Text(new Rect(right, w.y + 114, 332, 23), "界面与冒险", 16, jade, true);
-            string[] keys = { "I", "K", "H", "T", "Esc" };
-            string[] actions = { "行囊、装备与补给", "技能树、学习与配置", "远离敌人后返回营地", "进入传送门 / 房间北门", "取消选点或蓄力 / 返回" };
+            string[] keys = { "I", "K", "G", "H", "T", "Esc" };
+            string[] actions = { "行囊、装备与补给", "技能树、学习与配置", "靠近营地人物后对话", "远离敌人后返回营地", "进入传送门 / 房间北门", "取消选点或蓄力 / 返回" };
             for (int i = 0; i < keys.Length; i++)
             {
                 float rowY = w.y + 153 + i * 43;
@@ -1732,9 +1731,9 @@ namespace Emberfall
                 Text(key, keys[i], 13, pale, true, false, TextAnchor.MiddleCenter);
                 Text(new Rect(right + 99, rowY + 4, 234, 25), actions[i], 13, muted);
             }
-            Text(new Rect(right, w.y + 472, 330, 71), "按住右键：左右环绕，上下调整俯仰。\n右键单击：取消选点或蓄力；滚轮缩放。\n空格原地跳跃，无冷却；Shift 闪现可跨河。\n背包与技能界面会暂停战斗。", 12, muted, false, true);
-            if (Button(new Rect(w.x + 24, w.y + 575, 650, 39), "自定义技能按键", gold)) OpenBindings();
-            if (Button(new Rect(right, w.y + 575, 338, 39), controlsReturnPause ? "返回暂停菜单" : "返回冒险", jade)) ClosePanel();
+            Text(new Rect(right, w.y + 472, 330, 71), "按住右键：左右环绕，上下调整俯仰。\n右键单击：取消选点或蓄力；滚轮缩放。\n空格跳跃，无冷却；移动时跳跃可跨窄河，Shift 闪现。\n背包与技能界面会暂停战斗。", 12, muted, false, true);
+            if (NavigationButton(new Rect(w.x + 24, w.y + 575, 650, 39), "自定义技能按键", gold)) OpenBindings();
+            if (NavigationButton(new Rect(right, w.y + 575, 338, 39), controlsReturnPause ? "返回暂停菜单" : "返回冒险", jade)) ClosePanel();
         }
 
         private void DrawKeyCap(Rect r, string key, string action, Color accent)
@@ -1750,12 +1749,12 @@ namespace Emberfall
         {
             if(MobileControls.Active){DrawMobileSaveLocation();return;}
             Rect w = Modal(800, 500, "存档位置与迁移", "游戏安装目录与角色存档分开保存，重新安装游戏可继续原有冒险。");
-            if (Button(new Rect(w.xMax - 69, w.y + 20, 44, 32), "×", jade)) ClosePanel();
+            if (NavigationButton(new Rect(w.xMax - 69, w.y + 20, 44, 32), "×", jade)) ClosePanel();
             string path = session.Progression.SaveDirectory;
             Fill(new Rect(w.x + 24, w.y + 113, 752, 79), card);
             Text(new Rect(w.x + 40, w.y + 123, 720, 17), "当前存档文件夹", 11, jade, true);
             Text(new Rect(w.x + 40, w.y + 147, 720, 37), path, 13, pale, false, true);
-            if (Button(new Rect(w.x + 24, w.y + 207, 367, 40), "打开存档文件夹", jade))
+            if (NavigationButton(new Rect(w.x + 24, w.y + 207, 367, 40), "打开存档文件夹", jade))
             {
                 try
                 {
@@ -1773,7 +1772,7 @@ namespace Emberfall
             Text(new Rect(w.x + 28, w.y + 268, 744, 23), "角色文件：" + System.IO.Path.GetFileName(session.Progression.SaveFilePath), 14, jade, true);
             Text(new Rect(w.x + 28, w.y + 307, 744, 96), "同一台电脑可将游戏安装或移动到任意目录，存档仍从上面的固定位置读取。\n\n迁移前先退出两端游戏并备份完整存档目录，再复制角色 .json、对应 .bak、可恢复 .tmp 与 .delete-pending 删除标记。不要单独恢复旧备份或省略删除标记。启动后从存档列表读取角色。", 14, pale, false, true);
             Text(new Rect(w.x + 28, w.y + 415, 744, 21), "建议迁移前保留一份备份；新电脑的存档目录也可从此页面打开。", 12, muted);
-            if (Button(new Rect(w.x + 24, w.y + 451, 752, 31), "返回暂停菜单", jade)) ClosePanel();
+            if (NavigationButton(new Rect(w.x + 24, w.y + 451, 752, 31), "返回暂停菜单", jade)) ClosePanel();
         }
 
         private void DrawDeath()
@@ -1783,7 +1782,7 @@ namespace Emberfall
 
         private void DrawNotification()
         {
-            if(panel==Panel.Chapter||session.ChapterFinished)return;
+            if(panel==Panel.Chapter||panel==Panel.HubDialogue||session.ChapterFinished)return;
             if (string.IsNullOrEmpty(session.Notification)) return;
             if(MobileControls.Active && (MobilePanelOwnsNotification || session.Paused || panel==Panel.Controls || panel==Panel.SaveSelection || panel==Panel.TravelMap || panel==Panel.Summary || session.IsDead || session.ModeFinished)) return;
             if(MobileControls.Active)

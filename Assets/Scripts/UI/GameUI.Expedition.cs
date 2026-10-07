@@ -37,11 +37,11 @@ namespace Emberfall
                 RoomBranch branch=i==0?RoomBranch.Seal:RoomBranch.Supply;
                 Rect c=new Rect(i*(cw+16*u),0,cw,270*u);Fill(c,card);Border(c,jade);
                 Text(new Rect(c.x+12*u,c.y+12*u,c.width-24*u,196*u),GameSession.RoomBranchDescription(branch),Mathf.RoundToInt(16*u),pale,false,true);
-                if(Button(new Rect(c.x+12*u,c.y+218*u,c.width-24*u,42*u),"进入这条侧廊",gold))
+                if(PrimaryButton(new Rect(c.x+12*u,c.y+218*u,c.width-24*u,42*u), "进入这条侧廊", gold))
                 {session.ConfirmRoomBranch(branch);BlockUITransition();}
             }
             EndTouchScroll();
-            if(Button(new Rect(w.x+20*u,w.yMax-58*u,w.width-40*u,40*u),"返回第二房 · 暂不选择",jade))
+            if(NavigationButton(new Rect(w.x+20*u,w.yMax-58*u,w.width-40*u,40*u), "返回第二房 · 暂不选择", jade))
             {session.CancelRoomBranchChoice();BlockUITransition();}
         }
 
@@ -59,9 +59,9 @@ namespace Emberfall
                 bool compatible = RunChoices.IsCompatible(offer[i],session.Progression.Profile.heroClass,RunChoices.UsableRanks(session.Progression.Profile,false));
                 Text(new Rect(cardRect.x+20,cardRect.y+63,260,21),RunChoices.Association(offer[i],session.Progression.Profile,false),12,compatible?jade:muted);
                 Text(new Rect(cardRect.x+20,cardRect.y+102,260,93),RunChoices.Description(offer[i]),16,pale,false,true);
-                if(Button(new Rect(cardRect.x+20,cardRect.y+192,260,32),chosen?"已选择":"选择",chosen?gold:jade))selectedBlessing=i;
+                if(TabButton(new Rect(cardRect.x+20,cardRect.y+192,260,32), chosen?"已选择":"选择", chosen))selectedBlessing=i;
             }
-            if(Button(new Rect(w.x+310,w.y+392,380,46),session.RoomChainRun!=null?"确认祝福并继续":"确认并进入下一波",gold,selectedBlessing>=0&&selectedBlessing<offer.Length,null,true))
+            if(PrimaryButton(new Rect(w.x+310,w.y+392,380,46), session.RoomChainRun!=null?"确认祝福并继续":"确认并进入下一波", gold, selectedBlessing>=0&&selectedBlessing<offer.Length, null, true))
             { if(session.ConfirmBlessing(selectedBlessing))selectedBlessing=-1; }
         }
 
@@ -72,12 +72,12 @@ namespace Emberfall
             if(DrawProgressionGoalSurface())return;
             if(DrawBuildPlanSurface())return;
             if(MobileControls.Active){DrawMobileCampWorkshop();return;}
-            Rect w=Modal(980,620,"营地工坊",CurrentProgressionGoalStatus());
-            if(Button(new Rect(w.xMax-445,w.y+20,170,36),"切换职业",jade))OpenClassSwitch();
-            if(Button(new Rect(w.xMax-255,w.y+20,170,36),"成长目标",jade))OpenProgressionGoals();
-            if(Button(new Rect(w.xMax-69,w.y+20,44,32),"×",jade))ClosePanel();
+            Rect w=Modal(980,620,"营地工坊",HubNpcServiceSubtitle(CurrentProgressionGoalStatus()));
+            if(NavigationButton(new Rect(w.xMax-445,w.y+20,170,36), "切换职业", jade))OpenClassSwitch();
+            if(NavigationButton(new Rect(w.xMax-255,w.y+20,170,36), "成长目标", jade))OpenProgressionGoals();
+            if(NavigationButton(new Rect(w.xMax-69,w.y+20,44,32), "×", jade))ClosePanel();
             string[] tabs={"战技","机制图鉴","待领取","实战试炼"};
-            for(int i=0;i<tabs.Length;i++){Rect tabRect=new Rect(w.x+26+i*233,w.y+110,220,36);if(Button(tabRect,tabs[i],campTab==i?gold:jade))campTab=i;Badge(tabRect,i==1?Attention.FirstClearClaimable:i==2?Attention.LootClaimable:false);}
+            for(int i=0;i<tabs.Length;i++){Rect tabRect=new Rect(w.x+26+i*233,w.y+110,220,36);if(TabButton(tabRect, tabs[i], campTab==i))campTab=i;Badge(tabRect,i==1?Attention.FirstClearClaimable:i==2?Attention.LootClaimable:false);}
             ProgressionService p=session.Progression;
             if(campTab==0)
             {
@@ -93,7 +93,7 @@ namespace Emberfall
                     Text(new Rect(c.x+14,c.y+39,402,36),info.Loop,14,pale,false,true);
                     Text(new Rect(c.x+14,c.y+79,402,50),info.Requirements+(info.Ready?"\n"+info.Enhancement:""),12,info.Ready?jade:muted,false,true);
                     if(info.NextAction==CampRouteAction.None)Text(new Rect(c.x+14,c.y+137,402,25),info.NextStep,12,muted);
-                    else if(Button(new Rect(c.x+14,c.y+137,402,28),info.NextStep,gold,session.IsInCamp))FollowCampRouteStep(info,route);
+                    else if(DrawButton(new Rect(c.x+14,c.y+137,402,28),info.NextStep,CampRouteButtonRole(info),session.IsInCamp))FollowCampRouteStep(info,route);
                 }
                 for(int i=0;i<4;i++)
                 {
@@ -101,11 +101,11 @@ namespace Emberfall
                     Text(new Rect(c.x,c.y,c.width,25),BuildCatalog.MasteryName(mastery)+"  "+p.Profile.masteryRanks[i]+"/"+ProgressionService.MasteryCap(p.Profile.level),17,pale,true);
                     string reason=p.MasteryLockReason(mastery);
                     if(Button(new Rect(c.x,c.y+39,c.width,35),"投入 1 点",jade,string.IsNullOrEmpty(reason),string.IsNullOrEmpty(reason)?BuildCatalog.MasteryDescription(mastery):reason))Feedback(p.LearnMastery(mastery),"精通已提高");
-                    if(Button(new Rect(c.x,c.y+82,c.width,32),p.HasMasteryCore(mastery)?(p.MasteryCoreTier(mastery)==2?"增强核心 ✓":"初阶核心 ✓"):"启用核心 · "+MasteryCoreRules.InitialInvestment+"点",gold,session.IsInCamp&&p.Profile.masteryRanks[i]>=MasteryCoreRules.InitialInvestment&&!p.HasMasteryCore(mastery),BuildCatalog.MasteryDescription(mastery)))Feedback(p.SelectMasteryCore(mastery,session.IsInCamp),"已切换唯一精通核心");
+                    if(PrimaryButton(new Rect(c.x,c.y+82,c.width,32), p.HasMasteryCore(mastery)?(p.MasteryCoreTier(mastery)==2?"增强核心 ✓":"初阶核心 ✓"):"启用核心 · "+MasteryCoreRules.InitialInvestment+"点", gold, session.IsInCamp&&p.Profile.masteryRanks[i]>=MasteryCoreRules.InitialInvestment&&!p.HasMasteryCore(mastery), BuildCatalog.MasteryDescription(mastery)))Feedback(p.SelectMasteryCore(mastery,session.IsInCamp),"已切换唯一精通核心");
                 }
                 Text(new Rect(w.x+32,w.y+552,884,22),"可用点数 "+p.Profile.skillPoints+" · "+MasteryProgressionRules.TierSummary+" · "+MasteryProgressionRules.CoreSummary,12,muted);
-                if(Button(new Rect(w.x+32,w.y+580,435,30),"免费重置配点 · "+p.RefundableBuildPoints+"点",muted,session.IsInCamp&&(p.RefundableBuildPoints>0||p.Profile.masteryCore>=0),"先核对技能进阶与精通返还点数；保留已学1阶、快捷栏和装备。"))RequestBuildPlanAction(BuildPlanAction.Reset);
-                if(Button(new Rect(w.x+485,w.y+580,461,30),"配装方案 A / B · 记录 / 应用",jade))OpenBuildPlans();
+                if(DangerButton(new Rect(w.x+32,w.y+580,435,30), "免费重置配点 · "+p.RefundableBuildPoints+"点", muted, session.IsInCamp&&(p.RefundableBuildPoints>0||p.Profile.masteryCore>=0), "先核对技能进阶与精通返还点数；保留已学1阶、快捷栏和装备。"))RequestBuildPlanAction(BuildPlanAction.Reset);
+                if(NavigationButton(new Rect(w.x+485,w.y+580,461,30), "配装方案 A / B · 记录 / 应用", jade))OpenBuildPlans();
             }
             else if(campTab==1)
             {
@@ -122,7 +122,7 @@ namespace Emberfall
                     ItemData equipped=p.Equipped(BuildCatalog.MechanicSlot(mechanic));
                     if(equipped!=null&&equipped.mechanic==mechanic)
                     {
-                        if(Button(new Rect(c.x+660,c.y+55,99,36),"重铸档位",jade,session.IsInCamp&&p.QuoteReforge(equipped.id)!=null,"选择提升5级、金币可达或追平等级"))OpenReforgeSurface(equipped.id);
+                        if(NavigationButton(new Rect(c.x+660,c.y+55,99,36), "重铸档位", jade, session.IsInCamp&&p.QuoteReforge(equipped.id)!=null, "选择提升下一档（10级）、金币可达或追平等级"))OpenReforgeSurface(equipped.id);
                         if(BuildCatalog.HasMechanicVariant(mechanic)&&Button(new Rect(c.x+766,c.y+55,99,36),p.HasVariant(equipped)?(equipped.mechanicVariant==0?"变体 A":"变体 B"):"变体 · 4",jade,string.IsNullOrEmpty(p.VariantLockReason(equipped.id,session.IsInCamp)),"本角色首次学习4碎片，同机制装备免费选已学变体"))Feedback(p.ToggleMechanicVariant(equipped.id,session.IsInCamp),"装备变体已切换");
                         string ascension = p.AscensionLockReason(equipped.id,session.IsInCamp);
                         if(Button(new Rect(c.x+660,c.y+101,205,36),equipped.rarity==Rarity.Legendary?"已是传说品质":"传说升华 · 24碎片",gold,string.IsNullOrEmpty(ascension),string.IsNullOrEmpty(ascension)?"保留物品编号、等级、机制变体和部位强化；基础属性按25/18提升，无随机重抽。":ascension))Feedback(p.AscendMechanic(equipped.id,session.IsInCamp),"机制装备已升华为传说；身份、变体与部位强化保留");
@@ -133,9 +133,9 @@ namespace Emberfall
             }
             else if(campTab==2)
             {
-                if(Button(new Rect(w.x+32,w.y+165,278,38),"普通自动卖："+(p.Profile.autoSellCommon?"开":"关"),jade))p.SetAutoSell(Rarity.Common,!p.Profile.autoSellCommon);
-                if(Button(new Rect(w.x+322,w.y+165,278,38),"稀有自动卖："+(p.Profile.autoSellRare?"开":"关"),jade))p.SetAutoSell(Rarity.Rare,!p.Profile.autoSellRare);
-                if(Button(new Rect(w.x+612,w.y+165,304,38),"批量出售低品质",gold,true,"穿戴、锁定及机制装备受保护")){RequestPresetSale(null,true);}
+                if(ToggleButton(new Rect(w.x+32,w.y+165,278,38), "普通自动卖："+(p.Profile.autoSellCommon?"开":"关"), p.Profile.autoSellCommon))p.SetAutoSell(Rarity.Common,!p.Profile.autoSellCommon);
+                if(ToggleButton(new Rect(w.x+322,w.y+165,278,38), "稀有自动卖："+(p.Profile.autoSellRare?"开":"关"), p.Profile.autoSellRare))p.SetAutoSell(Rarity.Rare,!p.Profile.autoSellRare);
+                if(DangerButton(new Rect(w.x+612,w.y+165,304,38), "批量出售低品质", gold, true, "穿戴、锁定及机制装备受保护")){RequestPresetSale(null,true);}
                 Text(new Rect(w.x+32,w.y+216,884,24),"待领取 "+p.Profile.pendingLoot.Count+"/24 · 恢复栏 "+p.RecoveryLootCount+" · 锁定、穿戴和机制装备受保护",14,muted);
                 var mailbox=new System.Collections.Generic.List<ItemData>(p.Profile.pendingLoot); mailbox.AddRange(p.Profile.recoveryLoot);
                 Rect viewport=new Rect(w.x+32,w.y+254,884,280);
@@ -144,7 +144,7 @@ namespace Emberfall
                 { ItemData item=mailbox[i];Text(new Rect(12,i*58+8,660,28),item.name,18,GameBalance.RarityColor(item.rarity),true);
                   if(Button(new Rect(702,i*58+4,145,38),"领取",jade,p.Profile.inventory.Count<ProgressionService.InventoryCapacity)) { Feedback(p.Profile.recoveryLoot.Exists(x=>x.id==item.id)?p.ClaimRecoveryLoot(item.id):p.ClaimPendingLoot(item.id),"已领取 "+item.name);break; } }
                 EndTouchScroll();
-                if(Button(new Rect(w.x+32,w.y+554,884,39),"领取可放入背包的装备",gold))Feedback(true,"领取 "+(p.ClaimAllPendingLoot()+p.ClaimAllRecoveryLoot())+" 件");
+                if(PrimaryButton(new Rect(w.x+32,w.y+554,884,39), "领取可放入背包的装备", gold))Feedback(true,"领取 "+(p.ClaimAllPendingLoot()+p.ClaimAllRecoveryLoot())+" 件");
             }
             else
             {
@@ -159,10 +159,10 @@ namespace Emberfall
                 if(p.HighestAdventureTier>0||p.Profile.clearedRuns>0)
                 {
                     Text(new Rect(w.x+42,w.y+435,850,40),"首通整备 · 领取核心、检查路线，再保存一套配装",16,jade);
-                    if(Button(new Rect(w.x+42,w.y+493,200,48),"机制与核心",gold))campTab=1;
-                    if(Button(new Rect(w.x+256,w.y+493,200,48),"职业路线",jade))campTab=0;
-                    if(Button(new Rect(w.x+470,w.y+493,200,48),"配装方案",jade))OpenBuildPlans();
-                    if(Button(new Rect(w.x+684,w.y+493,200,48),"选择下一目标",jade))OpenProgressionGoals();
+                    if(NavigationButton(new Rect(w.x+42,w.y+493,200,48), "机制与核心", gold))campTab=1;
+                    if(NavigationButton(new Rect(w.x+256,w.y+493,200,48), "职业路线", jade))campTab=0;
+                    if(NavigationButton(new Rect(w.x+470,w.y+493,200,48), "配装方案", jade))OpenBuildPlans();
+                    if(NavigationButton(new Rect(w.x+684,w.y+493,200,48), "选择下一目标", jade))OpenProgressionGoals();
                 }
             }
         }
@@ -172,7 +172,7 @@ namespace Emberfall
             if(session.NearChapterExit){Rect next=new Rect((width-300)*.5f,height-225,300,48);blockedRects.Add(next);if(Button(next,"沿星路前进",gold))session.EnterNextChapterRoom();}
             else if(session.NearRoomExit){Rect next=new Rect((width-300)*.5f,height-225,300,48);blockedRects.Add(next);if(Button(next,"北门已开启 · 进入下一间",gold))session.EnterNextRoom();}
             if(session.IsInCamp)
-            { Rect r=new Rect(16,AdventureSelectionLayout.WorkshopY(height,session.SystemMessages.Count,systemHistory),212,36);blockedRects.Add(r);if(Button(r,"营地工坊",jade)) {panel=Panel.Camp;session.SetUIBlocking(true);} }
+            { Rect r=new Rect(16,AdventureSelectionLayout.WorkshopY(height,session.SystemMessages.Count,systemHistory),212,36);blockedRects.Add(r);if(NavigationButton(r, "营地工坊", jade)) {panel=Panel.Camp;session.SetUIBlocking(true);} }
             if(session.SideEventAvailable)
             { Rect r=new Rect((width-410)*.5f,height-260,410,48);blockedRects.Add(r);
               if(Button(r,"晶核支线：2敌 · 全灭1碎片+补给",gold,true,"额外一名遗迹守卫与一名魔灵；全部击败才获得1碎片和补给。未完成可放弃，不阻挡已开启的北门。"))session.StartSideEvent(); }
@@ -207,10 +207,10 @@ namespace Emberfall
 
         private void DrawAccessibilityStrip(Rect r)
         {
-            if(Button(new Rect(r.x,r.y,145,35),"字号 "+EffectPreferences.CombatTextScale.ToString("0.00")+"×",jade))
+            if(Button(new Rect(r.x,r.y,145,35), "字号 "+EffectPreferences.CombatTextScale.ToString("0.00")+"×", jade))
                 EffectPreferences.CombatTextScale=EffectPreferences.CombatTextScale>=1.79f?1f:Mathf.Min(1.8f,EffectPreferences.CombatTextScale+.25f);
-            if(Button(new Rect(r.x+154,r.y,145,35),EffectPreferences.CameraShake?"镜头震动：开":"镜头震动：关",jade))EffectPreferences.CameraShake=!EffectPreferences.CameraShake;
-            if(Button(new Rect(r.x+308,r.y,145,35),EffectPreferences.ReducedEffects?"低动态效果":"完整效果",jade))EffectPreferences.EffectsScale=EffectPreferences.ReducedEffects?1f:.3f;
+            if(ToggleButton(new Rect(r.x+154,r.y,145,35), EffectPreferences.CameraShake?"镜头震动：开":"镜头震动：关", EffectPreferences.CameraShake))EffectPreferences.CameraShake=!EffectPreferences.CameraShake;
+            if(ToggleButton(new Rect(r.x+308,r.y,145,35), EffectPreferences.ReducedEffects?"低动态效果":"完整效果", !EffectPreferences.ReducedEffects))EffectPreferences.EffectsScale=EffectPreferences.ReducedEffects?1f:.3f;
         }
     }
 }

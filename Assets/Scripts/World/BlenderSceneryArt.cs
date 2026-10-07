@@ -22,6 +22,9 @@ namespace Emberfall
             GameObject source=Resources.Load<GameObject>("BlenderScenery/"+name);
             if(!HasSafeGeometry(source))return null;
             GameObject instance=Object.Instantiate(source,parent,false);
+            // Scenery meshes are authored in metres; FBX's root unit conversion
+            // may otherwise multiply the pot/rubble dimensions by 100.
+            instance.transform.localScale=Vector3.one;
             instance.transform.localPosition=position;
             foreach(MeshRenderer renderer in instance.GetComponentsInChildren<MeshRenderer>(true))
             {

@@ -12,6 +12,7 @@ namespace Emberfall
         public static int OrdinaryMechanicChance(int tier) { return 12 + 2 * Band(ClampTier(tier)); }
         public static Rarity DropRarity(bool boss, int tier, int roll)
         {
+            if(tier<=0)return Rarity.Common;
             int band = Band(ClampTier(tier)); roll = Math.Max(0, Math.Min(99, roll));
             if (boss)
             {

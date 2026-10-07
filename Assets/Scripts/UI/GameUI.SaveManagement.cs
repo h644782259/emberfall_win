@@ -14,8 +14,7 @@ namespace Emberfall
         {
             if (session.HasStarted) return;
             SaveSlotInfo selected = saveSlots.Find(slot => slot.Id == selectedSaveId);
-            if (Button(rect, "删除角色…", new Color(1f, .48f, .42f), selected != null,
-                "先核对角色、保存时间与存档编号，再确认永久删除。"))
+            if (DangerButton(rect, "删除角色…", new Color(1f, .48f, .42f), selected != null, "先核对角色、保存时间与存档编号，再确认永久删除。"))
             {
                 SaveDeletionRequest request;
                 if (session.Progression.PrepareSaveDeletion(selected.Id, out request))
@@ -88,16 +87,8 @@ namespace Emberfall
 
         private bool SaveConfirmationButton(Rect rect, string caption, Color accent, int size, bool cancel)
         {
-            bool hover = rect.Contains(Mouse);
-            Fill(rect, cancel || hover ? new Color(accent.r * .22f, accent.g * .26f, accent.b * .30f, 1) : card);
-            Border(rect, accent);
-            Text(rect, caption, size, pale, true, false, TextAnchor.MiddleCenter);
-            // Name the interactive control itself, after labels; keyboard focus
-            // must never carry over from the selection page's delete button.
-            if (cancel) GUI.SetNextControlName("save-delete-cancel");
-            bool clicked = GUI.Button(rect, GUIContent.none, invisibleButton);
-            if (clicked) GameAudio.Play(SoundCue.UI);
-            return clicked;
+            return DrawButton(rect, caption, cancel ? ButtonRole.Navigation : ButtonRole.Danger,
+                true, null, size, cancel ? "save-delete-cancel" : null);
         }
 
         private void FocusSaveCancel()

@@ -23,10 +23,10 @@ namespace Emberfall
             if(!equipmentAppearanceOpen||item==null)return false;
             if(equipmentAppearanceItem!=item.id){equipmentAppearanceItem=item.id;equipmentAppearanceCandidate=false;}
             float gap=8*u,half=(area.width-gap)*.5f;
-            if(Button(new Rect(area.x,area.y,half,44*u),"当前装备",equipmentAppearanceCandidate?jade:gold)){equipmentAppearanceCandidate=false;BlockUITransition();}
-            if(Button(new Rect(area.x+half+gap,area.y,half,44*u),"候选装备",equipmentAppearanceCandidate?gold:jade)){equipmentAppearanceCandidate=true;BlockUITransition();}
-            if(Button(new Rect(area.x,area.y+50*u,half,40*u),equipmentAppearanceDetail?"展示观看":"战斗观看",jade)){equipmentAppearanceDetail=!equipmentAppearanceDetail;BlockUITransition();}
-            if(Button(new Rect(area.x+half+gap,area.y+50*u,half,40*u),"返回属性",jade)){equipmentAppearanceOpen=false;ReleaseCollectionModel();BlockUITransition();return true;}
+            if(TabButton(new Rect(area.x,area.y,half,44*u), "当前装备", !(equipmentAppearanceCandidate))){equipmentAppearanceCandidate=false;BlockUITransition();}
+            if(TabButton(new Rect(area.x+half+gap,area.y,half,44*u), "候选装备", equipmentAppearanceCandidate)){equipmentAppearanceCandidate=true;BlockUITransition();}
+            if(ToggleButton(new Rect(area.x,area.y+50*u,half,40*u), equipmentAppearanceDetail?"展示观看":"战斗观看", equipmentAppearanceDetail)){equipmentAppearanceDetail=!equipmentAppearanceDetail;BlockUITransition();}
+            if(NavigationButton(new Rect(area.x+half+gap,area.y+50*u,half,40*u), "返回属性", jade)){equipmentAppearanceOpen=false;ReleaseCollectionModel();BlockUITransition();return true;}
             var p=session.Progression;
             ItemData weapon=p.Equipped(ItemSlot.Weapon),armor=p.Equipped(ItemSlot.Armor),relic=p.Equipped(ItemSlot.Relic);
             // PreviewEquippedItem returns a detached copy with persistent slot upgrades.

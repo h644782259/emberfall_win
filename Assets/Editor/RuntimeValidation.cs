@@ -71,6 +71,12 @@ namespace Emberfall.Editor
         /// <summary>CLI: Unity -batchmode -projectPath ... -executeMethod Emberfall.Editor.RuntimeValidation.Run (no -quit / -nographics).</summary>
         [MenuItem("Emberfall/验证真实运行时 Runtime smoke test", false, 40)]
         public static void Run()
+        {RunSuite(false);}
+
+        public static void RunNpcInteractions()
+        {RunSuite(true);}
+
+        private static void RunSuite(bool npcOnly)
         {
             if (SessionState.GetBool(Prefix + "Active", false)) throw new InvalidOperationException("Runtime validation is already running.");
             if (EditorApplication.isPlayingOrWillChangePlaymode) throw new InvalidOperationException("Stop the current play session before running isolated validation.");
@@ -91,6 +97,7 @@ namespace Emberfall.Editor
             SessionState.SetInt(Prefix + "Screenshots", 0);
             SessionState.SetFloat(Prefix + "Started", (float)EditorApplication.timeSinceStartup);
             SessionState.SetBool(Prefix + "Active", true);
+            SessionState.SetBool(Prefix + "NpcOnly", npcOnly);
             finishing = false;
             routine = null;
             waiting = null;
@@ -131,7 +138,8 @@ namespace Emberfall.Editor
                 {
                     Append("Play mode entered; InitializeOnLoad restored the validation runner after domain reload.");
                     Application.runInBackground = true;
-                    routine = Smoke();
+                    validatingPause=SessionState.GetBool(Prefix+"NpcOnly",false);
+                    routine = validatingPause?HubNpcValidation.Validate(GameSession.Instance,Check,Append,SessionState.GetString(Prefix+"Results","")):Smoke();
                 }
                 if (waiting != null && !waiting.Ready) return;
                 waiting = null;
@@ -981,7 +989,7 @@ namespace Emberfall.Editor
                 totalObservedConsoleErrors = SessionState.GetInt(Prefix + "Errors", 0) + infrastructureCount,
                 editorInfrastructureErrorCount = infrastructureCount,
                 editorInfrastructureErrors = infrastructure,
-                screenshots = SessionState.GetInt(Prefix + "Screenshots", 0),
+                screenshots = SessionState.GetBool(Prefix+"NpcOnly",false)?Directory.GetFiles(results,"npc-*.png").Length:SessionState.GetInt(Prefix + "Screenshots", 0),
                 elapsedSeconds = (float)EditorApplication.timeSinceStartup - SessionState.GetFloat(Prefix + "Started", 0),
                 failure = failure
             };

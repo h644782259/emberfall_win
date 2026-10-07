@@ -23,7 +23,7 @@ namespace Emberfall
             if(mobileFashionPreview){DrawMobileCollectionPreview(layout);return;}
             string[] names = { "翅膀", "武器外观" };
             for (int i = 0; i < names.Length; i++)
-                if (Button(MobilePanelRect(layout.Tab(i, 2)), names[i], mobileFashionSlot == i ? gold : jade))
+                if (TabButton(MobilePanelRect(layout.Tab(i, 2)), names[i], mobileFashionSlot == i))
                 { mobileFashionSlot = i; mobileFashionScroll = Vector2.zero; BlockUITransition(); return; }
             FashionSlot slot = (FashionSlot)mobileFashionSlot;
             FashionData worn = progression.EquippedFashion(slot), strongest = progression.StrongestFashion(slot);
@@ -66,7 +66,7 @@ namespace Emberfall
             if(trialRank>=0){TrialFashion(slot,(Rarity)trialRank);mobileFashionPreview=true;mobilePreviewTextScroll=Vector2.zero;BlockUITransition();return;}
             if (unequip) { MobileFashionResult(progression.UnequipFashion(slot), "已卸下外观，收藏属性保留"); BlockUITransition(); return; }
             if (chosenId != null) { MobileFashionResult(progression.EquipFashion(chosenId), "外观已穿戴"); BlockUITransition(); return; }
-            if (Button(MobilePanelRect(layout.FooterButton(0, 3)), "返回行囊", jade)) { panel = Panel.Inventory; BlockUITransition(); return; }
+            if (NavigationButton(MobilePanelRect(layout.FooterButton(0, 3)), "返回行囊", jade)) { panel = Panel.Inventory; BlockUITransition(); return; }
             if(Button(MobilePanelRect(layout.FooterButton(1,3)),"6星纹 → 1碎片",jade,string.IsNullOrEmpty(progression.ThreadMaterialExchangeLockReason(session.IsInCamp)))){ExchangeThreadMaterial();return;}
             bool ownedLegendary = profile.fashions.Exists(value => value != null && value.slot == slot && value.rarity == Rarity.Legendary);
             string exchange = ownedLegendary ? "传说已收藏" : !session.IsInCamp ? "回营地兑换传说" : ProgressionService.FashionChoiceCost + " 星纹 · 兑换传说";
@@ -117,10 +117,10 @@ namespace Emberfall
             else if (DrawMobileChestChoices(layout)) return;
 
             bool firstTrial=complete&&!chestDetails&&CanTrialChestReward(reward);int footerCount=firstTrial?3:2;
-            if(firstTrial&&Button(MobilePanelRect(layout.FooterButton(1,3)),"收下并试穿",jade)){AcceptChestForTrial();return;}
-            if (Button(MobilePanelRect(layout.FooterButton(0, footerCount)), chestDetails ? "返回宝箱" : "概率 / 规则", jade))
+            if(firstTrial&&PrimaryButton(MobilePanelRect(layout.FooterButton(1,3)), "收下并试穿", jade)){AcceptChestForTrial();return;}
+            if (NavigationButton(MobilePanelRect(layout.FooterButton(0, footerCount)), chestDetails ? "返回宝箱" : "概率 / 规则", jade))
             { chestDetails = !chestDetails; mobileChestScroll = Vector2.zero; BlockUITransition(); return; }
-            if (Button(MobilePanelRect(layout.FooterButton(footerCount-1, footerCount)), revealed ? complete ? "收下" : "跳过动画" : "返回", gold, !chestDetails, null, true))
+            if (DrawButton(MobilePanelRect(layout.FooterButton(footerCount-1, footerCount)), revealed ? complete ? "收下" : "跳过动画" : "返回", revealed ? ButtonRole.Primary : ButtonRole.Navigation, !chestDetails))
             {
                 if(!revealed){ClosePanel();BlockUITransition();return;}
                 if (!complete) chestRevealedAt = Time.unscaledTime - ChestDuration;
@@ -145,7 +145,7 @@ namespace Emberfall
             if(errors>0)DrawMobileParagraph(8,disclosure,bodyWidth-16,mobileChestError,14,new Color(1,.55f,.45f));
             Rect cardRect=TouchRect(8,disclosure+errors,bodyWidth-16,cardHeight);
             DrawSingleChestCard(cardRect,TouchRatio);
-            bool open=Button(TouchRect(20,disclosure+errors+cardHeight-60,bodyWidth-40,48),session.Progression.ChestOpenCaption,gold,!chestOpening&&session.Progression.Profile.pendingFashionChest&&!session.Progression.Profile.pendingChestReveal);
+            bool open=PrimaryButton(TouchRect(20,disclosure+errors+cardHeight-60,bodyWidth-40,48), session.Progression.ChestOpenCaption, gold, !chestOpening&&session.Progression.Profile.pendingFashionChest&&!session.Progression.Profile.pendingChestReveal);
             EndTouchScroll();if(!open)return false;
             chestOpening=true;string result=session.Progression.OpenDungeonChest();
             if(result==null){chestOpening=false;mobileChestError=session.Progression.LastError;mobileChestScroll=Vector2.zero;Feedback(false,"宝箱暂时无法开启");}
@@ -179,12 +179,12 @@ namespace Emberfall
             var viewport = layout.BodyRight;
             float width = viewport.Width - 34;
             string error = string.IsNullOrEmpty(mobileChestError) ? session.Progression.LastError : mobileChestError;
-            float total = 24 + MeasureMobileParagraph(result, width, 18, true) + MeasureMobileParagraph(error, width, 14);
+            float total = ChestSectionsHeight(reward,width*TouchRatio,TouchRatio)/TouchRatio + MeasureMobileParagraph(error, width, 14)+24;
             mobileChestScroll = BeginTouchScroll("mobile-chest-result", MobilePanelRect(viewport), mobileChestScroll,
                 new Rect(0, 0, (width + 16) * TouchRatio, Mathf.Max(viewport.Height, total) * TouchRatio));
             float y = 8;
             if (!string.IsNullOrEmpty(error)) y += DrawMobileParagraph(8, y, width, error, 14, new Color(1, .55f, .45f)) + 8;
-            DrawMobileParagraph(8, y, width, result, 18, accent, true);
+            DrawChestSections(TouchRect(8,y,width,total-y),reward,accent,TouchRatio);
             EndTouchScroll();
         }
 

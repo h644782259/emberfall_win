@@ -41,12 +41,12 @@ namespace Emberfall
             var sections=new ProgressionGoalLayout(l.Body,statusHeight,current.Action!=ProgressionGoalAction.None);
             progressionGoalHeaderScroll=BeginTouchScroll("progression-goal-current",BuildPlanRect(sections.Status,u),progressionGoalHeaderScroll,new Rect(0,0,(l.Body.Width-16)*u,statusHeight*u));
             Text(new Rect(4*u,4*u,(l.Body.Width-26)*u,(statusHeight-8)*u),status,Mathf.RoundToInt(13*u),jade,false,true);EndTouchScroll();
-            if(current.Action!=ProgressionGoalAction.None&&Button(BuildPlanRect(sections.Action,u),current.ActionLabel,gold,current.CanAct,current.Step))
+            if(current.Action!=ProgressionGoalAction.None&&PrimaryButton(BuildPlanRect(sections.Action,u), current.ActionLabel, gold, current.CanAct, current.Step))
             {if(current.Action==ProgressionGoalAction.OpenPresets){progressionGoalsOpen=false;OpenBuildPlans();}else Feedback(p.ExecuteProgressionGoal(current.ActionIdentity,session.IsInCamp),"目标操作已保存");progressionGoalHeaderScroll=Vector2.zero;BlockUITransition();return true;}
             float h=DrawProgressionGoalOptions(sections.Candidates.Width-18,u,false);
             progressionGoalScroll=BeginTouchScroll("progression-goals",BuildPlanRect(sections.Candidates,u),progressionGoalScroll,new Rect(0,0,(sections.Candidates.Width-18)*u,Mathf.Max(sections.Candidates.Height,h)*u));
             DrawProgressionGoalOptions(sections.Candidates.Width-18,u,true);EndTouchScroll();
-            if(Button(BuildPlanRect(l.FooterButton(0,1),u),"返回工坊",jade))CloseProgressionGoalSurface();
+            if(NavigationButton(BuildPlanRect(l.FooterButton(0,1),u), "返回工坊", jade))CloseProgressionGoalSurface();
             return true;
         }
         private float DrawProgressionGoalOptions(float w,float u,bool draw)
@@ -94,12 +94,12 @@ namespace Emberfall
             y+=h;
         }
         private static string GoalItemTitle(ItemData item)
-        {return item.name+" · Lv."+item.level+" · "+GameBalance.RarityName(item.rarity)+" #"+(item.id.Length>6?item.id.Substring(item.id.Length-6):item.id);}
+        {return item.name+" · Lv."+item.level+" · "+GameBalance.RarityName(item.rarity);}
         private void GoalCoreOption(ref float y,float w,float u,EquipmentMechanic mechanic,Rarity rarity,bool draw)
         {
             var p=session.Progression;bool selected=p.Profile.progressionGoal==ProgressionGoalKind.Core&&p.Profile.progressionGoalMechanic==mechanic&&p.Profile.progressionGoalMinimumRarity==rarity;
             string text=(rarity==Rarity.Epic?"升华前置 · 获取史诗":"获取核心 · ")+BuildCatalog.MechanicName(mechanic);
-            if(draw&&Button(new Rect(8*u,y*u,(w-16)*u,48*u),text+(selected?" ✓":""),selected?gold:jade))
+            if(draw&&TabButton(new Rect(8*u,y*u,(w-16)*u,48*u), text+(selected?" ✓":""), selected))
             {Feedback(p.SelectCoreGoal(mechanic,rarity),"具体核心目标已保存");progressionGoalHeaderScroll=Vector2.zero;CancelMobileScroll();BlockUITransition();}
             y+=56;
             GoalParagraph(ref y,w,u,BuildCatalog.MechanicDescription(mechanic),13,muted,false,draw);
@@ -109,7 +109,7 @@ namespace Emberfall
             bool selected=session.Progression.Profile.progressionGoal==kind && (id==null||session.Progression.Profile.progressionGoalItemId==id) &&
                 (kind!=ProgressionGoalKind.Tier||session.Progression.Profile.progressionGoalTier==tier) &&
                 (kind!=ProgressionGoalKind.Reforge||session.Progression.Profile.progressionGoalLevel==session.Progression.Profile.level);
-            if(draw&&Button(new Rect(8*u,y*u,(w-16)*u,48*u),text+(selected?" ✓":""),selected?gold:jade))
+            if(draw&&TabButton(new Rect(8*u,y*u,(w-16)*u,48*u), text+(selected?" ✓":""), selected))
             {Feedback(session.Progression.SelectProgressionGoal(kind,id,tier,kind==ProgressionGoalKind.Reforge?session.Progression.Profile.level:0),"成长目标已保存");progressionGoalHeaderScroll=Vector2.zero;CancelMobileScroll();BlockUITransition();}
             y+=56;
         }

@@ -30,10 +30,10 @@ public static class SkillRuntimeTests
         var state = new SkillRuntime(HeroClass.Vanguard);
         Check(Near(state.Energy, 100), "new adventure starts with full energy");
         Check(state.TryConsume(9, 1), "learned ultimate can cast when ready");
-        Check(Near(state.Energy, 36) && Near(state.Remaining(9), 42), "Vanguard execution spends 64 and starts a 42-second cooldown");
-        Check(!state.TryConsume(7, 1), "second high-tier skill blocked by resource budget");
-        Check(Near(state.Remaining(7), 0) && Near(state.Energy, 36), "failed cast does not spend or start cooldown");
-        Check(state.TryConsume(0, 1) && Near(state.Energy, 24), "short-cooldown skill remains usable after ultimate");
+        Check(Near(state.Energy, 100) && Near(state.Remaining(9), 42), "Vanguard ultimate is free and starts a 42-second cooldown");
+        Check(state.TryConsume(7, 1), "high-tier skill remains usable after a free ultimate");
+        Check(state.Remaining(7) > 0 && Near(state.Energy, 62), "other skills still spend their normal energy");
+        Check(state.TryConsume(0, 1) && Near(state.Energy, 50), "short-cooldown skill remains usable after ultimate");
         state.RestoreEnergy(1000);
         Check(Near(state.Energy, 100) && !state.TryConsume(0, 1), "energy restoration does not reset skill cooldown");
 
@@ -52,10 +52,13 @@ public static class SkillRuntimeTests
         state.Advance(37);
         Check(state.TryConsume(9, 3), "rank-three ultimate usable after full cooldown");
         Check(Near(state.Remaining(9), 36.12f), "rank upgrades reduce cooldown without removing tradeoff");
-        state.Advance(2);
-        Check(Near(state.Energy, 44), "passive regeneration is four energy per second");
-        state.RestoreEnergy(8);
-        Check(Near(state.Energy, 52), "normal attack hit rewards eight energy");
+        Check(Near(state.Energy, 100), "repeated ultimate casts never consume energy");
+        var regeneration = new SkillRuntime(HeroClass.Vanguard);
+        Check(regeneration.TryConsume(0, 1) && Near(regeneration.Energy, 88), "ordinary skill still costs energy");
+        regeneration.Advance(2);
+        Check(Near(regeneration.Energy, 96), "passive regeneration is four energy per second");
+        regeneration.RestoreEnergy(8);
+        Check(Near(regeneration.Energy, 100), "normal attack hit rewards eight energy");
 
         float energyBefore = state.Energy;
         float cooldownBefore = state.Remaining(9);
@@ -127,7 +130,7 @@ public static class SkillRuntimeTests
         {
             if (GameBalance.IsPassive(skill)) continue;
             HeroClass heroClass = (HeroClass)hero;
-            Check(GameBalance.SkillEnergyCost(heroClass, skill) > 0 && GameBalance.SkillEnergyCost(heroClass, skill) <= SkillRuntime.MaximumEnergy, "active skill has a reachable positive resource cost");
+            Check(skill == 9 ? Near(GameBalance.SkillEnergyCost(heroClass, skill), 0) : GameBalance.SkillEnergyCost(heroClass, skill) > 0 && GameBalance.SkillEnergyCost(heroClass, skill) <= SkillRuntime.MaximumEnergy, "ultimate is free while other active skills have reachable costs");
             Check(GameBalance.EffectiveCooldown(heroClass, skill, 3) < GameBalance.EffectiveCooldown(heroClass, skill, 2) &&
                 GameBalance.EffectiveCooldown(heroClass, skill, 2) < GameBalance.EffectiveCooldown(heroClass, skill, 1), "upgrading the same active skill reduces its cooldown");
             for (int rank = 1; rank <= 3; rank++)
@@ -177,8 +180,12 @@ public static class SkillRuntimeTests
         foreach (HeroClass hero in (HeroClass[])Enum.GetValues(typeof(HeroClass)))
         {
             Check(GameBalance.EffectiveCooldown(hero, 6, 3) > 5.2f * 4, "strongest heal protection covers less than a quarter of its reuse cycle: " + hero);
-            Check(GameBalance.SkillEnergyCost(hero, 9) + GameBalance.SkillEnergyCost(hero, 7) > 100, "ultimate plus heavy control/volley needs recovery or basic hits: " + hero);
-            Check(GameBalance.SkillEnergyCost(hero, 9) + GameBalance.SkillEnergyCost(hero, 0) <= 100, "ultimate still permits the basic class skill: " + hero);
+            Check(Near(GameBalance.SkillEnergyCost(hero, 9), 0), "ultimate has no energy cost: " + hero);
+            Check(GameBalance.EffectiveCooldown(hero, 9, 1) > 0, "free ultimate retains its cooldown: " + hero);
+            var empty = new SkillRuntime(hero).CopyForClass(hero, 0, 0);
+            Check(empty.TryConsume(9, 1) && Near(empty.Energy, 0), "ultimate casts with no energy: " + hero);
+            Check(!empty.TryConsume(9, 1), "ultimate cannot bypass cooldown: " + hero);
+            Check(!empty.TryConsume(0, 1), "ordinary skill cannot cast with no energy: " + hero);
         }
         Check(GameBalance.EffectiveCooldown(HeroClass.Vanguard, 4, 3) > 20 && GameBalance.EffectiveCooldown(HeroClass.Arcanist, 5, 3) > 20 && GameBalance.EffectiveCooldown(HeroClass.Summoner, 5, 3) > 20, "ten-second shields leave a longer exposed interval than their protected interval");
         Check(GameBalance.EffectiveCooldown(HeroClass.Arcanist, 0, 3) > 2.75f * 2, "double frost nova cannot permanently freeze one enemy by itself");
@@ -213,9 +220,8 @@ public static class SkillRuntimeTests
 
         var summoner = new SkillRuntime(HeroClass.Summoner);
         Check(summoner.TryConsume(2, 1) && summoner.TryConsume(4, 1) && summoner.TryConsume(1, 1) && Near(summoner.Energy, 14), "summoner can establish wolf, spirit and a control field");
-        Check(!summoner.TryConsume(9, 1) && Near(summoner.Remaining(9), 0), "establishing summons postpones the guardian without wasting its cooldown");
-        summoner.Advance(14);
-        Check(summoner.TryConsume(9, 1) && Near(summoner.Energy, 0), "natural regeneration funds the guardian while earlier companions remain alive");
-        Check(!summoner.TryConsume(2, 1) && Near(summoner.Remaining(2), 0), "ready summon still respects the shared class energy pool");
+        Check(summoner.TryConsume(9, 1) && Near(summoner.Energy, 14), "guardian can be summoned without spending energy");
+        Check(!summoner.TryConsume(9, 1), "guardian still respects its cooldown");
+        Check(!summoner.TryConsume(0, 1) && Near(summoner.Remaining(0), 0), "ready ordinary skill still respects the shared class energy pool");
     }
 }

@@ -61,7 +61,7 @@ namespace Emberfall
             string side="HP "+session.Player.Health.ToString("0")+" / "+session.Player.MaxHealth.ToString("0")+" · 能量 "+session.Player.Energy.ToString("0")+"\n伤害 "+r.ActualDamage.ToString("0")+" · DPS "+r.DamagePerSecond.ToString("0.0")+"\n耗能 "+r.EnergySpent.ToString("0.0")+" / 回复 "+r.EnergyRestored.ToString("0.0")+"\n受伤 "+r.DamageTaken.ToString("0")+" / 治疗 "+r.EffectiveHealing.ToString("0");
             Text(BuildPlanRect(layout.Sidebar,unit),side,Mathf.RoundToInt(11*unit),pale,false,true);
             Rect primary=BuildPlanRect(layout.Primary,unit),leave=BuildPlanRect(layout.Leave,unit);blockedRects.Add(primary);blockedRects.Add(leave);
-            if(Button(primary,r.Started?"重开":"开始",jade)){if(r.Started)session.RestartPractice();else session.StartPractice();}
+            if(PrimaryButton(primary, r.Started?"重开":"开始", jade)){if(r.Started)session.RestartPractice();else session.StartPractice();}
             if(Button(leave,"结束",gold))session.EndPractice("主动离开 · 记录提前结束");
         }
     }

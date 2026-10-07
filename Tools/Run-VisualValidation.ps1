@@ -1,6 +1,9 @@
 param(
     [string]$UnityPath = 'C:\Program Files\Unity\Hub\Editor\6000.6.3f1\Editor\Unity.exe',
-    [switch]$ShowPreview
+    [switch]$ShowPreview,
+    [switch]$UserFixes,
+    [switch]$ButtonStyles,
+    [switch]$AdventureTypography
 )
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
@@ -16,7 +19,8 @@ New-Item -ItemType Directory -Force -Path $output | Out-Null
 $player = Join-Path $project 'Builds\VisualValidation\Emberfall.exe'
 $playerLog = Join-Path $output 'player.log'
 $windowStyle = if ($ShowPreview) { 'Normal' } else { 'Hidden' }
-$run = Start-Process -FilePath $player -ArgumentList @('--visual-validation-root',('"' + $output + '"'),'-logFile',('"' + $playerLog + '"'),'-screen-fullscreen','0') -WindowStyle $windowStyle -PassThru
+$extraArgs=if($AdventureTypography){@('--adventure-typography')}elseif($ButtonStyles){@('--button-styles')}elseif($UserFixes){@('--user-fixes')}else{@()}
+$run = Start-Process -FilePath $player -ArgumentList (@('--visual-validation-root',('"' + $output + '"'),'-logFile',('"' + $playerLog + '"'),'-screen-fullscreen','0')+$extraArgs) -WindowStyle $windowStyle -PassThru
 if (-not $run.WaitForExit(210000)) { Stop-Process -Id $run.Id; throw "Visual validation timed out. See $playerLog" }
 $reportPath = Join-Path $output 'visual-validation-report.json'
 if (-not (Test-Path -LiteralPath $reportPath)) { throw "No visual report was written. See $playerLog" }

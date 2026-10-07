@@ -86,18 +86,17 @@ namespace Emberfall
                 new Rect(0,0,contentWidth*unit,Mathf.Max(layout.Body.Height,contentHeight)*unit));
             DrawBuildPlanContent(contentWidth,unit,true);
             EndTouchScroll();
-            if(Button(BuildPlanRect(layout.FooterButton(0,2),unit),confirm?"取消":buildPlanChoosing?"返回方案":"返回营地工坊",jade))
+            if(NavigationButton(BuildPlanRect(layout.FooterButton(0,2),unit), confirm?"取消":buildPlanChoosing?"返回方案":"返回营地工坊", jade))
             {CloseBuildPlanSurface();return true;}
             if(confirm)
             {
                 bool fresh=buildPlanSource==session.Progression.Profile&&buildPlanFingerprint==session.Progression.BuildStateFingerprint();
                 string reason=buildPlanAction==BuildPlanAction.Replace?(buildPlanReplacement==null?"候选失效":buildPlanReplacement.Error):buildPlanAction==BuildPlanAction.Apply?session.Progression.BuildPresetLockReason(buildPlanSlot,session.IsInCamp):null;
                 string caption=!fresh?"重新核对":buildPlanAction==BuildPlanAction.Replace?"确认替换此部位":buildPlanAction==BuildPlanAction.Reset?"确认重置配点":buildPlanAction==BuildPlanAction.Save?"确认记录方案":"确认应用方案";
-                if(Button(BuildPlanRect(layout.FooterButton(1,2),unit),caption,gold,!fresh||session.IsInCamp&&string.IsNullOrEmpty(reason)))
+                if(DrawButton(BuildPlanRect(layout.FooterButton(1,2),unit), caption, buildPlanAction==BuildPlanAction.Reset?ButtonRole.Danger:ButtonRole.Primary, !fresh||session.IsInCamp&&string.IsNullOrEmpty(reason)))
                 {if(fresh)ConfirmBuildPlanAction();else if(buildPlanAction==BuildPlanAction.Replace)BeginPresetReplacement(buildPlanSlot,buildPlanPart);else RequestBuildPlanAction(buildPlanAction,buildPlanSlot);}
             }
-            else if(!buildPlanChoosing&&Button(BuildPlanRect(layout.FooterButton(1,2),unit),"免费重置 · "+session.Progression.RefundableBuildPoints+"点",gold,
-                session.IsInCamp&&(session.Progression.RefundableBuildPoints>0||session.Progression.Profile.masteryCore>=0)))
+            else if(!buildPlanChoosing&&DangerButton(BuildPlanRect(layout.FooterButton(1,2),unit), "免费重置 · "+session.Progression.RefundableBuildPoints+"点", gold, session.IsInCamp&&(session.Progression.RefundableBuildPoints>0||session.Progression.Profile.masteryCore>=0)))
                 RequestBuildPlanAction(BuildPlanAction.Reset);
             return true;
         }
@@ -171,7 +170,7 @@ namespace Emberfall
                     float buttonWidth=(width-24)*.5f;
                     if(Button(new Rect(8*unit,y*unit,buttonWidth*unit,48*unit),occupied?"覆盖方案 "+BuildPlanName(slot):"记录方案 "+BuildPlanName(slot),jade,session.IsInCamp))
                         RequestBuildPlanAction(BuildPlanAction.Save,slot);
-                    if(Button(new Rect((16+buttonWidth)*unit,y*unit,buttonWidth*unit,48*unit),"应用方案 "+BuildPlanName(slot),gold,occupied&&string.IsNullOrEmpty(reason)))
+                    if(PrimaryButton(new Rect((16+buttonWidth)*unit,y*unit,buttonWidth*unit,48*unit), "应用方案 "+BuildPlanName(slot), gold, occupied&&string.IsNullOrEmpty(reason)))
                         RequestBuildPlanAction(BuildPlanAction.Apply,slot);
                 }
                 y+=64;
@@ -230,8 +229,8 @@ namespace Emberfall
             float bodyWidth=layout.Body.Width-18,bodyHeight=0;BuildPlanParagraph(ref bodyHeight,bodyWidth,unit,body,pale,false);
             presetSaleScroll=BeginTouchScroll("preset-sale",BuildPlanRect(layout.Body,unit),presetSaleScroll,new Rect(0,0,bodyWidth*unit,Mathf.Max(layout.Body.Height,bodyHeight)*unit));
             float y=0;BuildPlanParagraph(ref y,bodyWidth,unit,body,pale,true);EndTouchScroll();
-            if(Button(BuildPlanRect(layout.FooterButton(0,2),unit),"取消",jade)){CancelPresetSale();}
-            if(Button(BuildPlanRect(layout.FooterButton(1,2),unit),"确认出售",gold,fresh))
+            if(NavigationButton(BuildPlanRect(layout.FooterButton(0,2),unit), "取消", jade)){CancelPresetSale();}
+            if(DangerButton(BuildPlanRect(layout.FooterButton(1,2),unit), "确认出售", gold, fresh))
             {
                 ConfirmPresetSale();
             }

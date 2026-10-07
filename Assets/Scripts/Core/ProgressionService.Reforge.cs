@@ -10,7 +10,7 @@ namespace Emberfall
         }
         public ReforgeQuote QuoteReforge(string id,int targetLevel=0)
         {
-            ItemData item=FindItem(id);int target=targetLevel==0?Profile.level:targetLevel;
+            ItemData item=FindItem(id);int target=EquipmentGenerationLevel(targetLevel==0?Profile.level:targetLevel);
             if(item==null||target<=item.level||target>Profile.level||target>100||item.level<1||
                 MechanicGoalEligibility(id,ProgressionGoalKind.Reforge).Length>0)return null;
             return new ReforgeQuote(id,item.level,target,ReforgeGoldCost(item.level,target),SaveFilePath);
@@ -18,8 +18,8 @@ namespace Emberfall
         public ReforgeQuote QuoteReforgeChoice(string id,ReforgeTargetKind kind)
         {
             ItemData item=FindItem(id);if(item==null||!Enum.IsDefined(typeof(ReforgeTargetKind),kind))return null;
-            int target=Math.Min(100,Profile.level);
-            if(kind==ReforgeTargetKind.FiveLevels)target=Math.Min(target,item.level+5);
+            int target=EquipmentGenerationLevel(Profile.level);
+            if(kind==ReforgeTargetKind.FiveLevels)target=Math.Min(target,item.level+10);
             if(kind==ReforgeTargetKind.Affordable)
             {int low=item.level,high=target;while(low<high){int mid=low+(high-low+1)/2;if(ReforgeGoldCost(item.level,mid)<=Profile.gold)low=mid;else high=mid-1;}target=low;}
             return QuoteReforge(id,target);

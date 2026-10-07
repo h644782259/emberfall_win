@@ -20,21 +20,71 @@ namespace Emberfall
 
         private void OpenNearbyHubNpc()
         {
-            if (UITransitionBlocked || session == null || session.InputBlocked) return;
+            if (UITransitionBlocked || session == null || session.InputBlocked || panel != Panel.None) return;
             HubNpcKind kind = session.NearbyHubNpc;
             if (kind == HubNpcKind.None) return;
             CancelHotbarPointer();
             inventoryHubNpc = kind;
-            if (kind == HubNpcKind.Exchange) { OpenChapterSelection();return; }
+            panel=Panel.HubDialogue;
+            session.SetUIBlocking(true);
+            session.BeginHubNpcConversation(kind);
+            BlockUITransition();
+        }
+
+        private void OpenHubNpcService()
+        {
+            if(UITransitionBlocked||session==null||session.Paused||session.BackgroundPaused||panel!=Panel.HubDialogue)return;
+            HubNpcKind kind=session.ActiveHubNpc;
+            if(kind==HubNpcKind.None){ClosePanel();return;}
+            if (kind == HubNpcKind.Exchange)
+            {
+                OpenChapterSelection();
+                return;
+            }
             else
             {
                 panel = Panel.Inventory;
-                if(MobileControls.Active)mobileInventoryNpcRequest=kind;
+                hubServiceScroll=Vector2.zero;inventoryFilter=-1;
+                mobileInventoryNpcRequest=HubNpcKind.None;
                 if (kind == HubNpcKind.Blacksmith) selectedItem = session.Progression.Profile.weaponId;
             }
             session.SetUIBlocking(true);
             BlockUITransition();
         }
+
+        private void HandleHubNpcShortcut(bool pressed)
+        {
+            if(!pressed||MobileControls.Active)return;
+            if(panel==Panel.HubDialogue)OpenHubNpcService();else OpenNearbyHubNpc();
+        }
+
+        private void ReconcileHubNpcConversation()
+        {
+            if(session.ActiveHubNpc==HubNpcKind.None)
+            {if(panel==Panel.HubDialogue)ClosePanel();return;}
+            bool service=session.ActiveHubNpc==HubNpcKind.Exchange?
+                panel==Panel.Chapter||panel==Panel.Camp:panel==Panel.Inventory;
+            if(panel!=Panel.HubDialogue&&!service)session.EndHubNpcConversation();
+        }
+
+        private void DrawHubNpcDialogue()
+        {
+            HubNpcKind kind=session.ActiveHubNpc;
+            if(kind==HubNpcKind.None)return;
+            float u=MobileControls.Active?TouchRatio:1;
+            float w=Mathf.Min(width-32*u,620*u),h=148*u;
+            Rect r=new Rect((width-w)*.5f,height-h-18*u,w,h);
+            blockedRects.Add(r);
+            Box(r,gold);
+            Text(new Rect(r.x+18*u,r.y+12*u,w-82*u,25*u),HubNpcLabel(kind),Mathf.RoundToInt(18*u),gold,true);
+            Text(new Rect(r.x+18*u,r.y+43*u,w-36*u,42*u),HubNpcGreeting.Text(kind),Mathf.RoundToInt(15*u),pale,false,true);
+            string action=kind==HubNpcKind.Merchant?"查看补给 / 出售":kind==HubNpcKind.Blacksmith?"打磨 / 强化装备":"查看星路 / 兑换";
+            if(NavigationButton(new Rect(r.x+18*u,r.y+96*u,w-138*u,38*u),(MobileControls.Active?"":"[G] ")+action,jade))OpenHubNpcService();
+            if(NavigationButton(new Rect(r.xMax-106*u,r.y+96*u,88*u,38*u),"告辞",muted))ClosePanel();
+        }
+
+        private string HubNpcServiceSubtitle(string fallback)
+        {return session.ActiveHubNpc==HubNpcKind.None?fallback:HubNpcGreeting.Text(session.ActiveHubNpc);}
 
         private string HubInventoryTitle
         {
@@ -81,9 +131,14 @@ namespace Emberfall
 
         private void DrawHubActions(float x, float y)
         {
-            if (Button(new Rect(x, y, 222, 40), "城镇旅行地图", jade)) OpenTravelMap();
+            Rect travel = new Rect(x, y, 222, 40);
+            blockedRects.Add(travel);
+            if (NavigationButton(travel, "城镇旅行地图", jade)) OpenTravelMap();
             HubNpcKind nearby = session.NearbyHubNpc;
-            if (nearby != HubNpcKind.None && Button(new Rect(x, y - 50, 222, 42), HubNpcLabel(nearby), gold)) OpenNearbyHubNpc();
+            if (nearby == HubNpcKind.None) return;
+            Rect interaction = new Rect(x, y - 50, 222, 42);
+            blockedRects.Add(interaction);
+            if (NavigationButton(interaction, "[G] " + HubNpcLabel(nearby), gold)) OpenNearbyHubNpc();
         }
 
         private void DrawTravelMap()
@@ -115,8 +170,7 @@ namespace Emberfall
                 Text(new Rect(x + 6*u, r.y + 114*u, 144*u, 25*u), HubTravelRules.Name(hub), Mathf.RoundToInt(16*u), unlocked ? pale : muted, true, false, TextAnchor.MiddleCenter);
                 Text(new Rect(x + 7*u, r.y + 143*u, 142*u, 31*u), unlocked ? "商人 / 铁匠 / 兑换员" : HubTravelRules.UnlockHint(hub),
                     Mathf.RoundToInt(11*u), muted, false, true, TextAnchor.MiddleCenter);
-                if (Button(new Rect(x + 8*u, r.y + 183*u, 140*u, 48*u), current ? "当前城镇" : unlocked ? "前往" : "尚未解锁",
-                    tint, unlocked && !current && session.CanOpenTravelMap && !UITransitionBlocked))
+                if (NavigationButton(new Rect(x + 8*u, r.y + 183*u, 140*u, 48*u), current ? "当前城镇" : unlocked ? "前往" : "尚未解锁", tint, unlocked && !current && session.CanOpenTravelMap && !UITransitionBlocked))
                 {
                     if (session.TravelToHub(hub))
                     {
@@ -128,7 +182,7 @@ namespace Emberfall
                     BlockUITransition();
                 }
             }
-            if (Button(new Rect(r.x + 16*u, r.y + 250*u, 488*u, 48*u), travelReturnPause ? "返回暂停菜单" : "返回冒险", jade)) CloseTravelMap();
+            if (NavigationButton(new Rect(r.x + 16*u, r.y + 250*u, 488*u, 48*u), travelReturnPause ? "返回暂停菜单" : "返回冒险", jade)) CloseTravelMap();
         }
     }
 }

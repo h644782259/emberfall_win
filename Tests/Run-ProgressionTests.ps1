@@ -10,6 +10,7 @@ try {
         (Join-Path $projectDirectory 'Assets/Scripts/Core/CombatBalance.cs'),
         (Join-Path $projectDirectory 'Assets/Scripts/Core/HubTravelRules.cs'),
         (Join-Path $projectDirectory 'Assets/Scripts/Core/MasteryCoreRuntime.cs'),
+        (Join-Path $projectDirectory 'Assets/Scripts/Core/CastFirstHitReceipt.cs'),
         (Join-Path $projectDirectory 'Assets/Scripts/Core/TierRewardRules.cs'),
         (Join-Path $projectDirectory 'Assets/Scripts/Core/TierRewardBand.cs'),
         (Join-Path $projectDirectory 'Assets/Scripts/Core/ProgressionGoalState.cs'),

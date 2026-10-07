@@ -5,13 +5,29 @@ namespace Emberfall
  {
   public int CurrentHub {get{return Progression==null?0:Progression.Profile.currentHub;}}
   public bool CanOpenTravelMap {get{return CanTravelNow();}}
+  private HubNpcKind nearbyHubNpc;
+  private HubNpcKind activeHubNpc;
+  public HubNpcKind ActiveHubNpc
+  {get{return HasStarted&&!InDungeon&&!IsDead&&!PracticeActive&&uiBlocking&&Player!=null&&NearbyHubNpc==activeHubNpc?activeHubNpc:HubNpcKind.None;}}
+  internal void BeginHubNpcConversation(HubNpcKind kind)
+  {
+   if(kind==HubNpcKind.None||!uiBlocking||Paused||NearbyHubNpc!=kind)return;
+   activeHubNpc=kind;
+   GameAudio.PlayNpcGreeting(kind);
+  }
+  internal void EndHubNpcConversation()
+  {activeHubNpc=HubNpcKind.None;GameAudio.StopNpcGreeting();}
   public HubNpcKind NearbyHubNpc
   {
    get
    {
-    if(!HasStarted||InDungeon||IsDead||Player==null)return HubNpcKind.None;
+    if(!HasStarted||InDungeon||IsDead||PracticeActive||Player==null){nearbyHubNpc=HubNpcKind.None;return nearbyHubNpc;}
+    // Ground proximity is unaffected by jumping. Keep the current prompt through
+    // a small edge buffer so tiny movement cannot toggle its IMGUI control away.
+    if(nearbyHubNpc!=HubNpcKind.None&&CombatFx.Flat(Player.transform.position-HubNpcPosition((int)nearbyHubNpc-1)).sqrMagnitude<3.15f*3.15f)return nearbyHubNpc;
     HubNpcKind kind=HubNpcKind.None;float nearest=2.65f;
-    for(int index=0;index<3;index++){float distance=Vector3.Distance(Player.transform.position,HubNpcPosition(index));if(distance<nearest){nearest=distance;kind=(HubNpcKind)(index+1);}}
+    for(int index=0;index<3;index++){float distance=CombatFx.Flat(Player.transform.position-HubNpcPosition(index)).magnitude;if(distance<nearest){nearest=distance;kind=(HubNpcKind)(index+1);}}
+    nearbyHubNpc=kind;
     return kind;
    }
   }

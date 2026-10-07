@@ -120,12 +120,15 @@ namespace Emberfall
                     float rise = Mathf.Repeat(time * .65f + i * .173f, 1f);
                     float height = onBody ? .6f : .75f;
                     bubbles[i].localPosition = origin + Vector3.up * ((onBody ? -.35f : .1f) + rise * height);
-                    float size = (onBody ? .13f : .18f) * (1f + .35f * Mathf.Sin(time * 5f + i));
+                    float pulse = .7f + .45f * Mathf.Sin(rise * Mathf.PI);
+                    float size = (onBody ? .16f : .19f) * pulse * (1f + .12f * Mathf.Sin(time * 7f + i));
                     bubbles[i].localScale = Vector3.one * size * fit;
                 }
                 else if (element == ElementalCombatVfx.Element.Fire)
                 {
-                    float height = (onBody ? .55f : .8f) * (.75f + .25f * Mathf.Sin(time * 8f + i));
+                    float height = (onBody ? .75f : .9f) * (.68f + .32f * Mathf.Sin(time * 8f + i * 1.7f));
+                    float glow = .48f + .18f * Mathf.Sin(time * 9f + i * 2.1f);
+                    strands[i].startColor = new Color(1f, .83f, .18f, glow);
                     float bottom = onBody ? -.42f : .08f;
                     Vector3 sway = new Vector3(Mathf.Sin(time * 6f + i * 2f), 0f, Mathf.Cos(time * 5f + i)) * .18f * fit;
                     strands[i].SetPosition(0, origin + Vector3.up * bottom);
@@ -135,7 +138,9 @@ namespace Emberfall
                 }
                 else
                 {
-                    float height = onBody ? .65f : 1.05f;
+                    float height = onBody ? .8f : 1.05f;
+                    float spark = .24f + .42f * Mathf.Pow(.5f + .5f * Mathf.Sin(time * 38f + i * 3.7f), 4f);
+                    strands[i].startColor = new Color(.79f, .96f, 1f, spark);
                     Vector3 top = (onBody?origin*.25f:origin) + Vector3.up * height;
                     strands[i].SetPosition(0, top);
                     strands[i].SetPosition(1, Vector3.Lerp(top, origin, .33f) + new Vector3(Mathf.Sin(time * 39f + i), 0f, Mathf.Cos(time * 31f + i)) * .28f * fit);

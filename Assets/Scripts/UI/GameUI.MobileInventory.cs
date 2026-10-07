@@ -78,7 +78,7 @@ namespace Emberfall
             }
             string[] tabs = { "背包", "穿戴", "补给", "收藏" };
             for (int i = 0; i < tabs.Length; i++)
-                if (Button(MobilePanelRect(layout.Tab(i, tabs.Length)), tabs[i], mobileInventoryTab == i ? gold : jade))
+                if (TabButton(MobilePanelRect(layout.Tab(i, tabs.Length)), tabs[i], mobileInventoryTab == i))
                 {
                     if (i == 3) { panel = Panel.Fashion; BlockUITransition(); return; }
                     mobileInventoryTab = i; mobileInventoryDetail = false; mobileInventoryListScroll = Vector2.zero;
@@ -103,7 +103,7 @@ namespace Emberfall
                 if (Button(MobilePanelRect(layout.FooterButton(1, 3)), "排序 · " + MobileInventorySortLabel, jade, mobileInventoryTab == 0))
                 { CycleMobileInventorySort(); return; }
                 Rect catalog = MobilePanelRect(layout.FooterButton(2, 3));
-                bool openCatalog = Button(catalog, "图鉴 / 待领", gold);
+                bool openCatalog = NavigationButton(catalog, "图鉴 / 待领", gold);
                 Badge(catalog, Attention.Rewards);
                 if (openCatalog) { panel = Panel.Camp; campTab = 1; BlockUITransition(); }
             }
@@ -148,7 +148,7 @@ namespace Emberfall
                 Color rarity = item == null ? muted : GameBalance.RarityColor(item.rarity);
                 bool levelLocked = item != null && !ProgressionAttention.LevelEligible(session.Progression.Profile, item);
                 Color availableRarity=levelLocked?Color.Lerp(rarity,new Color(.30f,.35f,.4f),.68f):rarity;
-                if (Button(row, "", selectedItem == (item == null ? null : item.id) ? jade : availableRarity, item != null)) selected = item.id;
+                if (DrawButton(row, "", selectedItem == (item == null ? null : item.id) ? ButtonRole.SelectedRow : ButtonRole.Row, item != null)) selected = item.id;
                 Fill(TouchRect(0, y, 3, rowHeight), availableRarity);
                 float at = y + 8;
                 at += DrawMobileParagraph(10, at, contentWidth - 26, item == null ? GameBalance.SlotName((ItemSlot)i) + " · 空槽" : ItemTitle(MobileEquipmentPreview(item)), 16,
@@ -156,7 +156,7 @@ namespace Emberfall
                 if (item != null)
                 {
                     string status = levelLocked ? "需 " + item.level + " 级" : "Lv." + item.level;
-                    at += DrawMobileParagraph(10, at, contentWidth - 26, status + " · " + (equipped ? "穿戴中" : GameBalance.SlotName(item.slot)) + (item.locked ? " · 已锁" : ""), 14, levelLocked ? gold : muted);
+                    at += DrawMobileParagraph(10, at, contentWidth - 26, status + " · " + (equipped ? "穿戴中" : GameBalance.SlotName(item.slot)) + (item.locked ? " · 锁定保护（不可售）" : ""), 14, levelLocked ? gold : muted);
                     if(item.mechanic!=EquipmentMechanic.None)at+=DrawMobileParagraph(10,at,contentWidth-26,MechanicBadgePresentation.Title(item,session.Progression.Profile.heroClass),13,levelLocked?muted:gold,true);
                     DrawMobileParagraph(10, at, contentWidth - 26, "评分 " + MobileEquipmentScore(item).ToString("0.#") + (IsEquipmentUpgrade(item) ? "  ↑ 可提升" : ""), 14, levelLocked?muted:pale, true);
                     Badge(new Rect(row.xMax - 14 * u, row.y + 10 * u, 8 * u, 8 * u), IsEquipmentUpgrade(item) && !reviewedEquipment.Contains(item.id));
@@ -230,7 +230,7 @@ namespace Emberfall
                 y += MobileDetailParagraph(draw, 8, y, width - 16, status, 14,
                     mobileInventoryFailed || string.IsNullOrEmpty(mobileInventoryStatus) ? gold : jade, true) + 12;
             if (item == null) return y + MobileDetailParagraph(draw, 8, y, width - 16, "选择装备查看比较与操作", 16, muted) + 16;
-            if(draw&&Button(TouchRect(8,y,width-16,48),"外观比较",jade)){equipmentAppearanceOpen=true;collectionOwner=session.Player;BlockUITransition();}
+            if(draw&&NavigationButton(TouchRect(8,y,width-16,48), "外观比较", jade)){equipmentAppearanceOpen=true;collectionOwner=session.Player;BlockUITransition();}
             y+=56;
             var progression = session.Progression;
             ItemData preview = MobileEquipmentPreview(item), current = progression.Equipped(item.slot);
@@ -259,8 +259,8 @@ namespace Emberfall
             {
                 var lockArea = MobileCollectionLayout.Split(available, y, 0, 2);
                 var saleArea = MobileCollectionLayout.Split(available, y, 1, 2);
-                if (Button(TouchRect(8 + lockArea.X, y, lockArea.Width, lockArea.Height), item.locked ? "解锁装备" : "锁定装备", item.locked ? gold : jade)) action = 1;
-                if (Button(TouchRect(8 + saleArea.X, y, saleArea.Width, saleArea.Height), worn ? "穿戴中不可售" : item.locked ? "已锁定不可售" : "出售 · " + progression.SellValue(item) + " 金", gold, !worn && !item.locked)) action = 2;
+                if (ToggleButton(TouchRect(8 + lockArea.X, y, lockArea.Width, lockArea.Height), item.locked ? "解锁装备" : "锁定装备", item.locked)) action = 1;
+                if (DangerButton(TouchRect(8 + saleArea.X, y, saleArea.Width, saleArea.Height), worn ? "穿戴中不可售" : item.locked ? "已锁定不可售" : "出售 · " + progression.SellValue(item) + " 金", gold, !worn && !item.locked)) action = 2;
             }
             y += 56;
             y += MobileDetailParagraph(draw, 8, y, available, "强化绑定部位；同一强化等级的加成按每件装备自身基础属性计算。", 14, jade) + 8;
@@ -293,7 +293,7 @@ namespace Emberfall
         private void DrawMobileEquipmentActions(MobilePanelLayout layout, ItemData item, bool back)
         {
             int count = back ? 3 : 2, first = back ? 1 : 0;
-            if (back && Button(MobilePanelRect(layout.FooterButton(0, count)), "返回列表", jade))
+            if (back && NavigationButton(MobilePanelRect(layout.FooterButton(0, count)), "返回列表", jade))
             { ClosePanel(); return; }
             bool canEquip = item != null && !IsEquipped(item) && ProgressionAttention.LevelEligible(session.Progression.Profile, item);
             string equip = item == null ? "选择装备" : IsEquipped(item) ? "已穿戴" : canEquip ? "穿戴" : "需要 " + item.level + " 级";
@@ -339,7 +339,7 @@ namespace Emberfall
             if (Button(MobilePanelRect(layout.FooterButton(0, 2)), "购买药剂 · " + ProgressionService.PotionPrice + " 金", gold, p.gold >= ProgressionService.PotionPrice))
             { MobileInventoryResult(session.Progression.BuyPotion(), "已购买生命药剂", true); BlockUITransition(); return; }
             Rect rewards = MobilePanelRect(layout.FooterButton(1, 2));
-            bool openRewards = Button(rewards, "机制图鉴 / 待领取", jade);
+            bool openRewards = NavigationButton(rewards, "机制图鉴 / 待领取", jade);
             Badge(rewards, Attention.Rewards);
             if (openRewards) { panel = Panel.Camp; campTab = 1; BlockUITransition(); }
         }

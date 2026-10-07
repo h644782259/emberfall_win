@@ -195,6 +195,10 @@ namespace Emberfall
             ui = session.GetComponent<GameUI>();
             Check(ui != null, "Runtime IMGUI component exists");
             Check(Path.GetFullPath(session.Progression.SaveDirectory) == SaveDirectory, "Test player uses its isolated save directory");
+            if(System.Array.IndexOf(System.Environment.GetCommandLineArgs(),"--chapter-ui")>=0){yield return VerifyChapterUI();yield break;}
+            if(System.Array.IndexOf(System.Environment.GetCommandLineArgs(),"--adventure-typography")>=0){yield return VerifyAdventureTypography();yield break;}
+            if(System.Array.IndexOf(System.Environment.GetCommandLineArgs(),"--button-styles")>=0){yield return VerifyButtonStyles();yield break;}
+            if(System.Array.IndexOf(System.Environment.GetCommandLineArgs(),"--user-fixes")>=0){yield return VerifyUserFixes();yield break;}
             int[] widths = { 1280, 1600, 1920, 1600 };
             int[] heights = { 720, 900, 1080, 900 };
             for (int hero = 0; hero < 4; hero++)
@@ -214,7 +218,7 @@ namespace Emberfall
                 for (int level = 1; level < 50; level++) experience += GameBalance.XpToNext(level);
                 session.Progression.GrantExperience(experience);
                 for (int skill = 0; skill < GameBalance.SkillCount; skill++)
-                    for (int rank = 1; rank <= 3; rank++) Check(session.Progression.LearnSkill(skill), "Learn skill " + skill + " rank " + rank);
+                    while(session.Progression.Profile.skillRanks[skill]<3) Check(session.Progression.LearnSkill(skill), "Learn skill " + skill + " next rank");
                 for (int item = 0; item < 10; item++) session.Progression.CreateLoot(45 + item % 6, item % 3 == 0);
                 session.Progression.Upgrade(session.Progression.Profile.weaponId);
                 // Let actual level-up floating text expire, while input and enemy AI remain disabled.
@@ -448,6 +452,167 @@ namespace Emberfall
             Check(saveChoices.Exists(slot => slot.CanLoad && slot.RecoveredFromBackup) && saveChoices.Exists(slot => !slot.CanLoad), "Save selection displays recoverable and unreadable slots distinctly");
             yield return Capture("save-selection-recovery");
             Check(result.screenshots.Count >= 88, "Full-frame captures include four heroes, fashion, chest choice, encounters, mobile, saves and camera orbit");
+        }
+
+        private IEnumerator VerifyChapterUI()
+        {
+            SetField("selectedClass",HeroClass.Arcanist);
+            Invoke("StartSelectedHero");
+            session.Player.enabled=false;
+            foreach(var enemy in session.Enemies)if(enemy!=null)enemy.enabled=false;
+            MobileControls.SimulationEnabled=false;
+            yield return SetResolution(1280,720);
+            Vector3 npc=GameSession.HubNpcPosition(2);
+            session.Player.Teleport(npc+Vector3.back*2.5f);
+            Check(session.NearbyHubNpc==HubNpcKind.Exchange,"Exchange prompt appears within ground interaction radius");
+            session.Player.transform.position=npc+new Vector3(0,1.65f,-2.5f);
+            Check(session.NearbyHubNpc==HubNpcKind.Exchange,"Jump height cannot hide exchange prompt");
+            session.Player.transform.position=npc+Vector3.back*2.9f;
+            Check(session.NearbyHubNpc==HubNpcKind.Exchange,"Prompt stays visible in exit buffer");
+            session.Player.transform.position=npc+Vector3.back*3.2f;
+            Check(session.NearbyHubNpc==HubNpcKind.None,"Leaving exit buffer clears prompt");
+            session.Player.transform.position=npc+Vector3.back*2.8f;
+            Check(session.NearbyHubNpc==HubNpcKind.None,"Outside entry radius cannot acquire NPC");
+            session.Player.transform.position=npc+Vector3.back*2.5f;
+            yield return Capture("stargazer-hud");
+            var rects=(List<Rect>)GetField("blockedRects");
+            float hudWidth=(float)GetField("width"),hudHeight=(float)GetField("height");
+            Check(rects.Exists(r=>r.Contains(new Vector2(hudWidth-120,hudHeight-133))),"Exchange button blocks combat pointer input");
+            Invoke("OpenNearbyHubNpc");
+            Check(GetField("panel").ToString()=="HubDialogue","Exchange first greets the player with a visible world dialogue");
+            yield return Capture("stargazer-dialogue");
+            Invoke("OpenHubNpcService");
+            Check(GetField("panel").ToString()=="Chapter","Exchange opens chapter selection");
+            yield return Capture("chapter-desktop-first");
+            Invoke("SetChapterLimitedHealing",true);
+            yield return Capture("chapter-desktop-limited");
+            Invoke("SetChapterLimitedHealing",false);
+            Invoke("OpenChapterExchange");
+            Check(GetField("panel").ToString()=="Camp","Mechanism exchange remains reachable");
+            ResetPanels();
+            var profile=session.Progression.Profile;
+            profile.chapterCompletedMask=3;
+            profile.chapterHighestDifficulties=new[]{2,1,0};
+            profile.highestAdventureTier=12;
+            session.SelectedChapterNode=ChapterNode.Redrock;
+            Invoke("OpenChapterSelection");
+            Invoke("SelectChapterDifficulty",ChapterDifficulty.Hard);
+            yield return SetResolution(1600,900);
+            yield return Capture("chapter-desktop-hard");
+            SetField("chapterRulesExpanded",true);
+            yield return Capture("chapter-desktop-rules");
+            SetField("chapterRulesExpanded",false);
+            MobileControls.SimulationEnabled=true;
+            yield return SetResolution(1280,720);
+            yield return Capture("chapter-mobile");
+            MobileControls.SimulationEnabled=false;
+            ResetPanels();
+        }
+
+        private IEnumerator VerifyAdventureTypography()
+        {
+            yield return SetResolution(1920,1080);
+            SetField("selectedClass",HeroClass.Arcanist);Invoke("StartSelectedHero");
+            session.Player.enabled=false;
+            session.Progression.GrantExperience(40000);
+            session.Progression.Profile.highestAdventureTier=14;
+            var goalWeapon=session.Progression.Profile.inventory.Find(item=>item.id==session.Progression.Profile.weaponId);
+            goalWeapon.mechanic=EquipmentMechanic.CinderTrail;goalWeapon.name="余烬法杖";
+            session.Progression.Profile.mechanicMaterials=2;
+            Check(session.Progression.SelectProgressionGoal(ProgressionGoalKind.Variant,goalWeapon.id),"Select equipment goal for wrapped description");
+            session.Player.Teleport(new Vector3(0,0,11));session.EnterDungeon();
+            Check(session.DungeonSelectionOpen,"Adventure selection is visible");
+            session.SelectedDungeonTier=14;session.SelectedChallengeMode=true;
+            yield return Capture("adventure-desktop");
+            yield return SetResolution(1280,720);
+            session.SelectedArenaMode=2;
+            yield return Capture("adventure-desktop-compact");
+            MobileControls.SimulationEnabled=true;
+            yield return Capture("adventure-touch");
+            yield return SetResolution(568,320);
+            var controls=MobileControls.Layout;
+            var layout=new AdventureSelectionLayout(controls.Width,controls.Height);
+            Check(layout.FooterY+48<=controls.Height,"Touch footer stays within safe canvas");
+            Check(layout.EntryEncounter(4).YMax<=layout.Entry(4).YMax-3.9f,"Last encounter line clears the card border");
+            yield return Capture("adventure-touch-small");
+            MobileControls.SimulationEnabled=false;session.CancelDungeonSelection();
+        }
+
+        private IEnumerator VerifyButtonStyles()
+        {
+            yield return SetResolution(1920,1080);
+            SetField("selectedClass", HeroClass.Arcanist);
+            Invoke("StartSelectedHero");
+            session.Player.enabled=false;
+            foreach(var enemy in session.Enemies)if(enemy!=null)enemy.enabled=false;
+            session.Progression.GrantExperience(40000);
+            var profile=session.Progression.Profile;
+            profile.gold=100000;
+            for(int i=0;i<6;i++)session.Progression.CreateLoot(profile.level,true);
+            session.ReturnToCamp();session.Player.enabled=false;
+            OpenPanel("Camp");
+            SetField("campTab",0);
+            yield return Capture("buttons-workshop-actions");
+            profile.skillPoints=0;
+            yield return Capture("buttons-workshop-disabled");
+            for(int tab=1;tab<4;tab++)
+            {
+                SetField("campTab",tab);
+                yield return Capture("buttons-workshop-tab-"+tab);
+            }
+            ResetPanels();OpenPanel("Inventory");
+            yield return Capture("buttons-inventory");
+            ResetPanels();expectedPause=true;session.SetPaused(true);
+            yield return Capture("buttons-pause");
+            ResetPanels();
+            MobileControls.SimulationEnabled=true;
+            yield return SetResolution(1280,720);
+            OpenPanel("Camp");SetField("campTab",0);
+            yield return Capture("buttons-mobile-workshop");
+            SetField("campTab",2);
+            yield return Capture("buttons-mobile-toggles");
+            ResetPanels();expectedPause=true;session.SetPaused(true);
+            yield return Capture("buttons-mobile-pause");
+            ResetPanels();MobileControls.SimulationEnabled=false;
+        }
+
+        private IEnumerator VerifyUserFixes()
+        {
+            yield return SetResolution(1280,720);Invoke("StartSelectedHero");session.Player.enabled=false;
+            session.Progression.GrantExperience(40000);
+            foreach(var enemy in session.Enemies)if(enemy!=null)enemy.enabled=false;
+            session.Progression.Profile.gold=100000;
+            for(int i=0;i<6;i++)session.Progression.CollectLoot(session.Progression.RollLoot(50,true,1));
+            for(int npc=0;npc<2;npc++)
+            {
+                ResetPanels();session.Player.Teleport(GameSession.HubNpcPosition(npc));yield return new WaitForSecondsRealtime(.5f);
+                Invoke("OpenNearbyHubNpc");yield return new WaitForSecondsRealtime(.5f);Invoke("OpenHubNpcService");
+                Check(GetField("panel").ToString()=="Inventory","NPC opens independent service page");
+                Check(session.ActiveHubNpc==(npc==0?HubNpcKind.Merchant:HubNpcKind.Blacksmith),"Distinct NPC service context");
+                yield return Capture(npc==0?"fix-merchant-service":"fix-blacksmith-service",.6f);
+            }
+            ResetPanels();
+            var player=session.Player;Vector3 bank=new Vector3(7,0,-4.5f);player.Teleport(bank);
+            var hidden=BindingFlags.Instance|BindingFlags.NonPublic;
+            typeof(PlayerController).GetField("traversalFrame",hidden).SetValue(player,-1);
+            typeof(PlayerController).GetField("jumpInput",hidden).SetValue(player,Vector3.forward);
+            Check((bool)typeof(PlayerController).GetMethod("TryJump",hidden).Invoke(player,null),"Moving jump begins");
+            typeof(PlayerController).GetMethod("AdvanceJump",hidden).Invoke(player,new object[]{.55f});
+            Check(player.transform.position.z>0&&WorldTraversal.IsWalkable(player.transform.position),"Moving jump lands across river");
+            typeof(PlayerController).GetField("jumpInput",hidden).SetValue(player,Vector3.zero);
+            for(int i=0;i<12;i++)session.Progression.CollectLoot(session.Progression.RollLoot(50,true,1));
+            OpenPanel("Inventory");yield return Capture("fix-inventory-badges");ResetPanels();
+            player.Teleport(new Vector3(0,0,11));session.EnterDungeon();
+            Check(session.SelectedDungeonTier==session.MaximumDungeonTier,"Selection defaults to highest tier");
+            yield return Capture("fix-dungeon-selection");session.SelectedDungeonTier=1;session.ConfirmDungeonSelection();
+            session.Player.enabled=false;foreach(var enemy in session.Enemies)if(enemy!=null)enemy.enabled=false;
+            var camera=Camera.main.GetComponent<AdventureCamera>();
+            foreach(var renderer in UnityEngine.Object.FindObjectsByType<Renderer>(FindObjectsSortMode.None))
+            {var bounds=renderer.bounds;if(bounds.size.y>10||bounds.size.x>45||bounds.size.z>45)Check(false,"Oversized scene geometry: "+renderer.name+" "+bounds);}
+            foreach(float angle in new[]{48f,15f,-18f})
+            {typeof(AdventureCamera).GetField("pitch",hidden).SetValue(camera,angle);camera.Snap();yield return Capture("fix-sanctum-angle-"+angle);}
+            session.Progression.PrepareDungeonChest();yield return null;
+            Check(session.Progression.OpenDungeonChest()!=null,"Chest commits receipt");Invoke("ResetChestReveal");yield return Capture("fix-chest-sections",2f);
         }
 
         private IEnumerator SetResolution(int width, int height)

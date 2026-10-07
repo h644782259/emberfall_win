@@ -5,7 +5,7 @@ namespace Emberfall
 {
 
     /// <summary>Eight bounded effect voices plus one quiet, seamless background loop.</summary>
-    public sealed class GameAudio : MonoBehaviour
+    public sealed partial class GameAudio : MonoBehaviour
     {
         private const int VoiceCount = 8;
         private const int CueCount = 11;
@@ -230,6 +230,7 @@ namespace Emberfall
 
         private void ApplyVolumes()
         {
+            ApplyNpcVoiceVolume();
             if (voices != null)
                 foreach (AudioSource voice in voices)
                     if (voice != null) voice.volume = DefaultVolume * masterVolume *
@@ -392,6 +393,7 @@ namespace Emberfall
             if(transition==AudioLifecycleTransition.None||instance==null)return;
             if(transition==AudioLifecycleTransition.Suspend)
             {
+                StopNpcGreeting();
                 // Discard old one-shots. Preserve the loop cursor, including the
                 // ambient source which deliberately ignores AudioListener.pause.
                 if(instance.voices!=null)foreach(var voice in instance.voices)if(voice!=null)voice.Stop();
@@ -408,6 +410,7 @@ namespace Emberfall
 
         private void StopVoices()
         {
+            StopNpcGreeting();
             ambientPaused=false;ambientResumeSample=-1;
             if (voices == null) return;
             foreach (AudioSource voice in voices) if (voice != null) voice.Stop();

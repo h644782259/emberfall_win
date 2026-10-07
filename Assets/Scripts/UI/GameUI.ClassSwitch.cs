@@ -52,11 +52,11 @@ namespace Emberfall
             float bodyWidth=layout.Body.Width-18,bodyHeight=DrawClassSwitchContent(bodyWidth,unit,false);
             classSwitchScroll=BeginTouchScroll("class-switch",BuildPlanRect(layout.Body,unit),classSwitchScroll,new Rect(0,0,bodyWidth*unit,Mathf.Max(layout.Body.Height,bodyHeight)*unit));
             DrawClassSwitchContent(bodyWidth,unit,true);EndTouchScroll();
-            if(Button(BuildPlanRect(layout.FooterButton(0,2),unit),"取消 · 返回工坊",jade)){CloseClassSwitchSurface();return true;}
+            if(NavigationButton(BuildPlanRect(layout.FooterButton(0,2),unit), "取消 · 返回工坊", jade)){CloseClassSwitchSurface();return true;}
             bool fresh=classSwitchPreview!=null&&classSwitchFingerprint==session.Progression.BuildStateFingerprint();
             string reason=session.ClassSwitchLockReason();
             string caption=classSwitchPreview==null?"选择另一职业":!fresh?"重新核对":"确认切换为"+GameBalance.ClassName(classSwitchPreview.Target);
-            if(Button(BuildPlanRect(layout.FooterButton(1,2),unit),caption,gold,classSwitchPreview!=null&&string.IsNullOrEmpty(reason)))
+            if(DrawButton(BuildPlanRect(layout.FooterButton(1,2),unit), caption, ButtonRole.Primary, classSwitchPreview!=null&&string.IsNullOrEmpty(reason)))
             {
                 if(!fresh)PreviewClassSwitch(classSwitchPreview.Target);
                 else if(!session.TrySwitchClass(classSwitchPreview.Target))classSwitchMessage=session.ClassSwitchError;

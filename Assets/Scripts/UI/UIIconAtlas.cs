@@ -7,6 +7,17 @@ namespace Emberfall
     public static class UIIconAtlas
     {
         private static readonly Dictionary<int, Texture2D> cache = new Dictionary<int, Texture2D>();
+        // Skill identity colors are shared by glyphs, borders and rank marks.
+        private static readonly Color[,] skillColors = {
+            { new Color(1f,.68f,.32f), new Color(.9f,.48f,.28f), new Color(1f,.4f,.48f), new Color(.83f,.72f,1f), new Color(1f,.89f,.48f), new Color(.48f,.86f,.92f), new Color(.48f,1f,.65f), new Color(.87f,.65f,.4f), new Color(.73f,.83f,1f), new Color(1f,.82f,.4f) },
+            { new Color(.48f,.91f,1f), new Color(1f,.48f,.26f), new Color(.79f,.56f,1f), new Color(.91f,.69f,1f), new Color(1f,.91f,.36f), new Color(.59f,.76f,1f), new Color(.48f,1f,.65f), new Color(.96f,.43f,.84f), new Color(.62f,.88f,.94f), new Color(1f,.82f,.4f) },
+            { new Color(.65f,1f,.57f), new Color(1f,.67f,.31f), new Color(.46f,.85f,1f), new Color(1f,.76f,.52f), new Color(.48f,1f,.85f), new Color(.79f,.92f,.29f), new Color(.48f,1f,.65f), new Color(.84f,.61f,1f), new Color(.64f,.86f,1f), new Color(1f,.82f,.4f) },
+            { new Color(.81f,.58f,1f), new Color(.77f,.94f,.34f), new Color(.52f,.88f,1f), new Color(.95f,.67f,.88f), new Color(1f,.86f,.43f), new Color(.58f,.73f,1f), new Color(.48f,1f,.65f), new Color(.95f,.48f,.77f), new Color(.67f,.9f,.9f), new Color(.68f,1f,.46f) }
+        };
+        public static Color SkillColor(HeroClass hero, int skill)
+        {
+            return skill >= 0 && skill < GameBalance.SkillCount ? skillColors[(int)hero, skill] : Color.white;
+        }
         public static Texture2D Skill(HeroClass hero, int skill) { return Skill(hero, skill, 48); }
         public static Texture2D Skill(HeroClass hero, int skill, int requestedSize)
         {
@@ -14,7 +25,7 @@ namespace Emberfall
             int key = rasterSize * 1000 + (int)hero * 10 + skill;
             Texture2D texture;
             if (cache.TryGetValue(key, out texture)) return texture;
-            var ink = new Icon(GameBalance.ClassColor(hero), rasterSize);
+            var ink = new Icon(SkillColor(hero, skill), rasterSize);
             if (hero == HeroClass.Summoner && skill != 3 && skill != 6 && skill != 8 && skill != 9)
             {
                 if (skill == 0)
@@ -98,7 +109,7 @@ namespace Emberfall
                     ink.Shield(); ink.Disc(32, 29, 7); ink.Line(32, 37, 32, 44, 3);
                     break;
                 default:
-                    ink.color = new Color(1, .82f, .4f);
+                    ink.color = SkillColor(hero, skill);
                     for (int i = 0; i < 8; i++) ink.Radial(i * 45, 17, 27, 3);
                     ink.Polygon(new[] { V(32, 12), V(45, 32), V(32, 51), V(19, 32) });
                     break;

@@ -8,7 +8,8 @@ namespace Emberfall
         private static Mesh crescent,core,shard,fault;
         private static Material material;
         private readonly System.Collections.Generic.List<Part> parts=new System.Collections.Generic.List<Part>();
-        private readonly MaterialPropertyBlock block=new MaterialPropertyBlock();
+        private MaterialPropertyBlock block;
+        private void Awake(){block=new MaterialPropertyBlock();}
         private PlayerController owner; private GameSession session; private int epoch; private float age,range; private bool shock;
         private const float Life=1.15f;
         private static Mesh Load(string name)

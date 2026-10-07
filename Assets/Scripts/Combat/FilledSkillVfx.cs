@@ -18,7 +18,8 @@ namespace Emberfall
         private static Material sharedMaterial;
         private static int active;
         private readonly Piece[] pieces=new Piece[FilledVfxRecipes.MaximumParts];
-        private readonly MaterialPropertyBlock block=new MaterialPropertyBlock();
+        private MaterialPropertyBlock block;
+        private void Awake(){block=new MaterialPropertyBlock();}
         private int count,epoch,allocated;
         private GameSession session;
         private bool pooled,disposing;

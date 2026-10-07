@@ -64,6 +64,7 @@ namespace Emberfall.Editor
         }
 
         private static ValidationReport report;
+        [Serializable] private sealed class SaveEnvelopeView { public GameProfile profile; }
 
         [MenuItem("Emberfall/Validate Progression and Skills")]
         public static void Validate()
@@ -81,6 +82,13 @@ namespace Emberfall.Editor
             };
             try
             {
+                if (Application.version == "0.4.0")
+                {
+                    ValidateCurrentRelease();
+                    report.status = "PASS";
+                    Debug.Log("Emberfall Unity validation PASS: " + report.assertions + " assertions. Report: " + Path.Combine(output, "validation-report.json"));
+                    return;
+                }
                 for (int hero = 0; hero < Enum.GetValues(typeof(HeroClass)).Length; hero++)
                 {
                     ValidateClass((HeroClass)hero);
@@ -119,6 +127,119 @@ namespace Emberfall.Editor
                 foreach (string stage in report.passedStages) summary.AppendLine("PASS " + stage);
                 if (!string.IsNullOrEmpty(report.failure)) summary.AppendLine(report.failure);
                 File.WriteAllText(Path.Combine(output, "validation-report.txt"), summary.ToString(), new UTF8Encoding(false));
+            }
+        }
+
+        // The historical suite below assumes no learned starter skill and old reward rules.
+        // Exercise current budgets and durable receipt paths with Unity's real serializer.
+        private static void ValidateCurrentRelease()
+        {
+            foreach (HeroClass hero in Enum.GetValues(typeof(HeroClass)))
+            {
+                string name = "release040-" + hero;
+                ProgressionService service = Fresh(name, hero);
+                Check(service.Profile.pendingChestDraw == null && service.Profile.lastChestReward == null,
+                    name + ": absent receipts remain absent before and after serialization");
+                Check(File.ReadAllText(service.SaveFilePath).Contains("\"pendingChestDraw\": null"),
+                    name + ": null draw is explicit in the real Unity JSON document");
+                service.GrantExperience(int.MaxValue);
+                int spent = 0;
+                foreach (int rank in service.Profile.skillRanks) spent += rank;
+                foreach (int rank in service.Profile.masteryRanks) spent += rank;
+                Check(service.Profile.level == ProgressionService.MaximumLevel &&
+                    service.Profile.skillPoints + spent == GameBalance.SkillPointBudget(service.Profile.level) &&
+                    string.IsNullOrEmpty(service.LastError), name + ": maximum XP conserves current starter-point budget and saves successfully");
+                Check(service.Profile.equippedSkills.Length == GameBalance.HotbarSize * GameBalance.HotbarPages &&
+                    service.Profile.hotbarKeys.Length == GameBalance.HotbarSize,
+                    name + ": saved loadout and key slots match the current schema");
+                int gold = service.Profile.gold;
+                service.AddGold(123);
+                Check(service.Profile.gold == gold + 123 && string.IsNullOrEmpty(service.LastError), name + ": later saves accept the original empty receipts");
+                var restored = new ProgressionService(Path.GetDirectoryName(service.SaveFilePath));
+                Check(restored.Load() && restored.Profile.level == service.Profile.level && restored.Profile.gold == service.Profile.gold,
+                    name + ": real Unity reload preserves progress and currency");
+                Check(restored.Profile.pendingChestDraw == null && restored.Profile.lastThreadMaterialReceipt == null,
+                    name + ": Unity deserialization restores absent optional receipts");
+                Check(SameStats(service.GetStats(), restored.GetStats()), name + ": equipped stats survive a real JSON roundtrip");
+                restored.Profile.clearedRuns++;
+                Check(restored.PrepareDungeonChest(), name + ": a new chest qualification commits through a cloned profile");
+                Check(restored.Load() && restored.Profile.pendingFashionChest && restored.Profile.pendingChestDraw == null,
+                    name + ": unopened qualification persists without a phantom frozen draw");
+                gold = restored.Profile.gold;
+                int threads = restored.Profile.fashionThreads, materials = restored.Profile.mechanicMaterials;
+                Check(!string.IsNullOrEmpty(restored.OpenDungeonChest()) && string.IsNullOrEmpty(restored.LastError),
+                    name + ": actual random draw freezes and grants through durable writes");
+                string receiptId = restored.LastChestReward.id;
+                Check(restored.Profile.gold > gold && restored.Profile.fashionThreads > threads &&
+                    restored.Profile.mechanicMaterials == materials + 1 && restored.Profile.pendingChestReveal,
+                    name + ": guaranteed resources and committed reveal are present");
+                gold = restored.Profile.gold; threads = restored.Profile.fashionThreads; materials = restored.Profile.mechanicMaterials;
+                Check(restored.Load() && restored.LastChestReward.id == receiptId && restored.Profile.pendingChestDraw == null,
+                    name + ": durable reward survives restart without a frozen draw");
+                Check(restored.OpenDungeonChest() == null && restored.Profile.gold == gold &&
+                    restored.Profile.fashionThreads == threads && restored.Profile.mechanicMaterials == materials,
+                    name + ": retrying a committed chest does not grant twice");
+                Check(restored.AcknowledgeChestReward() && restored.Load() && !restored.Profile.pendingChestReveal,
+                    name + ": acknowledgement persists");
+                string primary = File.ReadAllText(restored.SaveFilePath), backup = File.ReadAllText(restored.SaveFilePath + ".bak");
+                string temporary = restored.SaveFilePath + ".tmp";
+                Directory.CreateDirectory(temporary);
+                try
+                {
+                    Check(!restored.BuyPotion() && File.ReadAllText(restored.SaveFilePath) == primary &&
+                        File.ReadAllText(restored.SaveFilePath + ".bak") == backup,
+                        name + ": blocked write preserves both durable documents");
+                }
+                finally { Directory.Delete(temporary); }
+                Check(restored.BuyPotion() && restored.Load(), name + ": transaction retries after storage recovery");
+                // A real frozen record is still protected; a malformed primary cannot
+                // silently fall back to an older backup and reroll its reward.
+                Check(restored.PrepareDungeonChest(), name + ": corruption fixture creates a fresh qualification");
+                primary = File.ReadAllText(restored.SaveFilePath);
+                string corrupt = primary.Replace("\"pendingChestDraw\": null", "\"pendingChestDraw\": {\"id\":\"frozen-invalid\",\"rulesRevision\":2}");
+                Check(corrupt != primary, name + ": fixture replaces only the absent draw");
+                File.WriteAllText(restored.SaveFilePath, corrupt);
+                backup = File.ReadAllText(restored.SaveFilePath + ".bak");
+                Check(!new ProgressionService(Path.GetDirectoryName(restored.SaveFilePath)).Load() &&
+                    File.ReadAllText(restored.SaveFilePath) == corrupt && File.ReadAllText(restored.SaveFilePath + ".bak") == backup,
+                    name + ": malformed frozen reward preserves primary and backup without reroll recovery");
+                foreach (string invalidDraw in new[] { "0", "\"invalid\"", "[]" })
+                {
+                    corrupt = primary.Replace("\"pendingChestDraw\": null", "\"pendingChestDraw\": " + invalidDraw);
+                    File.WriteAllText(restored.SaveFilePath, corrupt);
+                    Check(!new ProgressionService(Path.GetDirectoryName(restored.SaveFilePath)).Load() &&
+                        File.ReadAllText(restored.SaveFilePath) == corrupt && File.ReadAllText(restored.SaveFilePath + ".bak") == backup,
+                        name + ": non-object frozen draw remains protected");
+                }
+                report.passedStages.Add(name + ": current loadout, real JSON null receipts, progression, chest exactly-once grant and storage guards");
+            }
+            string existingDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                "AppData", "LocalLow", "EmberfallStudio", "Emberfall");
+            if (Directory.Exists(existingDirectory))
+            {
+                int index = 0;
+                foreach (string source in Directory.GetFiles(existingDirectory, "emberfall-save*.json"))
+                {
+                    string original = File.ReadAllText(source);
+                    GameProfile before = JsonUtility.FromJson<SaveEnvelopeView>(original).profile;
+                    string directory = CaseDirectory("existing-save-" + index++);
+                    Directory.CreateDirectory(directory);
+                    string filename = Path.GetFileName(source);
+                    File.Copy(source, Path.Combine(directory, filename));
+                    if (File.Exists(source + ".bak")) File.Copy(source + ".bak", Path.Combine(directory, filename + ".bak"));
+                    string id = filename == "emberfall-save.json" ? "legacy" : filename.Substring("emberfall-save-".Length, 32);
+                    var imported = new ProgressionService(directory);
+                    Check(imported.LoadSlot(id), "existing save copy: current Unity loads the previous installed version's role");
+                    Check(imported.Profile.heroClass == before.heroClass && imported.Profile.level == before.level && imported.Profile.gold == before.gold,
+                        "existing save copy: class, level and gold survive migration");
+                    Check(imported.Profile.inventory.Count == before.inventory.Count &&
+                        before.inventory.TrueForAll(item => imported.Profile.inventory.Exists(value => value.id == item.id)),
+                        "existing save copy: every inventory identity survives migration");
+                    imported.Save();
+                    Check(string.IsNullOrEmpty(imported.LastError) && imported.LoadSlot(id), "existing save copy: migrated role saves and reloads successfully");
+                    Check(File.ReadAllText(source) == original, "existing save copy: original personal save remains untouched");
+                }
+                report.passedStages.Add("isolated copies of " + index + " existing personal saves: migration, inventory retention and real JSON re-save");
             }
         }
 

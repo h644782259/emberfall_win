@@ -14,7 +14,7 @@ using System;using System.IO;using System.Collections.Generic;using UnityEngine;
 namespace UnityEngine {
  public struct Vector2{public float x,y;public Vector2(float a,float b){x=a;y=b;}public static Vector2 zero=>new Vector2();}
  public struct Rect{public float x,y,width,height;public Rect(float a,float b,float w,float h){x=a;y=b;width=w;height=h;}public float yMax=>y+height;public float xMax=>x+width;}
- public enum TextAnchor{MiddleLeft}public static class Time{public static float unscaledTime;}
+ public enum TextAnchor{MiddleLeft,MiddleCenter}public static class Time{public static float unscaledTime;}
  public static class Mathf{public static float Max(float a,float b)=>Math.Max(a,b);public static float Min(float a,float b)=>Math.Min(a,b);public static int Clamp(int x,int a,int b)=>Math.Max(a,Math.Min(b,x));public static int RoundToInt(float x)=>(int)Math.Round(x);}
  public class GUIContent{public string text;public GUIContent(string s){text=s;}}
  public class GUIStyle{public static int Measurements;public float CalcHeight(GUIContent c,float width){Measurements++;return 20*(1+c.text.Length/Math.Max(1,(int)(width/10)));}}
@@ -43,10 +43,17 @@ namespace Emberfall {
   float width=568,height=320,TouchRatio=1;Color gold=new Color(),jade=new Color(),pale=new Color(),muted=new Color();string click;bool insideScroll;Rect viewport,content;
   List<(string text,Rect rect,bool scroll,bool enabled)> buttons=new List<(string,Rect,bool,bool)>();List<string> texts=new List<string>();
   void CancelHotbarPointer(){}void CancelMobileScroll(){cancels++;}void BlockUITransition(){blocks++;}
+  string HubNpcServiceSubtitle(string fallback)=>fallback;
   void Fill(Rect r,Color c){if(r.width==width&&r.height==height)opaqueFrame=true;}void Text(Rect r,string s,int size,Color c,bool bold=false,bool wrap=false,TextAnchor anchor=TextAnchor.MiddleLeft){texts.Add(s);}
-  bool Button(Rect r,string s,Color c,bool enabled=true){buttons.Add((s,r,insideScroll,enabled));if(enabled&&click!=null&&s.StartsWith(click)){click=null;return true;}return false;}
+  void Border(Rect r,Color c){}
+  bool Button(Rect r,string s,Color c,bool enabled=true,string hint=null,bool primary=false){buttons.Add((s,r,insideScroll,enabled));if(enabled&&click!=null&&s.StartsWith(click)){click=null;return true;}return false;}
+  bool NavigationButton(Rect r,string s,Color c,bool enabled=true,string hint=null,bool primary=false)=>Button(r,s,c,enabled,hint,primary);
+  bool PrimaryButton(Rect r,string s,Color c,bool enabled=true,string hint=null,bool primary=false)=>Button(r,s,c,enabled,hint,primary);
+  bool TabButton(Rect r,string s,bool selected,bool enabled=true)=>Button(r,s,gold,enabled);
+  enum ButtonRole{SelectedTab,Tab}
+  bool DrawButton(Rect r,string s,ButtonRole role,bool enabled=true,string hint=null,int fontSize=0)=>Button(r,s,gold,enabled);
   GUIStyle Style(int n,bool b,bool w)=>new GUIStyle();MobilePanelLayout MobilePanelGeometry()=>new MobilePanelLayout(width/TouchRatio,height/TouchRatio);
-  Vector2 observedResultScroll;Vector2 BeginTouchScroll(string key,Rect body,Vector2 p,Rect full){if(key=="chapter-result")observedResultScroll=p;insideScroll=true;viewport=body;content=full;return p;}void EndTouchScroll(){insideScroll=false;}
+  Vector2 observedResultScroll;Vector2 BeginTouchScroll(string key,Rect body,Vector2 p,Rect full,bool horizontal=false,bool vertical=true){if(key=="chapter-result")observedResultScroll=p;insideScroll=true;viewport=body;content=full;return p;}void EndTouchScroll(){insideScroll=false;}
   bool CloseMobileInventoryDetail()=>false;bool CloseMobileSkillDetail()=>false;bool CloseRouteSkill()=>false;bool CloseProgressionGoalSurface()=>false;bool CloseClassSwitchSurface()=>false;bool CloseBuildPlanSurface()=>false;bool CloseTravelMap()=>false;bool CancelSaveDeletion()=>false;bool CancelActiveSaveFlow()=>false;
   void FinishChestReveal(){}void ReturnToInventory(){panel=Panel.Inventory;}
   CLOSE
@@ -63,7 +70,10 @@ namespace Emberfall {
    ui.session.SelectedChapterDifficulty=ChapterDifficulty.Normal;
    p.Profile.chapterCompletedMask=1;p.Profile.chapterHighestDifficulties[0]=1;
    int tier=ui.session.SelectedChapterTier;check(ui.SelectChapterDifficulty(ChapterDifficulty.Hard)&&ui.session.SelectedChapterTier==tier,"difficulty selection never changes tier");
+   int locksBeforeTier=ui.blocks;ui.chapterScroll=new Vector2(0,47);
    ui.ChangeChapterTier(1);check(ui.session.SelectedChapterDifficulty==ChapterDifficulty.Hard&&ui.session.SelectedChapterTier==tier+1,"tier adjustment never changes difficulty");
+   ui.ChangeChapterTier(-1);ui.ChangeChapterTier(1);
+   check(ui.blocks==locksBeforeTier&&ui.chapterScroll.y==47,"tier stepper preserves scroll and never disables the page through a transition latch");
    check(ui.SelectChapterNode(ChapterNode.Redrock)&&ui.session.SelectedChapterDifficulty==ChapterDifficulty.Normal,"node change resets only difficulty to valid normal");
    ui.session.AllowConfirm=false;check(!ui.ConfirmSelectedChapter()&&ui.panel==Panel.Chapter&&ui.session.Blocked&&!string.IsNullOrEmpty(ui.chapterEntryError),"host rejection retains selection and retry surface");
    foreach(int interruption in new[]{0,1,2}){
@@ -78,7 +88,7 @@ namespace Emberfall {
     check(GUIStyle.Measurements>measured&&ui.content.height>=ui.viewport.height,"body uses measured scroll content");
     int footer=0,nodeButtons=0;foreach(var b in ui.buttons){check(b.rect.height>=48*ratio-.01f,"all chapter choices keep 48-unit touch height");bool nodeCard=b.text.StartsWith("林庭")||b.text.StartsWith("赤岩")||b.text.StartsWith("星台");if(nodeCard){nodeButtons++;check(!b.scroll&&b.rect.yMax+35*ratio<=ui.viewport.y+.01f,"FIXED_NODES must remain above scrolling details and show completion badges");}else if(!b.scroll){footer++;check(b.rect.y>=ui.viewport.yMax&&b.rect.x>=0&&b.rect.xMax<=ui.width&&b.rect.yMax<=ui.height,"footer stays below body and inside viewport");}}
     check(footer==3&&nodeButtons==3,"three nodes and all fixed navigation actions remain reachable");
-    check(ui.texts.Contains("最高通关 · 普通")&&ui.texts.Contains("尚未通关"),"completion shown independently from current selected node");
+    check(ui.texts.Contains("已通关 · 普通")&&ui.texts.Contains("尚未通关 · 从普通开始"),"completion shown independently from current selected node");
     check(!ui.texts.Contains(ChapterEntryPresentation.Story(ui.session.SelectedChapterNode)),"story collapsed while goal mechanism and reward remain visible");
     check(ui.buttons.Exists(b=>b.text.StartsWith("星台")&&!b.enabled)&&ui.buttons.Exists(b=>b.text.StartsWith("英雄")&&!b.enabled),"locked node and heroic render disabled using shared core eligibility");
    }
@@ -87,9 +97,9 @@ namespace Emberfall {
    MobileControls.Active=false;ui.width=1600;ui.height=900;ui.buttons.Clear();ui.DrawChapterSelection();
    var centered=ui.ChapterRect(ui.ChapterPanelGeometry().Body,1);check(centered.x==336&&centered.y==188,"CENTERED_CHAPTER desktop content centered in wide viewport");
    MobileControls.Active=true;ui.width=568;ui.height=320;ui.TouchRatio=1;
-   string preview=ChapterEntryPresentation.Preview(p.Profile,ChapterNode.ForestCourt,ChapterDifficulty.Normal,1,false);check(preview.Contains("本节点不授予资格")&&!preview.Contains("可领取共享一次"),"forest preview must not promise first-core eligibility");
-   check(ChapterEntryPresentation.Preview(p.Profile,ChapterNode.Redrock,ChapterDifficulty.Normal,1,false).Contains("本节点不授予资格"),"redrock preview requires entire chapter");
-   check(ChapterEntryPresentation.Preview(p.Profile,ChapterNode.StarPlatform,ChapterDifficulty.Normal,1,false).Contains("星台通关完成整章，可领取共享一次首通核心"),"star preview identifies actual entitlement trigger");
+   string preview=ChapterEntryPresentation.Preview(p.Profile,ChapterNode.ForestCourt,ChapterDifficulty.Normal,1,false);check(preview.Contains("首次通关全部三段星路")&&!preview.Contains("旧副本")&&!preview.Contains("旧档"),"forest preview explains whole-chapter core unlock using player language");
+   check(ChapterEntryPresentation.Preview(p.Profile,ChapterNode.Redrock,ChapterDifficulty.Normal,1,false).Contains("首次通关全部三段星路"),"redrock preview requires entire chapter");
+   check(ChapterEntryPresentation.Preview(p.Profile,ChapterNode.StarPlatform,ChapterDifficulty.Normal,1,false).Contains("首次通关全部三段星路，可在营地领取首通核心"),"star preview identifies actual entitlement trigger");
    p.Profile.highestAdventureTier=0;p.Profile.chapterPriorAdventureTier=0;ui.session.SelectedChapterTier=1;
    ui.session.AllowConfirm=true;check(ui.ConfirmSelectedChapter()&&ui.panel==Panel.None&&!ui.session.Blocked,"successful actual core Begin closes entry once");
    // Real filesystem rejection and actual core Complete, reached through production result retry method.
@@ -122,7 +132,7 @@ namespace Emberfall {
    check(!ui.ConfirmSelectedChapter()&&ui.session.ConfirmCalls==callsBefore,"same character reloaded profile cannot use stale UI owner");
    ui.DrawChapterSelection();check(ui.panel==Panel.None&&ui.chapterSelectionOwner==null&&!ui.session.Blocked,"drawing stale selection closes safely without entry");
    var starProgression=new ProgressionService(Path.Combine(root,"star-ui"));check(starProgression.CreateNewSlot(HeroClass.Vanguard),"fresh star UI profile");starProgression.Profile.chapterCompletedMask=3;starProgression.Profile.chapterHighestDifficulties=new[]{1,1,0};starProgression.Save();
-   var starUI=new GameUI{session=new SessionStub{Progression=starProgression,SelectedChapterNode=ChapterNode.StarPlatform,ActiveChapterNode=ChapterNode.StarPlatform}};check(starUI.OpenChapterSelection()&&starUI.ConfirmSelectedChapter(),"actual star UI confirmation starts eligible receipt");starUI.session.ChapterFinished=true;starUI.session.ChapterRewardPending=true;check(starUI.RetryChapterSettlement()&&starProgression.Profile.pendingFirstClearReward&&starUI.session.ChapterResult.FirstCoreAvailable,"actual Star UI settlement enables shared core after save");starUI.chapterScroll=new Vector2(0,99);starUI.DrawChapterResult();check(starUI.observedResultScroll.y==0,"new result starts at top independently from entry");starUI.chapterResultScroll=new Vector2(0,47);starUI.RetryChapterSettlement();starUI.DrawChapterResult();check(starUI.observedResultScroll.y==47,"same result retains scroll through save retry");starUI.session.ChapterRun=new RunStub();starUI.DrawChapterResult();check(starUI.observedResultScroll.y==0,"different run resets result scroll");check(starUI.texts.Exists(t=>t.Contains("首通核心已可领取（共享一次）")),"saved Star UI reveals actual new shared entitlement");
+   var starUI=new GameUI{session=new SessionStub{Progression=starProgression,SelectedChapterNode=ChapterNode.StarPlatform,ActiveChapterNode=ChapterNode.StarPlatform}};check(starUI.OpenChapterSelection()&&starUI.ConfirmSelectedChapter(),"actual star UI confirmation starts eligible receipt");starUI.session.ChapterFinished=true;starUI.session.ChapterRewardPending=true;check(starUI.RetryChapterSettlement()&&starProgression.Profile.pendingFirstClearReward&&starUI.session.ChapterResult.FirstCoreAvailable,"actual Star UI settlement enables shared core after save");starUI.chapterScroll=new Vector2(0,99);starUI.DrawChapterResult();check(starUI.observedResultScroll.y==0,"new result starts at top independently from entry");starUI.chapterResultScroll=new Vector2(0,47);starUI.RetryChapterSettlement();starUI.DrawChapterResult();check(starUI.observedResultScroll.y==47,"same result retains scroll through save retry");starUI.session.ChapterRun=new RunStub();starUI.DrawChapterResult();check(starUI.observedResultScroll.y==0,"different run resets result scroll");check(starUI.texts.Exists(t=>t.Contains("首通核心已可领取：返回营地领取")),"saved Star UI reveals actual new shared entitlement");
    int starMaterials=starProgression.Profile.mechanicMaterials;check(!starUI.RetryChapterSettlement()&&starProgression.Profile.mechanicMaterials==starMaterials,"Star UI saved retry cannot duplicate reward");
    return n;
   }

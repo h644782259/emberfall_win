@@ -44,9 +44,9 @@ namespace Emberfall
             float contentHeight=DrawAllocationDraftContent(contentWidth,unit,false);
             buildPlanScroll=BeginTouchScroll("build-draft",bodyRect,buildPlanScroll,new Rect(0,0,contentWidth*unit,Mathf.Max(layout.Body.Height-94,contentHeight)*unit));
             DrawAllocationDraftContent(contentWidth,unit,true);EndTouchScroll();
-            if(Button(BuildPlanRect(layout.FooterButton(0,2),unit),"取消草稿",jade))
+            if(NavigationButton(BuildPlanRect(layout.FooterButton(0,2),unit), "取消草稿", jade))
             {CancelAllocationDraft();CancelMobileScroll();BlockUITransition();return true;}
-            if(Button(BuildPlanRect(layout.FooterButton(1,2),unit),"应用配点",gold,allocationDraft!=null&&allocationDraft.IsCurrent&&session.IsInCamp))ApplyAllocationDraft();
+            if(PrimaryButton(BuildPlanRect(layout.FooterButton(1,2),unit), "应用配点", gold, allocationDraft!=null&&allocationDraft.IsCurrent&&session.IsInCamp))ApplyAllocationDraft();
             return true;
         }
         private void DraftButton(ref float y,float width,float unit,string text,bool enabled,bool draw,System.Action action)

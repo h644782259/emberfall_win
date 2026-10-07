@@ -44,6 +44,8 @@ namespace Emberfall
         private bool jumping;
         private float jumpAge, movementSkillLock;
         private Vector3 jumpOrigin;
+        private Vector3 jumpDestination;
+        private Vector3 jumpInput;
         private int traversalFrame = -1;
         private float passiveCooldown, passiveTime, passiveReduction, passiveSpeed;
         private Vector3 aimPoint;
@@ -364,7 +366,7 @@ namespace Emberfall
                 AdventureCamera.CameraRelativeMovement(moveInput, Camera.main == null ? null : Camera.main.transform);
             movement = Vector3.ClampMagnitude(movement,1);
             bool wantsJump = mobile ? MobileControls.ConsumeJump() : Input.GetKeyDown(KeyCode.Space);
-            if (wantsJump) TryJump();
+            if (wantsJump) { jumpInput=movement; TryJump(); jumpInput=Vector3.zero; }
             bool wantsBlink = mobile ? MobileControls.ConsumeDodge() : Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.RightShift);
             if (wantsBlink) TryBlink(movement);
             else if (blinkBufferTime > 0) TryBlinkCore(bufferedBlinkDirection, false);
@@ -1048,6 +1050,10 @@ namespace Emberfall
             Vector3 origin = CombatFx.Flat(transform.position);
             if (!WorldTraversal.IsWalkable(origin, .45f)) return false;
             jumpOrigin = origin;
+            jumpDestination = origin;
+            Vector3 landing;
+            if(jumpInput.sqrMagnitude>.01f && WorldTraversal.TryResolveBlink(origin,jumpInput,5.5f,.45f,Mathf.Max(1,session.ArenaRadius-.65f),out landing) && WorldTraversal.CanLeap(origin,landing,.45f))
+                jumpDestination=landing;
             jumpAge = 0;
             jumping = true;
             traversalFrame = Time.frameCount;
@@ -1114,11 +1120,11 @@ namespace Emberfall
             if (!jumping || deltaTime <= 0 || float.IsNaN(deltaTime) || float.IsInfinity(deltaTime)) return;
             jumpAge += deltaTime;
             float progress = Mathf.Clamp01(jumpAge / .55f);
-            transform.position = jumpOrigin + Vector3.up * (Mathf.Sin(progress * Mathf.PI) * 1.65f);
+            transform.position = Vector3.Lerp(jumpOrigin,jumpDestination,progress) + Vector3.up * (Mathf.Sin(progress * Mathf.PI) * 1.65f);
             if (progress >= 1f)
             {
                 jumping = false;
-                transform.position = jumpOrigin;
+                transform.position = jumpDestination;
             }
         }
 

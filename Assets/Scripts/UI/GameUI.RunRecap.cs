@@ -59,7 +59,7 @@ namespace Emberfall
             if(death||session.ModeFinished)
             {
                 float menuWidth=Mathf.Min(152*unit,primary.width*.35f);
-                if(Button(new Rect(primary.x,primary.y,menuWidth,primary.height),"菜单 / 存档",jade))session.SetPaused(true);
+                if(NavigationButton(new Rect(primary.x,primary.y,menuWidth,primary.height), "菜单 / 存档", jade))session.SetPaused(true);
                 primary.x+=menuWidth+12*unit;primary.width-=menuWidth+12*unit;
             }
             if(session.CanRetryRoomChain)
@@ -69,7 +69,7 @@ namespace Emberfall
                 {session.RetryFailedRoomChain();BlockUITransition();return false;}
                 primary.x+=retryWidth+8*unit;primary.width-=retryWidth+8*unit;
             }
-            return Button(primary,death?"回营整备":session.ModeFinished?session.ModeRewardPending?"结算奖励并回营":"返回营地":"返回冒险",accent,true,null,true);
+            return PrimaryButton(primary, death?"回营整备":session.ModeFinished?session.ModeRewardPending?"结算奖励并回营":"返回营地":"返回冒险", accent, true, null, true);
         }
 
         private static Rect RecapRect(RunRecapLayout.Area area,float unit)
@@ -141,7 +141,7 @@ namespace Emberfall
                 }
                 if(snapshot.RewardDetailsUnavailable)
                 {
-                    Text(new Rect(14*unit,inner*unit,(w-28)*unit,56*unit),"奖励已保存；旧回执缺少明细，无法恢复准确数额。不会重复发放。",Mathf.RoundToInt(13*unit),muted,false,true);
+                    Text(new Rect(14*unit,inner*unit,(w-28)*unit,56*unit),"通关进度与奖励已保存，可返回营地继续冒险。",Mathf.RoundToInt(13*unit),muted,false,true);
                     inner+=64;
                 }
                 if(snapshot.Materials>0)

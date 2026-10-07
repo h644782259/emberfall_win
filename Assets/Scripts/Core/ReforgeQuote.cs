@@ -6,7 +6,7 @@ namespace Emberfall
     {
         public readonly ReforgeTargetKind Kind;public readonly ReforgeQuote Quote;
         public ReforgeChoice(ReforgeTargetKind kind,ReforgeQuote quote){Kind=kind;Quote=quote;}
-        public string Label {get{return Kind==ReforgeTargetKind.FiveLevels?"提升5级":Kind==ReforgeTargetKind.Affordable?"当前金币可达":"追平角色等级";}}
+        public string Label {get{return Kind==ReforgeTargetKind.FiveLevels?"提升下一档（10级）":Kind==ReforgeTargetKind.Affordable?"当前金币可达":"追平角色等级";}}
     }
     // A quote captures the target, not a promise to chase later player levels.
     public sealed class ReforgeQuote

@@ -86,22 +86,26 @@ namespace Emberfall
    for(int index=0;index<3;index++)
    {
     Vector3 p=GameSession.HubNpcPosition(index);Transform npc=Region(parent,index==0?"Camp Merchant":index==1?"Camp Blacksmith":"Star Exchange Steward");
+    Transform body=Region(npc,"NPC body pivot");body.localPosition=p;
     Material cloth=r.Material(index==0?new Color(.58f,.35f,.16f):index==1?new Color(.32f,.37f,.44f):new Color(.22f,.48f,.53f),false,VisualSurface.Cloth);
     Material skin=r.Material(new Color(.76f,.57f,.42f),false,VisualSurface.Skin),dark=r.Material(new Color(.12f,.16f,.2f),false,VisualSurface.Cloth);
     Material wood=r.Material(new Color(.32f,.20f,.12f),false,VisualSurface.Wood),metal=r.Material(new Color(.38f,.42f,.47f),false,VisualSurface.Metal),light=r.Material(new Color(.46f,.86f,.9f),true,VisualSurface.Crystal);
-    Primitive(npc,"NPC tunic",PrimitiveType.Capsule,p+Vector3.up*.85f,new Vector3(index==1?.84f:index==2?.62f:.72f,.58f,index==1?.58f:.5f),cloth);
-    Primitive(npc,"NPC head",PrimitiveType.Sphere,p+Vector3.up*1.66f,Vector3.one*.47f,skin);
+    Primitive(body,"NPC tunic",PrimitiveType.Capsule,Vector3.up*.85f,new Vector3(index==1?.84f:index==2?.62f:.72f,.58f,index==1?.58f:.5f),cloth);
+    Transform head=Region(body,"NPC head pivot");head.localPosition=Vector3.up*1.66f;
+    Primitive(head,"NPC head",PrimitiveType.Sphere,Vector3.zero,Vector3.one*.47f,skin);
+    Primitive(head,"NPC nose",PrimitiveType.Sphere,new Vector3(0,-.015f,.225f),new Vector3(.075f,.09f,.08f),skin);
+    for(int side=-1;side<=1;side+=2)Primitive(head,"NPC eye",PrimitiveType.Sphere,new Vector3(side*.09f,.035f,.213f),new Vector3(.04f,.04f,.025f),dark);
     Transform left=null,right=null,dial=null;
     for(int side=-1;side<=1;side+=2)
     {
-     Primitive(npc,"NPC boots",PrimitiveType.Capsule,p+new Vector3(side*.19f,.29f,0),new Vector3(.21f,.26f,.24f),dark);
-     Transform arm=Region(npc,"Articulated working sleeve");arm.localPosition=p+new Vector3(side*.43f,1.22f,0);if(side<0)left=arm;else right=arm;
+     Primitive(body,"NPC boots",PrimitiveType.Capsule,new Vector3(side*.19f,.29f,0),new Vector3(.21f,.26f,.24f),dark);
+     Transform arm=Region(body,"Articulated working sleeve");arm.localPosition=new Vector3(side*.43f,1.22f,0);if(side<0)left=arm;else right=arm;
      Primitive(arm,"NPC sleeve",PrimitiveType.Capsule,new Vector3(0,-.20f,0),new Vector3(index==1?.30f:.23f,.22f,index==1?.29f:.24f),cloth);
      Primitive(arm,"NPC hand",PrimitiveType.Sphere,new Vector3(0,-.45f,.03f),Vector3.one*.2f,skin);
     }
     if(index==0)
     {
-     Primitive(npc,"Merchant cap",PrimitiveType.Cylinder,p+Vector3.up*1.89f,new Vector3(.92f,.075f,.70f),cloth);
+     Primitive(head,"Merchant cap",PrimitiveType.Cylinder,Vector3.up*.23f,new Vector3(.92f,.075f,.70f),cloth);
      for(int row=0;row<2;row++)
      {Primitive(npc,"Merchant stocked shelf",PrimitiveType.Cube,p+new Vector3(0,.35f+row*.6f,.65f),new Vector3(1.4f,.1f,.5f),wood);
       for(int item=0;item<3;item++)Primitive(npc,item%2==0?"Potion stock":"Wrapped provision",item%2==0?PrimitiveType.Cylinder:PrimitiveType.Cube,p+new Vector3(-.46f+item*.46f,.53f+row*.6f,.65f),new Vector3(.22f,.28f,.22f),item%2==0?light:cloth);}
@@ -109,7 +113,7 @@ namespace Emberfall
     }
     else if(index==1)
     {
-     Primitive(npc,"Smith leather apron",PrimitiveType.Cube,p+new Vector3(0,.84f,.27f),new Vector3(.62f,.69f,.06f),dark);
+     Primitive(body,"Smith leather apron",PrimitiveType.Cube,new Vector3(0,.84f,.27f),new Vector3(.62f,.69f,.06f),dark);
      Primitive(npc,"Anvil stump",PrimitiveType.Cylinder,p+new Vector3(0,.3f,.65f),new Vector3(.65f,.3f,.48f),wood);
      Primitive(npc,"Forged anvil face",PrimitiveType.Cube,p+new Vector3(0,.7f,.65f),new Vector3(1.2f,.22f,.48f),metal);
      Primitive(npc,"Anvil tapered horn",PrimitiveType.Capsule,p+new Vector3(.48f,.73f,.65f),new Vector3(.18f,.22f,.17f),metal).transform.localRotation=Quaternion.Euler(0,0,90);
@@ -124,7 +128,7 @@ namespace Emberfall
      var ring=dial.gameObject.AddComponent<MeshFilter>();ring.sharedMesh=CostumeMeshLibrary.Get(WingSilhouette.Mechanical);dial.gameObject.AddComponent<MeshRenderer>().sharedMaterial=light;
      for(int i=0;i<5;i++){float a=i*Mathf.PI*.4f;Primitive(dial,"Chart constellation",PrimitiveType.Sphere,new Vector3(Mathf.Cos(a)*.6f,Mathf.Sin(a)*.6f,0),Vector3.one*.09f,light);}
     }
-    HubSettlementPlan.RegisterNpcNavigation(index);npc.gameObject.AddComponent<HubNpcIdle>().Initialize(index,right,left,dial);
+    HubSettlementPlan.RegisterNpcNavigation(index);npc.gameObject.AddComponent<HubNpcIdle>().Initialize(index,body,head,right,left,dial);
    }
   }
  }

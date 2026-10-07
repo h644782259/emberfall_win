@@ -14,8 +14,12 @@ public static class PanelReadabilityLayoutTests
                 var a=layout.Entry(i);
                 check(a.Width>=48&&a.Height>=48,"every adventure remains a touch-size target");
                 check(a.X>=0&&a.Y>=0&&a.XMax<=size[0]&&a.YMax<=layout.OptionsY,"all five entrances fit before fixed actions");
+                var title=layout.EntryTitle(i);var reward=layout.EntryReward(i);var encounter=layout.EntryEncounter(i);
+                check(reward.Y-title.YMax>=2 && encounter.Y-reward.YMax>=2,"three text rows have visible vertical gaps");
+                check(title.Y-a.Y>=4 && a.YMax-encounter.YMax>=3.9f,"card text has top and bottom padding");
                 for(int j=0;j<i;j++)check(!a.Overlaps(layout.Entry(j)),"entry targets never overlap");
             }
+            check(layout.Frame.Y>=0&&layout.Frame.YMax<=size[1]&&layout.Frame.X>=0&&layout.Frame.XMax<=size[0],"dialog frame stays inside viewport");
             check(layout.OptionsY+48<=layout.FooterY&&layout.FooterY+48<=size[1],"tier/challenge/confirm stay visible and separate");
         }
         foreach(float height in new[]{720f,900f,1080f})

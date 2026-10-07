@@ -61,8 +61,8 @@ namespace Emberfall
             Text(new Rect(w.x+28,w.y+20,w.width-56,18),"F A L L E N   S T A R",10,gold,true);
             Text(new Rect(w.x+28,w.y+45,w.width-248,42),revealed?(complete?"宝箱奖励":"开启宝箱"):"遗迹馈赠",28,pale,true);
             Text(new Rect(w.x+28,w.y+92,w.width-56,24),revealed?(complete?ChestRevealPresentation.Outcome(reward):"已保存奖励 · 可以跳过揭晓动画"):ChestRevealPresentation.ChoiceDisclosure,14,muted);
-            if(Button(new Rect(w.xMax-200,w.y+43,78,36),"菜单",jade)){session.SetPaused(true);BlockUITransition();return;}
-            if(Button(new Rect(w.xMax-110,w.y+43,82,36),chestDetails?"收起规则":"奖励规则",muted))chestDetails=!chestDetails;
+            if(NavigationButton(new Rect(w.xMax-200,w.y+43,78,36), "菜单", jade)){session.SetPaused(true);BlockUITransition();return;}
+            if(NavigationButton(new Rect(w.xMax-110,w.y+43,82,36), chestDetails?"收起规则":"奖励规则", muted))chestDetails=!chestDetails;
             Rect body=new Rect(w.x+28,w.y+132,w.width-56,w.height-208);
             if(chestDetails)DrawDesktopChestRules(body);
             else if(complete)DrawDesktopChestResult(body,reward,accent);
@@ -71,7 +71,7 @@ namespace Emberfall
             {
                 Rect r=new Rect(body.x,body.y,body.width,body.height);
                 DrawSingleChestCard(r,1);
-                if(Button(new Rect(r.x+12,r.yMax-54,r.width-24,42),progression.ChestOpenCaption,gold,!chestOpening&&progression.Profile.pendingFashionChest&&!progression.Profile.pendingChestReveal))
+                if(PrimaryButton(new Rect(r.x+12,r.yMax-54,r.width-24,42), progression.ChestOpenCaption, gold, !chestOpening&&progression.Profile.pendingFashionChest&&!progression.Profile.pendingChestReveal))
                 {
                     chestOpening=true;string result=progression.OpenDungeonChest();
                     if(result==null){chestOpening=false;Feedback(false,"宝箱暂时无法开启");}
@@ -83,8 +83,8 @@ namespace Emberfall
             if(revealed)
             {
                 Text(new Rect(w.x+28,w.yMax-55,w.width-430,36),complete?"奖励已保存":"正在揭晓已保存的奖励",13,muted,false,true);
-                if(complete&&CanTrialChestReward(reward)&&Button(new Rect(w.xMax-396,w.yMax-58,180,42),"收下并试穿",jade)){AcceptChestForTrial();return;}
-                if(Button(new Rect(w.xMax-208,w.yMax-58,180,42),complete?"收下":"跳过动画",jade,!chestDetails,null,true))
+                if(complete&&CanTrialChestReward(reward)&&PrimaryButton(new Rect(w.xMax-396,w.yMax-58,180,42), "收下并试穿", jade)){AcceptChestForTrial();return;}
+                if(PrimaryButton(new Rect(w.xMax-208,w.yMax-58,180,42), complete?"收下":"跳过动画", jade, !chestDetails, null, true))
                 {if(!complete)chestRevealedAt=Time.unscaledTime-ChestDuration;else FinishChestReveal();BlockUITransition();}
             }
             else Text(new Rect(w.x+28,w.yMax-50,w.width-56,36),string.IsNullOrEmpty(progression.LastError)?"开启后奖励先保存，再展示结果":progression.LastError,13,muted,false,true);
@@ -101,13 +101,42 @@ namespace Emberfall
             Rect art=new Rect(r.x,r.y,size,size);Fill(art,new Color(.025f,.045f,.07f));Border(art,accent);
             DrawChestCommittedReward(art,reward,accent);
             Rect details=new Rect(art.xMax+24,r.y,r.width-size-24,r.height);
-            string result=ChestRevealPresentation.ResultWithCollection(reward,session.Progression.Profile);
             string error=session.Progression.LastError;
-            string copy=(string.IsNullOrEmpty(error)?"":error+"\n\n")+result;
-            float total=Mathf.Max(details.height,Style(18,true,true).CalcHeight(new GUIContent(copy),details.width-26)+20);
+            float total=Mathf.Max(details.height,ChestSectionsHeight(reward,details.width-26,1f)+(!string.IsNullOrEmpty(error)?52:0));
             desktopChestResultScroll=BeginTouchScroll("desktop-chest-result",details,desktopChestResultScroll,new Rect(0,0,details.width-16,total));
-            Text(new Rect(4,8,details.width-26,total-16),copy,18,accent,true,true);EndTouchScroll();
+            float y=8;
+            if(!string.IsNullOrEmpty(error)){Text(new Rect(4,y,details.width-26,44),error,14,new Color(1,.55f,.45f),false,true);y+=52;}
+            DrawChestSections(new Rect(4,y,details.width-26,total-y),reward,accent,1f);EndTouchScroll();
         }
+        private string[] ChestSectionCopy(ChestReward reward)
+        {
+            var profile=session.Progression.Profile;
+            string identity=reward==null?"正在读取奖励":reward.Rarity.HasValue?GameBalance.RarityName(reward.Rarity.Value)+" · "+reward.Name:"通关奖励";
+            string gain=reward==null?"":reward.hasCurrencyDeltas?"金币    +"+reward.goldDelta+"\n星纹    +"+reward.threadsDelta+(reward.materialKind==RewardMaterialKind.StarAshFragment?"\n星烬碎片    +"+reward.materialsDelta:""):ChestRevealPresentation.GoldHeadline(reward);
+            string collection="星纹余额    "+profile.fashionThreads+" / "+ProgressionService.FashionChoiceCost+"\n"+ChestRevealPresentation.LegendaryExchangeHint(profile);
+            if(reward!=null&&reward.Slot.HasValue)collection+="\n"+ChestRevealPresentation.CollectionProgress(profile,reward.Slot.Value);
+            return new[]{identity+"\n"+ChestRevealPresentation.Outcome(reward),gain,collection};
+        }
+        private float ChestSectionsHeight(ChestReward reward,float width,float u)
+        {
+            float total=8*u;
+            foreach(string copy in ChestSectionCopy(reward))total+=Style(Mathf.RoundToInt(15*u),false,true).CalcHeight(new GUIContent(copy),width-24*u)+54*u;
+            return total;
+        }
+        private void DrawChestSections(Rect area,ChestReward reward,Color accent,float u)
+        {
+            string[] titles={"获得的奖励","本次到账","收藏与兑换进度"};string[] copies=ChestSectionCopy(reward);float y=area.y;
+            for(int i=0;i<copies.Length;i++)
+            {
+                float h=Style(Mathf.RoundToInt(15*u),false,true).CalcHeight(new GUIContent(copies[i]),area.width-24*u)+42*u;
+                Rect r=new Rect(area.x,y,area.width,h);Fill(r,new Color(.045f,.075f,.105f));
+                Fill(new Rect(r.x,r.y,3*u,r.height),i==0?accent:jade*.65f);
+                Text(new Rect(r.x+12*u,r.y+8*u,r.width-24*u,20*u),titles[i],Mathf.RoundToInt(12*u),muted,true);
+                Text(new Rect(r.x+12*u,r.y+32*u,r.width-24*u,h-36*u),copies[i],Mathf.RoundToInt(15*u),i==0?accent:pale,false,true);
+                y+=h+12*u;
+            }
+        }
+
         private void DrawChestRevealTransition(Rect r,ChestReward reward,Rect destination)
         {
             float progress=ChestRevealPresentation.Progress(Time.unscaledTime-chestRevealedAt,ChestDuration);

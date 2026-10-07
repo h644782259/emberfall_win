@@ -83,7 +83,7 @@ namespace Emberfall
                 {
                     Transform mote = motes[i];
                     if (!mote.gameObject.activeSelf) mote.gameObject.SetActive(true);
-                    float angle = i * 2.39996f;
+                    float angle = i * 2.39996f + fade * 2.4f;
                     float distance = (boss ? 1f : .48f) * (.4f + fade * 1.2f);
                     mote.localPosition = new Vector3(Mathf.Cos(angle) * distance,
                         (boss ? 1.3f : slime ? .4f : .9f) + fade * (1f + i % 3 * .25f),

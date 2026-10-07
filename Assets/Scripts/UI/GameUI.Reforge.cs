@@ -40,7 +40,7 @@ namespace Emberfall
             var preview=reforgeOwner.PreviewReforge(reforgeSelected);string reason=reforgeOwner.ReforgeLockReason(reforgeSelected,session.IsInCamp);
             if(Button(BuildPlanRect(l.FooterButton(0,3),u),"追踪此目标",jade,preview!=null))ExecuteReforgeSelection(true);
             if(Button(BuildPlanRect(l.FooterButton(1,3),u),"重铸 · "+(reforgeSelected==null?0:reforgeSelected.GoldCost)+"金",gold,reason.Length==0,reason))ExecuteReforgeSelection(false);
-            if(Button(BuildPlanRect(l.FooterButton(2,3),u),"返回工坊",jade))CloseReforgeSurface();return true;
+            if(NavigationButton(BuildPlanRect(l.FooterButton(2,3),u), "返回工坊", jade))CloseReforgeSurface();return true;
         }
         private float DrawReforgeOptions(float w,float u,bool draw)
         {
@@ -49,7 +49,7 @@ namespace Emberfall
             {
                 bool selected=reforgeSelected==choice.Quote;
                 string label=choice.Label+" → "+choice.Quote.TargetLevel+"级 · "+choice.Quote.GoldCost+"金币"+(selected?" ✓":"");
-                if(draw&&Button(new Rect(4*u,y*u,(w-8)*u,44*u),label,selected?gold:jade))
+                if(draw&&TabButton(new Rect(4*u,y*u,(w-8)*u,44*u), label, selected))
                 {reforgeSelected=choice.Quote;reforgeNotice=null;BlockUITransition();}
                 y+=50;
             }
