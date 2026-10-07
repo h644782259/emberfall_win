@@ -1,0 +1,25 @@
+{
+  "main": "794475c4ef7938542b2012c80a8c3577cdf885d4",
+  "files": [
+    {
+      "path": "Tests/CompanionPathAllocationTests.py",
+      "candidateSha256": "805b5b8b8517f2001b0b62822744e388eee184a0560d839ae3ab53a528bdb0de",
+      "mainSha256": "805b5b8b8517f2001b0b62822744e388eee184a0560d839ae3ab53a528bdb0de"
+    },
+    {
+      "path": "Tests/DestructibleTraversalTests.cs",
+      "candidateSha256": "de407d16f35f12a0319571379a1db036945225798e1840461a229edd23ae5eed",
+      "mainSha256": "de407d16f35f12a0319571379a1db036945225798e1840461a229edd23ae5eed"
+    },
+    {
+      "path": "Assets/Scripts/Combat/SummonedCompanion.cs",
+      "candidateSha256": "6537aff332caa80cf38c77afeca51538abf3043c07fa9873c119858ac63cb941",
+      "mainSha256": "6537aff332caa80cf38c77afeca51538abf3043c07fa9873c119858ac63cb941"
+    },
+    {
+      "path": "Assets/Scripts/World/WorldTraversal.cs",
+      "candidateSha256": "88e4548e65ecf37418ed3424ddb94c6158df3399fec9c2f695b41ac60e84c298",
+      "mainSha256": "88e4548e65ecf37418ed3424ddb94c6158df3399fec9c2f695b41ac60e84c298"
+    }
+  ]
+}
