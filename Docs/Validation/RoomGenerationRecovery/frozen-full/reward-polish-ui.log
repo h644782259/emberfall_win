@@ -1,0 +1,25 @@
+/tmp/single-chest-ui-te2mx76_/Methods.cs(44,16): error CS0103: The name 'NavigationButton' does not exist in the current context [/tmp/single-chest-ui-te2mx76_/project/Validation.csproj]
+/tmp/single-chest-ui-te2mx76_/Methods.cs(45,16): error CS0103: The name 'NavigationButton' does not exist in the current context [/tmp/single-chest-ui-te2mx76_/project/Validation.csproj]
+/tmp/single-chest-ui-te2mx76_/Methods.cs(54,20): error CS0103: The name 'PrimaryButton' does not exist in the current context [/tmp/single-chest-ui-te2mx76_/project/Validation.csproj]
+/tmp/single-chest-ui-te2mx76_/Methods.cs(66,59): error CS0103: The name 'PrimaryButton' does not exist in the current context [/tmp/single-chest-ui-te2mx76_/project/Validation.csproj]
+/tmp/single-chest-ui-te2mx76_/Methods.cs(67,20): error CS0103: The name 'PrimaryButton' does not exist in the current context [/tmp/single-chest-ui-te2mx76_/project/Validation.csproj]
+/tmp/single-chest-ui-te2mx76_/Methods.cs(105,28): error CS0103: The name 'PrimaryButton' does not exist in the current context [/tmp/single-chest-ui-te2mx76_/project/Validation.csproj]
+/tmp/single-chest-ui-te2mx76_/Methods.cs(106,17): error CS0103: The name 'NavigationButton' does not exist in the current context [/tmp/single-chest-ui-te2mx76_/project/Validation.csproj]
+/tmp/single-chest-ui-te2mx76_/Methods.cs(108,17): error CS0103: The name 'DrawButton' does not exist in the current context [/tmp/single-chest-ui-te2mx76_/project/Validation.csproj]
+/tmp/single-chest-ui-te2mx76_/Methods.cs(108,149): error CS0103: The name 'ButtonRole' does not exist in the current context [/tmp/single-chest-ui-te2mx76_/project/Validation.csproj]
+/tmp/single-chest-ui-te2mx76_/Methods.cs(108,170): error CS0103: The name 'ButtonRole' does not exist in the current context [/tmp/single-chest-ui-te2mx76_/project/Validation.csproj]
+/tmp/single-chest-ui-te2mx76_/Methods.cs(131,23): error CS0103: The name 'PrimaryButton' does not exist in the current context [/tmp/single-chest-ui-te2mx76_/project/Validation.csproj]
+/tmp/single-chest-ui-te2mx76_/Methods.cs(163,27): error CS0103: The name 'ChestSectionsHeight' does not exist in the current context [/tmp/single-chest-ui-te2mx76_/project/Validation.csproj]
+/tmp/single-chest-ui-te2mx76_/Methods.cs(168,13): error CS0103: The name 'DrawChestSections' does not exist in the current context [/tmp/single-chest-ui-te2mx76_/project/Validation.csproj]
+/workspace/emberfall_win_progression/Tests/RewardPolishUIBoundary.cs(18,147): warning CS0649: Field 'GameUI.muted' is never assigned to, and will always have its default value [/tmp/single-chest-ui-te2mx76_/project/Validation.csproj]
+/workspace/emberfall_win_progression/Tests/RewardPolishUIBoundary.cs(18,132): warning CS0649: Field 'GameUI.gold' is never assigned to, and will always have its default value [/tmp/single-chest-ui-te2mx76_/project/Validation.csproj]
+/workspace/emberfall_win_progression/Tests/RewardPolishUIBoundary.cs(18,137): warning CS0649: Field 'GameUI.jade' is never assigned to, and will always have its default value [/tmp/single-chest-ui-te2mx76_/project/Validation.csproj]
+/workspace/emberfall_win_progression/Tests/RewardPolishUIBoundary.cs(18,142): warning CS0649: Field 'GameUI.pale' is never assigned to, and will always have its default value [/tmp/single-chest-ui-te2mx76_/project/Validation.csproj]
+
+The build failed. Fix the build errors and run again.
+Traceback (most recent call last):
+  File "/workspace/emberfall_win_progression/Tests/RewardPolishUIProductionTests.py", line 21, in <module>
+    subprocess.run([sys.argv[1] if len(sys.argv)>1 else 'dotnet','run','--project',str(project),'--',str(p/'saves')],check=True,env=dict(os.environ,DOTNET_CLI_HOME=str(p/'cli'),DOTNET_NOLOGO='1'))
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/tmp/emberfall-dotnet/dotnet', 'run', '--project', '/tmp/single-chest-ui-te2mx76_/project/Validation.csproj', '--', '/tmp/single-chest-ui-te2mx76_/saves']' returned non-zero exit status 1.

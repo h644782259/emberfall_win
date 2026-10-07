@@ -1,0 +1,25 @@
+/tmp/emberfall-chest-back-meunxvos/Replay.cs(49,13): error CS0103: The name 'ReconcileHubNpcConversation' does not exist in the current context [/tmp/emberfall-chest-back-meunxvos/project/Validation.csproj]
+/tmp/emberfall-chest-back-meunxvos/Replay.cs(113,29): error CS0117: 'GameUI.Panel' does not contain a definition for 'HubDialogue' [/tmp/emberfall-chest-back-meunxvos/project/Validation.csproj]
+/tmp/emberfall-chest-back-meunxvos/Replay.cs(113,42): error CS0103: The name 'HandleHubNpcShortcut' does not exist in the current context [/tmp/emberfall-chest-back-meunxvos/project/Validation.csproj]
+/tmp/emberfall-chest-back-meunxvos/Replay.cs(113,88): error CS0117: 'KeyCode' does not contain a definition for 'G' [/tmp/emberfall-chest-back-meunxvos/project/Validation.csproj]
+/tmp/emberfall-chest-back-meunxvos/Replay.cs(117,13): error CS0103: The name 'HandleHubNpcShortcut' does not exist in the current context [/tmp/emberfall-chest-back-meunxvos/project/Validation.csproj]
+/tmp/emberfall-chest-back-meunxvos/Replay.cs(117,59): error CS0117: 'KeyCode' does not contain a definition for 'G' [/tmp/emberfall-chest-back-meunxvos/project/Validation.csproj]
+
+Build FAILED.
+
+/tmp/emberfall-chest-back-meunxvos/Replay.cs(49,13): error CS0103: The name 'ReconcileHubNpcConversation' does not exist in the current context [/tmp/emberfall-chest-back-meunxvos/project/Validation.csproj]
+/tmp/emberfall-chest-back-meunxvos/Replay.cs(113,29): error CS0117: 'GameUI.Panel' does not contain a definition for 'HubDialogue' [/tmp/emberfall-chest-back-meunxvos/project/Validation.csproj]
+/tmp/emberfall-chest-back-meunxvos/Replay.cs(113,42): error CS0103: The name 'HandleHubNpcShortcut' does not exist in the current context [/tmp/emberfall-chest-back-meunxvos/project/Validation.csproj]
+/tmp/emberfall-chest-back-meunxvos/Replay.cs(113,88): error CS0117: 'KeyCode' does not contain a definition for 'G' [/tmp/emberfall-chest-back-meunxvos/project/Validation.csproj]
+/tmp/emberfall-chest-back-meunxvos/Replay.cs(117,13): error CS0103: The name 'HandleHubNpcShortcut' does not exist in the current context [/tmp/emberfall-chest-back-meunxvos/project/Validation.csproj]
+/tmp/emberfall-chest-back-meunxvos/Replay.cs(117,59): error CS0117: 'KeyCode' does not contain a definition for 'G' [/tmp/emberfall-chest-back-meunxvos/project/Validation.csproj]
+    0 Warning(s)
+    6 Error(s)
+
+Time Elapsed 00:00:03.52
+Traceback (most recent call last):
+  File "/workspace/emberfall_win_progression/Tests/ChestPauseBackProductionTests.py", line 107, in <module>
+    subprocess.run([dotnet,'build',str(project),'--configfile',str(config),'-v:q'],check=True,env=env)
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/tmp/emberfall-dotnet/dotnet', 'build', '/tmp/emberfall-chest-back-meunxvos/project/Validation.csproj', '--configfile', '/tmp/emberfall-chest-back-meunxvos/NuGet.Config', '-v:q']' returned non-zero exit status 1.
