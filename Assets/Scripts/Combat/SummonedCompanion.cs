@@ -391,7 +391,7 @@ namespace Emberfall
             StatBlock stats = session.Progression.GetStats();
             damage = stats.Damage * CompanionRules.RankPower(rank);
             baseMaxHealth = stats.MaxHealth * CompanionRules.HealthFraction((int)Form, rank, IsStarter);
-            float maximum = baseMaxHealth * CompanionRules.HealthMultiplier(Owner.HasMechanic(EquipmentMechanic.TwinSummonResonance));
+            float maximum = baseMaxHealth * CompanionRules.HealthMultiplier(Owner.HasMechanic(EquipmentMechanic.TwinSummonResonance))*session.Progression.MechanicRangeMultiplier(EquipmentMechanic.TwinSummonResonance);
             // Build/gear/rank changes must not heal a damaged living body. This
             // also makes repeated preset application and transfers idempotent.
             Health = fill ? maximum : CompanionRules.PreserveRecastHealth(Health, maximum);
@@ -456,7 +456,7 @@ namespace Emberfall
                 { commandedFocus = true; break; }
             if (!CompanionRules.CoordinatedTarget(Owner.FocusTarget == enemy, commandedFocus, ExplicitFocus(Owner) == enemy)) return;
             if (!State(Owner).Cooperation.RegisterHit(enemy, (int)Form, Time.time)) return;
-            enemy.TakeDamage(damage * CompanionRules.DamageMultiplier(true) * CompanionRules.CooperationDamage * Owner.RunAttackMultiplier, Vector3.zero, impact: false);
+            enemy.TakeDamage(damage * CompanionRules.DamageMultiplier(true) * CompanionRules.CooperationDamage * session.Progression.MechanicPowerMultiplier(EquipmentMechanic.TwinSummonResonance) * Owner.RunAttackMultiplier, Vector3.zero, impact: false);
             AdvancedSkillVfx.Beam(Owner, transform.position + Vector3.up, enemy.transform.position + Vector3.up, new Color(.5f, 1f, .9f), .3f, .2f);
             session.SpawnMechanismText(enemy.transform.position + Vector3.up * 2f, "异契共鸣", new Color(.5f, 1f, .9f));
             session.RecordCombatAction("双契共鸣");

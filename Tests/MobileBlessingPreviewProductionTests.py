@@ -8,7 +8,7 @@ def member(file,signature):
  s=(root/'Assets/Scripts'/file).read_text();a=s.index(signature);b=s.index('{',a)+1;depth=1
  while depth:depth+=(s[b]=='{')-(s[b]=='}');b+=1
  return s[a:b]
-methods='\n'.join(member('UI/GameUI.MobilePanels.cs',sig) for sig in ['private bool DrawMobilePanelChrome(','private float MeasureMobileParagraph(','private float DrawMobileParagraph('])
+methods='\n'.join(member('UI/GameUI.MobilePanels.cs',sig) for sig in ['private bool DrawMobilePanelChrome(','private float MeasureMobileParagraph(','private float DrawMobileParagraph('])+'\n'+member('UI/GameUI.Expedition.cs','private void ClickBlessing(')
 notify=member('Core/GameSession.cs','public void Notify(');notification=member('Core/GameSession.cs','public string Notification')
 shell=r'''
 using System;using System.Collections.Generic;using UnityEngine;
@@ -20,8 +20,8 @@ namespace UnityEngine {
  public enum TextAnchor{UpperLeft,MiddleLeft,MiddleCenter}
  public class GUIContent{public string text;public GUIContent(string s){text=s;}public static GUIContent none=new GUIContent("");}
  public class GUIStyle{public int size;public float CalcHeight(GUIContent c,float width)=>size*1.4f*(1+(int)(c.text.Length*size/Math.Max(1,width)));}
- public static class Time{public static float unscaledTime;}
- public static class GUI{public static int Click=-1,Index;public static bool Button(Rect r,GUIContent c,object s)=>Index++==Click;}
+ public static class Time{public static float unscaledTime;public static int frameCount;}
+ public static class GUI{public static bool enabled=true;public static int Click=-1,Index;public static bool Button(Rect r,GUIContent c,object s)=>Index++==Click;}
 }
 namespace Emberfall {
  public enum RunBlessing{First,Second,Third}public class PlayerController{public int CombatEpoch=1;}
@@ -35,6 +35,8 @@ namespace Emberfall {
  public sealed partial class GameUI {
  SessionStub session=new SessionStub();int selectedBlessing=-1;float width=568,height=320,TouchRatio=1;Color gold=new Color(),jade=new Color(),pale=new Color(),muted=new Color(),card=new Color();object invisibleButton=new object();string click;
  bool scrolling;Rect scrollViewport,scrollContent;List<Rect> blockedRects=new List<Rect>();List<(string text,Rect rect,bool scroll,bool wrap)> drawn=new List<(string,Rect,bool,bool)>();List<Rect> footer=new List<Rect>();
+ float lastBlessingClick=-10;int touchScrollSuppressed=-1;bool UITransitionBlocked=>false;class GestureBoundary{public bool Dragging=>false;}GestureBoundary touchScroll=new GestureBoundary();
+ string HubNpcServiceSubtitle(string copy)=>copy;
  string preview="下一房 · 双印净化 · 分开占领，两处印记都完成才能离开";
  string BlessingSubtitle(bool mobile)=>preview;string PlatformText(string t)=>t;int TouchFont(float n)=>(int)Math.Round(n*TouchRatio);
  MobilePanelLayout MobilePanelGeometry()=>new MobilePanelLayout(width/TouchRatio,height/TouchRatio);
@@ -44,6 +46,7 @@ namespace Emberfall {
  void Fill(Rect r,Color c){}void Border(Rect r,Color c){}void Rule(float x,float y,float w,Color c){}void ClosePanel(){}void BlockUITransition(){}void CancelMobileScroll(){}
  void Text(Rect r,string s,int size,Color c,bool bold=false,bool wrap=false,TextAnchor anchor=TextAnchor.UpperLeft){drawn.Add((s,r,scrolling,wrap));}
  bool Button(Rect r,string s,Color c,bool enabled=true){if(s=="确认祝福并继续"||s=="暂停 / 存档")footer.Add(r);if(enabled&&click==s){click=null;return true;}return false;}
+ bool NavigationButton(Rect r,string s,Color c,bool enabled=true)=>Button(r,s,c,enabled);bool PrimaryButton(Rect r,string s,Color c,bool enabled=true)=>Button(r,s,c,enabled);
  Vector2 BeginTouchScroll(string key,Rect viewport,Vector2 p,Rect content){scrolling=true;scrollViewport=viewport;scrollContent=content;return p;}void EndTouchScroll(){scrolling=false;}
  METHODS
  public static int Verify(){int n=0;Action<bool,string> check=(ok,why)=>{n++;if(!ok)throw new Exception(why);};

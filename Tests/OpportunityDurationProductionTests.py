@@ -16,10 +16,10 @@ rules=(root/'Assets/Scripts/Combat/PlayerUpgradeRules.cs').read_text()
 constants=''.join(re.findall(r'public const float (?:CounterWindow|PerfectDodgeEnergy) = [^;]+;',rules))
 fixture=fixture.replace('public const float PoisonDetonationTicks=3;','public const float PoisonDetonationTicks=3;'+constants)
 fixture+='''namespace Emberfall{
- public class Progression{public Profile Profile=new Profile();}public class Profile{public int[] skillRanks=new int[10];}
+ public class Progression{public float MechanicRangeMultiplier(EquipmentMechanic m)=>1;public float MechanicPowerMultiplier(EquipmentMechanic m)=>1;public Profile Profile=new Profile();}public class Profile{public int[] skillRanks=new int[10];}
  public class SkillTargetingController{public bool IsTargeting;public int TargetedSkillIndex;public Vector3 TargetPoint;}
  public static class MobileControls{public static bool Active;}
- public static class GameBalance{public static float SkillRangeMultiplier(int rank)=>1;public static Color ClassColor(HeroClass hero)=>new Color();}
+ public static class GameBalance{public const float ArcanistFinaleRadius=9.5f;public static float SkillRangeMultiplier(int rank)=>1;public static Color ClassColor(HeroClass hero)=>new Color();}
  public static class AdvancedSkillVfx{public static void Beam(PlayerController player,Vector3 a,Vector3 b,Color c,float d,float w){}}
  public static class SummonedCompanion{public static void OnPerfectDodge(PlayerController p){}}
  public class Runtime{public void RestoreEnergy(float amount){}}

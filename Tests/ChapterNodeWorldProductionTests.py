@@ -23,7 +23,7 @@ with tempfile.TemporaryDirectory(prefix='chapter-world-presentation-') as tmp:
   generator=member(chapter,'private static void BuildChapterRoom(')+member(chapter,'private static void ApplyChapterAtmosphere(')
   if old:generator=generator.replace('            ApplyChapterAtmosphere(parent,plan);','')
   (d/'Chapter.cs').write_text('using UnityEngine;namespace Emberfall{public static partial class WorldBuilder{'+generator+'}}')
-  for f in ['Assets/Scripts/World/WorldTraversal.cs','Assets/Scripts/World/ChapterRoomGeometry.cs','Tests/ChapterNodeWorldProductionTests.cs']:(d/Path(f).name).write_text((ROOT/f).read_text())
+  for f in ['Assets/Scripts/World/WorldTraversal.cs','Assets/Scripts/World/WorldTraversal.Platforms.cs','Assets/Scripts/World/ChapterRoomGeometry.cs','Tests/ChapterNodeWorldProductionTests.cs']:(d/Path(f).name).write_text((ROOT/f).read_text())
   (d/'Program.cs').write_text('System.Console.WriteLine(ChapterNodeWorldProductionTests.Run());');(d/'NuGet.Config').write_text('<configuration><packageSources><clear /></packageSources></configuration>');project=d/'Test.csproj';project.write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net8.0</TargetFramework><OutputType>Exe</OutputType></PropertyGroup></Project>')
   build=subprocess.run([dotnet,'build',str(project),'--configfile',str(d/'NuGet.Config'),'-v:q'],capture_output=True,text=True)
   if build.returncode:print(build.stdout+build.stderr);build.check_returncode()

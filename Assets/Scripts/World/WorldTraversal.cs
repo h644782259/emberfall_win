@@ -4,10 +4,10 @@ using UnityEngine;
 namespace Emberfall
 {
     /// <summary>Shared ground rules for direct movement, leaps and creature routes.</summary>
-    public static class WorldTraversal
+    public static partial class WorldTraversal
     {
         public sealed class ObstacleHandle { internal ObstacleHandle(){} }
-        private struct Obstacle { public Vector2 Center, Half; public float Radius; public ObstacleHandle Handle; }
+        private struct Obstacle { public Vector2 Center, Half; public float Radius,Height; public ObstacleHandle Handle; }
         // Immutable-in-use search order; private and never returned or written after initialization.
         private static readonly int[] NeighborX = { -1, 0, 1, -1, 1, -1, 0, 1 };
         private static readonly int[] NeighborY = { -1, -1, -1, 0, 0, 1, 1, 1 };
@@ -195,12 +195,14 @@ namespace Emberfall
             for (int i = 0; i <= samples; i++)
             {
                 Vector3 p = Vector3.Lerp(from, to, i / (float)samples);
-                if (ignoreWater ? !ClearOfSolids(p, radius, ignored) : !IsWalkable(p, radius)) return false;
+                if(ignoreWater&&(from.y>.05f||to.y>.05f)){if(!ClearAtHeight(p,radius,p.y+.9f))return false;}
+                else if (ignoreWater ? !ClearOfSolids(p, radius, ignored) : !IsWalkable(p, radius)) return false;
             }
             return true;
         }
         public static Vector3 Move(Vector3 from, Vector3 delta, float radius = .45f)
         {
+            if(from.y>.05f&&CanStand(from,radius))return MoveOnPlatform(from,delta,radius);
             from = CombatFx.Flat(from); delta = CombatFx.Flat(delta);
             if (!IsWalkable(from, radius)) from = NearestWalkable(from, radius);
             int steps = Mathf.Max(1, Mathf.CeilToInt(delta.magnitude / .16f));

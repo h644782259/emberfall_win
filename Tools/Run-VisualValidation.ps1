@@ -3,7 +3,8 @@ param(
     [switch]$ShowPreview,
     [switch]$UserFixes,
     [switch]$ButtonStyles,
-    [switch]$AdventureTypography
+    [switch]$AdventureTypography,
+    [switch]$WindowsHandoff
 )
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
@@ -19,7 +20,7 @@ New-Item -ItemType Directory -Force -Path $output | Out-Null
 $player = Join-Path $project 'Builds\VisualValidation\Emberfall.exe'
 $playerLog = Join-Path $output 'player.log'
 $windowStyle = if ($ShowPreview) { 'Normal' } else { 'Hidden' }
-$extraArgs=if($AdventureTypography){@('--adventure-typography')}elseif($ButtonStyles){@('--button-styles')}elseif($UserFixes){@('--user-fixes')}else{@()}
+$extraArgs=if($WindowsHandoff){@('--windows-handoff')}elseif($AdventureTypography){@('--adventure-typography')}elseif($ButtonStyles){@('--button-styles')}elseif($UserFixes){@('--user-fixes')}else{@()}
 $run = Start-Process -FilePath $player -ArgumentList (@('--visual-validation-root',('"' + $output + '"'),'-logFile',('"' + $playerLog + '"'),'-screen-fullscreen','0')+$extraArgs) -WindowStyle $windowStyle -PassThru
 if (-not $run.WaitForExit(210000)) { Stop-Process -Id $run.Id; throw "Visual validation timed out. See $playerLog" }
 $reportPath = Join-Path $output 'visual-validation-report.json'

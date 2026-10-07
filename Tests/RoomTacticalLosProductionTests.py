@@ -52,6 +52,7 @@ def main():
             directory.mkdir()
             (directory / 'SessionMethods.cs').write_text('using UnityEngine;namespace Emberfall{public partial class GameSession{' + body + '}}')
             (directory / 'WorldTraversal.cs').write_text(traversal)
+            (directory / 'WorldTraversal.Platforms.cs').write_text((ROOT/'Assets/Scripts/World/WorldTraversal.Platforms.cs').read_text())
             (directory / 'ExistingMathSubstitutes.cs').write_text(fixture)
             for source in ['Assets/Scripts/Core/RoomTacticalRegion.cs', 'Tests/RoomTacticalLosProductionTests.cs']:
                 (directory / Path(source).name).write_text((ROOT / source).read_text())

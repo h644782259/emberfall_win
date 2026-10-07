@@ -17,8 +17,12 @@ import sys
 import tempfile
 from xml.sax.saxutils import escape, quoteattr
 import zipfile
+from concurrent.futures import ThreadPoolExecutor
 
 ROOT = Path(__file__).resolve().parent.parent
+CHECK_FILTER = None
+EXECUTOR = None
+PENDING = []
 PACKAGE_URL = ("https://api.nuget.org/v3-flatcontainer/unityengine.modules/"
                "2021.3.33/unityengine.modules.2021.3.33.nupkg")
 PACKAGE_SHA512 = ("ad7eBwkG66RQ0ToAMD/ak8MZ6pfgrYXxcPGftN8H7ydkn5TdrwlU5qgZTkHpjOGYo"
@@ -54,7 +58,14 @@ def unity_references(download):
     return references
 
 
-def write_project(directory, sources, program=None, references=None, framework="net8.0", defines=""):
+def write_project(directory, sources, program=None, references=None, framework="net8.0", defines="", automatic_partials=True):
+    if automatic_partials and any(Path(path).name=="ProgressionService.cs" for path in sources):
+        for name in ["ProgressionService.Attachments.cs","ProgressionService.AutomaticGrowth.cs"]:
+            part=ROOT/"Assets/Scripts/Core"/name
+            if not any(Path(path).name==name for path in sources):sources=[*sources,part]
+    if automatic_partials and any(Path(path).name=="WorldTraversal.cs" for path in sources):
+        part=ROOT/"Assets/Scripts/World/WorldTraversal.Platforms.cs"
+        if not any(Path(path).name==part.name for path in sources):sources=[*sources,part]
     directory.mkdir()
     if program is not None:
         entry = directory / "Program.cs"
@@ -94,17 +105,24 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dotnet", default=os.environ.get("DOTNET", "dotnet"),
                         help=".NET 8 SDK executable (or set DOTNET)")
+    parser.add_argument("--only", help="comma-separated check names for focused reruns")
+    parser.add_argument("--output", type=Path, help="isolated report directory")
+    parser.add_argument("--jobs", type=int, default=1, help="independent check processes (1-4)")
     parser.add_argument("--compile", action="store_true", help="also compile all runtime sources against Unity references")
     parser.add_argument("--compile-android", action="store_true", help="compile the UNITY_ANDROID runtime branch against pinned references; does not build an APK")
     parser.add_argument("--compile-ios", action="store_true", help="compile the UNITY_IOS runtime branch against pinned references; does not build an IPA")
     parser.add_argument("--download-references", action="store_true", help="download pinned Unity reference DLLs if missing; implies --compile")
     parser.add_argument("--unity-editor", type=Path, help="also compile Windows/iOS/Android runtime, Editor, and visual-validation source using installed Unity 6000.6 DLLs (does not launch Unity)")
     args = parser.parse_args()
+    global CHECK_FILTER
+    CHECK_FILTER = set(args.only.split(",")) if args.only else None
+    global EXECUTOR
+    EXECUTOR = ThreadPoolExecutor(max_workers=max(1,min(4,args.jobs))) if args.jobs>1 else None
     dotnet = shutil.which(args.dotnet)
     if not dotnet:
         parser.error(".NET 8 SDK is required. Install it from https://dotnet.microsoft.com/download/dotnet/8.0 or set --dotnet.")
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
-    output = ROOT / "Tests/TestResults" / "Cloud-Latest"
+    output = args.output or ROOT / "Tests/TestResults" / "Cloud-Latest"
     output.mkdir(parents=True, exist_ok=True)
     initial_sources = source_hashes()
     report = {"startedUtc": timestamp, "project": str(ROOT), "checks": [],
@@ -353,11 +371,11 @@ def main():
         failed = failed or not passed
         passed = run_check("chest-pause-back-production", [[sys.executable, str(ROOT / "Tests/ChestPauseBackProductionTests.py"), dotnet]], env, output, report)
         failed = failed or not passed
-        for name, script in [('tactical-live-visual', 'TacticalLiveVisualTests.py'), ('companion-appearance', 'CompanionAppearanceTests.py'), ('large-boss-shutdown', 'LargeBossShutdownTests.py'), ('burn-finale-production', 'BurnFinaleProductionTests.py'), ('economy-growth', 'EconomyGrowthTests.py'), ('companion-intent-production', 'CompanionIntentProductionTests.py'), ('contract-snapshot-production', 'ContractSnapshotProductionTests.py'), ('filled-vfx-allocation', 'FilledVfxAllocationTests.py'), ('side-event-production', 'SideEventProductionTests.py'), ('skill-readability-production', 'SkillReadabilityProductionTests.py'), ('milestone-goal-surface', 'MilestoneGoalSurfaceTests.py'), ('skill-panel-navigation', 'SkillPanelNavigationProductionTests.py'), ('room-blessing-usability-negative', 'RoomBlessingUsabilityNegativeTests.py'), ('collection-stage-recovery-negative', 'CollectionStageRecoveryNegativeTests.py'), ('mobile-inventory-back-production', 'MobileInventoryBackProductionTests.py'), ('elemental-field-continuity', 'ElementalFieldContinuityTests.py'), ('blocked-combat-update-production', 'BlockedCombatUpdateProductionTests.py'), ('mobile-blessing-preview-production', 'MobileBlessingPreviewProductionTests.py'), ('room-preview-ui-contract', 'RoomBlessingPreviewSourceTests.py'), ('room-tactical-los-production', 'RoomTacticalLosProductionTests.py'), ('chest-composite-production', 'ChestCompositeProductionTests.py'), ('chest-trial-production', 'ChestTrialProductionTests.py'), ('blessing-damage-production', 'BlessingDamageProductionTests.py'), ('room-failure-evidence', 'RoomFailureEvidenceTests.py'), ('shatter-availability', 'ShatterAvailabilityTests.py'), ('hero-pose-commit', 'HeroPoseCommitTests.py'), ('weapon-swing-identity', 'WeaponSwingIdentityTests.py'), ('guard-return', 'GuardReturnTests.py'), ('world-label-production', 'WorldLabelProductionTests.py'), ('combat-readability-production', 'CombatReadabilityProductionTests.py'), ('enemy-impact-contour', 'EnemyImpactContourTests.py'), ('chapter-progression', 'ChapterProgressionTests.py'), ('chapter-combat-production', 'ChapterCombatProductionTests.py'), ('chapter-entry-production', 'ChapterEntryProductionTests.py'), ('chapter-ui-wiring', 'ChapterUIWiringTests.py'), ('chapter-host-production', 'ChapterHostProductionTests.py'), ('water-flow-production', 'WaterFlowProductionTests.py'), ('occlusion-cause-production', 'OcclusionCauseProductionTests.py'), ('route-skill-navigation', 'RouteSkillNavigationProductionTests.py'), ('growth-navigation-source', 'GrowthNavigationSourceTests.py'), ('equipment-attachment-source', 'EquipmentAttachmentSourceTests.py'), ('equipment-composition-production', 'EquipmentCompositionProductionTests.py'), ('elemental-priority-production', 'ElementalPriorityProductionTests.py'), ('chapter-return-time-scale', 'ChapterReturnTimeScaleTests.py'), ('integrated-player-journey', 'IntegratedJourneyTests.py'), ('anchored-impact-coverage', 'AnchoredImpactCoverageTests.py'), ('shore-contact-production', 'ShoreContactProductionTests.py'), ('economy-goal-ui', 'EconomyGoalUiTests.py'), ('chapterexperience', 'ChapterExperienceTests.py'), ('chaptersealrouteproduction', 'ChapterSealRouteProductionTests.py'), ('mobilepinnedtargetproduction', 'MobilePinnedTargetProductionTests.py'), ('restricted-healing-production', 'RestrictedHealingProductionTests.py'), ('effectpriorityproduction', 'EffectPriorityProductionTests.py'), ('boss-sweep-capsule-production', 'BossSweepCapsuleProductionTests.py'), ('dense-finale-production', 'DenseFinaleProductionTests.py'), ('casterchargeproduction', 'CasterChargeProductionTests.py'), ('classtierstructureproduction', 'ClassTierStructureProductionTests.py'), ('collectionposeisolationproduction', 'CollectionPoseIsolationProductionTests.py'), ('collectionpreviewpresentationproduction', 'CollectionPreviewPresentationProductionTests.py'), ('previewclothproduction', 'PreviewClothProductionTests.py'), ('weaponfashionstructureproduction', 'WeaponFashionStructureProductionTests.py'), ('chapternodeworldproduction', 'ChapterNodeWorldProductionTests.py'), ('reforgeselection', 'ReforgeSelectionTests.py'), ('combat-opportunity-slot', 'CombatOpportunitySlotProductionTests.py'), ('desktop-opportunity-hotbar', 'DesktopOpportunityHotbarProductionTests.py'), ('collection-compact-geometry', 'CollectionCompactGeometryProductionTests.py'), ('equipment-appearance-production', 'EquipmentAppearanceProductionTests.py'), ('starting-skill-budget', 'StartingSkillBudgetTests.py'), ('level-up-point-feedback', 'LevelUpPointFeedbackTests.py'), ('pack-detour-production', 'PackDetourProductionTests.py'), ('chapter-mobile-support', 'ChapterMobileSupportTests.py'), ('mechanism-evidence-production', 'MechanismEvidenceProductionTests.py'), ('player-finale-tail-production', 'PlayerFinaleTailProductionTests.py'), ('returning-counter-production', 'ReturningCounterProductionTests.py'), ('returning-counter-persistence', 'ReturningCounterPersistenceTests.py')]:
+        for name, script in [('tactical-live-visual', 'TacticalLiveVisualTests.py'), ('companion-appearance', 'CompanionAppearanceTests.py'), ('large-boss-shutdown', 'LargeBossShutdownTests.py'), ('burn-finale-production', 'BurnFinaleProductionTests.py'), ('economy-growth', 'EconomyGrowthTests.py'), ('companion-intent-production', 'CompanionIntentProductionTests.py'), ('contract-snapshot-production', 'ContractSnapshotProductionTests.py'), ('filled-vfx-allocation', 'FilledVfxAllocationTests.py'), ('side-event-production', 'SideEventProductionTests.py'), ('skill-readability-production', 'SkillReadabilityProductionTests.py'), ('milestone-goal-surface', 'MilestoneGoalSurfaceTests.py'), ('skill-panel-navigation', 'SkillPanelNavigationProductionTests.py'), ('room-blessing-usability-negative', 'RoomBlessingUsabilityNegativeTests.py'), ('collection-stage-recovery-negative', 'CollectionStageRecoveryNegativeTests.py'), ('mobile-inventory-back-production', 'MobileInventoryBackProductionTests.py'), ('elemental-field-continuity', 'ElementalFieldContinuityTests.py'), ('blocked-combat-update-production', 'BlockedCombatUpdateProductionTests.py'), ('mobile-blessing-preview-production', 'MobileBlessingPreviewProductionTests.py'), ('room-preview-ui-contract', 'RoomBlessingPreviewSourceTests.py'), ('room-tactical-los-production', 'RoomTacticalLosProductionTests.py'), ('chest-composite-production', 'ChestCompositeProductionTests.py'), ('chest-trial-production', 'ChestTrialProductionTests.py'), ('blessing-damage-production', 'BlessingDamageProductionTests.py'), ('room-failure-evidence', 'RoomFailureEvidenceTests.py'), ('room-generation-recap-layout', 'RoomGenerationRecapLayoutTests.py'), ('shatter-availability', 'ShatterAvailabilityTests.py'), ('hero-pose-commit', 'HeroPoseCommitTests.py'), ('weapon-swing-identity', 'WeaponSwingIdentityTests.py'), ('guard-return', 'GuardReturnTests.py'), ('world-label-production', 'WorldLabelProductionTests.py'), ('combat-readability-production', 'CombatReadabilityProductionTests.py'), ('enemy-impact-contour', 'EnemyImpactContourTests.py'), ('chapter-progression', 'ChapterProgressionTests.py'), ('chapter-combat-production', 'ChapterCombatProductionTests.py'), ('chapter-entry-production', 'ChapterEntryProductionTests.py'), ('chapter-ui-wiring', 'ChapterUIWiringTests.py'), ('chapter-host-production', 'ChapterHostProductionTests.py'), ('water-flow-production', 'WaterFlowProductionTests.py'), ('occlusion-cause-production', 'OcclusionCauseProductionTests.py'), ('route-skill-navigation', 'RouteSkillNavigationProductionTests.py'), ('growth-navigation-source', 'GrowthNavigationSourceTests.py'), ('equipment-attachment-source', 'EquipmentAttachmentSourceTests.py'), ('equipment-composition-production', 'EquipmentCompositionProductionTests.py'), ('elemental-priority-production', 'ElementalPriorityProductionTests.py'), ('chapter-return-time-scale', 'ChapterReturnTimeScaleTests.py'), ('integrated-player-journey', 'IntegratedJourneyTests.py'), ('anchored-impact-coverage', 'AnchoredImpactCoverageTests.py'), ('shore-contact-production', 'ShoreContactProductionTests.py'), ('economy-goal-ui', 'EconomyGoalUiTests.py'), ('chapterexperience', 'ChapterExperienceTests.py'), ('chaptersealrouteproduction', 'ChapterSealRouteProductionTests.py'), ('mobilepinnedtargetproduction', 'MobilePinnedTargetProductionTests.py'), ('restricted-healing-production', 'RestrictedHealingProductionTests.py'), ('effectpriorityproduction', 'EffectPriorityProductionTests.py'), ('boss-sweep-capsule-production', 'BossSweepCapsuleProductionTests.py'), ('dense-finale-production', 'DenseFinaleProductionTests.py'), ('casterchargeproduction', 'CasterChargeProductionTests.py'), ('classtierstructureproduction', 'ClassTierStructureProductionTests.py'), ('collectionposeisolationproduction', 'CollectionPoseIsolationProductionTests.py'), ('collectionpreviewpresentationproduction', 'CollectionPreviewPresentationProductionTests.py'), ('previewclothproduction', 'PreviewClothProductionTests.py'), ('weaponfashionstructureproduction', 'WeaponFashionStructureProductionTests.py'), ('chapternodeworldproduction', 'ChapterNodeWorldProductionTests.py'), ('reforgeselection', 'ReforgeSelectionTests.py'), ('combat-opportunity-slot', 'CombatOpportunitySlotProductionTests.py'), ('desktop-opportunity-hotbar', 'DesktopOpportunityHotbarProductionTests.py'), ('collection-compact-geometry', 'CollectionCompactGeometryProductionTests.py'), ('equipment-appearance-production', 'EquipmentAppearanceProductionTests.py'), ('starting-skill-budget', 'StartingSkillBudgetTests.py'), ('level-up-point-feedback', 'LevelUpPointFeedbackTests.py'), ('pack-detour-production', 'PackDetourProductionTests.py'), ('chapter-mobile-support', 'ChapterMobileSupportTests.py'), ('mechanism-evidence-production', 'MechanismEvidenceProductionTests.py'), ('player-finale-tail-production', 'PlayerFinaleTailProductionTests.py'), ('returning-counter-production', 'ReturningCounterProductionTests.py'), ('returning-counter-persistence', 'ReturningCounterPersistenceTests.py')]:
             passed = run_check(name, [[sys.executable,str(ROOT/"Tests"/script),dotnet]], dict(env,DOTNET=dotnet), output, report)
             failed = failed or not passed
         # Round 3 packages: execute production paths and compiled negative controls.
-        for name, script in [('practice-locomotion', 'PracticeLocomotionProductionTests.py'), ('practice-prop-isolation', 'PracticePropIsolationProductionTests.py'), ('enemy-status-anchor', 'EnemyStatusAnchorProductionTests.py'), ('mechanic-knowledge', 'MechanicKnowledgeProductionTests.py'), ('chest-choice-presentation', 'ChestChoicePresentationTests.py'), ('delayed-cast-first-hit', 'DelayedCastFirstHitTests.py'), ('delayed-cast-producer-lifetime', 'DelayedCastProducerLifetimeTests.py'), ('room-branch', 'RoomBranchProductionTests.py'), ('practice-pressure-combat', 'PracticePressureCombatProductionTests.py'), ('preset-replacement', 'PresetReplacementProductionTests.py'), ('venom-visual', 'VenomVisualProductionTests.py'), ('opportunity-duration', 'OpportunityDurationProductionTests.py'), ('mobile-opportunity-input', 'MobileOpportunityInputProductionTests.py'), ('practice-hud', 'PracticeHudProductionTests.py'), ('build-plan-page-geometry', 'BuildPlanPageGeometryTests.py'), ('class-switch-service', 'ClassSwitchProductionTests.py'), ('class-switch-runtime', 'ClassSwitchRuntimeTests.py'), ('class-switch-ui', 'ClassSwitchUIProductionTests.py'), ('single-chest-service', 'SingleChestProductionTests.py'), ('single-chest-ui', 'SingleChestUIProductionTests.py'), ('reward-polish-service', 'RewardPolishServiceTests.py'), ('reward-polish-ui', 'RewardPolishUIProductionTests.py'), ('practice-action-settlement', 'PracticeActionSettlementProductionTests.py')]:
+        for name, script in [('practice-locomotion', 'PracticeLocomotionProductionTests.py'), ('practice-prop-isolation', 'PracticePropIsolationProductionTests.py'), ('enemy-status-anchor', 'EnemyStatusAnchorProductionTests.py'), ('mechanic-knowledge', 'MechanicKnowledgeProductionTests.py'), ('chest-choice-presentation', 'ChestChoicePresentationTests.py'), ('delayed-cast-first-hit', 'DelayedCastFirstHitTests.py'), ('delayed-cast-producer-lifetime', 'DelayedCastProducerLifetimeTests.py'), ('room-branch', 'RoomBranchProductionTests.py'), ('practice-pressure-combat', 'PracticePressureCombatProductionTests.py'), ('preset-replacement', 'PresetReplacementProductionTests.py'), ('venom-visual', 'VenomVisualProductionTests.py'), ('opportunity-duration', 'OpportunityDurationProductionTests.py'), ('mobile-opportunity-input', 'MobileOpportunityInputProductionTests.py'), ('mobile-floating-joystick', 'MobileFloatingJoystickTests.py'), ('practice-hud', 'PracticeHudProductionTests.py'), ('build-plan-page-geometry', 'BuildPlanPageGeometryTests.py'), ('class-switch-service', 'ClassSwitchProductionTests.py'), ('class-switch-runtime', 'ClassSwitchRuntimeTests.py'), ('class-switch-ui', 'ClassSwitchUIProductionTests.py'), ('single-chest-service', 'SingleChestProductionTests.py'), ('single-chest-ui', 'SingleChestUIProductionTests.py'), ('reward-polish-service', 'RewardPolishServiceTests.py'), ('reward-polish-ui', 'RewardPolishUIProductionTests.py'), ('practice-action-settlement', 'PracticeActionSettlementProductionTests.py')]:
             passed = run_check(name, [[sys.executable,str(ROOT/"Tests"/script),dotnet]], dict(env,DOTNET=dotnet), output, report)
             failed = failed or not passed
         passed = run_check("room-free-seal-host", [[sys.executable,str(ROOT/"Tests/RoomFreeSealHostTests.py"),dotnet]], dict(env,DOTNET=dotnet), output, report)
@@ -492,6 +510,10 @@ def main():
                                 [dotnet, "build", str(project), "--no-restore", "--configuration", "Release", "--verbosity", "minimal"]]
                     passed = run_check(name, commands, env, output, report)
                     failed = failed or not passed
+        for future in PENDING:
+            failed = not future.result() or failed
+        if EXECUTOR is not None:
+            EXECUTOR.shutdown()
     final_sources = source_hashes()
     changed = sorted(path for path in initial_sources.keys() | final_sources.keys()
                      if initial_sources.get(path) != final_sources.get(path))
@@ -515,6 +537,15 @@ def source_hashes():
 
 
 def run_check(name, commands, env, output, report):
+    if CHECK_FILTER is not None and name not in CHECK_FILTER:
+        return True
+    if EXECUTOR is not None:
+        PENDING.append(EXECUTOR.submit(execute_check,name,commands,env,output,report))
+        return True
+    return execute_check(name,commands,env,output,report)
+
+
+def execute_check(name, commands, env, output, report):
     chunks = []
     passed = True
     for command in commands:

@@ -15,7 +15,7 @@ def main():
     with tempfile.TemporaryDirectory(prefix='enemy-impact-contour-') as temporary:
         for legacy in [False,True]:
             folder=Path(temporary)/('legacy' if legacy else 'current');folder.mkdir();(folder/'Math.cs').write_text(math);(folder/'Predicate.cs').write_text('using System;namespace Emberfall{public static partial class PlayerUpgradeRules{'+predicate+'}}')
-            for path in ['Assets/Scripts/Combat/EnemyImpactRegion.cs','Assets/Scripts/Combat/EnemyAttackTelegraph.cs','Assets/Scripts/World/WorldTraversal.cs','Tests/EnemyImpactContourTests.cs']:
+            for path in ['Assets/Scripts/Combat/EnemyImpactRegion.cs','Assets/Scripts/Combat/EnemyAttackTelegraph.cs','Assets/Scripts/World/WorldTraversal.cs','Assets/Scripts/World/WorldTraversal.Platforms.cs','Tests/EnemyImpactContourTests.cs']:
                 source=(ROOT/path).read_text()
                 if legacy and path.endswith('EnemyImpactRegion.cs'):
                     start=source.index('        internal static List<Vector3> Outline(');source=source[:start]+source[start:].replace('Contains(attacker,center,','CircleOnly(center,');source=source.replace('        internal static List<Vector3> Outline(', '        private static bool CircleOnly(Vector3 center,Vector3 point,float radius){var d=CombatFx.Flat(point-center);return PlayerUpgradeRules.IsInsideArea(d.x,d.z,radius,true);}\n        internal static List<Vector3> Outline(')

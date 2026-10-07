@@ -20,7 +20,7 @@ namespace Emberfall
  public sealed partial class GameUI
  {
   Session session=new Session();CollectionModelPreview collectionModel;CollectionViewingState collectionViewing=new CollectionViewingState();float collectionPreviewYaw;Color gold,jade;public List<Rect> Buttons=new List<Rect>();
-  void Fill(Rect r,Color c){}bool Button(Rect r,string text,Color c){Buttons.Add(r);return false;}void BlockUITransition(){}
+  void Fill(Rect r,Color c){}bool TabButton(Rect r,string text,bool selected)=>Button(r,text,new Color());bool Button(Rect r,string text,Color c){Buttons.Add(r);return false;}void BlockUITransition(){}
   public void Draw(Rect area,bool rotate){Buttons.Clear();DrawCollectionModel(area,null,rotate);}
   public void Controls(CollectionPreviewLayout layout,Vector2 origin,float scale){Buttons.Clear();DrawCollectionControls(layout,origin,scale);}
   public float NativeWidth=>collectionModel.Width;public float NativeHeight=>collectionModel.Height;

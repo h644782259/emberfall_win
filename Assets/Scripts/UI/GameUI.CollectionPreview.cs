@@ -95,12 +95,11 @@ namespace Emberfall
             {
                 Rarity rarity=(Rarity)rank;string id="fashion-"+collectionSlot+"-"+rank;
                 bool owned=profile.fashions.Exists(f=>f!=null&&f.id==id),equipped=worn!=null&&worn.id==id,source=strongest!=null&&strongest.id==id;
-                Rect row=new Rect(x,w.y+213+rank*80,width,72);Fill(row,card);Color accent=GameBalance.RarityColor(rarity);
-                Fill(new Rect(row.x,row.y,3,row.height),accent);
-                Text(new Rect(x+12,row.y+8,350,22),ProgressionService.FashionName(slot,rarity),16,accent,true);
-                Text(new Rect(x+12,row.y+32,350,17),ProgressionService.FashionBonus(slot,rarity),12,pale);
-                Text(new Rect(x+12,row.y+51,350,17),EquipmentComparisonPresentation.CollectionState(owned,equipped,source),11,owned?jade:muted);
-                if(Button(new Rect(row.xMax-212,row.y+17,96,38),"试穿",jade))TrialFashion(slot,rarity);
+                Rect row=new Rect(x,w.y+213+rank*80,width,72);Color accent=GameBalance.RarityColor(rarity);
+                DrawCollectionItemCard(new Rect(row.x,row.y,row.width-224,row.height),UIIconAtlas.FashionCardIcon(slot),owned?accent:muted,
+                    ProgressionService.FashionName(slot,rarity),ProgressionService.FashionBonus(slot,rarity),EquipmentComparisonPresentation.CollectionState(owned,equipped,source),equipped);
+                Fill(new Rect(row.xMax-224,row.y,224,row.height),card);
+                if(Button(new Rect(row.xMax-212,row.y+17,96,38),"预览",jade))TrialFashion(slot,rarity);
                 if(Button(new Rect(row.xMax-108,row.y+17,96,38),equipped?"已穿戴":"穿戴",accent,owned&&!equipped))
                 {bool accepted=p.EquipFashion(id);collectionNotice=accepted?"外观已穿戴 · 属性来源保持最高收藏":p.LastError;Feedback(accepted,collectionNotice);}
             }

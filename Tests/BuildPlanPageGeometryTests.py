@@ -10,7 +10,7 @@ def member(s,key):
  return s[a:b]
 with tempfile.TemporaryDirectory(prefix='whole-plan-geometry-') as d:
  p=Path(d);(p/'NuGet.Config').write_text('<configuration><packageSources><clear/></packageSources></configuration>')
- sources=[root/('Assets/Scripts/Core/'+f+'.cs') for f in ['SkillRuntime','GameTypes','ProgressionService','CombatBalance','SkillDamageBudgets','HubTravelRules','MasteryCoreRuntime','TierRewardRules','TierRewardBand','ProgressionGoalState','ChapterProgression','ProgressionService.Chapter','ProgressionService.Reforge','ReforgeQuote','RoomTactics','CombatImpactBatch','CampPracticeRecord','HudLogicalScale']]
+ sources=[root/('Assets/Scripts/Core/'+f+'.cs') for f in ['SkillRuntime','GameTypes','ProgressionService','CombatBalance','SkillDamageBudgets','HubTravelRules','MasteryCoreRuntime','TierRewardRules','TierRewardBand','ProgressionGoalState','ChapterProgression','ProgressionService.Chapter','ProgressionService.Attachments','ProgressionService.AutomaticGrowth','ProgressionService.Reforge','ReforgeQuote','RoomTactics','CombatImpactBatch','CampPracticeRecord','HudLogicalScale']]
  sources += [root/('Assets/Scripts/UI/'+f+'.cs') for f in ['GameUI.BuildPlans','GameUI.BuildDraft','GameUI.Practice','PracticeResultPresentation','PracticeHudLayout','MobilePanelLayout','MobileControlLayout']]+[root/'Assets/Scripts/Combat/MobileSkillPolicy.cs',root/'Tests/BuildPlanPageGeometryBoundary.cs']
  progression=p/'Progression.cs';progression.write_text((root/'Tests/ProgressionTests.cs').read_text().replace('public struct Color {','public struct Color {public static Color operator *(Color c,float f)=>c;'));sources.append(progression)
  s=(root/'Tests/CampBuildDraftUIBoundary.cs').read_text()

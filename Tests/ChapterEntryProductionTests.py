@@ -27,6 +27,7 @@ namespace Emberfall {
   public bool OpenChapterSelectionAllowed=>HasStarted&&!Paused&&!BackgroundPaused&&!IsDead&&!ChapterFinished;
   public ChapterNode SelectedChapterNode,ActiveChapterNode;public ChapterDifficulty SelectedChapterDifficulty;public int SelectedChapterTier=1;public int SelectedChapterTactic=-1;public string SelectedChapterLineupPreview=>"";public bool SelectedChapterLimitedHealing;
   public bool CanRetryChapter=>ChapterFinished&&ChapterRun.Failed;public int RetryCalls;public bool RetryFailedChapter(){RetryCalls++;return true;}
+  public bool CanChallengeNextChapterTier=>false;public bool ChallengeNextChapterTier()=>throw new Exception("Next chapter host is outside the UI boundary");
   public bool ChapterResultReady=true;public ChapterResultSnapshot ChapterResult;public void ContinueChapterResult(){ChapterResultReady=true;}public void Respawn(){ReturnCalls++;}
   public RunStub ChapterRun=new RunStub();public ChapterRunReceipt Receipt;public int ChapterRewardMaterials=>Receipt==null?0:Receipt.Materials;public int ConfirmCalls,ReturnCalls;
   public bool ConfirmChapterEnter(){ConfirmCalls++;if(!AllowConfirm||!Progression.TryBeginChapterNode(SelectedChapterNode,SelectedChapterDifficulty,SelectedChapterTier,out Receipt))return false;for(int room=0;room<ChapterDefinition.RoomCount(Receipt.Node);room++)for(int i=0;i<(Receipt.Node==ChapterNode.StarPlatform?3:6);i++)if(!Progression.RegisterChapterEnemy(Receipt,room,i,Receipt.Node==ChapterNode.StarPlatform&&i==0))throw new Exception("UI host double must register actual completion budget");ChapterResult=new ChapterResultSnapshot(Receipt.Node,Receipt.Difficulty,Receipt.Tier,Progression.Profile.potions,false,0,0,0,0,false,null,null,0,0);return true;}
@@ -41,6 +42,7 @@ namespace Emberfall {
   Panel panel,bindingReturnPanel;SessionStub session;int campTab,rebindingSlot,blocks,cancels;
   bool opaqueFrame;bool UITransitionBlocked=false,saveSelectionFromPause,chestDetails,bindingReturnPause,saveReturnPause,controlsReturnPause;float chestRevealedAt;const float ChestDuration=1;bool ChestAnimationDone=>true;
   float width=568,height=320,TouchRatio=1;Color gold=new Color(),jade=new Color(),pale=new Color(),muted=new Color();string click;bool insideScroll;Rect viewport,content;
+  Color card=new Color();void DrawRewardToken(Rect r,int kind,int amount,float unit){texts.Add((kind==1?"碎片":"经验")+" +"+amount);}
   List<(string text,Rect rect,bool scroll,bool enabled)> buttons=new List<(string,Rect,bool,bool)>();List<string> texts=new List<string>();
   void CancelHotbarPointer(){}void CancelMobileScroll(){cancels++;}void BlockUITransition(){blocks++;}
   string HubNpcServiceSubtitle(string fallback)=>fallback;
@@ -109,7 +111,7 @@ namespace Emberfall {
    ui.texts.Clear();ui.buttons.Clear();ui.DrawChapterResult();check(ui.observedResultScroll.y==47,"pending failed-save retry preserves result reading position");check(ui.buttons.Exists(b=>b.text=="重试保存结算"&&b.enabled&&!b.scroll),"save failure keeps reachable fixed retry action");
    check(ui.texts.Exists(t=>t.Contains("结算待保存"))&&ui.texts.Exists(t=>t.Contains(p.LastError)),"result visibly distinguishes unsaved progress and actual error");
    int capturedMaterials=ui.session.Receipt.Materials;Directory.Delete(p.SaveFilePath+".tmp");check(ui.RetryChapterSettlement()&&!ui.session.ChapterRewardPending,"same receipt retries through actual UI method and real save");
-   ui.texts.Clear();ui.DrawChapterResult();check(ui.observedResultScroll.y==47,"successful real settlement retry preserves result reading position");check(ui.texts.Exists(t=>t.Contains("奖励已保存 · +"+capturedMaterials+" 碎片")),"result displays original receipt amount including captured first-clear bonus");
+   ui.texts.Clear();ui.DrawChapterResult();check(ui.observedResultScroll.y==47,"successful real settlement retry preserves result reading position");check(ui.texts.Contains("碎片 +"+capturedMaterials)&&ui.texts.Exists(t=>t.Contains("奖励已保存")),"result displays original receipt amount including captured first-clear bonus");
    check(!p.Profile.pendingFirstClearReward&&!ui.session.ChapterResult.FirstCoreAvailable,"actual Redrock UI settlement cannot unlock shared first core");
    check(capturedMaterials==ChapterProgression.MaterialReward(ui.session.Receipt.Node,ui.session.Receipt.Tier)+1,"first-clear receipt retains bonus after completion mask changed");
    int after=events;check(!ui.RetryChapterSettlement()&&events==after,"completed UI retry cannot grant again");
@@ -122,7 +124,7 @@ namespace Emberfall {
    ui.session.IsDead=true;ui.session.ChapterFinished=false;ui.ReplayDeadSurface();check(ui.ordinaryDeaths==1,"ordinary nonchapter death still dispatches original death screen");
    var previousResult=ui.session.ChapterResult;ui.session.ChapterFinished=true;ui.session.ChapterRun.Failed=true;ui.session.ChapterResult=failure;ui.texts.Clear();ui.ReplayDeadSurface();check(ui.ordinaryDeaths==1&&ui.texts.Exists(t=>t.Contains("spawn #4 unreachable")),"chapter death dispatches retained failure evidence instead of ordinary death screen");check(ui.buttons.Exists(b=>b.text=="原条件重试"&&b.enabled)&&ui.buttons.Exists(b=>b.text=="返回营地"),"failed chapter shows retry and camp actions");ui.click="原条件重试";ui.DrawChapterResult();check(ui.session.RetryCalls==1,"retry button dispatches host once");ui.session.IsDead=false;ui.session.ChapterRun.Failed=false;ui.session.ChapterResult=previousResult;
    var repeat=new ChapterResultSnapshot(ChapterNode.ForestCourt,ChapterDifficulty.Normal,1,3,false,1,2,3,3,false,null,null,0,14);repeat.RecordSaved(1,false,-1,-1,2,2,140);
-   string repeatText=ChapterEntryPresentation.Result(repeat);check(repeatText.Contains("+1 碎片")&&!repeatText.Contains(ChapterDefinition.Get(ChapterNode.ForestCourt).Outcome)&&!repeatText.Contains("新节点"),"repeat completion displays actual gain without invented first-clear reveal");
+   string repeatText=ChapterEntryPresentation.Result(repeat);check(repeat.Materials==1&&repeatText.Contains("奖励已保存")&&!repeatText.Contains(ChapterDefinition.Get(ChapterNode.ForestCourt).Outcome)&&!repeatText.Contains("新节点"),"repeat completion displays actual gain without invented first-clear reveal");
    ui.ReturnFromChapter();check(ui.session.ReturnCalls==1,"result return delegates to host guarded leave path");
    ui.session.ChapterFinished=true;ui.session.LeaveSucceeds=false;var selectedBefore=ui.session.SelectedChapterNode;int confirmsBefore=ui.session.ConfirmCalls;
    check(!ui.ReturnAndSelectNextChapter()&&ui.session.ChapterFinished&&ui.session.SelectedChapterNode==selectedBefore,"next-node save rejection keeps terminal view and prior selection");
@@ -140,7 +142,7 @@ namespace Emberfall {
 }
 class Program{static void Main(string[] args){Console.WriteLine("PASS: "+Emberfall.GameUI.Verify(args[0])+" chapter UI/core replay assertions");}}
 '''
-core=['RunChoices','RunChoices.Rooms','RunChoices.Chapter','GameTypes','ProgressionService','ProgressionService.Reforge','ReforgeQuote','ProgressionService.Chapter','ChapterProgression','ChapterResultSnapshot','RoomTactics','CombatBalance','HubTravelRules','MasteryCoreRuntime','TierRewardRules','TierRewardBand','ProgressionGoalState']
+core=['RunChoices','RunChoices.Rooms','RunChoices.Chapter','GameTypes','ProgressionService','ProgressionService.Attachments','ProgressionService.AutomaticGrowth','ProgressionService.Reforge','ReforgeQuote','ProgressionService.Chapter','ChapterProgression','ChapterResultSnapshot','RoomTactics','CombatBalance','HubTravelRules','MasteryCoreRuntime','TierRewardRules','TierRewardBand','ProgressionGoalState']
 dispatch=member('GameUI.cs','else if (session.IsDead)');shell=shell.replace('DEAD_DISPATCH',dispatch[dispatch.index('{'):])
 close=member('GameUI.cs','private void ClosePanel()');hook='if(CloseChapterSelection())return;'
 assert hook in close,'chapter ClosePanel hook must be integrated before replay'

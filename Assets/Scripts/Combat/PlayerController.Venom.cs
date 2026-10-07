@@ -8,6 +8,7 @@ namespace Emberfall
             get
             {
                 if (!HasMechanic(EquipmentMechanic.VenomSpread)) return false;
+                var attachment=session.Progression.Attachment(EquipmentMechanic.VenomSpread);if(attachment!=null)return attachment.variantUnlocked&&attachment.variant==1;
                 var item = session.Progression.Equipped(BuildCatalog.MechanicSlot(EquipmentMechanic.VenomSpread));
                 return item != null && item.mechanicVariantUnlocked && item.mechanicVariant == 1;
             }
@@ -17,7 +18,7 @@ namespace Emberfall
             // Capture intent once. Bounded steering never swaps targets or bypasses collision.
             EnemyController locked = AimTarget;
             Vector3 direction = transform.forward;
-            var amount = Damage(ConcentratedVenomRules.DirectCoefficient(rank));
+            var amount = Damage(ConcentratedVenomRules.DirectCoefficient(rank)*session.Progression.MechanicPowerMultiplier(EquipmentMechanic.VenomSpread));
             Vector3 muzzle = transform.position + direction * .6f;
             if (CombatProjectile.CanLaunchFromMuzzle(this, muzzle, amount, castId))
                 CombatProjectile.Friendly(this, session, muzzle, direction, amount, color,

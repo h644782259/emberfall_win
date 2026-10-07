@@ -175,8 +175,10 @@ namespace Emberfall
     var mechanic=BuildCatalog.MechanicsFor(hero)[0];var ids=p.Profile.inventory.Select(i=>i.id).ToArray();int gold=p.Profile.gold,materials=p.Profile.mechanicMaterials;
     JourneyAtomicFailure(p,()=>p.ClaimFirstClearReward(mechanic),"first shared core claim");
     JourneyCheck(p.ClaimFirstClearReward(mechanic),"same first-core claim retries");
-    var core=p.Profile.inventory.Single(i=>!ids.Contains(i.id));string coreId=core.id;
-    JourneyCheck(core.level==6&&core.mechanic==mechanic&&core.rarity==Rarity.Epic&&core.locked&&p.Profile.inventory.Count==ids.Length+1&&p.Profile.gold==gold&&p.Profile.mechanicMaterials==materials&&p.Profile.firstClearRewardClaimed&&!p.Profile.pendingFirstClearReward,"one first core retains reward identity and no currency charge");
+    var attachment=p.Attachment(mechanic);JourneyCheck(attachment!=null&&attachment.mounted&&attachment.rarity==Rarity.Epic&&p.Profile.inventory.Count==ids.Length,"first entitlement grants independent attachment without an inventory item");
+    // Exercise retained legacy equipment investments with an actual mechanism-drop factory.
+    var core=p.CreateMechanicItem(mechanic);JourneyCheck(p.CollectLoot(core),"legacy mechanism drop remains receivable");string coreId=core.id;
+    JourneyCheck(core.level==ProgressionService.EquipmentGenerationLevel(6)&&core.mechanic==mechanic&&core.rarity==Rarity.Epic&&core.locked&&p.Profile.inventory.Count==ids.Length+1&&p.Profile.gold==gold&&p.Profile.mechanicMaterials==materials&&p.Profile.firstClearRewardClaimed&&!p.Profile.pendingFirstClearReward,"one first core retains reward identity and no currency charge");
     JourneyNoMutation(p,()=>p.ClaimFirstClearReward(mechanic),false,"shared first core cannot be claimed twice");JourneyStage(s,"core-claimed");
     JourneyBuild(s,coreId);JourneyReload(s);p=s.Progression;
     var grown=p.Profile.inventory.Single(i=>i.id==coreId);int grownLevel=grown.level,grownRank=p.SlotUpgradeRank(grown.slot),grownGold=p.Profile.gold;

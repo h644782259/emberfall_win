@@ -38,7 +38,7 @@ namespace Emberfall
             {if(targeting.TargetedSkillIndex!=skill)return default;point=targeting.TargetPoint;}
             else if(MobileControls.Active)ResolveMobileSkillAim(skill,out selected,out point);
             float range=GameBalance.SkillRangeMultiplier(session.Progression.Profile.skillRanks[skill]);
-            Vector3 center=ResolveSkillGroundTarget(point,range);float radius=(skill==9?6.5f:3f)*range,remaining=0,duration=0;
+            Vector3 center=ResolveSkillGroundTarget(point,range);float radius=(skill==9?GameBalance.ArcanistFinaleRadius:3f)*range,remaining=0,duration=0;
             foreach(var enemy in session.Enemies)
             {
                 if(!ValidAimTarget(enemy)||enemy.StatusEffects==null||CombatFx.Flat(enemy.transform.position-center).magnitude>radius+(enemy.IsBoss?.85f:.4f)+enemy.HitFootprintBonus||!CombatSight.Area(center,enemy.transform.position))continue;

@@ -32,6 +32,7 @@ namespace Emberfall
  {
   public enum Panel{None,Skills}private Panel panel=Panel.Skills;private float width=568,height=320;private float scale=1;private Vector2 guiOffset;private Rect hotbarBounds;private Rect[] hotbarSlots=new Rect[10];private void ObserveTouchViewport(Rect safe){}private Color muted,pale,gold,jade;private List<Rect> blockedRects=new List<Rect>();public GameSession session;
   public readonly List<(Rect area,string text)> Labels=new List<(Rect,string)>();public readonly List<(Rect area,string text)> Buttons=new List<(Rect,string)>();public readonly List<Rect> PixelButtons=new List<Rect>();public string Click;public int Hotbars,MobileHotbars,Companions,Charge,Targeting,Cancellations;
+  private bool PrimaryButton(Rect r,string text,Color c,bool enabled=true,string reason=null,bool selected=false)=>Button(r,text,c,enabled);
   private bool Button(Rect r,string text,Color c,bool enabled=true){Buttons.Add((r,text));PixelButtons.Add(GUI.matrix.Apply(r));if(enabled&&Click==text){Click=null;return true;}return false;}
   private void Text(Rect r,string text,int size,Color c,bool bold=false,bool wrap=false,TextAnchor align=TextAnchor.MiddleCenter){Labels.Add((r,text));}
   // Text measuring is an explicit managed substitute; actual Unity font rendering is not claimed.

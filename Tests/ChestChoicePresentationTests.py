@@ -38,7 +38,7 @@ for filename in ['GameUI.Rewards.cs','GameUI.MobileRewards.cs']:
  assert ('DrawSingleChestCard(' in source) and 'ChestRevealPresentation.ChoiceDisclosure' in source
  assert 'ChestRevealPresentation.ResultWithCollection(reward,session.Progression.Profile)' in source
  assert 'DrawChestCommittedReward(' in source
-core=['SafeSaveFlow','GameTypes','ProgressionService','ProgressionService.Reforge','ReforgeQuote','ProgressionService.Chapter','ChapterProgression','RoomTactics','CombatBalance','HubTravelRules','MasteryCoreRuntime','CastFirstHitReceipt','TierRewardRules','TierRewardBand','ProgressionGoalState']
+core=['SafeSaveFlow','GameTypes','ProgressionService','ProgressionService.Attachments','ProgressionService.AutomaticGrowth','ProgressionService.Reforge','ReforgeQuote','ProgressionService.Chapter','ChapterProgression','RoomTactics','CombatBalance','HubTravelRules','MasteryCoreRuntime','CastFirstHitReceipt','TierRewardRules','TierRewardBand','ProgressionGoalState']
 with tempfile.TemporaryDirectory(prefix='h03-chest-ui-') as tmp:
  p=Path(tmp)
  for name in core:(p/(name+'.cs')).write_text((r/'Assets/Scripts/Core'/(name+'.cs')).read_text())

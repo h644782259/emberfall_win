@@ -55,7 +55,7 @@ namespace Emberfall {
  public class SkillTargetingController:MonoBehaviour{public bool ConfirmingContract;}
  public static class SummonedCompanion{public static EnemyController ExplicitFocus(PlayerController h)=>null;}
  public static class SkillDamageBudgets{public static float ChargeSeconds(HeroClass h,int i)=>.3f;}
- public static class GameBalance{public static float SkillRangeMultiplier(int r)=>1;public static Color ClassColor(HeroClass h)=>new Color(1,1,1);}
+ public static class GameBalance{public const float ArcanistFinaleRadius=9.5f;public static float SkillRangeMultiplier(int r)=>1;public static Color ClassColor(HeroClass h)=>new Color(1,1,1);}
  public static class CombatReviewEvents{public static bool Enabled;public static void Emit(string n,int id,int skill){}}public static class CombatReviewObjectId{public static int Get(PlayerController p)=>1;}
 }
 class Program{

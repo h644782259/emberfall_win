@@ -18,10 +18,11 @@ public static class ProgressionAttentionTests
   Check(!ProgressionAttention.HigherScore(100.05f,100)&&ProgressionAttention.HigherScore(101,100),"score threshold avoids rounded-equal nags");
   Check(!ProgressionAttention.HigherScore(float.NaN,100),"invalid score excluded");
   var alt=new ItemData{id=Guid.NewGuid().ToString("N"),name="机制取舍",slot=ItemSlot.Weapon,rarity=Rarity.Epic,level=2,attack=150,defense=12,health=120,mechanic=EquipmentMechanic.ReturningBlade};p.Profile.inventory.Add(alt);
-  state=ProgressionAttention.Evaluate(p,true);Check(state.HigherScoreItems.Contains(alt.id)&&state.MechanismTradeoffs.Contains(alt.id),"higher numbers with mechanic change marked tradeoff not guaranteed build upgrade");
+  state=ProgressionAttention.Evaluate(p,true);Check(state.HigherScoreItems.Contains(alt.id)&&!state.MechanismTradeoffs.Contains(alt.id),"independent attachment is preserved when equipment score increases");
   p.Profile.pendingLoot.Add(new ItemData{id=Guid.NewGuid().ToString("N"),name="待领",slot=ItemSlot.Relic,level=1});Check(ProgressionAttention.Evaluate(p,true).LootClaimable,"claimable loot alerts");
   while(p.Profile.inventory.Count<ProgressionService.InventoryCapacity)p.Profile.inventory.Add(new ItemData{id=Guid.NewGuid().ToString("N"),name="容量",slot=ItemSlot.Relic,level=1});
   Check(!ProgressionAttention.Evaluate(p,true).LootClaimable,"full inventory is not a currently claimable action");
+  Check(ProgressionAttention.Evaluate(p,true).LootPending&&ProgressionAttention.Evaluate(p,true).Rewards,"pending reward badge remains while the bag is full");
   p.Profile.pendingFirstClearReward=true;Check(!ProgressionAttention.Evaluate(p,false).FirstClearClaimable&&ProgressionAttention.Evaluate(p,true).FirstClearClaimable,"camp-only reward availability");
   p.Profile.pendingFirstClearReward=false;p.Profile.pendingLoot.Clear();p.Profile.pendingChestReveal=false;p.Profile.pendingFashionChest=false;Check(!ProgressionAttention.Evaluate(p,true).Rewards,"handled rewards disappear");
   // Stable destination across new slot, load, repeated writes and deletion.

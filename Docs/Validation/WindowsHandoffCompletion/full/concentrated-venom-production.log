@@ -1,0 +1,59 @@
+未能将“E:\emberfall_win\Tests\TestResults\Temp\venom-q_ehrpij\cli\.dotnet\tools”添加到 PATH 环境变量。请将此目录添加到 PATH，以使用通过 "dotnet tool install" 安装的工具。
+E:\emberfall_win\Tests\ConcentratedVenomContactFixture.cs(24,219): warning CS0649: 从未对字段“CombatProjectile.basicAttack”赋值，字段将一直保持其默认值 false [E:\emberfall_win\Tests\TestResults\Temp\venom-q_ehrpij\contact\Validation.csproj]
+E:\emberfall_win\Tests\ConcentratedVenomContactFixture.cs(25,158): warning CS0649: 从未对字段“CombatProjectile.color”赋值，字段将一直保持其默认值 [E:\emberfall_win\Tests\TestResults\Temp\venom-q_ehrpij\contact\Validation.csproj]
+E:\emberfall_win\Tests\ConcentratedVenomContactFixture.cs(25,135): warning CS0649: 从未对字段“CombatProjectile.direction”赋值，字段将一直保持其默认值 [E:\emberfall_win\Tests\TestResults\Temp\venom-q_ehrpij\contact\Validation.csproj]
+E:\emberfall_win\Tests\ConcentratedVenomContactFixture.cs(24,332): warning CS0649: 从未对字段“CombatProjectile.explosionRadius”赋值，字段将一直保持其默认值 0 [E:\emberfall_win\Tests\TestResults\Temp\venom-q_ehrpij\contact\Validation.csproj]
+
+已成功生成。
+
+E:\emberfall_win\Tests\ConcentratedVenomContactFixture.cs(24,219): warning CS0649: 从未对字段“CombatProjectile.basicAttack”赋值，字段将一直保持其默认值 false [E:\emberfall_win\Tests\TestResults\Temp\venom-q_ehrpij\contact\Validation.csproj]
+E:\emberfall_win\Tests\ConcentratedVenomContactFixture.cs(25,158): warning CS0649: 从未对字段“CombatProjectile.color”赋值，字段将一直保持其默认值 [E:\emberfall_win\Tests\TestResults\Temp\venom-q_ehrpij\contact\Validation.csproj]
+E:\emberfall_win\Tests\ConcentratedVenomContactFixture.cs(25,135): warning CS0649: 从未对字段“CombatProjectile.direction”赋值，字段将一直保持其默认值 [E:\emberfall_win\Tests\TestResults\Temp\venom-q_ehrpij\contact\Validation.csproj]
+E:\emberfall_win\Tests\ConcentratedVenomContactFixture.cs(24,332): warning CS0649: 从未对字段“CombatProjectile.explosionRadius”赋值，字段将一直保持其默认值 0 [E:\emberfall_win\Tests\TestResults\Temp\venom-q_ehrpij\contact\Validation.csproj]
+    4 个警告
+    0 个错误
+
+已用时间 00:00:02.54
+E:\emberfall_win\Tests\ConcentratedVenomContactFixture.cs(25,158): warning CS0649: 从未对字段“CombatProjectile.color”赋值，字段将一直保持其默认值 [E:\emberfall_win\Tests\TestResults\Temp\venom-q_ehrpij\contact\Validation.csproj]
+E:\emberfall_win\Tests\ConcentratedVenomContactFixture.cs(24,219): warning CS0649: 从未对字段“CombatProjectile.basicAttack”赋值，字段将一直保持其默认值 false [E:\emberfall_win\Tests\TestResults\Temp\venom-q_ehrpij\contact\Validation.csproj]
+E:\emberfall_win\Tests\ConcentratedVenomContactFixture.cs(25,135): warning CS0649: 从未对字段“CombatProjectile.direction”赋值，字段将一直保持其默认值 [E:\emberfall_win\Tests\TestResults\Temp\venom-q_ehrpij\contact\Validation.csproj]
+E:\emberfall_win\Tests\ConcentratedVenomContactFixture.cs(24,332): warning CS0649: 从未对字段“CombatProjectile.explosionRadius”赋值，字段将一直保持其默认值 0 [E:\emberfall_win\Tests\TestResults\Temp\venom-q_ehrpij\contact\Validation.csproj]
+
+已成功生成。
+
+E:\emberfall_win\Tests\ConcentratedVenomContactFixture.cs(25,158): warning CS0649: 从未对字段“CombatProjectile.color”赋值，字段将一直保持其默认值 [E:\emberfall_win\Tests\TestResults\Temp\venom-q_ehrpij\contact\Validation.csproj]
+E:\emberfall_win\Tests\ConcentratedVenomContactFixture.cs(24,219): warning CS0649: 从未对字段“CombatProjectile.basicAttack”赋值，字段将一直保持其默认值 false [E:\emberfall_win\Tests\TestResults\Temp\venom-q_ehrpij\contact\Validation.csproj]
+E:\emberfall_win\Tests\ConcentratedVenomContactFixture.cs(25,135): warning CS0649: 从未对字段“CombatProjectile.direction”赋值，字段将一直保持其默认值 [E:\emberfall_win\Tests\TestResults\Temp\venom-q_ehrpij\contact\Validation.csproj]
+E:\emberfall_win\Tests\ConcentratedVenomContactFixture.cs(24,332): warning CS0649: 从未对字段“CombatProjectile.explosionRadius”赋值，字段将一直保持其默认值 0 [E:\emberfall_win\Tests\TestResults\Temp\venom-q_ehrpij\contact\Validation.csproj]
+    4 个警告
+    0 个错误
+
+已用时间 00:00:02.30
+
+已成功生成。
+    0 个警告
+    0 个错误
+
+已用时间 00:00:03.11
+PASS 16 production contact checks, managed scene boundary; not Unity physics
+
+Unhandled exception. System.Exception: front guard intercept independent of list order
+   at Program.C(Boolean b, String m) in E:\emberfall_win\Tests\ConcentratedVenomContactFixture.cs:line 45
+   at Program.Main() in E:\emberfall_win\Tests\ConcentratedVenomContactFixture.cs:line 51
+
+PASS compiled prior list-order behavior rejected
+Unhandled exception. System.Exception: reforge retainsB
+   at ConcentratedVenomPersistenceTests.Check(Boolean ok, String s) in E:\emberfall_win\Tests\ConcentratedVenomPersistenceTests.cs:line 3
+   at ConcentratedVenomPersistenceTests.Run(String root) in E:\emberfall_win\Tests\ConcentratedVenomPersistenceTests.cs:line 4
+   at Program.Main(String[] args) in E:\emberfall_win\Tests\TestResults\Temp\venom-q_ehrpij\save-project\Program.cs:line 1
+
+Traceback (most recent call last):
+  File "E:\emberfall_win\Tests\ConcentratedVenomProductionTests.py", line 23, in <module>
+    types=p/'GameTypes.cs';types.write_text((r/'Assets/Scripts/Core/GameTypes.cs').read_text());sources=[r/'Assets/Scripts/Core'/f'{x}.cs' for x in core if x!='GameTypes']+[types,r/'Tests/ProgressionTests.cs',r/'Tests/ConcentratedVenomPersistenceTests.cs'];project=cv.write_project(p/'save-project',sources,program='class Program{static void Main(string[] args){System.Console.WriteLine(ConcentratedVenomPersistenceTests.Run(args[0]));}}');run(project)
+                                                                                                                                                                                                                                                                                                                                                                                                                                                        ^^^^^^^^^^^^
+  File "E:\emberfall_win\Tests\ConcentratedVenomProductionTests.py", line 16, in run
+    else:out.check_returncode()
+         ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HYX\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\subprocess.py", line 502, in check_returncode
+    raise CalledProcessError(self.returncode, self.args, self.stdout,
+subprocess.CalledProcessError: Command '['E:\\emberfall_win\\Tests\\TestResults\\Toolchain\\dotnet\\dotnet.exe', 'E:\\emberfall_win\\Tests\\TestResults\\Temp\\venom-q_ehrpij\\save-project\\bin\\Debug\\net8.0\\Validation.dll', 'E:\\emberfall_win\\Tests\\TestResults\\Temp\\venom-q_ehrpij\\save']' returned non-zero exit status 3762504530.

@@ -5,7 +5,7 @@ from pathlib import Path
 root=Path(__file__).resolve().parents[1]
 spec=importlib.util.spec_from_file_location('validation',root/'Tools/cloud-validation.py');cv=importlib.util.module_from_spec(spec);spec.loader.exec_module(cv)
 sdk=sys.argv[1] if len(sys.argv)>1 else 'dotnet'
-core=['SkillRuntime','GameTypes','ProgressionService','CombatBalance','SkillDamageBudgets','HubTravelRules','MasteryCoreRuntime','TierRewardRules','TierRewardBand','ProgressionGoalState','ChapterProgression','ProgressionService.Chapter','ProgressionService.Reforge','ReforgeQuote','RoomTactics','CombatImpactBatch','SafeSaveFlow']
+core=['SkillRuntime','GameTypes','ProgressionService','CombatBalance','SkillDamageBudgets','HubTravelRules','MasteryCoreRuntime','TierRewardRules','TierRewardBand','ProgressionGoalState','ChapterProgression','ProgressionService.Chapter','ProgressionService.Attachments','ProgressionService.AutomaticGrowth','ProgressionService.Reforge','ReforgeQuote','RoomTactics','CombatImpactBatch','SafeSaveFlow']
 with tempfile.TemporaryDirectory(prefix='class-switch-tests-') as directory:
  p=Path(directory);(p/'NuGet.Config').write_text('<configuration><packageSources><clear/></packageSources></configuration>')
  env=dict(os.environ,DOTNET_CLI_HOME=str(p/'cli'),DOTNET_NOLOGO='1',DOTNET_CLI_TELEMETRY_OPTOUT='1')
@@ -26,9 +26,10 @@ with tempfile.TemporaryDirectory(prefix='class-switch-tests-') as directory:
  ref=next(x for x in refs if subprocess.run(['git','cat-file','-e',x+':Assets/Scripts/Core/ProgressionService.cs'],cwd=root,stderr=subprocess.DEVNULL).returncode==0)
  old=[]
  for name in core:
+  if name in ('ProgressionService.Attachments','ProgressionService.AutomaticGrowth'):continue # Features absent in immutable pre-class revision.
   path=p/(name+'.cs');path.write_text(subprocess.check_output(['git','show',ref+':Assets/Scripts/Core/'+name+'.cs'],cwd=root,text=True));old.append(path)
  old_fixture=p/'OldProgressionTests.cs';old_fixture.write_text(subprocess.check_output(['git','show',ref+':Tests/ProgressionTests.cs'],cwd=root,text=True));old.append(old_fixture)
  program='''using System;using System.IO;using Emberfall;class Program{static void Main(string[] args){var p=new ProgressionService(args[0]);string before=File.ReadAllText(p.SaveFilePath),backup=File.ReadAllText(p.SaveFilePath+".bak");if(p.Load())throw new Exception("old reader must reject class archive");p.Save();if(File.ReadAllText(p.SaveFilePath)!=before||File.ReadAllText(p.SaveFilePath+".bak")!=backup)throw new Exception("old writer silently erased class archive");Console.WriteLine("PASS immutable pre-class reader and writer refuse both v2 documents");}}'''
- project=cv.write_project(p/'old',old,program)
+ project=cv.write_project(p/'old',old,program,automatic_partials=False)
  directory=(p/'saves/old-reader-directory.txt').read_text()
  subprocess.run([sdk,'run','--project',str(project),'--',directory],env=env,check=True)

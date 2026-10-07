@@ -17,7 +17,7 @@ math=(ROOT/'Tests/DestructibleTraversalTests.cs').read_text()
 shell=shell.replace(member(shell,'public struct Vector2'),member(math,'public struct Vector2'))
 shell=shell.replace('public struct Vector3\n','public partial struct Vector3\n').replace('public static class Mathf\n','public static partial class Mathf\n')
 shell=once(shell,'public static class CombatFx{','public static partial class CombatFx{')
-files=['Core/FilledVfxRecipes','Core/FilledVfxPlacement','Core/CombatVisualBudget','Core/CombatSightRules','Combat/CombatVisualLease','Combat/FilledSkillVfx','Combat/AnchoredImpactMesh','Combat/CombatSight','World/WorldTraversal']
+files=['Core/FilledVfxRecipes','Core/FilledVfxPlacement','Core/CombatVisualBudget','Core/CombatSightRules','Combat/CombatVisualLease','Combat/FilledSkillVfx','Combat/AnchoredImpactMesh','Combat/CombatSight','World/WorldTraversal','World/WorldTraversal.Platforms']
 dotnet=sys.argv[1] if len(sys.argv)>1 else os.environ.get('DOTNET','dotnet')
 with tempfile.TemporaryDirectory(prefix='anchored-impact-') as temp:
  for mode,expected in [('current',None),('old-origin-disk','legal near-wall impact retains positive-area primary and horizontal contact'),('old-sparse-face','retained anchored triangle crosses actual finite-cover LOS'),('old-anisotropic-motion','animated anchored vertex crosses actual finite-cover LOS')]:
@@ -26,7 +26,7 @@ with tempfile.TemporaryDirectory(prefix='anchored-impact-') as temp:
    code=(ROOT/('Assets/Scripts/'+f+'.cs')).read_text()
    if f=='World/WorldTraversal':
     # Instrument actual traversal calls only in the managed fixture, never the production file.
-    code=once(code,'public static class WorldTraversal\n    {','public static class WorldTraversal\n    {\n        public static int TestSegmentCalls,TestSolidProbes,TestTriangleCalls,TestFanCalls;')
+    code=once(code,'public static partial class WorldTraversal\n    {','public static partial class WorldTraversal\n    {\n        public static int TestSegmentCalls,TestSolidProbes,TestTriangleCalls,TestFanCalls;')
     code=once(code,'            int samples = Mathf.Max(1, Mathf.CeilToInt(CombatFx.Flat(to - from).magnitude / .18f));','            TestSegmentCalls++;\n            int samples = Mathf.Max(1, Mathf.CeilToInt(CombatFx.Flat(to - from).magnitude / .18f));')
     code=once(code,'            Vector2 p = new Vector2(point.x, point.z);\n            if (p.sqrMagnitude','            TestSolidProbes++;\n            Vector2 p = new Vector2(point.x, point.z);\n            if (p.sqrMagnitude')
     code=once(code,'            const double clearance=.04f;','            TestTriangleCalls++;\n            const double clearance=.04f;')

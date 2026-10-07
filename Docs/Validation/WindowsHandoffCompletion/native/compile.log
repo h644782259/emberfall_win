@@ -1,0 +1,10 @@
+Microsoft(R) Visual C# 编译器 版本 4.11.0-3.25569.22 (3fb752d4)
+版权所有(C) Microsoft Corporation。保留所有权利。
+
+Assets\Tests\VisualValidationPlayer.cs(611,84): warning CS0618: “FindObjectsSortMode”已过时:“FindObjectsSortMode has been deprecated. Use the FindObjectsByType overloads that do not take a FindObjectsSortMode parameter.”
+Assets\Tests\VisualValidationPlayer.cs(611,37): warning CS0618: “Object.FindObjectsByType<T>(FindObjectsSortMode)”已过时:“FindObjectsByType with FindObjectsSortMode parameter has been deprecated. Use FindObjectsByType<T>() or FindObjectsByType<T>(FindObjectsInactive) instead. InstanceID will be replaced in the future with EntityId and previous sort order cannot be maintained.”
+Assets\Scripts\Core\GameAudio.cs(115,28): warning CS0618: “Object.FindObjectOfType<T>()”已过时:“Object.FindObjectOfType has been deprecated. Use Object.FindAnyObjectByType instead.”
+Assets\Scripts\Core\GameSession.cs(82,17): warning CS0618: “Object.FindObjectOfType<T>()”已过时:“Object.FindObjectOfType has been deprecated. Use Object.FindAnyObjectByType instead.”
+Assets\Scripts\UI\CollectionModelPreview.cs(181,29): warning CS0618: “Object.FindObjectsOfType<T>()”已过时:“Object.FindObjectsOfType has been deprecated. Use Object.FindObjectsByType instead which lets you decide whether you need the results sorted or not.  FindObjectsOfType sorts the results by InstanceID but if you do not need this using FindObjectSortMode.None is considerably faster.”
+Assets\Tests\VisualValidationPlayer.Handoff.cs(96,81): warning CS0618: “FindObjectsSortMode”已过时:“FindObjectsSortMode has been deprecated. Use the FindObjectsByType overloads that do not take a FindObjectsSortMode parameter.”
+Assets\Tests\VisualValidationPlayer.Handoff.cs(96,31): warning CS0618: “Object.FindObjectsByType<T>(FindObjectsSortMode)”已过时:“FindObjectsByType with FindObjectsSortMode parameter has been deprecated. Use FindObjectsByType<T>() or FindObjectsByType<T>(FindObjectsInactive) instead. InstanceID will be replaced in the future with EntityId and previous sort order cannot be maintained.”

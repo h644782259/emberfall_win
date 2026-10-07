@@ -1,0 +1,6 @@
+
+Unhandled exception. System.Exception: Assertion 35 failed: boss loot has at least rare quality
+   at ProgressionTests.Check(Boolean condition, String description) in /workspace/emberfall_win_controls/Tests/ProgressionTests.cs:line 1225
+   at ProgressionTests.InventoryAndEconomy() in /workspace/emberfall_win_controls/Tests/ProgressionTests.cs:line 302
+   at ProgressionTests.Run(String testDirectory) in /workspace/emberfall_win_controls/Tests/ProgressionTests.cs:line 48
+   at Program.Main(String[] args) in /tmp/EmberfallCloudValidation-4dok_g2y/progression/Program.cs:line 1

@@ -1,0 +1,2 @@
+未能将“E:\emberfall_win\Tests\TestResults\Temp\enemy-f2-animation-2w7a6lcs\cli\.dotnet\tools”添加到 PATH 环境变量。请将此目录添加到 PATH，以使用通过 "dotnet tool install" 安装的工具。
+PASS 215960 actual Enemy factory + actual Animate assertions: five identities, four phases, F2 on/off, shared meshes and retained Slime/Wisp; managed, not Unity

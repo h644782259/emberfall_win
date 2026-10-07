@@ -5,7 +5,7 @@ from pathlib import Path
 root=Path(__file__).resolve().parents[1]
 spec=importlib.util.spec_from_file_location('validation',root/'Tools/cloud-validation.py');m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
 with tempfile.TemporaryDirectory(prefix='camp-practice-') as directory:
- p=Path(directory);sources=[root/('Assets/Scripts/Core/'+f+'.cs') for f in ['SkillRuntime','GameTypes','ProgressionService','CombatBalance','SkillDamageBudgets','HubTravelRules','MasteryCoreRuntime','TierRewardRules','TierRewardBand','ProgressionGoalState','ChapterProgression','ProgressionService.Chapter','ProgressionService.Reforge','ReforgeQuote','RoomTactics','CombatImpactBatch','CampPracticeRecord','SafeSaveFlow']]
+ p=Path(directory);sources=[root/('Assets/Scripts/Core/'+f+'.cs') for f in ['SkillRuntime','GameTypes','ProgressionService','CombatBalance','SkillDamageBudgets','HubTravelRules','MasteryCoreRuntime','TierRewardRules','TierRewardBand','ProgressionGoalState','ChapterProgression','ProgressionService.Chapter','ProgressionService.Attachments','ProgressionService.AutomaticGrowth','ProgressionService.Reforge','ReforgeQuote','RoomTactics','CombatImpactBatch','CampPracticeRecord','SafeSaveFlow']]
  sources += [root/'Tests/ProgressionTests.cs',root/'Tests/MechanicKnowledgeTests.cs']
  copies={}
  for name in ['ProgressionService','CombatImpactBatch','CampPracticeRecord','SkillRuntime','SafeSaveFlow']:
@@ -17,7 +17,7 @@ with tempfile.TemporaryDirectory(prefix='camp-practice-') as directory:
   q=subprocess.run([dotnet]+args,env=env,capture_output=True,text=True);print(q.stdout+q.stderr);return q
  assert run(['restore',str(project),'--configfile',str(config),'-v:q']).returncode==0
  assert run(['run','--project',str(project),'--no-restore','--',str(p/'saves')]).returncode==0
- controls=[('ProgressionService','if(!candidate.variantKnowledge.Contains(item.mechanic))candidate.variantKnowledge.Add(item.mechanic);','','four shards buys character mechanism knowledge'),('ProgressionService','migrationRequired && !TryWriteProfile(loaded, candidatePath, false, out migrationFailure)','false && !TryWriteProfile(loaded, candidatePath, false, out migrationFailure)','legacy migration write failure never publishes knowledge')]
+ controls=[('ProgressionService','candidate.mechanicMaterials -= VariantCost;','candidate.mechanicMaterials -= 0;','four shards buys character mechanism knowledge'),('ProgressionService','migrationRequired && !TryWriteProfile(loaded, candidatePath, false, out migrationFailure)','false && !TryWriteProfile(loaded, candidatePath, false, out migrationFailure)','legacy migration write failure never publishes knowledge')]
  for i,(name,old,new,message) in enumerate(controls):
   f=p/(name+'.cs');assert old in copies[f];f.write_text(copies[f].replace(old,new));q=run(['build',str(project),'--no-restore','-v:q']);assert q.returncode==0
   q=run([str(project.parent/'bin/Debug/net8.0/Validation.dll'),str(p/('negative-'+str(i)))]);assert q.returncode!=0 and message in q.stdout+q.stderr

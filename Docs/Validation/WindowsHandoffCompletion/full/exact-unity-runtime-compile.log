@@ -1,0 +1,13 @@
+
+E:\emberfall_win\Assets\Scripts\UI\CollectionModelPreview.cs(179,73): warning CS0618: “FindObjectsSortMode”已过时:“FindObjectsSortMode has been deprecated. Use the FindObjectsByType overloads that do not take a FindObjectsSortMode parameter.” [E:\emberfall_win\Tests\TestResults\Temp\EmberfallCloudValidation-u311dn21\exact-unity-runtime-compile\Validation.csproj]
+E:\emberfall_win\Assets\Scripts\UI\CollectionModelPreview.cs(179,29): warning CS0618: “Object.FindObjectsByType<T>(FindObjectsSortMode)”已过时:“FindObjectsByType with FindObjectsSortMode parameter has been deprecated. Use FindObjectsByType<T>() or FindObjectsByType<T>(FindObjectsInactive) instead. InstanceID will be replaced in the future with EntityId and previous sort order cannot be maintained.” [E:\emberfall_win\Tests\TestResults\Temp\EmberfallCloudValidation-u311dn21\exact-unity-runtime-compile\Validation.csproj]
+  Validation -> E:\emberfall_win\Tests\TestResults\Temp\EmberfallCloudValidation-u311dn21\exact-unity-runtime-compile\bin\Release\netstandard2.1\Validation.dll
+
+已成功生成。
+
+E:\emberfall_win\Assets\Scripts\UI\CollectionModelPreview.cs(179,73): warning CS0618: “FindObjectsSortMode”已过时:“FindObjectsSortMode has been deprecated. Use the FindObjectsByType overloads that do not take a FindObjectsSortMode parameter.” [E:\emberfall_win\Tests\TestResults\Temp\EmberfallCloudValidation-u311dn21\exact-unity-runtime-compile\Validation.csproj]
+E:\emberfall_win\Assets\Scripts\UI\CollectionModelPreview.cs(179,29): warning CS0618: “Object.FindObjectsByType<T>(FindObjectsSortMode)”已过时:“FindObjectsByType with FindObjectsSortMode parameter has been deprecated. Use FindObjectsByType<T>() or FindObjectsByType<T>(FindObjectsInactive) instead. InstanceID will be replaced in the future with EntityId and previous sort order cannot be maintained.” [E:\emberfall_win\Tests\TestResults\Temp\EmberfallCloudValidation-u311dn21\exact-unity-runtime-compile\Validation.csproj]
+    2 个警告
+    0 个错误
+
+已用时间 00:00:09.11

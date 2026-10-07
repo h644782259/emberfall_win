@@ -576,7 +576,9 @@ namespace Emberfall
                 if (Directory.Exists(temporary)) throw new IOException("临时存档路径被目录占用，未覆盖原文件或备份。");
                 if (File.Exists(temporary) && TryReadProfile(temporary, out pendingWrite, out pendingError))
                     throw new IOException("发现可恢复的临时存档，已保留且未覆盖。请先备份整个存档目录，再处理临时存档恢复。");
-                var save = new SaveFile { format = SaveFormat, version = profile.chestRulesRevision>=2?3:profile.classStateRevision>0?2:1, profile = profile };
+                // Older readers must reject independent attachment investments
+                // and reward receipts instead of silently erasing unknown fields.
+                var save = new SaveFile { format = SaveFormat, version = profile.attachmentRevision>0?4:profile.chestRulesRevision>=2?3:profile.classStateRevision>0?2:1, profile = profile };
                 string json = PreserveOptionalReceiptNulls(JsonUtility.ToJson(save, true), profile);
                 if (Encoding.UTF8.GetByteCount(json) > MaximumSaveBytes)
                     throw new IOException("存档超过 4 MiB 安全大小，未覆盖原文件或备份。请保留现有文件。");
@@ -693,6 +695,8 @@ namespace Emberfall
                 stats.Damage += item.attack;
                 stats.Armor += item.defense;
             }
+            if(Profile.attachments!=null)foreach(var a in Profile.attachments)if(a.mounted&&BuildCatalog.MechanicClass(a.mechanic)==Profile.heroClass)
+            {stats.Damage*=1f+.015f*a.upgradeRank;stats.MaxHealth*=1f+.02f*a.upgradeRank;}
             int passiveRank = Profile.skillRanks != null && Profile.skillRanks.Length > 3 ? Clamp(Profile.skillRanks[3], 0, 3) : 0;
             if (passiveRank > 0)
             {
@@ -787,6 +791,8 @@ namespace Emberfall
                 default: return false;
             }
             if (BuildCatalog.MechanicClass(mechanic) != Profile.heroClass) return false;
+            var attachment=Attachment(mechanic);
+            if(attachment!=null)return attachment.mounted;
             ItemData equipped = Equipped(BuildCatalog.MechanicSlot(mechanic));
             return equipped != null && equipped.mechanic == mechanic;
         }
@@ -794,6 +800,7 @@ namespace Emberfall
         private bool SelectedMechanicB(EquipmentMechanic mechanic)
         {
             if(!HasMechanic(mechanic))return false;
+            var attachment=Attachment(mechanic);if(attachment!=null)return attachment.variantUnlocked&&attachment.variant==1;
             ItemData item=Equipped(BuildCatalog.MechanicSlot(mechanic));
             return HasVariant(item)&&item.mechanicVariantUnlocked&&item.mechanicVariant==1;
         }
@@ -1029,14 +1036,7 @@ namespace Emberfall
             if (!Profile.pendingFirstClearReward || Profile.firstClearRewardClaimed) return Fail("当前没有首通自选奖励。");
             if (mechanic == EquipmentMechanic.None || !Enum.IsDefined(typeof(EquipmentMechanic), mechanic) ||
                 BuildCatalog.MechanicClass(mechanic) != Profile.heroClass) return Fail("请选择本职业的机制装备。");
-            if (!CanReceiveProtectedLoot) return Fail("背包与待领取栏均已满；首通选择保留，请先腾出位置。");
-            Profile.firstClearRewardClaimed = true;
-            Profile.pendingFirstClearReward = false;
-            var item=CreateMechanicItem(mechanic);
-            if (CollectLoot(item)) {PublishRewardMoment(RewardMomentKind.FirstCore,item);return true;}
-            Profile.firstClearRewardClaimed = false;
-            Profile.pendingFirstClearReward = true;
-            return false;
+            return GrantAttachment(mechanic,true);
         }
 
         public bool ExchangeMechanic(EquipmentMechanic mechanic)
@@ -1044,12 +1044,7 @@ namespace Emberfall
             if (mechanic == EquipmentMechanic.None || !Enum.IsDefined(typeof(EquipmentMechanic), mechanic) ||
                 BuildCatalog.MechanicClass(mechanic) != Profile.heroClass) return Fail("只能兑换本职业的机制装备。");
             if (Profile.mechanicMaterials < MechanicExchangeCost) return Fail("需要12枚星烬碎片；遗迹通关按阶数获得3至7枚。");
-            if (!CanReceiveProtectedLoot) return Fail("背包与待领取栏均已满，请先腾出位置；尚未扣除碎片。");
-            Profile.mechanicMaterials -= MechanicExchangeCost;
-            var item=CreateMechanicItem(mechanic);
-            if (CollectLoot(item)) {PublishRewardMoment(RewardMomentKind.MechanicExchange,item,materials:-MechanicExchangeCost);return true;}
-            Profile.mechanicMaterials += MechanicExchangeCost;
-            return false;
+            return GrantAttachment(mechanic,false);
         }
 
         public static int MasteryCap(int level)
@@ -1272,7 +1267,7 @@ namespace Emberfall
 
         private BuildPreset CaptureBuild()
         {
-            return new BuildPreset
+            var preset=new BuildPreset
             {
                 version = 1, populated = true, heroClass = Profile.heroClass,
                 skillRanks = (int[])Profile.skillRanks.Clone(), masteryRanks = (int[])Profile.masteryRanks.Clone(),
@@ -1283,6 +1278,7 @@ namespace Emberfall
                 equipmentMechanicKnownMask = 7,
                 equipmentMechanics = new[] { Equipped(ItemSlot.Weapon)?.mechanic??EquipmentMechanic.None, Equipped(ItemSlot.Armor)?.mechanic??EquipmentMechanic.None, Equipped(ItemSlot.Relic)?.mechanic??EquipmentMechanic.None }
             };
+            CaptureAttachmentPreset(Profile,preset);return preset;
         }
 
         private int CapturedVariant(string id)
@@ -1459,6 +1455,7 @@ namespace Emberfall
                 for(int i=0;i<3;i++)if(preset.equipmentVariants[i]>=0)
                     {var selected=candidate.inventory.Find(item=>item.id==ids[i]);selected.mechanicVariant=preset.equipmentVariants[i];selected.mechanicVariantUnlocked=true;}
             }
+            ApplyAttachmentPreset(candidate,preset);
             return CommitCandidate(candidate);
         }
 
@@ -1511,6 +1508,16 @@ namespace Emberfall
             var keys = new HashSet<int>();
             foreach (int key in preset.hotbarKeys)
                 if (!GameBalance.IsBindableKey(key) || !keys.Add(key)) return "方案快捷键无效或重复。";
+            if(preset.mountedAttachments!=null)
+            {
+                if(preset.mountedAttachments.Length>BuildCatalog.MechanicsFor(Profile.heroClass).Length||preset.attachmentVariants==null||preset.attachmentVariants.Length!=preset.mountedAttachments.Length)return "方案挂件数据无效。";
+                var mounted=new HashSet<EquipmentMechanic>();
+                for(int i=0;i<preset.mountedAttachments.Length;i++)
+                {
+                    var mechanic=preset.mountedAttachments[i];var attachment=Attachment(mechanic);int variant=preset.attachmentVariants[i];
+                    if(!mounted.Add(mechanic)||BuildCatalog.MechanicClass(mechanic)!=Profile.heroClass||attachment==null||variant<0||variant>1||variant==1&&!attachment.variantUnlocked)return "方案挂件缺失、重复或变体尚未解锁。";
+                }
+            }
             if(preset.equipmentVariants!=null && preset.equipmentVariants.Length!=3)return "方案变体数据无效。";
             string[] ids = { preset.weaponId, preset.armorId, preset.relicId };
             for (int slot = 0; slot < ids.Length; slot++)
@@ -1559,7 +1566,7 @@ namespace Emberfall
                 initialized=true,heroClass=p.heroClass,skillRanks=p.skillRanks,masteryRanks=p.masteryRanks,
                 masteryCore=p.masteryCore,specialization=p.specialization,summonerRoute=p.summonerRoute,
                 equippedSkills=p.equippedSkills,hotbarKeys=p.hotbarKeys,hotbarPage=p.hotbarPage,buildPresets=p.buildPresets,
-                tutorialMask=p.tutorialMask,classTutorialCompleted=p.classTutorialCompleted,
+                tutorialMask=p.tutorialMask,classTutorialCompleted=p.classTutorialCompleted,growthRevision=1,automaticGrowth=p.automaticGrowth,
                 progressionGoal=p.progressionGoal,progressionGoalItemId=p.progressionGoalItemId,
                 progressionGoalTier=p.progressionGoalTier,progressionGoalMechanic=p.progressionGoalMechanic,
                 progressionGoalMinimumRarity=p.progressionGoalMinimumRarity,progressionGoalLevel=p.progressionGoalLevel
@@ -1572,6 +1579,7 @@ namespace Emberfall
             p.specialization=state.specialization;p.summonerRoute=state.summonerRoute;
             p.equippedSkills=state.equippedSkills;p.hotbarKeys=state.hotbarKeys;p.hotbarPage=state.hotbarPage;p.buildPresets=state.buildPresets;
             p.tutorialMask=state.tutorialMask;p.classTutorialCompleted=state.classTutorialCompleted;
+            p.automaticGrowth=state.automaticGrowth;
             p.progressionGoal=state.progressionGoal;p.progressionGoalItemId=state.progressionGoalItemId;
             p.progressionGoalTier=state.progressionGoalTier;p.progressionGoalMechanic=state.progressionGoalMechanic;
             p.progressionGoalMinimumRarity=state.progressionGoalMinimumRarity;p.progressionGoalLevel=state.progressionGoalLevel;
@@ -1591,6 +1599,7 @@ namespace Emberfall
                 var state=profile.classStates[i];
                 if(state==null||!state.initialized){profile.classStates[i]=new ClassBuildState{heroClass=(HeroClass)i};continue;}
                 if(state.version!=1||state.heroClass!=(HeroClass)i)throw new ArgumentException("职业存档版本或位置不符；原文件已保留。");
+                if(state.growthRevision<1){state.automaticGrowth=state.progressionGoal==ProgressionGoalKind.None;state.growthRevision=1;}
                 if(i==(int)profile.heroClass)continue;
                 if(state.skillRanks==null||state.skillRanks.Length!=GameBalance.SkillCount||state.masteryRanks==null||state.masteryRanks.Length!=4)
                     throw new ArgumentException("其他职业的配点结构无效；原文件已保留。");
@@ -1630,6 +1639,7 @@ namespace Emberfall
                 state.specialization=ElementalistSpecialization.None;state.summonerRoute=SummonerRoute.Bonded;
                 state.tutorialMask=0;state.classTutorialCompleted=false;state.buildPresets=new[]{new BuildPreset(),new BuildPreset()};
                 state.progressionGoal=ProgressionGoalKind.None;state.progressionGoalItemId=null;state.progressionGoalMechanic=EquipmentMechanic.None;
+                state.automaticGrowth=true;state.growthRevision=1;
                 state.progressionGoalTier=1;state.progressionGoalLevel=0;state.progressionGoalMinimumRarity=Rarity.Common;
             }
             candidate.heroClass=target;RestoreClassState(candidate,state);ValidateProfile(candidate);
@@ -1760,6 +1770,7 @@ namespace Emberfall
             item.upgradeAnchorLevel = 0;
             item.upgradeAnchorAttack = item.baseAttack; item.upgradeAnchorDefense = item.baseDefense; item.upgradeAnchorHealth = item.baseHealth;
             ApplyUpgradeRank(item, IsEquipped(candidate, id) ? candidate.slotUpgradeRanks[(int)item.slot] : 0);
+            var attachment=candidate.attachments.Find(a=>a.mechanic==item.mechanic);if(attachment!=null)attachment.rarity=Rarity.Legendary;
             candidate.mechanicMaterials -= AscensionCost;
             if(!CommitCandidate(candidate))return false;
             PublishRewardMoment(RewardMomentKind.Ascension,item,materials:-AscensionCost);return true;
@@ -1774,6 +1785,7 @@ namespace Emberfall
             if(!candidate.variantKnowledge.Contains(item.mechanic))candidate.variantKnowledge.Add(item.mechanic);
             candidate.variantKnowledgeRevision=1;
             item.mechanicVariantUnlocked = true; item.mechanicVariant = 1 - item.mechanicVariant;
+            var attachment=candidate.attachments.Find(a=>a.mechanic==item.mechanic);if(attachment!=null){attachment.variantUnlocked=true;attachment.variant=item.mechanicVariant;}
             return CommitCandidate(candidate);
         }
 
@@ -1923,6 +1935,7 @@ namespace Emberfall
         {
             int mask=HubTravelRules.UnlockedMask(Profile.unlockedHubMask,Profile.level,Profile.clearedRuns);
             if(!HubTravelRules.IsUnlocked(mask,hub))return Fail("城镇尚未解锁："+HubTravelRules.UnlockHint(hub));
+            if(Math.Abs(hub-Profile.currentHub)>1)return Fail("请沿地图逐站旅行，先到相邻城镇。");
             GameProfile candidate=Snapshot();candidate.currentHub=hub;candidate.unlockedHubMask=mask;return CommitCandidate(candidate);
         }
 
@@ -2010,7 +2023,7 @@ namespace Emberfall
                 (minimumRarity!=Rarity.Common&&minimumRarity!=Rarity.Epic))return Fail("请选择本职业的具体核心目标。");
             if(Profile.progressionGoal==ProgressionGoalKind.Core&&Profile.progressionGoalMechanic==mechanic&&Profile.progressionGoalMinimumRarity==minimumRarity)
             {LastError=string.Empty;return true;}
-            GameProfile candidate=Snapshot();candidate.progressionGoal=ProgressionGoalKind.Core;candidate.progressionGoalMechanic=mechanic;
+            GameProfile candidate=Snapshot();candidate.automaticGrowth=false;candidate.progressionGoal=ProgressionGoalKind.Core;candidate.progressionGoalMechanic=mechanic;
             candidate.progressionGoalMinimumRarity=minimumRarity;candidate.progressionGoalItemId=null;candidate.progressionGoalLevel=0;candidate.progressionGoalTier=1;
             return CommitCandidate(candidate);
         }
@@ -2020,14 +2033,14 @@ namespace Emberfall
             bool itemGoal=goal==ProgressionGoalKind.Variant||goal==ProgressionGoalKind.Ascension||goal==ProgressionGoalKind.Reforge;
             if(itemGoal){string reason=MechanicGoalEligibility(itemId,goal);if(reason.Length>0)return Fail(reason);}
             if(goal==ProgressionGoalKind.Tier&&(tier<1||tier>100))return Fail("目标阶数无效。");
-            int level=goal==ProgressionGoalKind.Reforge?(targetLevel==0?Profile.level:targetLevel):0;
+            int level=goal==ProgressionGoalKind.Reforge?EquipmentGenerationLevel(targetLevel==0?Profile.level:targetLevel):0;
             if(goal==ProgressionGoalKind.Reforge&&QuoteReforge(itemId,level)==null)return Fail("重铸目标等级无效。");
             if(Profile.progressionGoal==goal&&(goal!=ProgressionGoalKind.Core||Profile.progressionGoalMechanic==EquipmentMechanic.None)&&Profile.progressionGoalItemId==(itemGoal?itemId:null)&&
                 (goal!=ProgressionGoalKind.Tier||Profile.progressionGoalTier==tier)&&Profile.progressionGoalLevel==level)
             {LastError=string.Empty;return true;}
-            GameProfile candidate=Snapshot();candidate.progressionGoal=goal;candidate.progressionGoalItemId=itemGoal?itemId:null;
+            GameProfile candidate=Snapshot();candidate.automaticGrowth=false;candidate.progressionGoal=goal;candidate.progressionGoalItemId=itemGoal?itemId:null;
             candidate.progressionGoalTier=goal==ProgressionGoalKind.Tier?tier:1;candidate.progressionGoalLevel=level;
-            candidate.progressionGoalMechanic=EquipmentMechanic.None;candidate.progressionGoalMinimumRarity=Rarity.Common;
+            candidate.progressionGoalMechanic=itemGoal?FindItem(itemId).mechanic:EquipmentMechanic.None;candidate.progressionGoalMinimumRarity=Rarity.Common;
             return CommitCandidate(candidate);
         }
         private ItemData GoalCoreItem(List<ItemData> items)
@@ -2039,6 +2052,8 @@ namespace Emberfall
         }
         public ProgressionGoalState SelectedProgressionGoal(bool inCamp=false)
         {
+            if(Profile.automaticGrowth)return AutomaticGoal(Profile,inCamp);
+            var migrated=MigratedAttachmentGoal(inCamp);if(migrated!=null)return migrated;
             var goal=new ProgressionGoalState{Identity=Profile.progressionGoal.ToString(),Title="选择一个成长目标",Step="在营地选择目标"};
             ItemData item=FindItem(Profile.progressionGoalItemId);
             switch(Profile.progressionGoal)
@@ -2062,8 +2077,8 @@ namespace Emberfall
                     {goal.ItemId=item.id;goal.Action=recovery?ProgressionGoalAction.ClaimRecovery:ProgressionGoalAction.ClaimPending;goal.CanAct=inCamp&&Profile.inventory.Count<InventoryCapacity;goal.Step=Profile.inventory.Count<InventoryCapacity?"在营地领取指定装备入背包":"先腾出背包位置，再领取目标装备";break;}
                     bool first=Profile.pendingFirstClearReward&&!Profile.firstClearRewardClaimed;
                     goal.MaterialCost=first?0:MechanicExchangeCost;goal.Action=first?ProgressionGoalAction.ClaimCore:ProgressionGoalAction.ExchangeCore;
-                    goal.CanAct=inCamp&&CanReceiveProtectedLoot&&(first||Profile.mechanicMaterials>=MechanicExchangeCost);
-                    goal.Step=!CanReceiveProtectedLoot?"先腾出背包或待领取栏位置":first?"首通自选可领取这件核心":"在营地定向兑换这件史诗核心";break;
+                    goal.CanAct=inCamp&&(first||Profile.mechanicMaterials>=MechanicExchangeCost);
+                    goal.Step=first?"首通自选可领取这件挂件":"在营地定向兑换这件史诗挂件";break;
                 case ProgressionGoalKind.Variant:case ProgressionGoalKind.Ascension:case ProgressionGoalKind.Reforge:
                     goal.Identity+="/"+Profile.progressionGoalItemId+(Profile.progressionGoal==ProgressionGoalKind.Reforge?"/"+Profile.progressionGoalLevel:"");
                     goal.ItemId=Profile.progressionGoalItemId;
@@ -2091,10 +2106,18 @@ namespace Emberfall
         }
         public bool ExecuteProgressionGoal(string expectedActionIdentity,bool inCamp)
         {
+            if(Profile.automaticGrowth)return ExecuteAutomaticGoal(expectedActionIdentity,inCamp);
             ProgressionGoalState goal=SelectedProgressionGoal(inCamp);
             if(goal.ActionIdentity!=expectedActionIdentity)return Fail("目标或下一步已变化，请检查当前操作。");
             if(goal.Done&&goal.Action==ProgressionGoalAction.None){LastError=string.Empty;return true;}
             if(!goal.CanAct)return Fail(goal.Step);
+            var attachment=Profile.attachments.Find(a=>a.id==goal.ItemId);
+            if(attachment!=null)
+            {
+                if(goal.Action==ProgressionGoalAction.UpgradeAttachment)return UpgradeAttachment(attachment.mechanic,inCamp);
+                if(goal.Action==ProgressionGoalAction.UnlockVariant)return ToggleAttachmentVariant(attachment.mechanic,inCamp);
+                if(goal.Action==ProgressionGoalAction.Ascend)return AscendAttachment(attachment.mechanic,inCamp);
+            }
             switch(goal.Action)
             {
                 case ProgressionGoalAction.ClaimCore:return ClaimFirstClearReward(Profile.progressionGoalMechanic);
@@ -2301,6 +2324,9 @@ namespace Emberfall
             if (overflow && protectedLoot && Profile.pendingLoot.Count >= PendingLootCapacity)
                 return Fail("背包与待领取栏均已满；珍贵装备仍在地上，请先整理再离开。");
             bool sold = !protectedLoot && (overflow || (item.rarity == Rarity.Common && Profile.autoSellCommon) || (item.rarity == Rarity.Rare && Profile.autoSellRare));
+            var previousAttachments=JsonUtility.FromJson<GameProfile>(JsonUtility.ToJson(Profile,false)).attachments;
+            if(item.mechanic!=EquipmentMechanic.None&&Attachment(item.mechanic)==null)
+                Profile.attachments.Add(new MechanicAttachment{id=Guid.NewGuid().ToString("N"),legacySourceId=item.id,mechanic=item.mechanic,level=item.level,rarity=item.rarity,variant=item.mechanicVariant,variantUnlocked=item.mechanicVariantUnlocked});
             int previousGold = Profile.gold;
             bool newlyDiscovered = item.mechanic != EquipmentMechanic.None && !Profile.discoveredMechanics.Contains(item.mechanic);
             if (sold) Profile.gold = (int)Math.Min(MaximumGold, (long)Profile.gold + SellValue(item));
@@ -2313,6 +2339,7 @@ namespace Emberfall
                 Profile.gold = previousGold;
                 Profile.inventory.Remove(item);
                 Profile.pendingLoot.Remove(item);
+                Profile.attachments=previousAttachments;
                 if (newlyDiscovered) Profile.discoveredMechanics.Remove(item.mechanic);
                 return Fail(failure); // The world still owns the item and may retry safely.
             }
@@ -2725,13 +2752,13 @@ namespace Emberfall
             var before=PreviewEquippedItem(current);var after=PreviewEquippedItem(item);
             return after.attack>=before.attack&&after.defense>=before.defense&&after.health>=before.health&&(after.attack>before.attack||after.defense>before.defense||after.health>before.health);
         }
-        private void PublishRewardMoment(RewardMomentKind kind,ItemData item=null,FashionData fashion=null,int gold=0,int materials=0,int threads=0)
+        private void PublishRewardMoment(RewardMomentKind kind,ItemData item=null,FashionData fashion=null,int gold=0,int materials=0,int threads=0,MechanicAttachment attachment=null)
         {
             if(IsPracticeOnly)return;
             try
             {
                 LastRewardMoment=new RewardMoment{Sequence=++rewardMomentSequence,SlotId=CurrentSlotId,HeroClass=Profile.heroClass,Kind=kind,
-                    Item=item==null?null:PreviewEquippedItem(item),Fashion=fashion==null?null:JsonUtility.FromJson<FashionData>(JsonUtility.ToJson(fashion,true)),GoldDelta=gold,MaterialsDelta=materials,ThreadsDelta=threads};
+                    Item=item==null?null:PreviewEquippedItem(item),Fashion=fashion==null?null:JsonUtility.FromJson<FashionData>(JsonUtility.ToJson(fashion,true)),Attachment=attachment==null?null:JsonUtility.FromJson<MechanicAttachment>(JsonUtility.ToJson(attachment,true)),GoldDelta=gold,MaterialsDelta=materials,ThreadsDelta=threads};
             }
             catch(Exception error){Debug.LogWarning("Emberfall: reward presentation snapshot unavailable: "+error);}
         }
@@ -2886,15 +2913,20 @@ namespace Emberfall
                 string document;
                 if (!TryReadSaveDocument(path, out document, out error, true)) return false;
                 frozenRecord=HasFrozenRewardDocument(document);
+                // Unity can deserialize scalar/array values into an empty inline class.
+                // Only a JSON object can be a compatible historical null placeholder.
+                if (frozenRecord && !System.Text.RegularExpressions.Regex.IsMatch(document,
+                    @"(?<!\\)""pendingChestDraw""\s*:\s*\{"))
+                    throw new ArgumentException("冻结奖励内容不是有效对象；原文件保留。");
                 SaveFile data = JsonUtility.FromJson<SaveFile>(document);
                 if (data != null) RestoreOptionalReceiptNulls(data.profile, document);
                 bool emptyChestDraw = data != null && NormalizeEmptyChestDraw(data.profile);
                 if (frozenRecord && !emptyChestDraw && (data == null || data.profile == null || data.profile.pendingChestDraw == null))
                     throw new ArgumentException("冻结奖励内容不是有效对象；原文件保留。");
                 frozenRecord=frozenRecord||(data!=null&&data.profile!=null&&data.profile.pendingChestDraw!=null);
-                if(data!=null&&data.format==SaveFormat&&(data.version>3||data.profile!=null&&(data.profile.version>1||data.profile.classStateRevision>1||data.profile.chestRulesRevision>2||data.profile.pendingChestRulesRevision>2||data.profile.pendingChestDraw!=null&&data.profile.pendingChestDraw.rulesRevision>2)))
+                if(data!=null&&data.format==SaveFormat&&(data.version>4||data.profile!=null&&(data.profile.version>1||data.profile.attachmentRevision>1||data.profile.growthRevision>1||data.profile.classStateRevision>1||data.profile.chestRulesRevision>2||data.profile.pendingChestRulesRevision>2||data.profile.pendingChestDraw!=null&&data.profile.pendingChestDraw.rulesRevision>2)))
                 {error="future format";return false;}
-                if (data == null || data.format != SaveFormat || (data.version != 1 && data.version != 2 && data.version != 3) || data.profile == null || data.profile.version != 1)
+                if (data == null || data.format != SaveFormat || (data.version != 1 && data.version != 2 && data.version != 3 && data.version != 4) || data.profile == null || data.profile.version != 1)
                 { error = frozenRecord?FrozenRewardReadFailure+" unsupported format":"unsupported format"; return false; }
                 bool balanceChanged = HasLegacyEnhancement(data.profile.inventory) || HasLegacyEnhancement(data.profile.pendingLoot) || HasLegacyEnhancement(data.profile.recoveryLoot);
                 bool masteryMigrated = data.profile.masteryRevision < 1 && data.profile.masteryRanks != null && Array.Exists(data.profile.masteryRanks, rank => rank > 0);
@@ -3151,6 +3183,7 @@ namespace Emberfall
                 else throw new ArgumentException("珍贵装备超过安全容量；保留原存档，请从备份恢复。");
                 items.RemoveAt(index);
             }
+            NormalizeAttachments(profile);
             NormalizeClassStates(profile);
             return refundedRanks;
         }

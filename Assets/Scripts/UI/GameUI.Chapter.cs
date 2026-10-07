@@ -247,13 +247,25 @@ namespace Emberfall
             DrawChapterFrame(layout,u,failed?"本次星路止步":pending?"结算待保存":"星路线索已记录",ChapterDefinition.Get(session.ActiveChapterNode).Name);
             string copy=ChapterEntryPresentation.Result(session.ChapterResult);
             if(!string.IsNullOrEmpty(session.Progression.LastError))copy=session.Progression.LastError+"\n\n"+copy;
-            float h=Style(Mathf.RoundToInt(16*u),false,true).CalcHeight(new GUIContent(copy),(layout.Body.Width-26)*u)+16*u;
+            bool rewardCards=!failed&&!pending&&session.ChapterResult!=null&&!session.ChapterResult.RewardDetailsUnavailable;
+            float rewardHeight=rewardCards?92*u:0;
+            float h=Style(Mathf.RoundToInt(16*u),false,true).CalcHeight(new GUIContent(copy),(layout.Body.Width-26)*u)+16*u+rewardHeight;
             chapterResultScroll=BeginTouchScroll("chapter-result",ChapterRect(layout.Body,u),chapterResultScroll,new Rect(0,0,(layout.Body.Width-16)*u,Mathf.Max(layout.Body.Height*u,h)));
-            Text(new Rect(8*u,8*u,(layout.Body.Width-26)*u,h),copy,Mathf.RoundToInt(16*u),pale,false,true);EndTouchScroll();
+            if(rewardCards)
+            {
+                float cw=(layout.Body.Width-42)*.5f;var result=session.ChapterResult;
+                for(int i=0;i<2;i++)
+                {
+                    Rect r=new Rect((8+i*(cw+10))*u,8*u,cw*u,74*u);Fill(r,card);
+                    DrawRewardToken(new Rect(r.x+10*u,r.y+6*u,r.width-20*u,36*u),i==0?1:3,i==0?result.Materials:result.KillExperience+result.CompletionExperience,u);
+                    Text(new Rect(r.x+10*u,r.y+46*u,r.width-20*u,24*u),i==0?"星烬碎片":"经验",Mathf.RoundToInt(14*u),muted);
+                }
+            }
+            Text(new Rect(8*u,8*u+rewardHeight,(layout.Body.Width-26)*u,h-rewardHeight),copy,Mathf.RoundToInt(16*u),pale,false,true);EndTouchScroll();
             if(pending&&Button(ChapterRect(layout.FooterButton(0,2),u),"重试保存结算",gold)){RetryChapterSettlement();return;}
             if(failed&&Button(ChapterRect(layout.FooterButton(0,2),u),"原条件重试",gold,session.CanRetryChapter)){session.RetryFailedChapter();BlockUITransition();return;}
-            bool next=!failed&&!pending&&(int)session.ActiveChapterNode<2;
-            if(next&&Button(ChapterRect(layout.FooterButton(1,2),u),"下一节点 · 回营准备",gold)){ReturnAndSelectNextChapter();return;}
+            bool next=!failed&&!pending&&session.CanChallengeNextChapterTier;
+            if(next&&Button(ChapterRect(layout.FooterButton(1,2),u),"直接挑战下一阶",gold)){session.ChallengeNextChapterTier();BlockUITransition();return;}
             if(NavigationButton(ChapterRect(layout.FooterButton(pending||failed?1:0,pending||next||failed?2:1),u), "返回营地", jade)){ReturnFromChapter();return;}
         }
     }

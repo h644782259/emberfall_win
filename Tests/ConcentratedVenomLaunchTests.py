@@ -2,7 +2,7 @@
 from pathlib import Path
 import sys,os,tempfile,subprocess
 r=Path(__file__).resolve().parents[1];ns={'__file__':str(r/'Tests/AuthoredProjectileProductionTests.py')};exec((r/'Tests/AuthoredProjectileProductionTests.py').read_text().split('\nwith tempfile.TemporaryDirectory',1)[0],ns)
-s=ns['s'];member=ns['member'];cast=member((r/'Assets/Scripts/Combat/PlayerController.Venom.cs').read_text(),'private void CastConcentratedVenom(')
+s=ns['s'].replace('public sealed class GameSession{','public sealed class GameSession{public NeutralProgression Progression=new NeutralProgression();')+'namespace Emberfall{public enum EquipmentMechanic{VenomSpread}public class NeutralProgression{public float MechanicRangeMultiplier(EquipmentMechanic m)=>1;public float MechanicPowerMultiplier(EquipmentMechanic m)=>1;}}';member=ns['member'];cast=member((r/'Assets/Scripts/Combat/PlayerController.Venom.cs').read_text(),'private void CastConcentratedVenom(')
 s=s.replace('public int NewCastId()=>17;', 'public int NewCastId()=>17;public GameSession session;public EnemyController AimTarget;private CombatDamage Damage(float n)=>100*n;public void Cast(int rank,float range){CastConcentratedVenom(rank,range,new Color(0,1,0),41);}'+cast)
 fixture=(r/'Tests/AuthoredProjectileProductionTests.cs').read_text().split('class Program{')[0]
 fixture+='''class Program{static int n;static void C(bool b,string m){n++;if(!b)throw new Exception(m);}static object F(object p,string name)=>p.GetType().GetField(name,BindingFlags.NonPublic|BindingFlags.Instance).GetValue(p);static void Main(string[] args){Resources.Root=args[0];

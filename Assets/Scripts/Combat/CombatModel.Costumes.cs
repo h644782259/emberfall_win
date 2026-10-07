@@ -13,6 +13,7 @@ namespace Emberfall
         private void BuildFashionWingShape(FashionData wings,Color color)
         {
             fashionWings.localPosition += RearSilhouette.WingOffset(heroClass);
+            fashionWings.localScale=Vector3.one*(wings.rarity==Rarity.Legendary?1.75f:wings.rarity==Rarity.Epic?1.45f:1f);
             WingSilhouette style=CostumeRecipes.WingStyle(wings.rarity);
             if(style==WingSilhouette.Mechanical)
             {
@@ -26,6 +27,11 @@ namespace Emberfall
                     Part("Star-ring focus crystal",PrimitiveType.Sphere,axis*.78f,Vector3.one*.09f,Color.white,orbit,VisualSurface.Crystal);
                 }
                 orbit.gameObject.AddComponent<FashionOrbit>();
+                for(int side=-1;side<=1;side+=2)for(int feather=0;feather<4;feather++)
+                {
+                    var vane=CostumeMesh("Layered legendary crystal flight",WingSilhouette.Crystal,fashionWings,new Vector3(side*(.45f+feather*.23f),.18f-feather*.12f,-.12f-feather*.08f),new Vector3(1.1f,1.3f-feather*.08f,.7f),Color.Lerp(color,Color.white,feather*.12f),VisualSurface.Crystal);
+                    vane.localRotation=Quaternion.Euler(14,side*18,-side*(45+feather*13));
+                }
             }
             else for(int side=-1;side<=1;side+=2)
             {
@@ -36,6 +42,11 @@ namespace Emberfall
                         new Vector3(side*(.18f+i*.18f),.18f-i*.12f,-i*.025f),
                         new Vector3(1,1.05f-i*.065f,1),i%2==0?color:Color.Lerp(color,Color.white,.28f),style==WingSilhouette.Crystal?VisualSurface.Crystal:VisualSurface.Cloth);
                     feather.localRotation=Quaternion.Euler(12,side*RearSilhouette.WingYaw(heroClass),-side*(RearSilhouette.WingSpread(heroClass)+i*12));
+                }
+                if(wings.rarity==Rarity.Epic)for(int feather=0;feather<3;feather++)
+                {
+                    var under=CostumeMesh("Inner crystal flight layer",WingSilhouette.Crystal,fashionWings,new Vector3(side*(.23f+feather*.16f),-.12f-feather*.13f,-.18f),new Vector3(.6f,.8f-feather*.08f,.6f),color*.72f,VisualSurface.Crystal);
+                    under.localRotation=Quaternion.Euler(20,side*12,-side*(62+feather*15));
                 }
                 Part("Wing scapular support",PrimitiveType.Capsule,new Vector3(side*.3f,.08f,0),new Vector3(.14f,.45f,.13f),color,fashionWings,style==WingSilhouette.Crystal?VisualSurface.Crystal:VisualSurface.Cloth).localRotation=Quaternion.Euler(0,0,-side*52);
             }

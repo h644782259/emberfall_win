@@ -3,7 +3,7 @@ import os,sys,tempfile,subprocess,argparse
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 p=argparse.ArgumentParser();p.add_argument('dotnet',nargs='?',default=os.environ.get('DOTNET','dotnet'));p.add_argument('--definition',default=str(ROOT/'Assets/Scripts/Core/ChapterProgression.cs'));args=p.parse_args()
-files=['Core/ChapterCombatRun','UI/ChapterSealPresentation','Core/RoomTactics','Core/ArenaPulseRules','World/WorldTraversal','World/ChapterRoomGeometry','World/ChapterHazardGeometry','World/TacticalRoomGeometry']
+files=['Core/ChapterCombatRun','UI/ChapterSealPresentation','Core/RoomTactics','Core/ArenaPulseRules','World/WorldTraversal','World/WorldTraversal.Platforms','World/ChapterRoomGeometry','World/ChapterHazardGeometry','World/TacticalRoomGeometry']
 with tempfile.TemporaryDirectory(prefix='chapter-seal-route-') as temp:
  for mode,expected in [('current',None),('old-empty-seal-hud','HUD keeps half-complete A and B independent'),('old-sequential-seals','HUD keeps half-complete A and B independent'),('old-room-one-boss','star room-zero boss finalizes without a phantom second room'),('old-fixed-heat-route','heat hazard follows mirrored hunt-side short approach')]:
   d=Path(temp)/mode;d.mkdir()

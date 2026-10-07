@@ -74,14 +74,12 @@ namespace Emberfall
                 (string.IsNullOrEmpty(result.Failure)?"本次挑战未完成。":result.Failure)+"\n本次击杀经验 +"+result.KillExperience+"；未发通关经验。\n节点与难度未解锁；回营重试。"+MechanismReport(result);
             if(!result.Saved)return text+"挑战完成 · 进度尚未保存\n请重试保存，以领取奖励并记录通关进度。"+MechanismReport(result);
             if(result.RewardDetailsUnavailable)return text+"通关进度与奖励已保存，可返回营地继续冒险。"+MechanismReport(result);
-            text+="奖励已保存 · +"+result.Materials+" 碎片\n击杀经验 +"+result.KillExperience+" · 通关经验 +"+result.CompletionExperience;
-            if(result.FirstCompletion)text+="\n"+ChapterDefinition.Get(result.Node).Outcome;
+            text=ChapterDefinition.Get(result.Node).Name+" · "+DifficultyName(result.Difficulty)+" · 第 "+result.Tier+" 阶\n奖励已保存";
             if(result.FirstCoreAvailable)text+="\n首通核心已可领取：返回营地领取";
             if(result.UnlockedNode>=0)text+="\n新节点："+ChapterDefinition.Get((ChapterNode)result.UnlockedNode).Name;
             if(result.UnlockedDifficulty>=0)text+="\n本节点新难度："+DifficultyName((ChapterDifficulty)result.UnlockedDifficulty);
             if(result.SharedAfter>result.SharedBefore)text+="\n已解锁第 "+result.SharedAfter+" 阶挑战";
-            if(result.FirstCompletion)text+="\n下一线索 · "+ChapterDefinition.Get(result.Node).NextClue;
-            return text+MechanismReport(result);
+            return text;
         }
         public static string Result(ChapterNode node,bool failed,bool pending)
         {

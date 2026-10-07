@@ -24,8 +24,8 @@ public static class AdventureProgressionTests
             Check(settle()&&State(p)==settled,"receipt survives restart");
             Check(p.ClaimFirstClearReward(EquipmentMechanic.FrostEcho)&&!p.Profile.pendingFirstClearReward,"shared firstcore claim");
             Check(!p.ClaimFirstClearReward(EquipmentMechanic.FrostEcho),"firstcore is single claim");
-            p.Profile.mechanicMaterials=100;p.Save();var item=p.Profile.inventory.Find(x=>x.mechanic==EquipmentMechanic.FrostEcho);
-            Check(string.IsNullOrEmpty(p.AscensionLockReason(item.id,true)),"any mode fifth tier opens ascension");
+            p.Profile.mechanicMaterials=100;p.Save();
+            Check(p.AscendAttachment(EquipmentMechanic.FrostEcho,true),"any mode fifth tier opens attachment ascension");
         }
         {
             var p=Fresh(root);p.Profile.bestFloor=7;p.Profile.highestAdventureTier=0;p.Save();Check(p.HighestAdventureTier==7&&p.LoadSlot(p.CurrentSlotId)&&p.Profile.highestAdventureTier==7,"legacy ordinary tier migrates");
@@ -37,7 +37,7 @@ public static class AdventureProgressionTests
     }
     static void VariantRoundTrip(string root)
     {
-        var p=Fresh(root);p.Profile.level=50;p.Profile.mechanicMaterials=200;p.Profile.gold=99999;p.Save();Check(p.ExchangeMechanic(EquipmentMechanic.FrostEcho),"get variant item");
+        var p=Fresh(root);p.Profile.level=50;p.Profile.mechanicMaterials=200;p.Profile.gold=99999;p.Save();Check(p.CollectLoot(p.CreateMechanicItem(EquipmentMechanic.FrostEcho)),"collect legacy variant item");
         var item=p.Profile.inventory.Find(x=>x.mechanic==EquipmentMechanic.FrostEcho);string id=item.id;Check(p.Equip(id),"equip variant");
         Check(p.ToggleMechanicVariant(id,true)&&p.SaveBuildPreset(0,true),"capture unlocked B");
         Check(p.ToggleMechanicVariant(id,true)&&p.SaveBuildPreset(1,true),"capture A");
@@ -49,9 +49,9 @@ public static class AdventureProgressionTests
         Check(p.ApplyBuildPreset(0,true)&&p.Profile.inventory.Find(x=>x.id==id).mechanicVariant==1,"restore B again");
         grown=p.Profile.inventory.Find(x=>x.id==id);Check(grown.rarity==Rarity.Legendary&&grown.attack==atk&&grown.health==hp&&p.Profile.slotUpgradeRanks[2]==6,"preset preserves current ascension stats and slot upgrades");
         Check(p.LoadSlot(p.CurrentSlotId)&&p.ApplyBuildPreset(1,true)&&p.Profile.inventory.Find(x=>x.id==id).mechanicVariant==0,"variants persist after restart");
-        p.Profile.variantKnowledge.Clear();p.Profile.inventory.Find(x=>x.id==id).mechanicVariantUnlocked=false;p.Save();string before=State(p);
+        p.Profile.variantKnowledge.Clear();p.Profile.inventory.Find(x=>x.id==id).mechanicVariantUnlocked=false;p.Attachment(EquipmentMechanic.FrostEcho).variantUnlocked=false;p.Save();string before=State(p);
         Check(!p.ApplyBuildPreset(0,true)&&State(p)==before,"invalid locked variant cannot unlock or spend");
-        p.Profile.buildPresets[0].equipmentVariants=null;Check(p.ApplyBuildPreset(0,true),"legacy preset keeps current variant");
+        p.Profile.buildPresets[0].equipmentVariants=null;p.Profile.buildPresets[0].mountedAttachments=null;p.Profile.buildPresets[0].attachmentVariants=null;Check(p.ApplyBuildPreset(0,true),"legacy preset keeps current variant");
         p.Profile.variantKnowledge.Add(EquipmentMechanic.FrostEcho);p.Profile.inventory.Find(x=>x.id==id).mechanicVariantUnlocked=true;p.Save();before=State(p);
         Directory.CreateDirectory(p.SaveFilePath+".tmp");Check(!p.ApplyBuildPreset(1,true)&&State(p)==before,"failed apply leaves entire current build intact");Directory.Delete(p.SaveFilePath+".tmp");
     }

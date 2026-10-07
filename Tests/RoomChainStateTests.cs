@@ -40,10 +40,15 @@ public static class RoomChainStateTests
                         for(int enemy=0;enemy<plan.EnemyCount;enemy++)Check(run.Defeat(plan,enemy)&&!run.Defeat(plan,enemy),"unique deaths");
                         if(!plan.Boss)
                         {
-                            Check(!run.DoorUnlocked,"clearing enemies alone does not solve spatial objective");
-                            run.Advance(1000,true,true,false);Check(run.Progress==.25f,"long frames cannot instantly capture");
-                            for(int tick=0;tick<23;tick++)run.Advance(.25f,true,true,false);
-                            Check(run.DoorUnlocked,"spatial objective can finish safely after clear");
+                            if(plan.Index<2&&plan.Branch==RoomBranch.None)
+                            {Check(run.DoorUnlocked,"ordinary opening rooms unlock on complete roster clear without repeating capture");}
+                            else
+                            {
+                                Check(!run.DoorUnlocked,"clearing enemies alone does not solve spatial objective");
+                                run.Advance(1000,true,true,false);Check(run.Progress==.25f,"long frames cannot instantly capture");
+                                for(int tick=0;tick<23;tick++)run.Advance(.25f,true,true,false);
+                                Check(run.DoorUnlocked,"spatial objective can finish safely after clear");
+                            }
                         }
                     }
                 }

@@ -37,11 +37,11 @@ namespace Emberfall
 
    // Real zero-kill chapter repetitions provide XP; no level, gold or receipt fabrication.
    int repeats=0;
-   while(p.Profile.level<11)
+   while(p.Profile.level<11||p.Profile.gold<ProgressionService.ReforgeGoldCost(fromLevel,10))
    {
-    JourneyCheck(repeats++<20,"bounded real Forest progression reaches skill rank2 and partial-reforge window");
-    int beforeGold=p.Profile.gold;JourneyChapter(s,ChapterNode.ForestCourt);p=s.Progression;
-    JourneyCheck(p.Profile.gold==beforeGold,"zero-kill Forest repetition does not inject gold");
+    JourneyCheck(repeats++<40,"bounded real chapter progression earns skill rank2 and a legal equipment generation band");
+    int beforeGold=p.Profile.gold;bool needsGold=p.Profile.gold<ProgressionService.ReforgeGoldCost(fromLevel,10);JourneyChapter(s,needsGold?ChapterNode.Redrock:ChapterNode.ForestCourt);p=s.Progression;
+    JourneyCheck(needsGold?p.Profile.gold>=beforeGold:p.Profile.gold==beforeGold,"chapter earnings use actual kill rewards; zero-kill Forest never injects gold");
     JourneyBuildIdentity(p,coreId,mechanic,slot,rarity);
    }
    JourneyCheck(p.Profile.skillRanks[0]==1&&p.LearnSkill(0),"learn starter skill rank2 through actual level and point gates");

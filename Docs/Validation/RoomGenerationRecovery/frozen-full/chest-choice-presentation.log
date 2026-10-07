@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/workspace/emberfall_win_progression/Tests/ChestChoicePresentationTests.py", line 39, in <module>
+    assert 'ChestRevealPresentation.ResultWithCollection(reward,session.Progression.Profile)' in source
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError

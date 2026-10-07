@@ -1,0 +1,13 @@
+{
+    "status": "PASS",
+    "unityVersion": "6000.6.3f1",
+    "outputDirectory": "E:\\emberfall_win\\Tests\\TestResults\\ManagedPlayer-642dfb4e35874e5bbd999c024eae30db",
+    "isolatedSaveDirectory": "E:\\emberfall_win\\Tests\\TestResults\\ManagedPlayer-642dfb4e35874e5bbd999c024eae30db\\Saves",
+    "captureScope": "Actual player backbuffer after WaitForEndOfFrame, including IMGUI; player input and enemy AI disabled only in this validation process.",
+    "assertions": 103,
+    "consoleErrors": 0,
+    "elapsedSeconds": 6.083222389221191,
+    "failure": "",
+    "errors": [],
+    "screenshots": []
+}

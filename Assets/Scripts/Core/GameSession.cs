@@ -271,6 +271,16 @@ namespace Emberfall
             if(activeHubNpc!=HubNpcKind.None&&ActiveHubNpc==HubNpcKind.None)EndHubNpcConversation();
             if(PracticeActive){TickPractice();return;} // Practice owns its guarded potion input too.
             if(HasStarted)TickSideEvent();
+            if(HasStarted&&!PracticeActive&&Time.unscaledTime>=nextGrowthCheck)
+            {
+                nextGrowthCheck=Time.unscaledTime+1f;
+                int receipts=Progression.Profile.growthRewardReceipts.Count;
+                if(Progression.AdvanceAutomaticGrowth()&&Progression.Profile.growthRewardReceipts.Count>receipts)
+                {
+                    LogSystem(Progression.LastGrowthReward);
+                    if(!ModeFinished&&!Paused&&string.IsNullOrEmpty(RoomGenerationFailureDetail))Notify(Progression.LastGrowthReward);
+                }
+            }
             if (InputBlocked) return;
             if(ModeRun!=null){TickArenaRun();if(InputBlocked)return;}
             if(RoomChainRun!=null)TickRoomTactics();
@@ -622,6 +632,7 @@ namespace Emberfall
             if (Player != null) { Player.RefreshStats(true); SpawnFloatingText(Player.transform.position + Vector3.up * 3, "LEVEL " + level + "  +" + GameBalance.SkillPointsGainedAtLevel(level) + " SP", new Color(.9f, .82f, .4f)); }
             Notify("升至 " + level + " 级！生命恢复，获得 " + GameBalance.SkillPointsGainedAtLevel(level) + " 技能点 · 按 K 查看技能。");
         }
+        private float nextGrowthCheck;
         public void Notify(string message) { notification = message; notificationUntil = Time.unscaledTime + 6; }
 
         public void SpawnFloatingText(Vector3 position, string value, Color color)

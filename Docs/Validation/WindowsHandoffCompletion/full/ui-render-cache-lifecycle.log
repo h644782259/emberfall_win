@@ -1,0 +1,2 @@
+
+PASS: 21 actual FloatingNumber managed lifecycle checks; stable glyph queries, texture rebuild/replacement, live DPI, disable/destroy and resolver ownership (not Unity execution)

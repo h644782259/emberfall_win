@@ -5,7 +5,7 @@ namespace Emberfall{
  public partial class EnemyController{public Transform transform=new Transform();public bool IsDead,IsBoss;public float Health=1000,HitFootprintBonus;public Status StatusEffects=new Status();public void TrySkillInterrupt(params object[] a){}public void TakeDamage(float amount,Vector3 direction,float knockback=0,float stun=0,bool critical=false,int practiceCastId=0){Health-=amount;IsDead=Health<=0;}}
  public class Status{public void Knockdown(float f){}}
  public class GameSession{public PlayerController Player;public string Failure;public void ReportControlFailure(string key,string reason){Failure=reason;}public bool InputBlocked;public bool Paused,IsDead;public bool HasStarted=true;public List<EnemyController> Enemies=new List<EnemyController>();public Progress Progression=new Progress();public void RecordCombatAction(string s){}public void RecordClassTutorial(HeroClass h){}public void SpawnMechanismText(params object[] a){}}
- public class Progress{public GameProfile Profile=new GameProfile();public ItemData item=new ItemData{mechanic=EquipmentMechanic.ReturningBlade};public ItemData Equipped(ItemSlot s)=>item;}
+ public class Progress{public MechanicAttachment Attachment(EquipmentMechanic m)=>null;public float MechanicRangeMultiplier(EquipmentMechanic m)=>1;public float MechanicPowerMultiplier(EquipmentMechanic m)=>1;public GameProfile Profile=new GameProfile();public ItemData item=new ItemData{mechanic=EquipmentMechanic.ReturningBlade};public ItemData Equipped(ItemSlot s)=>item;}
  public struct CombatDamage{public float Amount;public bool IsCritical;}
 
  public static class DestructibleProp{public static void StrikeCone(params object[] a){}public static void StrikeLine(params object[] a){}}

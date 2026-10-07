@@ -12,7 +12,7 @@ def method(file,signature):
         elif text[end]=='}':depth-=1
         end+=1
     return text[start:end]
-core=['CombatImpactBatch','CampPracticeRecord','ThreatAdmissionPolicy','GameTypes', 'ProgressionService', 'ProgressionService.Chapter', 'ProgressionService.Reforge', 'ReforgeQuote', 'ChapterProgression', 'ChapterResultSnapshot', 'ChapterCombatRun', 'RoomTactics', 'RoomChainState', 'ExpeditionModeState', 'RoomTacticalRegion', 'CombatBalance', 'HubTravelRules', 'MasteryCoreRuntime', 'TierRewardRules', 'TierRewardBand', 'ProgressionGoalState', 'AdventureResultPolicy', 'GameSession.Chapter', 'GameSession.ChapterSeals', 'EscapePostPolicy', 'RunChoices', 'RunChoices.Rooms', 'RunChoices.Chapter', 'RunMechanismEvidence']
+core=['CombatImpactBatch','CampPracticeRecord','ThreatAdmissionPolicy','GameTypes', 'ProgressionService', 'ProgressionService.Chapter', 'ProgressionService.Attachments','ProgressionService.AutomaticGrowth','ProgressionService.Reforge', 'ReforgeQuote', 'ChapterProgression', 'ChapterResultSnapshot', 'ChapterCombatRun', 'RoomTactics', 'RoomChainState', 'ExpeditionModeState', 'RoomTacticalRegion', 'CombatBalance', 'HubTravelRules', 'MasteryCoreRuntime', 'TierRewardRules', 'TierRewardBand', 'ProgressionGoalState', 'AdventureResultPolicy', 'GameSession.Chapter', 'GameSession.ChapterSeals', 'EscapePostPolicy', 'RunChoices', 'RunChoices.Rooms', 'RunChoices.Chapter', 'RunMechanismEvidence']
 with tempfile.TemporaryDirectory(prefix='chapter-host-production-') as temp:
     folder=Path(temp)
     for name in core:(folder/(name+'.cs')).write_text((root/'Assets/Scripts/Core'/(name+'.cs')).read_text())

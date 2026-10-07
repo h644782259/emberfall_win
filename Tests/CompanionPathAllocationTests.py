@@ -60,7 +60,7 @@ public class SummonedCompanion {
 '''.replace('METHODS',methods)
 with tempfile.TemporaryDirectory(prefix='companion-path-alloc-') as directory:
  out=Path(directory)
- for p in [root/'Assets/Scripts/World/WorldTraversal.cs',root/'Tests/DestructibleTraversalTests.cs']:(out/p.name).write_text(p.read_text())
+ for p in [root/'Assets/Scripts/World/WorldTraversal.cs',root/'Assets/Scripts/World/WorldTraversal.Platforms.cs',root/'Tests/DestructibleTraversalTests.cs']:(out/p.name).write_text(p.read_text())
  (out/'Program.cs').write_text(program)
  project=out/'Test.csproj';project.write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net8.0</TargetFramework><OutputType>Exe</OutputType><NoWarn>0649</NoWarn><NuGetAudit>false</NuGetAudit></PropertyGroup></Project>')
  config=out/'NuGet.Config';config.write_text('<configuration><packageSources><clear /></packageSources></configuration>')

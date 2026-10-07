@@ -45,7 +45,7 @@ class Program {
  }
 }
 '''.replace('HELPER',helper).replace('GATE',gate)
-core=['GameTypes','ProgressionService','ProgressionService.Chapter','ProgressionService.Reforge','ReforgeQuote','ChapterProgression','RoomTactics','CombatBalance','HubTravelRules','MasteryCoreRuntime','TierRewardRules','TierRewardBand','ProgressionGoalState']
+core=['GameTypes','ProgressionService','ProgressionService.Chapter','ProgressionService.Attachments','ProgressionService.AutomaticGrowth','ProgressionService.Reforge','ReforgeQuote','ChapterProgression','RoomTactics','CombatBalance','HubTravelRules','MasteryCoreRuntime','TierRewardRules','TierRewardBand','ProgressionGoalState']
 with tempfile.TemporaryDirectory(prefix='pilot-starter-') as folder:
  out=Path(folder);sources=[root/'Assets/Scripts/Core'/(x+'.cs') for x in core]+[root/'Tests/ProgressionTests.cs']
  code=out/'Replay.cs';code.write_text(program);project=cv.write_project(out/'project',sources+[code],program='')

@@ -30,7 +30,7 @@ foreach(var kind in new[]{EnemyKind.Slime,EnemyKind.Wisp,EnemyKind.Goblin,EnemyK
  }
  fittings.Hide();Check(host.GetComponentsInChildren<MeshRenderer>(false).Where(x=>x.transform.name.StartsWith("Tactical attachment / ")).All(x=>!x.enabled),"all real-rig fitting renderers hide");UnityEngine.Object.Destroy(host);UnityEngine.Object.Flush();}
  System.IO.File.WriteAllText("OUTPUT",JsonSerializer.Serialize(cases));Console.WriteLine("PASS actual Enemy factory + real tactical adapter + decoded bytes: "+count+" enemy/state compositions, guardian outer-shell clearance, unique slot count and hide. Managed, NOT Unity.");}}
-'''.replace('OUTPUT',str(out/'enemies.json')))
+'''.replace('OUTPUT',(out/'enemies.json').as_posix()))
 command=[dotnet,'run','--project',str(p/'Export.csproj')];env=dict(os.environ,DOTNET_CLI_HOME=str(out/'cli'))
 subprocess.run(command,env=env,check=True)
 f=p/'TacticalAttachmentArt.cs';good=f.read_text();bad=good.replace('front+bounds.size.z*.035f-back','bounds.center.z+bounds.size.z*.5f+bounds.size.z*.035f-back');assert bad!=good;f.write_text(bad)

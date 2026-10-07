@@ -10,7 +10,7 @@ def member(path,signature):
 methods='\n'.join(member('Assets/Scripts/Core/GameSession.RoomChain.cs',s) for s in ['public bool NearRoomExit','private void BeginRoomChainScene()','private void RecordRoomDefeat(','public bool EnterNextRoom()','private bool EnterNextRoomAfterSave()'])+'\n'+member('Assets/Scripts/Core/GameSession.cs','public bool SaveBeforeLeaving()')
 with tempfile.TemporaryDirectory(prefix='room-free-seals-') as temporary:
  p=Path(temporary)
- files=['Core/RoomChainState','Core/RoomTactics','Core/RoomTacticalRegion','Core/DeferredRoomChoice','Core/EscapePostPolicy','Core/GameSession.RoomDiagnostics','Core/GameSession.RoomTactics','World/WorldTraversal','World/TacticalRoomGeometry','World/EscapeRoomFormation','World/RoomBranchGeometry','UI/ChapterSealPresentation','UI/RoomObjectivePresentation']
+ files=['Core/RoomChainState','Core/RoomTactics','Core/RoomTacticalRegion','Core/DeferredRoomChoice','Core/EscapePostPolicy','Core/GameSession.RoomDiagnostics','Core/GameSession.RoomTactics','World/WorldTraversal','World/WorldTraversal.Platforms','World/TacticalRoomGeometry','World/EscapeRoomFormation','World/RoomBranchGeometry','UI/ChapterSealPresentation','UI/RoomObjectivePresentation']
  for f in files:(p/(Path(f).name+'.cs')).write_text((root/('Assets/Scripts/'+f+'.cs')).read_text())
  math=(root/'Tests/DestructibleTraversalTests.cs').read_text();math='using System;using UnityEngine;'+math[math.index('namespace Emberfall'):];math=math.replace('public static float time=0;','public static float time=0,deltaTime=.25f;public static int frameCount;')
  (p/'Math.cs').write_text(math)

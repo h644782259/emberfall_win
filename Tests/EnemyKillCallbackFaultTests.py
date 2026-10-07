@@ -29,7 +29,7 @@ namespace Emberfall{
  void FinalizeChapterBoss(){ChapterFinalized++;}void FinalizeRoomChain(){RoomFinalized++;}void FinalizeArenaResult(){ArenaFinalized++;}
  void TrySpawnReinforcements(){}IEnumerator NextWave(){yield break;}object StartCoroutine(IEnumerator next){WavesScheduled++;return new object();}
 '''+method+'}}'
-core=['SafeSaveFlow','GameTypes','ProgressionService','ProgressionService.Reforge','ReforgeQuote','ProgressionService.Chapter','ChapterProgression','RoomTactics','CombatBalance','HubTravelRules','MasteryCoreRuntime','CastFirstHitReceipt','TierRewardRules','TierRewardBand','ProgressionGoalState','AdventureResultPolicy']
+core=['SafeSaveFlow','GameTypes','ProgressionService','ProgressionService.Attachments','ProgressionService.AutomaticGrowth','ProgressionService.Reforge','ReforgeQuote','ProgressionService.Chapter','ChapterProgression','RoomTactics','CombatBalance','HubTravelRules','MasteryCoreRuntime','CastFirstHitReceipt','TierRewardRules','TierRewardBand','ProgressionGoalState','AdventureResultPolicy']
 with tempfile.TemporaryDirectory(prefix='enemy-kill-callback-fault-') as tmp:
  p=Path(tmp)
  for name in core:(p/(name+'.cs')).write_text((root/'Assets/Scripts/Core'/(name+'.cs')).read_text())

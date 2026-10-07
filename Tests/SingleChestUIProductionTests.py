@@ -9,7 +9,7 @@ def member(file,key):
  return s[a:b]
 with tempfile.TemporaryDirectory(prefix='single-chest-ui-') as d:
  p=Path(d);(p/'NuGet.Config').write_text('<configuration><packageSources><clear/></packageSources></configuration>')
- names=['SkillRuntime','GameTypes','ProgressionService','CombatBalance','SkillDamageBudgets','HubTravelRules','MasteryCoreRuntime','TierRewardRules','TierRewardBand','ProgressionGoalState','ChapterProgression','ProgressionService.Chapter','ProgressionService.Reforge','ReforgeQuote','RoomTactics','CombatImpactBatch','SafeSaveFlow']
+ names=['SkillRuntime','GameTypes','ProgressionService','CombatBalance','SkillDamageBudgets','HubTravelRules','MasteryCoreRuntime','TierRewardRules','TierRewardBand','ProgressionGoalState','ChapterProgression','ProgressionService.Chapter','ProgressionService.Attachments','ProgressionService.AutomaticGrowth','ProgressionService.Reforge','ReforgeQuote','RoomTactics','CombatImpactBatch','SafeSaveFlow']
  sources=[root/('Assets/Scripts/Core/'+n+'.cs') for n in names]+[root/'Tests/ProgressionTests.cs',root/'Tests/SingleChestUIBoundary.cs',root/'Assets/Scripts/UI/ChestRevealPresentation.cs',root/'Assets/Scripts/UI/MobilePanelLayout.cs',root/'Assets/Scripts/UI/GameUI.RewardVisuals.cs']
  methods=[]
  for name,keys in [('GameUI.Rewards.cs',['private float ChestDuration','private bool ChestAnimationDone','private void ResetChestReveal()','private void DrawChests()','private static bool CanTrialChestReward(','private void FinishChestReveal()']),('GameUI.MobileRewards.cs',['private void DrawMobileChests()','private bool DrawMobileChestChoices(']),('GameUI.ChestChoices.cs',['private Rect ChestChoiceArt(','private void DrawSingleChestCard('])]:

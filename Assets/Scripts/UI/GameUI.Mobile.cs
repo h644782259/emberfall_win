@@ -143,7 +143,8 @@ namespace Emberfall
             for(int i=0;i<MobileSkillPolicy.ButtonCount;i++)
             {
                 Rect hit=hotbarSlots[i];blockedRects.Add(hit);Rect r=MobileVisualRect(hit);int skill=MobileSkillPolicy.SkillAtButton(i);bool learned=p.skillRanks[skill]>0;bool passive=GameBalance.IsPassive(skill);
-                Fill(r,new Color(.035f,.075f,.105f,.92f));Border(r,!learned?muted*.25f:UIIconAtlas.SkillColor(p.heroClass,skill));
+                bool ready=!passive&&session.Player!=null&&session.Player.IsSkillAvailable(skill);
+                Fill(r,new Color(.035f,.075f,.105f,.92f));Border(r,ready?jade:!learned?muted*.25f:UIIconAtlas.SkillColor(p.heroClass,skill),ready?2*TouchRatio:1);
                 float iconSize=Mathf.Min(r.width-4*TouchRatio,Mathf.Min(r.height-17*TouchRatio,30*TouchRatio));DrawSkillIdentity(new Rect(r.center.x-iconSize*.5f,r.y+TouchRatio,iconSize,iconSize),p.heroClass,skill,p.skillRanks[skill],learned,iconSize/TouchRatio<=24?24:32);
                 if(passive||!learned)Text(new Rect(r.x,r.yMax-15*TouchRatio,r.width,15*TouchRatio),passive?"被动":"Lv."+GameBalance.SkillRequiredLevels[skill],TouchFont(9),passive?new Color(.8f,.7f,1):muted,true,false,TextAnchor.MiddleCenter);
                 DrawMobileSkillAvailability(r,skill);

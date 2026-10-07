@@ -177,6 +177,7 @@ namespace UnityEngine
     }
     public static class Mathf
     {
+        public static float Pow(float value,float power)=>(float)Math.Pow(value,power);
         public const float PI=(float)Math.PI,Rad2Deg=180/PI;
         public static float Min(float a,float b)=>Math.Min(a,b);public static float Max(float a,float b)=>Math.Max(a,b);public static int Max(int a,int b)=>Math.Max(a,b);
         public static float Clamp01(float value)=>Math.Max(0,Math.Min(1,value));

@@ -3,7 +3,7 @@ from pathlib import Path
 import importlib.util,tempfile,subprocess,sys,os
 root=Path(__file__).resolve().parents[1];dotnet=sys.argv[1] if len(sys.argv)>1 else 'dotnet'
 spec=importlib.util.spec_from_file_location('cv',root/'Tools/cloud-validation.py');cv=importlib.util.module_from_spec(spec);spec.loader.exec_module(cv)
-core=['GameTypes','ProgressionService','ProgressionService.Chapter','ProgressionService.Reforge','ReforgeQuote','ChapterProgression','RoomTactics','CombatBalance','HubTravelRules','MasteryCoreRuntime','TierRewardRules','TierRewardBand','ProgressionGoalState']
+core=['GameTypes','ProgressionService','ProgressionService.Chapter','ProgressionService.Attachments','ProgressionService.AutomaticGrowth','ProgressionService.Reforge','ReforgeQuote','ChapterProgression','RoomTactics','CombatBalance','HubTravelRules','MasteryCoreRuntime','TierRewardRules','TierRewardBand','ProgressionGoalState']
 with tempfile.TemporaryDirectory(prefix='chapter-xp-') as d:
  d=Path(d);sources=[]
  for path in [*[root/'Assets/Scripts/Core'/(n+'.cs') for n in core],root/'Tests/ProgressionTests.cs',root/'Tests/StartingSkillBudgetTests.cs']:

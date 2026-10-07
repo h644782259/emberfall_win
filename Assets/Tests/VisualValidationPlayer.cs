@@ -10,7 +10,7 @@ using UnityEngine;
 namespace Emberfall
 {
     /// <summary>Only compiled into the dedicated validation player. Captures real rendered IMGUI.</summary>
-    public sealed class VisualValidationPlayer : MonoBehaviour
+    public sealed partial class VisualValidationPlayer : MonoBehaviour
     {
         private const BindingFlags PrivateInstance = BindingFlags.NonPublic | BindingFlags.Instance;
         private const float TimeoutSeconds = 230f;
@@ -195,6 +195,7 @@ namespace Emberfall
             ui = session.GetComponent<GameUI>();
             Check(ui != null, "Runtime IMGUI component exists");
             Check(Path.GetFullPath(session.Progression.SaveDirectory) == SaveDirectory, "Test player uses its isolated save directory");
+            if(System.Array.IndexOf(System.Environment.GetCommandLineArgs(),"--windows-handoff")>=0){yield return VerifyWindowsHandoff();yield break;}
             if(System.Array.IndexOf(System.Environment.GetCommandLineArgs(),"--chapter-ui")>=0){yield return VerifyChapterUI();yield break;}
             if(System.Array.IndexOf(System.Environment.GetCommandLineArgs(),"--adventure-typography")>=0){yield return VerifyAdventureTypography();yield break;}
             if(System.Array.IndexOf(System.Environment.GetCommandLineArgs(),"--button-styles")>=0){yield return VerifyButtonStyles();yield break;}

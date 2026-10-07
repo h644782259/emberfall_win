@@ -5,7 +5,7 @@ import os,sys,tempfile,subprocess,hashlib
 from pathlib import Path
 root=Path(__file__).resolve().parents[1]
 dotnet=sys.argv[1] if len(sys.argv)>1 else os.environ.get('DOTNET','dotnet')
-core=['SafeSaveFlow','GameTypes','ProgressionService','ProgressionService.Reforge','ReforgeQuote','ProgressionService.Chapter','ChapterProgression','RoomTactics','CombatBalance','HubTravelRules','MasteryCoreRuntime','TierRewardRules','TierRewardBand','ProgressionGoalState']
+core=['SafeSaveFlow','GameTypes','ProgressionService','ProgressionService.Attachments','ProgressionService.AutomaticGrowth','ProgressionService.Reforge','ReforgeQuote','ProgressionService.Chapter','ChapterProgression','RoomTactics','CombatBalance','HubTravelRules','MasteryCoreRuntime','TierRewardRules','TierRewardBand','ProgressionGoalState']
 with tempfile.TemporaryDirectory(prefix='chapter-transactions-') as folder:
     folder=Path(folder)
     os.environ.setdefault("DOTNET_CLI_HOME",str(folder/"dotnet-home"))

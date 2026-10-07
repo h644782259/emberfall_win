@@ -1,0 +1,21 @@
+/tmp/blessing-preview-3kjhi8yz/positive/Blessings.cs(53,16): error CS0103: The name 'NavigationButton' does not exist in the current context [/tmp/blessing-preview-3kjhi8yz/positive/project/Validation.csproj]
+/tmp/blessing-preview-3kjhi8yz/positive/Blessings.cs(55,16): error CS0103: The name 'PrimaryButton' does not exist in the current context [/tmp/blessing-preview-3kjhi8yz/positive/project/Validation.csproj]
+/tmp/blessing-preview-3kjhi8yz/positive/project/Program.cs(53,46): error CS0103: The name 'HubNpcServiceSubtitle' does not exist in the current context [/tmp/blessing-preview-3kjhi8yz/positive/project/Validation.csproj]
+/tmp/blessing-preview-3kjhi8yz/positive/project/Program.cs(55,16): error CS0103: The name 'NavigationButton' does not exist in the current context [/tmp/blessing-preview-3kjhi8yz/positive/project/Validation.csproj]
+
+Build FAILED.
+
+/tmp/blessing-preview-3kjhi8yz/positive/Blessings.cs(53,16): error CS0103: The name 'NavigationButton' does not exist in the current context [/tmp/blessing-preview-3kjhi8yz/positive/project/Validation.csproj]
+/tmp/blessing-preview-3kjhi8yz/positive/Blessings.cs(55,16): error CS0103: The name 'PrimaryButton' does not exist in the current context [/tmp/blessing-preview-3kjhi8yz/positive/project/Validation.csproj]
+/tmp/blessing-preview-3kjhi8yz/positive/project/Program.cs(53,46): error CS0103: The name 'HubNpcServiceSubtitle' does not exist in the current context [/tmp/blessing-preview-3kjhi8yz/positive/project/Validation.csproj]
+/tmp/blessing-preview-3kjhi8yz/positive/project/Program.cs(55,16): error CS0103: The name 'NavigationButton' does not exist in the current context [/tmp/blessing-preview-3kjhi8yz/positive/project/Validation.csproj]
+    0 Warning(s)
+    4 Error(s)
+
+Time Elapsed 00:00:03.62
+Traceback (most recent call last):
+  File "/workspace/emberfall_win_controls/Tests/MobileBlessingPreviewProductionTests.py", line 81, in <module>
+    subprocess.run([dotnet,'build',str(p),'--configfile',str(config),'-v:q'],env=env,check=True)
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/tmp/emberfall-dotnet/dotnet', 'build', '/tmp/blessing-preview-3kjhi8yz/positive/project/Validation.csproj', '--configfile', '/tmp/blessing-preview-3kjhi8yz/NuGet.Config', '-v:q']' returned non-zero exit status 1.

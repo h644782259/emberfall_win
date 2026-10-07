@@ -6,7 +6,7 @@ root=Path(__file__).resolve().parents[1]
 spec=importlib.util.spec_from_file_location('cv',root/'Tools/cloud-validation.py')
 cv=importlib.util.module_from_spec(spec);spec.loader.exec_module(cv)
 dotnet=sys.argv[1] if len(sys.argv)>1 else os.environ.get('DOTNET','dotnet')
-files=[root/p for p in ['Assets/Scripts/World/WorldTraversal.cs','Assets/Scripts/World/ChapterRoomGeometry.cs','Assets/Scripts/Core/ChapterProgression.cs','Assets/Scripts/Core/RoomTactics.cs','Assets/Scripts/Core/ArenaPulseRules.cs','Assets/Scripts/World/ChapterHazardGeometry.cs','Assets/Scripts/World/TacticalRoomGeometry.cs','Tests/DestructibleTraversalTests.cs','Tests/ChapterGeometryFixture.cs','Tests/ChapterRoomGeometryTests.cs','Tests/ChapterFormationGeometryTests.cs']]
+files=[root/p for p in ['Assets/Scripts/World/WorldTraversal.cs','Assets/Scripts/World/WorldTraversal.Platforms.cs','Assets/Scripts/World/ChapterRoomGeometry.cs','Assets/Scripts/Core/ChapterProgression.cs','Assets/Scripts/Core/RoomTactics.cs','Assets/Scripts/Core/ArenaPulseRules.cs','Assets/Scripts/World/ChapterHazardGeometry.cs','Assets/Scripts/World/TacticalRoomGeometry.cs','Tests/DestructibleTraversalTests.cs','Tests/ChapterGeometryFixture.cs','Tests/ChapterRoomGeometryTests.cs','Tests/ChapterFormationGeometryTests.cs']]
 # Execute the actual host placement method against real WorldTraversal, including fallback.
 host=(root/'Assets/Scripts/Core/GameSession.Chapter.cs').read_text()
 start=host.index('private bool TryChapterSpawn(');opening=host.index('{',start);end=opening+1;depth=1

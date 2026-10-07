@@ -152,7 +152,7 @@ namespace Emberfall
             Text(new Rect(r.x + 16*u, r.y + 10*u, 488*u, 28*u), "城镇旅行 · " + HubTravelRules.Name(session.CurrentHub),
                 Mathf.RoundToInt(21*u), pale, true);
             string hint = !string.IsNullOrEmpty(travelError) ? travelError : !session.CanOpenTravelMap ?
-                "挑战中或附近有敌人时不能旅行，请先安全返回营地。" : "免费旅行 · 商人、铁匠、兑换员提供相同服务 · 装备与货币保留";
+                "挑战中或附近有敌人时不能旅行，请先安全返回营地。" : "M旅行地图 · 城镇逐站传送 · 地面青色符文为旅行站";
             Text(new Rect(r.x + 16*u, r.y + 40*u, 488*u, 30*u), hint, Mathf.RoundToInt(11*u),
                 !string.IsNullOrEmpty(travelError) ? gold : muted, false, true);
             GameProfile profile = session.Progression.Profile;
@@ -168,9 +168,9 @@ namespace Emberfall
                 Fill(cardRect, card); Border(cardRect, unlocked ? tint : muted*.4f);
                 Fill(new Rect(x + 68*u, r.y + 86*u, 20*u, 20*u), current ? gold : unlocked ? tint : muted*.4f);
                 Text(new Rect(x + 6*u, r.y + 114*u, 144*u, 25*u), HubTravelRules.Name(hub), Mathf.RoundToInt(16*u), unlocked ? pale : muted, true, false, TextAnchor.MiddleCenter);
-                Text(new Rect(x + 7*u, r.y + 143*u, 142*u, 31*u), unlocked ? "商人 / 铁匠 / 兑换员" : HubTravelRules.UnlockHint(hub),
+                Text(new Rect(x + 7*u, r.y + 143*u, 142*u, 31*u), unlocked ? (hub==0?"原野探索 / 职业练习":hub==1?"锻造委托 / 碎片整备":"观测星图 / 星纹奖励") : HubTravelRules.UnlockHint(hub),
                     Mathf.RoundToInt(11*u), muted, false, true, TextAnchor.MiddleCenter);
-                if (NavigationButton(new Rect(x + 8*u, r.y + 183*u, 140*u, 48*u), current ? "当前城镇" : unlocked ? "前往" : "尚未解锁", tint, unlocked && !current && session.CanOpenTravelMap && !UITransitionBlocked))
+                if (NavigationButton(new Rect(x + 8*u, r.y + 183*u, 140*u, 48*u), current ? "当前城镇" : unlocked ? (Mathf.Abs(hub-session.CurrentHub)==1?"前往下一站":"需经停赤岩") : "尚未解锁", tint, unlocked && !current && Mathf.Abs(hub-session.CurrentHub)==1 && session.CanOpenTravelMap && !UITransitionBlocked))
                 {
                     if (session.TravelToHub(hub))
                     {

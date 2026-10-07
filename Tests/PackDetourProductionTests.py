@@ -60,7 +60,7 @@ class Program{static void Main(){SummonedCompanion.Run();}}
 }
 '''.replace('NODE',node).replace('METHODS',methods)
 with tempfile.TemporaryDirectory(prefix='pack-detour-') as directory:
- out=Path(directory);code=out/'Replay.cs';sources=[root/'Assets/Scripts/World/WorldTraversal.cs',root/'Assets/Scripts/World/ChapterRoomGeometry.cs',root/'Tests/DestructibleTraversalTests.cs']
+ out=Path(directory);code=out/'Replay.cs';sources=[root/'Assets/Scripts/World/WorldTraversal.cs',root/'Assets/Scripts/World/WorldTraversal.Platforms.cs',root/'Assets/Scripts/World/ChapterRoomGeometry.cs',root/'Tests/DestructibleTraversalTests.cs']
  for p in sources:(out/p.name).write_text(p.read_text())
  project=out/'Test.csproj';project.write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net8.0</TargetFramework><OutputType>Exe</OutputType></PropertyGroup></Project>')
  config=out/'NuGet.Config';config.write_text('<configuration><packageSources><clear /></packageSources></configuration>');env=dict(os.environ,DOTNET_CLI_HOME=str(out/'cli'),DOTNET_NOLOGO='1');dotnet=sys.argv[1] if len(sys.argv)>1 else 'dotnet'

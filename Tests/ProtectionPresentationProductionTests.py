@@ -5,7 +5,7 @@ from pathlib import Path
 import os,sys,tempfile,subprocess
 root=Path(__file__).resolve().parents[1]
 ns={'__file__':str(root/'Tests/DefenseIdentityProductionTests.py')};exec((root/'Tests/DefenseIdentityProductionTests.py').read_text().split('evidence_path=',1)[0],ns)
-shell=ns['stubs'];player=ns['fixture'];member=ns['member'];body=(root/'Assets/Scripts/Combat/AdvancedSkillSequence.cs').read_text()
+shell=ns['stubs'].replace('public static class GameBalance{','public static class GameBalance{public const float ArcanistPulseRadius=8f;');player=ns['fixture'].replace('public static class GameBalance{','public static class GameBalance{public const float ArcanistPulseRadius=8f;');member=ns['member'];body=(root/'Assets/Scripts/Combat/AdvancedSkillSequence.cs').read_text()
 shell=shell.replace('public bool HasStarted,ModeFinished,InputBlocked;', 'public bool HasStarted,ModeFinished,InputBlocked,CombatEnded;public float ActualHealed;public void RecordActualHealing(float n){ActualHealed+=n;}public void SpawnFloatingText(params object[] a){}')
 shell=shell.replace('public static class CombatFx{','public static class CombatFx{public static void Ring(params object[] a){}')
 shell=shell.replace('public static float Min(float a,float b)', 'public static int CeilToInt(float n)=>(int)Math.Ceiling(n);public static float Min(float a,float b)')

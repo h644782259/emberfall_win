@@ -10,14 +10,14 @@ s=(r/'Assets/Scripts/Combat/PlayerController.cs').read_text()
 timers=''.join(line for line in s.splitlines(True) if line.strip().startswith(('counterTime = Mathf.Max(0, counterTime - dt);','perfectDodgeCounterTime = Mathf.Max(0, perfectDodgeCounterTime - dt);')))
 methods=''.join(member(s,k) for k in ['private void BasicAttack(','private bool Melee(','public void NotifyPerfectDodge(','private bool ReturningCounterVariant','private bool ReturningCounterReady'])
 focus=(r/'Assets/Scripts/Combat/PlayerController.MobileFocus.cs').read_text()
-methods+=''.join(member(focus,k) for k in ['public EnemyController MobilePinnedTarget','internal void ClearMobilePinnedTarget(','internal bool PinMobileTarget(','internal bool MobilePinAppliesToSkill(','internal string MobilePinnedActionReason(','internal bool MobilePinnedActionAllowed('])
+methods+=''.join(member(focus,k) for k in ['public EnemyController MobilePinnedTarget','internal void ClearMobilePinnedTarget(','internal bool PinMobileTarget(','internal bool MobilePinAppliesToSkill(','internal string MobilePinnedActionReason(','private string MobilePinnedActionReasonFor(','internal bool MobilePinnedActionAllowed('])
 # Execute the unchanged complete proc branch separately; surrounding on-hit features are independent.
 branch=member(s,'if (HeroClass == HeroClass.Vanguard && HasMechanic(EquipmentMechanic.ReturningBlade) && !ReturningCounterVariant)')
 math=(r/'Tests/DestructibleTraversalTests.cs').read_text();math=math[math.index('namespace UnityEngine'):]
 math=math.replace('public static Vector3 zero=>new Vector3();','public static Vector3 zero=>new Vector3();public static Vector3 up=>new Vector3(0,1,0);public static Vector3 Cross(Vector3 a,Vector3 b)=>new Vector3(a.y*b.z-a.z*b.y,a.z*b.x-a.x*b.z,a.x*b.y-a.y*b.x);public static float Angle(Vector3 a,Vector3 b)=>(float)(Math.Acos(Math.Max(-1,Math.Min(1,Dot(a.normalized,b.normalized))))*180/Math.PI);')
 with tempfile.TemporaryDirectory(prefix='return-counter-') as t:
  p=Path(t)
- for f in ['Core/CombatImpactBatch','Core/GameTypes','Core/CombatBalance','Core/SkillDamageBudgets','Combat/PlayerUpgradeRules','Combat/ReturningCounterRules','World/WorldTraversal','Core/CombatSightRules','Combat/CombatSight','Combat/EnemyImpactRegion','Combat/BossAttackPolicy']:(p/(Path(f).name+'.cs')).write_text((r/('Assets/Scripts/'+f+'.cs')).read_text())
+ for f in ['Core/CombatImpactBatch','Core/GameTypes','Core/CombatBalance','Core/SkillDamageBudgets','Combat/PlayerUpgradeRules','Combat/ReturningCounterRules','World/WorldTraversal','World/WorldTraversal.Platforms','Core/CombatSightRules','Combat/CombatSight','Combat/EnemyImpactRegion','Combat/BossAttackPolicy']:(p/(Path(f).name+'.cs')).write_text((r/('Assets/Scripts/'+f+'.cs')).read_text())
  (p/'Math.cs').write_text('using System;'+math)
  (p/'Fixture.cs').write_text((r/'Tests/ReturningCounterFixture.cs').read_text())
  enemy=(r/'Assets/Scripts/Combat/EnemyController.cs').read_text()

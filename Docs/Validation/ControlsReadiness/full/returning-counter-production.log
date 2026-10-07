@@ -1,0 +1,16 @@
+/tmp/return-counter-1fzfnoz7/Player.cs(145,18): error CS0103: The name 'MobilePinnedActionReasonFor' does not exist in the current context [/tmp/return-counter-1fzfnoz7/Test.csproj]
+
+Build FAILED.
+
+/tmp/return-counter-1fzfnoz7/Player.cs(145,18): error CS0103: The name 'MobilePinnedActionReasonFor' does not exist in the current context [/tmp/return-counter-1fzfnoz7/Test.csproj]
+    0 Warning(s)
+    1 Error(s)
+
+Time Elapsed 00:00:05.80
+Traceback (most recent call last):
+  File "/workspace/emberfall_win_controls/Tests/ReturningCounterProductionTests.py", line 28, in <module>
+    subprocess.run(build,env=env,check=True);subprocess.run(run,env=env,check=True)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/tmp/emberfall-dotnet/dotnet', 'build', '/tmp/return-counter-1fzfnoz7/Test.csproj', '--configfile', '/tmp/return-counter-1fzfnoz7/NuGet.Config', '-v:q']' returned non-zero exit status 1.

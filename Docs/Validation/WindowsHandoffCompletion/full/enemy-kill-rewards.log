@@ -1,0 +1,6 @@
+
+Unhandled exception. System.InvalidOperationException: post-reward loot uses the gained level while rolling alone remains read-only
+   at EnemyKillRewardTests.Check(Boolean value, String message) in E:\emberfall_win\Tests\EnemyKillRewardTests.cs:line 37
+   at EnemyKillRewardTests.SingleLevelAndPostRewardLoot() in E:\emberfall_win\Tests\EnemyKillRewardTests.cs:line 108
+   at EnemyKillRewardTests.Run(String directory) in E:\emberfall_win\Tests\EnemyKillRewardTests.cs:line 23
+   at Program.Main(String[] args) in E:\emberfall_win\Tests\TestResults\Temp\EmberfallCloudValidation-u311dn21\enemy-kill-rewards\Program.cs:line 1

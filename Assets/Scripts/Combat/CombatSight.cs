@@ -9,6 +9,10 @@ namespace Emberfall
         private static bool Reach(CombatSightKind kind,Vector3 origin,Vector3 target)
         {
             if(!Finite(origin)||!Finite(target))return false;
+            // Area silhouettes contain airborne vertices; their height must not
+            // reject otherwise visible ground damage or clip tall spell meshes.
+            float height=kind==CombatSightKind.Area?Mathf.Abs(WorldTraversal.SurfaceHeight(origin,.05f)-WorldTraversal.SurfaceHeight(target,.05f)):Mathf.Abs(origin.y-target.y);
+            if(height>=(kind==CombatSightKind.Melee?.65f:2.5f))return false;
             return CombatSightRules.Allows(kind,WorldTraversal.HasLineOfSight(origin,target),
                 kind!=CombatSightKind.Melee||WorldTraversal.HasGroundPath(origin,target,.15f));
         }
@@ -33,7 +37,7 @@ namespace Emberfall
         public static Vector3 GroundPoint(Vector3 origin,Vector3 desired) { return BoundaryPoint(CombatSightKind.GroundPlacement,origin,desired); }
         public static Vector3 BoundaryPoint(CombatSightKind kind,Vector3 origin,Vector3 desired)
         {
-            origin=CombatFx.Flat(origin);desired=CombatFx.Flat(desired);
+            desired.y=WorldTraversal.SurfaceHeight(desired,.05f);
             if(!Finite(origin))return Vector3.zero;
             if(!Finite(desired))return origin;
             if(!Reach(kind,origin,origin))return origin;

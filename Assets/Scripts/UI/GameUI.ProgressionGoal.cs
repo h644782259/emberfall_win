@@ -30,6 +30,7 @@ namespace Emberfall
         private bool DrawProgressionGoalSurface()
         {
             ReconcileProgressionGoalSurface();if(!progressionGoalsOpen)return false;
+            if(session.Progression.Profile.automaticGrowth&&!MobileControls.Active)return DrawAutomaticGrowthSurface();
             float u=MobileControls.Active?TouchRatio:1;
             var l=new MobileDialogLayout(width/u,height/u);
             Fill(new Rect(0,0,width,height),new Color(.018f,.031f,.048f,1));blockedRects.Add(new Rect(0,0,width,height));
@@ -42,7 +43,7 @@ namespace Emberfall
             progressionGoalHeaderScroll=BeginTouchScroll("progression-goal-current",BuildPlanRect(sections.Status,u),progressionGoalHeaderScroll,new Rect(0,0,(l.Body.Width-16)*u,statusHeight*u));
             Text(new Rect(4*u,4*u,(l.Body.Width-26)*u,(statusHeight-8)*u),status,Mathf.RoundToInt(13*u),jade,false,true);EndTouchScroll();
             if(current.Action!=ProgressionGoalAction.None&&PrimaryButton(BuildPlanRect(sections.Action,u), current.ActionLabel, gold, current.CanAct, current.Step))
-            {if(current.Action==ProgressionGoalAction.OpenPresets){progressionGoalsOpen=false;OpenBuildPlans();}else Feedback(p.ExecuteProgressionGoal(current.ActionIdentity,session.IsInCamp),"目标操作已保存");progressionGoalHeaderScroll=Vector2.zero;BlockUITransition();return true;}
+            {if(current.Action==ProgressionGoalAction.OpenPresets){progressionGoalsOpen=false;OpenBuildPlans();buildPlanDetails=1;}else Feedback(p.ExecuteProgressionGoal(current.ActionIdentity,session.IsInCamp),"目标操作已保存");progressionGoalHeaderScroll=Vector2.zero;BlockUITransition();return true;}
             float h=DrawProgressionGoalOptions(sections.Candidates.Width-18,u,false);
             progressionGoalScroll=BeginTouchScroll("progression-goals",BuildPlanRect(sections.Candidates,u),progressionGoalScroll,new Rect(0,0,(sections.Candidates.Width-18)*u,Mathf.Max(sections.Candidates.Height,h)*u));
             DrawProgressionGoalOptions(sections.Candidates.Width-18,u,true);EndTouchScroll();
@@ -52,6 +53,9 @@ namespace Emberfall
         private float DrawProgressionGoalOptions(float w,float u,bool draw)
         {
             var p=session.Progression;float y=8;
+            if(draw&&PrimaryButton(new Rect(8*u,y*u,(w-16)*u,48*u),"启用自动成长 · 自动奖励并推进",gold))
+            {Feedback(p.ResumeAutomaticGrowth(),"已启用自动成长");BlockUITransition();}
+            y+=60;
             GoalNode(ref y,w,u,"10阶节点 · 首套方向（自主选择）","先选具体核心，集中材料建立一条路线；也可先做职业练习，不消耗机制材料。达到10阶不代表装备已成型。",draw);
             foreach(var mechanic in BuildCatalog.MechanicsFor(p.Profile.heroClass))GoalCoreOption(ref y,w,u,mechanic,Rarity.Common,draw);
             GoalOption(ref y,w,u,"职业练习 · "+p.ClassTutorialText,ProgressionGoalKind.ClassTutorial,null,0,draw);

@@ -1,0 +1,44 @@
+未能将“E:\emberfall_win\Tests\TestResults\Temp\draft-variant-effects-2hd4odiz\cli\.dotnet\tools”添加到 PATH 环境变量。请将此目录添加到 PATH，以使用通过 "dotnet tool install" 安装的工具。
+
+PASS 88 actual equipped variant / draft before-after / persistence / authoritative budget assertions
+
+
+已成功生成。
+    0 个警告
+    0 个错误
+
+已用时间 00:00:03.10
+
+Unhandled exception. System.Exception: before uses actual equipped current mechanism
+   at BuildDraftVariantEffectsTests.Check(Boolean value, String message) in E:\emberfall_win\Tests\BuildDraftVariantEffectsTests.cs:line 6
+   at BuildDraftVariantEffectsTests.Change(ProgressionService p, Int32 skill, Int32 from, Int32 to) in E:\emberfall_win\Tests\BuildDraftVariantEffectsTests.cs:line 15
+   at BuildDraftVariantEffectsTests.Run(String root) in E:\emberfall_win\Tests\BuildDraftVariantEffectsTests.cs:line 25
+   at Program.Main(String[] args) in E:\emberfall_win\Tests\TestResults\Temp\draft-variant-effects-2hd4odiz\project\Program.cs:line 1
+
+PASS compiled behavioral mutation rejected: before uses actual equipped current mechanism
+
+已成功生成。
+    0 个警告
+    0 个错误
+
+已用时间 00:00:02.74
+
+Unhandled exception. System.Exception: B both before and after replace fan descriptions
+   at BuildDraftVariantEffectsTests.Check(Boolean value, String message) in E:\emberfall_win\Tests\BuildDraftVariantEffectsTests.cs:line 6
+   at BuildDraftVariantEffectsTests.Run(String root) in E:\emberfall_win\Tests\BuildDraftVariantEffectsTests.cs:line 26
+   at Program.Main(String[] args) in E:\emberfall_win\Tests\TestResults\Temp\draft-variant-effects-2hd4odiz\project\Program.cs:line 1
+
+PASS compiled behavioral mutation rejected: B both before and after replace fan descriptions
+
+已成功生成。
+    0 个警告
+    0 个错误
+
+已用时间 00:00:02.80
+
+Unhandled exception. System.Exception: locked forged B cannot override preview
+   at BuildDraftVariantEffectsTests.Check(Boolean value, String message) in E:\emberfall_win\Tests\BuildDraftVariantEffectsTests.cs:line 6
+   at BuildDraftVariantEffectsTests.Run(String root) in E:\emberfall_win\Tests\BuildDraftVariantEffectsTests.cs:line 32
+   at Program.Main(String[] args) in E:\emberfall_win\Tests\TestResults\Temp\draft-variant-effects-2hd4odiz\project\Program.cs:line 1
+
+PASS compiled behavioral mutation rejected: locked forged B cannot override preview

@@ -2,7 +2,7 @@ from pathlib import Path
 import sys,importlib.util,tempfile,subprocess,os
 r=Path(__file__).resolve().parents[1];dotnet=sys.argv[1]
 s=importlib.util.spec_from_file_location('cv',r/'Tools/cloud-validation.py');cv=importlib.util.module_from_spec(s);s.loader.exec_module(cv)
-core=['GameTypes','ProgressionService','ProgressionService.Chapter','ChapterProgression','RoomTactics','ProgressionService.Reforge','ReforgeQuote','CombatBalance','HubTravelRules','MasteryCoreRuntime','TierRewardRules','TierRewardBand','ProgressionGoalState']
+core=['GameTypes','ProgressionService','ProgressionService.Chapter','ChapterProgression','RoomTactics','ProgressionService.Attachments','ProgressionService.AutomaticGrowth','ProgressionService.Reforge','ReforgeQuote','CombatBalance','HubTravelRules','MasteryCoreRuntime','TierRewardRules','TierRewardBand','ProgressionGoalState']
 def member(source,key):
  a=source.index(key);b=source.index('{',a)+1;d=1
  while d:d+=(source[b]=='{')-(source[b]=='}');b+=1

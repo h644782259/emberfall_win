@@ -26,6 +26,7 @@ Console.WriteLine("PASS: "+n+" actual sweep clip/containment/contour/traversal g
 '''
 with tempfile.TemporaryDirectory(prefix='boss-capsule-') as tmp:
  p=Path(tmp);(p/'World.cs').write_text((r/'Assets/Scripts/World/WorldTraversal.cs').read_text());(p/'Fixture.cs').write_text(fixture);(p/'Test.cs').write_text(test)
+ (p/'Platforms.cs').write_text((r/'Assets/Scripts/World/WorldTraversal.Platforms.cs').read_text())
  (p/'Phase.cs').write_text((r/'Assets/Scripts/Core/LargeBossPhaseState.cs').read_text())
  project=p/'Test.csproj';project.write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net8.0</TargetFramework><OutputType>Exe</OutputType></PropertyGroup></Project>');(p/'NuGet.Config').write_text('<configuration><packageSources><clear /></packageSources></configuration>')
  for old in [False,True]:

@@ -81,13 +81,13 @@ public static class HubTravelEconomyTests
         Check(service.LoadSlot(id) && service.Profile.currentHub == 1 && service.Profile.unlockedHubMask == 3, "destination and unlocks persist in selected slot");
         service.Profile.level = 1; service.Profile.clearedRuns = 1; service.Save();
         Check(service.TravelToHub(2) && service.Profile.unlockedHubMask == 7, "first clear unlocks final town while retaining earlier town");
-        Check(service.TravelToHub(0) && service.Profile.gold == 765 && service.CurrentSlotId == id, "return home stays same character and currency");
+        Check(!service.TravelToHub(0)&&service.TravelToHub(1)&&service.TravelToHub(0) && service.Profile.gold == 765 && service.CurrentSlotId == id, "sequential return home stays same character and currency");
         before = State(service); disk = File.ReadAllText(path); backup = File.ReadAllText(path + ".bak"); events = 0;
         Directory.CreateDirectory(path + ".tmp");
-        Check(!service.TravelToHub(2), "failed destination write rejects travel");
+        Check(!service.TravelToHub(1), "failed adjacent destination write rejects travel");
         Check(State(service) == before && File.ReadAllText(path) == disk && File.ReadAllText(path + ".bak") == backup && events == 0, "failed travel retains old hub, gear and files");
         Directory.Delete(path + ".tmp");
-        Check(service.TravelToHub(2) && service.LoadSlot(id) && service.Profile.currentHub == 2, "travel retry succeeds after storage recovers");
+        Check(service.TravelToHub(1)&&service.TravelToHub(2) && service.LoadSlot(id) && service.Profile.currentHub == 2, "travel retry succeeds after storage recovers");
     }
     private static ItemData Item(string name, Rarity rarity = Rarity.Common)
     {

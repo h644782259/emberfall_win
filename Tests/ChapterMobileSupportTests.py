@@ -31,7 +31,7 @@ class Program {static int n;static void Check(bool b,string m){n++;if(!b)throw n
 methods=''.join(member(x) for x in ['internal void ConfigureMobileSupport(','private bool RegroupMobileSupport(','private Vector3 WalkForAnimation(']);fixture=fixture.replace('METHODS',methods)
 with tempfile.TemporaryDirectory(prefix='chapter-mobile-') as tmp:
  p=Path(tmp)
- for file in ['Core/ChapterProgression','Core/EscapePostPolicy','Core/RoomTactics','World/WorldTraversal','World/ChapterRoomGeometry']:(p/(Path(file).name+'.cs')).write_text((root/'Assets/Scripts'/(file+'.cs')).read_text())
+ for file in ['Core/ChapterProgression','Core/EscapePostPolicy','Core/RoomTactics','World/WorldTraversal','World/WorldTraversal.Platforms','World/ChapterRoomGeometry']:(p/(Path(file).name+'.cs')).write_text((root/'Assets/Scripts'/(file+'.cs')).read_text())
  for file in ['ChapterGeometryFixture','DestructibleTraversalTests']:
   s=(root/'Tests'/(file+'.cs')).read_text().replace('public static float time=0;','public static float time=0,deltaTime=.1f;');(p/(file+'.cs')).write_text(s)
  (p/'Host.cs').write_text(fixture)

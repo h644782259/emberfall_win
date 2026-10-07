@@ -12,7 +12,7 @@ import tempfile
 root=Path(__file__).resolve().parents[1]
 parser=argparse.ArgumentParser(description=__doc__)
 parser.add_argument('dotnet',nargs='?',default=os.environ.get('DOTNET','dotnet'))
-parser.add_argument('--output',type=Path,default=Path('/tmp/enemy-knockdown-geometry.json'))
+parser.add_argument('--output',type=Path,default=Path(tempfile.gettempdir())/'enemy-knockdown-geometry.json')
 args=parser.parse_args()
 dotnet=args.dotnet
 output=args.output

@@ -20,7 +20,7 @@ assert 'if(pauseInstead)session.SetPaused(true);else ClosePanel();' in chrome
 shell=r'''
 using System;using UnityEngine;
 namespace UnityEngine {
- public enum KeyCode { Escape,I,K }
+ public enum KeyCode { Escape,I,K,M,G }
  public static class Time {public static int frameCount;}
  public static class Input {public static bool GetKeyDown(KeyCode key)=>key==KeyCode.Escape;public static bool GetMouseButton(int b)=>false;}
 }
@@ -45,7 +45,7 @@ namespace Emberfall {
  }
  public sealed class ExitStub {public bool Open;public void Cancel(){Open=false;}}
  public sealed partial class GameUI {
-  private enum Panel {None,Chapter,Controls,Chests,Skills,SaveSelection,SaveLocation,Bindings,PotionAssignment,Camp,TravelMap,Notice,Inventory}
+  private enum Panel {None,Chapter,Controls,Chests,Skills,SaveSelection,SaveLocation,Bindings,PotionAssignment,Camp,TravelMap,Notice,Inventory,HubDialogue}
   private Panel panel=Panel.Chests;private SessionStub session=new SessionStub();
   private int mobilePausePage,transitionBlocks,backConsumedFrame=-1,rebindingSlot=-1;
   private int mobileCastFinger=-1000,hotbarPointerSlot=-1,hotbarPointerPage=0,selectedSkill=0,closeCalls,resetCalls;
@@ -53,6 +53,7 @@ namespace Emberfall {
   private bool PauseUtilityVisible=>false;private bool AndroidBackExitEnabled=>true;
   private ExitStub exitRequest=new ExitStub();private string exitError;
   private void ClearRewardMoment(){}private void RefreshLayout(){}private void ReconcileMobileScroll(){}private void ReconcileCollectionPreview(){}
+  private void ReconcileHubNpcConversation(){}private void CloseTravelMap(){}private void OpenTravelMap(){}private bool HandleHubNpcShortcut(bool pressed)=>false;
   private void ReconcileClassSwitchSurface(){}private void ReconcileBuildPlanSurface(){}private void ReconcileProgressionGoalSurface(){}
   private void CancelMobileCast(){mobileCastFinger=-1000;}private void CancelHotbarPointer(){hotbarPointerSlot=-1;}
   private void BlockUITransition(){transitionBlocks++;}private void ClosePanel(){closeCalls++;panel=Panel.None;}

@@ -7,7 +7,7 @@ out=Path(sys.argv[2]).resolve() if not owned else Path(tempfile.mkdtemp(prefix='
 ns={'__file__':str(root/'Tests/IntegratedActorArtProductionTests.py')};sys.argv=['test',sdk,str(out)]
 exec((root/'Tests/IntegratedActorArtProductionTests.py').read_text().split('\nsubprocess.run(cmd,env=env,check=True)',1)[0],ns)
 p=out/'export';m=p/'Motion.cs';s=m.read_text();s=s[:-2]+(root/'Tests/FinalBodyEnvelopeProductionTests.Pose.cs').read_text()+'}}';m.write_text(s)
-(p/'Exporter.cs').write_text((root/'Tests/FinalBodyEnvelopeProductionTests.Program.cs').read_text().replace('OUTPUT_PATH',str(out/'actors.json')))
+(p/'Exporter.cs').write_text((root/'Tests/FinalBodyEnvelopeProductionTests.Program.cs').read_text().replace('OUTPUT_PATH',(out/'actors.json').as_posix()))
 cmd=[sdk,'run','--project',str(p/'Export.csproj')];env=dict(os.environ,DOTNET_CLI_HOME=str(out/'cli'),DOTNET_NOLOGO='1');subprocess.run(cmd,env=env,check=True)
 for file,old,new,oracle in [('ActorSilhouetteF1.cs','if(!Enabled)return;','return;','actual F1 body loaded'),('CombatModel.WeaponArt.cs','if(swordRig!=null)','if(false)','actual F3 weapon loaded'),('Motion.cs','ApplyAuthoredVanguardPose(acting,t,hurt);','','actual Vanguard layer changes contact')]:
  target=p/file;original=target.read_text();assert old in original;target.write_text(original.replace(old,new,1));r=subprocess.run(cmd,env=env,capture_output=True,text=True);target.write_text(original);(out/('negative-'+file+'.log')).write_text(r.stdout+r.stderr);assert r.returncode!=0 and oracle in r.stdout+r.stderr,(oracle,r.stdout,r.stderr);print('PASS compiled layer control:',oracle)
@@ -31,11 +31,11 @@ code+="""
  oldcmd=cmd[:-1]+[str(out/'old-height-protection.json')]
  subprocess.run(oldcmd,env=env,check=True)
  (p/'FilledSkillVfx.cs').write_text(original)
- r=subprocess.run([sys.executable,str(root/'ArtSource/FinalBodyEnvelope/measure.py'),str(out/'actors.json'),str(out/'old-height-protection.json'),str(out/'old-height-clearance.json')],capture_output=True,text=True)
+ r=subprocess.run([sys.executable,str(root/'ArtSource/FinalBodyEnvelope/measure.py'),(out/'actors.json').as_posix(),str(out/'old-height-protection.json'),str(out/'old-height-clearance.json')],capture_output=True,text=True)
  (out/'negative-old-height.log').write_text(r.stdout+r.stderr)
  assert r.returncode!=0 and 'actual protection triangles cross assembled body' in r.stdout+r.stderr,r.stdout+r.stderr
  print('PASS compiled old persistent height rejected by actual body/effect triangle intersections',flush=True)
 """
 ns={'__file__':str(root/'Tests/DefenseIdentityProductionTests.py'),'sample':sample,'out':out};sys.argv=['defense',sdk,str(out/'protection.json')];exec(compile(code,str(root/'Tests/DefenseIdentityProductionTests.py'),'exec'),ns)
-subprocess.run([sys.executable,str(root/'ArtSource/FinalBodyEnvelope/measure.py'),str(out/'actors.json'),str(out/'protection.json'),str(out/'clearance.json')],check=True)
+subprocess.run([sys.executable,str(root/'ArtSource/FinalBodyEnvelope/measure.py'),(out/'actors.json').as_posix(),str(out/'protection.json'),str(out/'clearance.json')],check=True)
 if owned:shutil.rmtree(out)

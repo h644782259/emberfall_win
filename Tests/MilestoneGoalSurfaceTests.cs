@@ -27,6 +27,11 @@ namespace Emberfall
   Rect BuildPlanRect(MobilePanelLayout.Area r,float u)=>new Rect(r.X*u,r.Y*u,r.Width*u,r.Height*u);
   Vector2 BeginTouchScroll(string key,Rect r,Vector2 scroll,Rect content)=>scroll;void EndTouchScroll(){}
   bool Button(Rect r,string s,Color c,bool enabled=true,string hint=null){shown.Add(s);if(enabled&&click!=null&&s.StartsWith(click)){click=null;return true;}return false;}
+  int buildPlanDetails;
+  bool DrawAutomaticGrowthSurface()=>throw new Exception("Automatic surface is outside this manual-goal fixture");
+  bool NavigationButton(Rect r,string s,Color c,bool enabled=true,string hint=null)=>Button(r,s,c,enabled,hint);
+  bool PrimaryButton(Rect r,string s,Color c,bool enabled=true,string hint=null)=>Button(r,s,c,enabled,hint);
+  bool TabButton(Rect r,string s,bool selected,bool enabled=true,string hint=null)=>Button(r,s,jade,enabled,hint);
   void Feedback(bool ok,string text){if(!ok)throw new Exception(session.Progression.LastError);}void OpenBuildPlans(){presetOpened++;}
   public static string VerifyMilestones(string root){int n=0;Action<bool,string> check=(ok,why)=>{n++;if(!ok)throw new Exception(why);};
    var p=new ProgressionService(Path.Combine(root,"milestones"));check(p.CreateNewSlot(HeroClass.Arcanist),"create persisted character");p.Profile.highestAdventureTier=40;

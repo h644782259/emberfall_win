@@ -36,5 +36,5 @@ check('hero.BasicOpportunityWindow()' in actions and 'counterMeter.Draw(' in act
 check('hero.LatestCombatResult(includeBlocked:true)' in ui and 'SummonedCompanion.EmpoweredHitFeedback(this,out sequence,out count,out age)' in typed,'One HUD result reads actual companion event rather than free order')
 check('status.FrostRemaining' in typed and 'status.OwnBurnRemaining(this)' in typed and 'OwnPoisonOpportunityRemaining(this)' in typed,'Opportunity expiry and ownership originate in authoritative status')
 check('!SkillTargetingReady(skill)||!MobilePinnedActionAllowed(skill,false)' in typed and '(skill==2||skill==4||skill==9)' in typed,'Typed actions respect readiness/pin intent and only real contract identities')
-check('6.5f:3f' in typed and 'ResolveSkillGroundTarget(point,range)' in typed and 'CombatSight.Area(center,enemy.transform.position)' in typed,'Elemental status query uses actual release center, final footprint and area sight')
+check('GameBalance.ArcanistFinaleRadius:3f' in typed and 'ResolveSkillGroundTarget(point,range)' in typed and 'CombatSight.Area(center,enemy.transform.position)' in typed,'Elemental status query uses actual release center, final footprint and area sight')
 print('PASS:',checks,'combat opportunity/free-command source contracts')

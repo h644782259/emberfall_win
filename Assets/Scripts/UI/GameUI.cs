@@ -85,6 +85,12 @@ namespace Emberfall
         {
             if (session == null || !session.HasStarted || session.InputBlocked || panel != Panel.None) return true;
             if (MobileControls.IsScreenPointOverControls(point)) return true;
+            return IsScreenPointOverHUD(point);
+        }
+        // UI priority without calling back into movement-zone hit testing.
+        public bool IsScreenPointOverHUD(Vector2 point)
+        {
+            if (session == null || !session.HasStarted || session.InputBlocked || panel != Panel.None) return true;
             Vector2 position = ScreenToUI(point);
             foreach (Rect rect in blockedRects) if (rect.Contains(position)) return true;
             return false;
@@ -153,10 +159,10 @@ namespace Emberfall
                 return;
             }
             float barWidth = mobile ? 362 : 282;
-            hotbarBounds = new Rect((width - barWidth) * .5f, height - (mobile ? 177 : 165), barWidth, mobile ? 165 : 153);
+            hotbarBounds = new Rect((width - barWidth) * .5f, height - (mobile ? 177 : 143), barWidth, mobile ? 165 : 131);
             for (int slot = 0; slot < hotbarSlots.Length; slot++)
                 hotbarSlots[slot] = new Rect(hotbarBounds.x + 10 + (slot % 5) * (mobile ? 69 : 53),
-                    hotbarBounds.y + (mobile ? 27 : 39) + (1 - slot / 5) * (mobile ? 65 : 62), mobile ? 64 : 48, mobile ? 61 : 46);
+                    hotbarBounds.y + (mobile ? 27 : 17) + (1 - slot / 5) * (mobile ? 65 : 62), mobile ? 64 : 48, mobile ? 61 : 46);
         }
 
         private bool PauseUtilityVisible {get{return panel==Panel.Controls&&controlsReturnPause||panel==Panel.SaveLocation&&saveReturnPause||panel==Panel.Bindings&&(bindingReturnPause||bindingReturnPanel==Panel.Controls&&controlsReturnPause)||panel==Panel.TravelMap&&travelReturnPause;}}
@@ -210,6 +216,7 @@ namespace Emberfall
             if ((session.DungeonSelectionOpen || session.RunChoices.AwaitingChoice) && !session.Paused && !PauseUtilityVisible)
             {if(Input.GetKeyDown(KeyCode.Escape)){if(session.DungeonSelectionOpen)session.CancelDungeonSelection();else session.SetPaused(true);}return;}
             if (rebindingSlot >= 0) return;
+            if(!MobileControls.Active&&Input.GetKeyDown(KeyCode.M)&&session.HasStarted&&!session.IsDead){if(panel==Panel.TravelMap)CloseTravelMap();else if(panel==Panel.None)OpenTravelMap();return;}
             if (Input.GetKeyDown(KeyCode.Escape))
             {
                 if (ReturnToMobilePauseRoot()) return;
@@ -357,6 +364,7 @@ namespace Emberfall
 
         private GUIStyle Style(int size, bool bold = false, bool wrap = false, TextAnchor align = TextAnchor.UpperLeft)
         {
+            if(!MobileControls.Active)size=Mathf.Max(8,Mathf.RoundToInt(size*EffectPreferences.CombatTextScale/1.25f));
             int key = size + (bold ? 100 : 0) + (wrap ? 200 : 0) + (int)align * 1000;
             GUIStyle result;
             if (styles.TryGetValue(key, out result)) return result;
@@ -370,6 +378,15 @@ namespace Emberfall
         {
             Color previous = GUI.contentColor;
             GUIStyle style = Style(size, bold, wrap, align);
+            if(!wrap&&!MobileControls.Active)
+            {
+                int fitted=Mathf.Min(style.fontSize,Mathf.FloorToInt(rect.height/1.15f));
+                if(fitted<style.fontSize&&fitted>=8)
+                {
+                    int raw=Mathf.RoundToInt(fitted*1.25f/EffectPreferences.CombatTextScale);
+                    style=Style(raw,bold,false,align);
+                }
+            }
             Color previousTextColor = style.normal.textColor;
             // Keep the global tint neutral; the style owns the intended text color.
             GUI.contentColor = Color.white;
@@ -767,6 +784,8 @@ namespace Emberfall
             DrawDungeonStatus();
             DrawEdgeActions();
             DrawExpeditionHUD();
+            DrawGrowthHudCard();
+            DrawTownActivityEntry();
             EnemyController target = session.Player == null ? null : session.Player.AimTarget;
             if (target != null && !target.IsDead)
             {
@@ -903,7 +922,8 @@ namespace Emberfall
             float y = bar.y;
             blockedRects.Add(bar);
             Box(bar, jade);
-            Text(new Rect(x+10,y+4,bar.width-20,18),mobile?"技能快捷栏":DesktopBasicOpportunityCaption(),10,pale,true,false,TextAnchor.MiddleCenter);
+            string basicCaption=mobile?"":DesktopBasicOpportunityCaption();
+            if(!string.IsNullOrEmpty(basicCaption))Text(new Rect(x+10,y-19,bar.width-20,18),basicCaption,10,pale,true,false,TextAnchor.MiddleCenter);
             for (int slotIndex = 0; slotIndex < GameBalance.HotbarSize; slotIndex++)
             {
                 int skill = LearnedSkillAtSlot(p, slotIndex);
@@ -923,14 +943,13 @@ namespace Emberfall
 
                 Color accent = empty ? muted : potion ? gold : UIIconAtlas.SkillColor(p.heroClass, skill);
                 Fill(slot, locked ? new Color(.04f, .06f, .085f) : card);
-                Border(slot, new Color(accent.r, accent.g, accent.b, locked ? .23f : .55f));
-                if (hotbarDragging && !hotbarPointerConfiguring && (slotIndex == hotbarPointerSlot || slot.Contains(Mouse))) Border(slot, gold, 2);
+                bool ready=session.Player!=null&&(potion?!session.InputBlocked&&!session.Player.IsDead&&!locked&&session.Player.Health<session.Player.MaxHealth-.5f:skill>=0&&session.Player.IsSkillAvailable(skill));
                 if (!empty)
                 {
-                    float identitySize=mobile?44:32;
-                    Rect identity=new Rect(slot.center.x-identitySize*.5f,slot.y+(mobile?8:1),identitySize,identitySize);
-                    if(potion)DrawIcon(identity,HotbarIcon(p,skill),locked?new Color(.4f,.4f,.4f):Color.white);
-                    else DrawSkillIdentity(identity,p.heroClass,skill,rank,!locked&&!lacksEnergy,32);
+                    // The slot owns its only frame; the glyph uses the whole interior.
+                    Rect identity=new Rect(slot.x+1,slot.y+1,slot.width-2,slot.height-2);
+                    DrawIcon(identity,potion?HotbarIcon(p,skill):UIIconAtlas.Skill(p.heroClass,skill,48),
+                        !ready?new Color(.5f,.55f,.6f,.85f):Color.white);
                 }
                 else Text(new Rect(slot.x, slot.y + 9, slot.width, 32), "+", 20, new Color(.34f, .44f, .53f), false, false, TextAnchor.MiddleCenter);
                 if (cooldown > .01f)
@@ -948,12 +967,12 @@ namespace Emberfall
                 if (lacksEnergy) Fill(new Rect(slot.x + 2, slot.yMax - 3, slot.width - 4, 2), new Color(.45f, .64f, 1f));
                 if (potion)
                 {
-                    string count = (session.ChallengeRun && session.InDungeon ? session.HealingCharges : p.potions).ToString();
+                    string count = "×"+(session.ChallengeRun && session.InDungeon ? session.HealingCharges : p.potions).ToString();
                     float countWidth = Mathf.Max(17, count.Length * 8 + 4);
                     Fill(new Rect(slot.xMax - countWidth - 2, slot.yMax - 17, countWidth, 15), new Color(.015f, .025f, .04f, .94f));
                     Text(new Rect(slot.xMax - countWidth - 3, slot.yMax - 18, countWidth, 17), count, 11, locked ? muted : pale, true, false, TextAnchor.MiddleRight);
                 }
-                if(actionable)Border(slot,jade,2);
+
                 if(actionCaption.Length>0)
                 {
                     Rect caption=new Rect(slot.x+2,slot.yMax-12,slot.width-4,11);
@@ -961,9 +980,10 @@ namespace Emberfall
                     Text(caption,actionCaption,8,actionable?jade:gold,true,false,TextAnchor.MiddleCenter);
                 }
                 bool hover = slot.Contains(Mouse);
+                bool selected=hover&&GUI.enabled||hotbarDragging&&!hotbarPointerConfiguring&&(slotIndex==hotbarPointerSlot||hover);
+                Border(slot,selected?gold:ready?jade:new Color(accent.r,accent.g,accent.b,locked?.23f:.55f),selected||ready?2:1);
                 if (hover && GUI.enabled)
                 {
-                    Border(slot, gold);
                     tooltip = empty ? "未配置" : potion ? PotionTooltip(p) : SkillTooltip(p, skill, rank);
                 }
                 if (!session.PracticeActive && !mobile && hover && GUI.enabled && Event.current.type == EventType.MouseDown && Event.current.button == 1)
@@ -1090,7 +1110,7 @@ namespace Emberfall
             Fill(r, hover ? new Color(.11f, .18f, .21f) : ink);
             Border(r, new Color(accent.r, accent.g, accent.b, hover ? .9f : .35f));
             DrawIcon(new Rect(r.x + 7, r.y + 8, r.width - 14, r.height - 13), UIIconAtlas.Utility(icon), Color.white);
-            Badge(r,icon=="inventory"?NewEquipmentAttention||Attention.LootClaimable:icon=="skills"?Attention.Skills:icon=="camp"?Attention.Rewards:false);
+            Badge(r,icon=="inventory"?NewEquipmentAttention||Attention.LootPending:icon=="skills"?Attention.Skills:icon=="camp"?Attention.Rewards:false);
             if (!MobileControls.Active) Text(new Rect(r.x + 3, r.y + 1, r.width - 6, 12), key, 8, pale, true);
             if (!string.IsNullOrEmpty(badge))
             {
@@ -1277,7 +1297,7 @@ namespace Emberfall
             if (changed) { RebuildBagItems(); ResolveSelectedItem(); }
             Rect viewport = new Rect(middle, w.y + 213, 424, 330);
             Fill(viewport, new Color(.025f, .05f, .075f));
-            float contentHeight = Mathf.Max(viewport.height - 2, bagItems.Count * 76 + 4);
+            float contentHeight = Mathf.Max(viewport.height - 2, bagItems.Count * 110 + 4);
             Rect content = new Rect(0, 0, 407, contentHeight);
             inventoryScroll.y = Mathf.Clamp(inventoryScroll.y, 0, Mathf.Max(0, contentHeight - viewport.height));
             GUIStyle priorThumb = GUI.skin.verticalScrollbarThumb;
@@ -1288,35 +1308,26 @@ namespace Emberfall
             {
                 ItemData item = bagItems[rowIndex];
                 ItemData preview = EquipmentPreview(item);
-                Rect row = new Rect(4, 4 + rowIndex * 76, 398, 68);
+                Rect row = new Rect(4, 4 + rowIndex * 110, 398, 102);
                 bool chosen = item.id == selectedItem;
                 bool improvement = IsEquipmentUpgrade(item);
                 bool levelLocked=!ProgressionAttention.LevelEligible(p,item);
-                Fill(row, levelLocked?new Color(.028f,.035f,.049f):chosen ? new Color(.1f, .2f, .23f) : card);
                 Color color = GameBalance.RarityColor(item.rarity);
-                Fill(new Rect(row.x, row.y, 3, row.height), color);
-                if (chosen) Border(row, jade * new Color(1, 1, 1, .55f));
-                Text(new Rect(row.x + 12, row.y + 8, improvement ? 172 : 260, 22), ItemTitle(preview), 15, levelLocked?Color.Lerp(color,muted,.65f)*.6f:color, true);
-                Badge(new Rect(row.x+190,row.y+10,12,12),improvement&&!reviewedEquipment.Contains(item.id));
-                if (improvement) DrawEquipmentUpgradeTag(new Rect(row.x + 208, row.y + 10, 64, 18));
-                Text(new Rect(row.x + 12, row.y + 33, 125, 16), levelLocked?"锁 · 需要 "+item.level+"级":"等级 " + item.level, 11, levelLocked?new Color(.9f,.58f,.4f):muted);
-                Text(new Rect(row.x + 143, row.y + 33, 62, 16), GameBalance.RarityName(item.rarity), 11, color);
-                Text(new Rect(row.x + 212, row.y + 33, 62, 16), GameBalance.SlotName(item.slot), 11, muted);
-                Text(new Rect(row.x + 12, row.y + 51, 250, 14), "换装评分 " + ProgressionService.EquipmentScore(preview).ToString("0.#")+" · "+session.Progression.PresetReferences(item.id), 10, muted);
-                Rect selectRect = new Rect(row.x, row.y, 278, row.height);
+                DrawCollectionItemCard(row,UIIconAtlas.EquipmentCardIcon(item.slot),levelLocked?muted:color,ItemTitle(preview),
+                    GameBalance.RarityName(item.rarity)+" · "+GameBalance.SlotName(item.slot)+" · Lv."+item.level,
+                    (levelLocked?"需达到装备等级 · ":improvement?"↑ 属性提升 · ":"")+"评分 "+ProgressionService.EquipmentScore(preview).ToString("0.#")+" · "+progression.PresetReferences(item.id),chosen);
+                Badge(new Rect(row.xMax-18,row.y+8,10,10),improvement&&!reviewedEquipment.Contains(item.id));
+                Rect selectRect = new Rect(row.x, row.y, row.width, 70);
                 if (GUI.Button(selectRect, GUIContent.none, invisibleButton)) {selectedItem = item.id;ReviewEquipment(item);}
-                Rect sellRect = new Rect(row.x + 281, row.y + (item.locked ? 24 : 13), 106, item.locked ? 36 : 40);
-                if (item.locked)
-                {
-                    Rect lockTag = new Rect(row.x + 281, row.y + 5, 106, 16);
-                    Fill(lockTag, new Color(.24f, .18f, .07f));
-                    Border(lockTag, gold * .65f);
-                    Text(lockTag, "锁定保护", 10, gold, true, false, TextAnchor.MiddleCenter);
-                }
+                if(NavigationButton(new Rect(row.x+12,row.y+73,112,26),"预览",jade))
+                {selectedItem=item.id;ReviewEquipment(item);equipmentAppearanceItem=item.id;equipmentAppearanceOpen=true;equipmentAppearanceCandidate=true;collectionOwner=session.Player;BlockUITransition();}
+                bool worn=IsEquipped(item);
+                if(Button(new Rect(row.x+132,row.y+73,112,26),worn?"已穿戴":"穿戴",jade,!worn&&!levelLocked))Feedback(progression.Equip(item.id),"装备已穿戴 · 挂件沿用");
+                Rect sellRect = new Rect(row.x+252,row.y+73,134,26);
                 // Keep the sale target separate from the selection target inside the scroll view.
                 if (DangerButton(sellRect, item.locked ? "不可出售" : "出售 " + progression.SellValue(item) + " 金", gold,
                     !item.locked, item.locked ? "装备已锁定，无法出售。\n选中这件装备，在右侧详情点击‘已锁定’解除保护后即可出售。\n特殊机制装备掉落时会自动锁定，避免误卖。" : "出售这件装备，穿戴与锁定装备受保护。")) sellId = item.id;
-                Rect visibleRow = new Rect(viewport.x + row.x, viewport.y + row.y - inventoryScroll.y, 277, row.height);
+                Rect visibleRow = new Rect(viewport.x + row.x, viewport.y + row.y - inventoryScroll.y, row.width, 70);
                 if (viewport.Contains(Mouse) && visibleRow.Contains(Mouse))
                     tooltip = ItemTitle(preview) + "\n换装后：攻击 " + preview.attack + " · 防御 " + preview.defense + " · 生命 " + preview.health +
                         (improvement ? "\n↑ " + EquipmentUpgradeHint(item) : "") +
@@ -1491,7 +1502,7 @@ namespace Emberfall
         private void ItemStat(float x, float y, string name, int value, int previous, bool equipped)
         {
             Text(new Rect(x, y, 90, 24), name, 14, muted);
-            Text(new Rect(x + 104, y, 177, 27), equipped ? value.ToString() : previous + " → " + value, Mathf.Clamp(Mathf.RoundToInt(17*EffectPreferences.CombatTextScale),18,22), pale, true, false, TextAnchor.UpperRight);
+            Text(new Rect(x + 104, y, 177, 27), equipped ? value.ToString() : previous + " → " + value, 17, pale, true, false, TextAnchor.UpperRight);
             int diff = value - previous;
             string delta = equipped || diff == 0 ? "—" : (diff > 0 ? "+" : "") + diff;
             Text(new Rect(x + 296, y, 92, 27), delta, 18, diff >= 0 ? jade : new Color(1f, .49f, .42f), true, false, TextAnchor.UpperRight);

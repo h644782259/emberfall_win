@@ -25,6 +25,16 @@ Required native follow-up: tier 15 limited healing, direct Seal versus optional 
 
 ## Initial full run (diagnostic only)
 
-287 checks: 252 passed, 35 failed. Source changed while this initial suite ran, so it is not a frozen acceptance result. `initial-full/report.json` preserves its source hashes and changed-file list. A final full run is in progress on the committed source.
+287 checks: 252 passed, 35 failed. Source changed while this initial suite ran, so it is not a frozen acceptance result. `initial-full/report.json` preserves its source hashes and changed-file list. The final frozen result is recorded below.
 
 Each unchanged failure was replayed on this platform main; `initial-full/baseline-comparison.json` and paired logs record the same diagnostic signatures. Windows room-failure-evidence was the only introduced fixture failure, repaired and passing in the final targeted run. No unrelated main gameplay/UI changes were replaced to make tests pass.
+
+## Frozen full validation
+
+Completed 2026-10-07T10:56:51.832139+00:00: **253/287 passed**, 34 failed; `sourceChangedDuringRun` is empty. Every final failure matches the archived main baseline: **True**. See `frozen-full/report.json` and `frozen-full/baseline-comparison.json`. This remains managed/reference-API evidence, not Unity/native/device acceptance.
+
+## Independent review follow-up
+
+Generation failures now take priority over ineffective ember/frost advice. The short cause and expandable readable detail use the same font height calculation as their card and scroll extent; seeds and stack traces remain developer diagnostics. First-entry generation failure cannot be overwritten by a success notice.
+
+The frozen-full result above is for the **pre-review source** and is not a full validation of this follow-up. All nine affected suites and the platform reference-API compile passed on isolated commit `1d595308efe2e3d964d7cc127d725c86b7697a94`; the integrated runtime source hashes match exactly. See `review-followup/report.json` and logs. Checks include nonzero ineffective mechanisms, initial entry/transition/retry failures and mutation controls, repeated detail toggling, narrow widths, increased text scale and scroll containment. Font/GUI tests use managed boundaries; Unity/device rendering remains unverified.

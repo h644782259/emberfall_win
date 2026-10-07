@@ -1,0 +1,5 @@
+
+E:\emberfall_win\Assets\Scripts\Core\ChapterProgression.cs(97,23): warning CS0649: 从未对字段“ChapterRunReceipt.MasteryEligible”赋值，字段将一直保持其默认值 false [E:\emberfall_win\Tests\TestResults\Temp\EmberfallCloudValidation-u311dn21\chapter-room-geometry\Validation.csproj]
+E:\emberfall_win\Assets\Scripts\Core\ChapterProgression.cs(96,22): warning CS0649: 从未对字段“ChapterRunReceipt.MasteryEvidence”赋值，字段将一直保持其默认值 0 [E:\emberfall_win\Tests\TestResults\Temp\EmberfallCloudValidation-u311dn21\chapter-room-geometry\Validation.csproj]
+PASS: 51209 chapter production geometry/navigation/spawn checks (managed shims, not gameplay or rendering)
+PASS: 780 chapter formation production navigation assertions (managed shims, not combat AI playback)

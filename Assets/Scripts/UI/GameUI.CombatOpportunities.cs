@@ -59,13 +59,13 @@ namespace Emberfall
         private string DesktopBasicOpportunityCaption()
         {
             var hero=session.Player;
-            if(hero==null||hero.IsDead||session.InputBlocked||!session.HasStarted)return "技能快捷栏";
+            if(hero==null||hero.IsDead||session.InputBlocked||!session.HasStarted)return "";
             string failure=session.ControlFailure("attack");
             var combo=hero.BasicOpportunityWindow(true);var counter=hero.BasicOpportunityWindow();
             if(!string.IsNullOrEmpty(failure)&&!combo.Window&&!counter.Window)return "左键普攻 · "+failure;
             if(combo.Window||counter.Window)return "左键普攻 · "+(counter.Window?counter.Caption+(counter.Actionable?"":"·待"):"")+(combo.Window?(counter.Window?" · ":"")+combo.Caption+(combo.Actionable?"":"·待"):"");
             var opportunity=hero.BasicOpportunity();
-            return opportunity.Actionable?"左键普攻 · "+opportunity.Caption:"技能快捷栏";
+            return opportunity.Actionable?"左键普攻 · "+opportunity.Caption:"";
         }
         private readonly CombatResultChannel resultChannel=new CombatResultChannel();
         private string CurrentCombatResult()

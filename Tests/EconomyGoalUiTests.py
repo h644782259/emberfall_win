@@ -3,7 +3,7 @@ from pathlib import Path
 import importlib.util,tempfile,os,subprocess,sys,re
 r=Path(__file__).resolve().parents[1];dotnet=sys.argv[1] if len(sys.argv)>1 else 'dotnet'
 s=importlib.util.spec_from_file_location('cv',r/'Tools/cloud-validation.py');cv=importlib.util.module_from_spec(s);s.loader.exec_module(cv)
-core=['GameTypes','ProgressionService','ProgressionService.Chapter','ChapterProgression','RoomTactics','ProgressionService.Reforge','ReforgeQuote','CombatBalance','HubTravelRules','MasteryCoreRuntime','TierRewardRules','TierRewardBand','ProgressionGoalState']
+core=['GameTypes','ProgressionService','ProgressionService.Chapter','ChapterProgression','RoomTactics','ProgressionService.Attachments','ProgressionService.AutomaticGrowth','ProgressionService.Reforge','ReforgeQuote','CombatBalance','HubTravelRules','MasteryCoreRuntime','TierRewardRules','TierRewardBand','ProgressionGoalState']
 files=[r/'Assets/Scripts/Core'/f'{x}.cs' for x in core]+[r/'Assets/Scripts/UI'/f'{x}.cs' for x in ['GameUI.ProgressionGoal','GameUI.Reforge','MobilePanelLayout','ProgressionGoalLayout']]+[r/'Tests'/f'{x}.cs' for x in ['ProgressionTests','MilestoneGoalSurfaceTests','ProgressionGoalIdentityTests','EconomyGoalUiTests']]
 recap=(r/'Assets/Scripts/UI/GameUI.RunRecap.cs').read_text()
 calls=re.findall(r'CurrentProgressionGoalStatus\(data.Snapshot.RewardMaterials\)',recap)

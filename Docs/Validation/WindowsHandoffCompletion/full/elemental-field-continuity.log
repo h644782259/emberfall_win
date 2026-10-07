@@ -1,0 +1,4 @@
+  正在确定要还原的项目…
+  已还原 E:\emberfall_win\Tests\TestResults\Temp\emberfall-field-continuity-7uivgnqn\Validation.csproj (用时 58 毫秒)。
+PASS: 139 production secondary-field revision continuity checks (managed geometry, not GPU)
+PASS: old unconditional replan fails the actual rendered-point continuity assertion

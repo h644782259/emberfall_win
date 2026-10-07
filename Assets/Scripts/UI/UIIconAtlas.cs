@@ -144,6 +144,17 @@ namespace Emberfall
             texture = ink.Finish("Utility " + name); cache[key] = texture; return texture;
         }
 
+        public static Texture2D EquipmentCardIcon(ItemSlot slot)
+        {return Utility(slot==ItemSlot.Weapon?"attack":slot==ItemSlot.Armor?"bag":"skills");}
+        public static Texture2D FashionCardIcon(FashionSlot slot)
+        {
+            if(slot==FashionSlot.Weapon)return Utility("attack");
+            const int key=-2000;Texture2D texture;if(cache.TryGetValue(key,out texture))return texture;
+            var ink=new Icon(Color.white);
+            for(int side=-1;side<=1;side+=2)for(int feather=0;feather<4;feather++)
+                ink.Line(32+side*3,40-feather*3,32+side*(12+feather*5),10+feather*9,5);
+            texture=ink.Finish("Wing collection card");cache[key]=texture;return texture;
+        }
         public static Texture2D Reward(int kind)
         {
             int key=-1000-kind;Texture2D texture;if(cache.TryGetValue(key,out texture))return texture;

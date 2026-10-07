@@ -89,8 +89,11 @@ namespace Emberfall
         {
             if (!Active || instance == null || instance.session == null || instance.session.InputBlocked) return false;
             Vector2 point = instance.ToUI(screen);
-            return instance.IsOpportunityPoint(point) || (instance.ui!=null&&instance.ui.CompanionCommandsVisible&&(Area(Layout.FocusCommand).Contains(point)||Area(Layout.RecallCommand).Contains(point))) || Area(Layout.MoveZone).Contains(point) || instance.Attack.Contains(point) || instance.Dodge.Contains(point) || instance.Potion.Contains(point) || Area(Layout.Interact).Contains(point) || instance.Jump.Contains(point) || instance.Cancel.Contains(point);
+            return instance.IsOpportunityPoint(point) || (instance.ui!=null&&instance.ui.CompanionCommandsVisible&&(Area(Layout.FocusCommand).Contains(point)||Area(Layout.RecallCommand).Contains(point))) || instance.IsMovementStart(screen) || instance.Attack.Contains(point) || instance.Dodge.Contains(point) || instance.Potion.Contains(point) || Area(Layout.Interact).Contains(point) || instance.Jump.Contains(point) || instance.Cancel.Contains(point);
         }
+        // Screen-space third, intersected with the safe area; all visible HUD wins.
+        private bool IsMovementStart(Vector2 screen)
+        { return SafeArea.Contains(screen) && screen.x < Screen.width / 3f && (ui == null || !ui.IsScreenPointOverHUD(screen)); }
         private void Update()
         {
             if (!Active || session == null || !session.HasStarted) { ResetInput(); return; }
@@ -98,7 +101,7 @@ namespace Emberfall
             if(safe!=lastSafe) { ResetInput();lastSafe=safe; }
             if (session.InputBlocked)
             {
-                Move = Vector2.zero; AttackHeld = dodge = potion = jump = false; moveFinger = -1000;cameraGesture.Cancel();worldPointerOwner=null;worldPointerTarget=null;
+                Move = Vector2.zero; AttackHeld = dodge = potion = jump = false; moveFinger = -1000;hasJoystickOrigin=false;cameraGesture.Cancel();worldPointerOwner=null;worldPointerTarget=null;
                 staleFingers.Clear();
                 foreach (KeyValuePair<int, Role> finger in fingers) if (finger.Value != Role.Skill) staleFingers.Add(finger.Key);
                 foreach (int finger in staleFingers) fingers.Remove(finger);
@@ -142,7 +145,6 @@ namespace Emberfall
                 if (ui != null && ui.TryBeginTouchSkill(finger, screen)) role = Role.Skill;
                 else if (session.InputBlocked) return false;
                 else if (IsOpportunityPoint(point)) role = Role.Consumed;
-                else if (Area(Layout.MoveZone).Contains(point) && moveFinger == -1000) { role = Role.Move; moveFinger = finger; joystickOrigin=new Vector2(Mathf.Clamp(point.x,64,123),Mathf.Clamp(point.y,Layout.Height-108,Layout.Height-64));hasJoystickOrigin=true; }
                 else if (Attack.Contains(point))
                 {
                     if (targeting != null && targeting.IsTargeting) { targeting.Confirm(); role = Role.Consumed; }
@@ -161,6 +163,11 @@ namespace Emberfall
                     role = Role.Consumed;
                 }
                 else if (Jump.Contains(point)) { jump = true; role = Role.Consumed; }
+                else if (IsMovementStart(screen))
+                {
+                    role = moveFinger == -1000 ? Role.Move : Role.Consumed;
+                    if (role == Role.Move) { moveFinger = finger; joystickOrigin = point; hasJoystickOrigin = true; }
+                }
                 else if (targeting != null && targeting.IsTargeting && (ui == null || !ui.IsScreenPointOverUI(screen))) role = Role.Aim;
                 else if(SafeArea.Contains(screen)&&(ui==null||!ui.IsScreenPointOverUI(screen)))
                 {
@@ -217,11 +224,14 @@ namespace Emberfall
             }
             Matrix4x4 oldMatrix = GUI.matrix; Color oldColor = GUI.color;
             GUI.matrix = Matrix4x4.TRS(Offset, Quaternion.identity, new Vector3(Scale, Scale, 1));
-            Vector2 origin=hasJoystickOrigin?joystickOrigin:Joystick.center;
-            Rect baseRect=new Rect(origin.x-64,origin.y-64,128,128);
-            Circle(baseRect, new Color(.10f, .19f, .23f, .55f), "",false);
-            Rect thumb = new Rect(origin.x - 25 + Move.x * 45, origin.y - 25 - Move.y * 45, 50, 50);
-            Circle(thumb, new Color(.38f, .78f, .71f, .82f), "",false);
+            if (hasJoystickOrigin)
+            {
+                Vector2 origin=joystickOrigin;
+                Rect baseRect=new Rect(origin.x-64,origin.y-64,128,128);
+                Circle(baseRect, new Color(.10f, .19f, .23f, .55f), "",false);
+                Rect thumb = new Rect(origin.x - 25 + Move.x * 45, origin.y - 25 - Move.y * 45, 50, 50);
+                Circle(thumb, new Color(.38f, .78f, .71f, .82f), "",false);
+            }
             SkillTargetingController targeting = session.Player.GetComponent<SkillTargetingController>();
             SkillChargeController charge = session.Player.GetComponent<SkillChargeController>();
             Circle(Attack, AttackHeld ? new Color(.76f, .54f, .20f, .95f) : new Color(.43f, .31f, .15f, .9f), targeting != null && targeting.IsTargeting ? "confirm" : "attack");

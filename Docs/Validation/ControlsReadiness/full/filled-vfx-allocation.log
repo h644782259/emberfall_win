@@ -1,0 +1,11 @@
+  Determining projects to restore...
+  Restored /tmp/emberfall-filled-vfx-48m9fvku/Validation.csproj (in 247 ms).
+/tmp/emberfall-filled-vfx-48m9fvku/ElementalFieldVisual.cs(142,55): error CS0117: 'Mathf' does not contain a definition for 'Pow' [/tmp/emberfall-filled-vfx-48m9fvku/Validation.csproj]
+
+The build failed. Fix the build errors and run again.
+Traceback (most recent call last):
+  File "/workspace/emberfall_win_controls/Tests/FilledVfxAllocationTests.py", line 20, in <module>
+    subprocess.run(command,check=True)
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/tmp/emberfall-dotnet/dotnet', 'run', '--project', '/tmp/emberfall-filled-vfx-48m9fvku/Validation.csproj', '--no-restore', '-c', 'Release']' returned non-zero exit status 1.

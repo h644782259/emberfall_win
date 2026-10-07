@@ -1,0 +1,49 @@
+PASS:3 explicit source-link guards for unexecuted water/bank wiring and1 noncombat damage boundary
+ 
+/tmp/fixed-scenery-_dsg0zro/HubNpcIdle.cs(21,45): error CS0117: 'GameSession' does not contain a definition for 'Instance' [/tmp/fixed-scenery-_dsg0zro/Test.csproj]
+/tmp/fixed-scenery-_dsg0zro/HubNpcIdle.cs(22,40): error CS1061: 'GameSession' does not contain a definition for 'HasStarted' and no accessible extension method 'HasStarted' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [/tmp/fixed-scenery-_dsg0zro/Test.csproj]
+/tmp/fixed-scenery-_dsg0zro/HubNpcIdle.cs(22,60): error CS1061: 'GameSession' does not contain a definition for 'BackgroundPaused' and no accessible extension method 'BackgroundPaused' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [/tmp/fixed-scenery-_dsg0zro/Test.csproj]
+/tmp/fixed-scenery-_dsg0zro/HubNpcIdle.cs(22,86): error CS1061: 'GameSession' does not contain a definition for 'Paused' and no accessible extension method 'Paused' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [/tmp/fixed-scenery-_dsg0zro/Test.csproj]
+/tmp/fixed-scenery-_dsg0zro/HubNpcIdle.cs(22,102): error CS1061: 'GameSession' does not contain a definition for 'IsDead' and no accessible extension method 'IsDead' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [/tmp/fixed-scenery-_dsg0zro/Test.csproj]
+/tmp/fixed-scenery-_dsg0zro/HubNpcIdle.cs(23,34): error CS1061: 'GameSession' does not contain a definition for 'ActiveHubNpc' and no accessible extension method 'ActiveHubNpc' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [/tmp/fixed-scenery-_dsg0zro/Test.csproj]
+/tmp/fixed-scenery-_dsg0zro/HubNpcIdle.cs(23,49): error CS0246: The type or namespace name 'HubNpcKind' could not be found (are you missing a using directive or an assembly reference?) [/tmp/fixed-scenery-_dsg0zro/Test.csproj]
+/tmp/fixed-scenery-_dsg0zro/HubNpcIdle.cs(25,38): error CS0117: 'Time' does not contain a definition for 'unscaledDeltaTime' [/tmp/fixed-scenery-_dsg0zro/Test.csproj]
+/tmp/fixed-scenery-_dsg0zro/HubNpcIdle.cs(31,30): error CS0117: 'Mathf' does not contain a definition for 'MoveTowards' [/tmp/fixed-scenery-_dsg0zro/Test.csproj]
+/tmp/fixed-scenery-_dsg0zro/HubNpcIdle.cs(33,33): error CS1061: 'GameSession' does not contain a definition for 'Player' and no accessible extension method 'Player' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [/tmp/fixed-scenery-_dsg0zro/Test.csproj]
+/tmp/fixed-scenery-_dsg0zro/HubNpcIdle.cs(35,44): error CS0117: 'CombatFx' does not contain a definition for 'Flat' [/tmp/fixed-scenery-_dsg0zro/Test.csproj]
+/tmp/fixed-scenery-_dsg0zro/HubNpcIdle.cs(35,57): error CS1061: 'GameSession' does not contain a definition for 'Player' and no accessible extension method 'Player' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [/tmp/fixed-scenery-_dsg0zro/Test.csproj]
+/tmp/fixed-scenery-_dsg0zro/HubNpcIdle.cs(37,80): error CS0117: 'Quaternion' does not contain a definition for 'LookRotation' [/tmp/fixed-scenery-_dsg0zro/Test.csproj]
+/tmp/fixed-scenery-_dsg0zro/HubNpcIdle.cs(39,43): error CS0117: 'Quaternion' does not contain a definition for 'RotateTowards' [/tmp/fixed-scenery-_dsg0zro/Test.csproj]
+/tmp/fixed-scenery-_dsg0zro/HubNpcIdle.cs(50,31): error CS0117: 'Mathf' does not contain a definition for 'Clamp01' [/tmp/fixed-scenery-_dsg0zro/Test.csproj]
+/tmp/fixed-scenery-_dsg0zro/HubNpcIdle.cs(55,55): error CS0117: 'Quaternion' does not contain a definition for 'Slerp' [/tmp/fixed-scenery-_dsg0zro/Test.csproj]
+/tmp/fixed-scenery-_dsg0zro/HubNpcIdle.cs(56,65): error CS0117: 'Quaternion' does not contain a definition for 'Slerp' [/tmp/fixed-scenery-_dsg0zro/Test.csproj]
+
+Build FAILED.
+
+/tmp/fixed-scenery-_dsg0zro/HubNpcIdle.cs(21,45): error CS0117: 'GameSession' does not contain a definition for 'Instance' [/tmp/fixed-scenery-_dsg0zro/Test.csproj]
+/tmp/fixed-scenery-_dsg0zro/HubNpcIdle.cs(22,40): error CS1061: 'GameSession' does not contain a definition for 'HasStarted' and no accessible extension method 'HasStarted' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [/tmp/fixed-scenery-_dsg0zro/Test.csproj]
+/tmp/fixed-scenery-_dsg0zro/HubNpcIdle.cs(22,60): error CS1061: 'GameSession' does not contain a definition for 'BackgroundPaused' and no accessible extension method 'BackgroundPaused' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [/tmp/fixed-scenery-_dsg0zro/Test.csproj]
+/tmp/fixed-scenery-_dsg0zro/HubNpcIdle.cs(22,86): error CS1061: 'GameSession' does not contain a definition for 'Paused' and no accessible extension method 'Paused' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [/tmp/fixed-scenery-_dsg0zro/Test.csproj]
+/tmp/fixed-scenery-_dsg0zro/HubNpcIdle.cs(22,102): error CS1061: 'GameSession' does not contain a definition for 'IsDead' and no accessible extension method 'IsDead' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [/tmp/fixed-scenery-_dsg0zro/Test.csproj]
+/tmp/fixed-scenery-_dsg0zro/HubNpcIdle.cs(23,34): error CS1061: 'GameSession' does not contain a definition for 'ActiveHubNpc' and no accessible extension method 'ActiveHubNpc' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [/tmp/fixed-scenery-_dsg0zro/Test.csproj]
+/tmp/fixed-scenery-_dsg0zro/HubNpcIdle.cs(23,49): error CS0246: The type or namespace name 'HubNpcKind' could not be found (are you missing a using directive or an assembly reference?) [/tmp/fixed-scenery-_dsg0zro/Test.csproj]
+/tmp/fixed-scenery-_dsg0zro/HubNpcIdle.cs(25,38): error CS0117: 'Time' does not contain a definition for 'unscaledDeltaTime' [/tmp/fixed-scenery-_dsg0zro/Test.csproj]
+/tmp/fixed-scenery-_dsg0zro/HubNpcIdle.cs(31,30): error CS0117: 'Mathf' does not contain a definition for 'MoveTowards' [/tmp/fixed-scenery-_dsg0zro/Test.csproj]
+/tmp/fixed-scenery-_dsg0zro/HubNpcIdle.cs(33,33): error CS1061: 'GameSession' does not contain a definition for 'Player' and no accessible extension method 'Player' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [/tmp/fixed-scenery-_dsg0zro/Test.csproj]
+/tmp/fixed-scenery-_dsg0zro/HubNpcIdle.cs(35,44): error CS0117: 'CombatFx' does not contain a definition for 'Flat' [/tmp/fixed-scenery-_dsg0zro/Test.csproj]
+/tmp/fixed-scenery-_dsg0zro/HubNpcIdle.cs(35,57): error CS1061: 'GameSession' does not contain a definition for 'Player' and no accessible extension method 'Player' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [/tmp/fixed-scenery-_dsg0zro/Test.csproj]
+/tmp/fixed-scenery-_dsg0zro/HubNpcIdle.cs(37,80): error CS0117: 'Quaternion' does not contain a definition for 'LookRotation' [/tmp/fixed-scenery-_dsg0zro/Test.csproj]
+/tmp/fixed-scenery-_dsg0zro/HubNpcIdle.cs(39,43): error CS0117: 'Quaternion' does not contain a definition for 'RotateTowards' [/tmp/fixed-scenery-_dsg0zro/Test.csproj]
+/tmp/fixed-scenery-_dsg0zro/HubNpcIdle.cs(50,31): error CS0117: 'Mathf' does not contain a definition for 'Clamp01' [/tmp/fixed-scenery-_dsg0zro/Test.csproj]
+/tmp/fixed-scenery-_dsg0zro/HubNpcIdle.cs(55,55): error CS0117: 'Quaternion' does not contain a definition for 'Slerp' [/tmp/fixed-scenery-_dsg0zro/Test.csproj]
+/tmp/fixed-scenery-_dsg0zro/HubNpcIdle.cs(56,65): error CS0117: 'Quaternion' does not contain a definition for 'Slerp' [/tmp/fixed-scenery-_dsg0zro/Test.csproj]
+    0 Warning(s)
+    17 Error(s)
+
+Time Elapsed 00:00:01.88
+ 
+Traceback (most recent call last):
+  File "/workspace/emberfall_win_controls/Tests/FixedSceneryProductionTests.py", line 21, in <module>
+    q=subprocess.run([dotnet]+args,env=env,capture_output=True,text=True);print(q.stdout,q.stderr);assert q.returncode==0
+                                                                                                          ^^^^^^^^^^^^^^^
+AssertionError

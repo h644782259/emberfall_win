@@ -70,7 +70,7 @@ namespace Emberfall {
   public static bool Cleared=>instance.fingers.Count==0&&!AttackHeld&&!dodge&&!potion&&!jump&&instance.moveFinger==-1000&&!instance.hasJoystickOrigin;
   RESET_METHOD
  }
- public sealed class GameUI {
+ public sealed class GameUI {private float lastBlessingClick=-100;
   private GameSession session;private int rebindingSlot;private enum Panel{None,Camp}private Panel panel;
   private readonly TouchReleaseLatch lifecycleRelease=new TouchReleaseLatch(),uiTransition=new TouchReleaseLatch();
   private readonly TouchViewportState touchViewport=new TouchViewportState();

@@ -15,7 +15,7 @@ int modeGoldReward,modeXpReward,modeMaterialReward;bool modeRewardDetailsUnavail
 bool TrySettleChapterReward()=>true;bool TrySettleRoomReward()=>true;bool HasBlessing(RunBlessing b){if(ThrowBeforeGrant)throw new InvalidOperationException("precommit blessing lookup fault");return false;}
 void Notify(string s){}void LogSystem(string s){Logs++;LastLog=s;}string BuildRunSummary(bool win)=>"summary";
 '''+methods+'}}'
-core=['SafeSaveFlow','GameTypes','ProgressionService','ProgressionService.Reforge','ReforgeQuote','ProgressionService.Chapter','ChapterProgression','RoomTactics','CombatBalance','HubTravelRules','MasteryCoreRuntime','CastFirstHitReceipt','TierRewardRules','TierRewardBand','ProgressionGoalState','ExpeditionModeState']
+core=['SafeSaveFlow','GameTypes','ProgressionService','ProgressionService.Attachments','ProgressionService.AutomaticGrowth','ProgressionService.Reforge','ReforgeQuote','ProgressionService.Chapter','ChapterProgression','RoomTactics','CombatBalance','HubTravelRules','MasteryCoreRuntime','CastFirstHitReceipt','TierRewardRules','TierRewardBand','ProgressionGoalState','ExpeditionModeState']
 with tempfile.TemporaryDirectory(prefix='arena-reward-exceptions-') as tmp:
  p=Path(tmp)
  for name in core:(p/(name+'.cs')).write_text((root/'Assets/Scripts/Core'/(name+'.cs')).read_text())

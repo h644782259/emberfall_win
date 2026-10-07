@@ -10,7 +10,7 @@ namespace Emberfall
     }
     public static class CostumeRecipes
     {
-        public const int MaximumWingParts=20;
+        public const int MaximumWingParts=40;
         public static WingSilhouette WingStyle(Rarity rarity)
         {return rarity==Rarity.Legendary?WingSilhouette.Mechanical:rarity==Rarity.Epic?WingSilhouette.Crystal:WingSilhouette.Feather;}
         public static float ChestWidth(HeroClass hero,int tier)

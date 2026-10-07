@@ -101,10 +101,11 @@ public static class UpgradeProgressionTests
                 Check(BuildCatalog.MechanicDescription(mechanic).Length > 20 && BuildCatalog.MechanicSource(mechanic).Contains("12"), "codex includes real effect tradeoff and targeted source");
                 Check(!service.HasMechanic(mechanic), "bag ownership does not activate effect");
                 Check(service.CollectLoot(item) && service.HasDiscoveredMechanic(mechanic), "collection records discovery");
-                Check(!service.HasMechanic(mechanic), "unworn mechanic remains inactive");
-                Check(service.Equip(item.id) && service.HasMechanic(mechanic), "equipped compatible gear activates effect");
+                Check(service.HasMechanic(mechanic)&&service.Attachment(mechanic)!=null, "new mechanism drop unlocks independent mounted attachment");
+                Check(service.Equip(item.id) && service.HasMechanic(mechanic), "equipping old gear retains effect");
                 Check(Reload(service).HasMechanic(mechanic), "mechanic effect survives save load");
-                Check(service.Equip(previous.id) && !service.HasMechanic(mechanic), "removing gear disables effect");
+                Check(service.Equip(previous.id) && service.HasMechanic(mechanic), "removing gear retains independent attachment effect");
+                Check(service.SetAttachmentMounted(mechanic,false,true)&&!service.HasMechanic(mechanic),"explicit unmount disables even matching legacy gear");
                 Check(!service.Sell(item.id), "automatic item lock protects individual sale");
                 Check(service.SetItemLocked(item.id, false) && service.Sell(item.id), "explicit unlock permits intentional individual sale");
                 Check(service.HasDiscoveredMechanic(mechanic), "codex discovery persists after intentional sale");
@@ -182,9 +183,9 @@ public static class UpgradeProgressionTests
         Check(service.Profile.mechanicMaterials == 4, "opening adds one chest fragment; repreparing does not repeat base clear materials");
         Check(!service.ClaimFirstClearReward(EquipmentMechanic.ReturningBlade) && service.Profile.pendingFirstClearReward, "foreign choice does not consume first reward");
         FillBag(service); FillPending(service);
-        Check(!service.ClaimFirstClearReward(EquipmentMechanic.CinderTrail) && service.Profile.pendingFirstClearReward, "full storage preserves first-clear choice");
+        Check(service.ClaimFirstClearReward(EquipmentMechanic.CinderTrail) && service.Attachment(EquipmentMechanic.CinderTrail)!=null, "full storage allows independent first-clear attachment");
         service.BulkSellLowQuality();
-        Check(service.ClaimFirstClearReward(EquipmentMechanic.CinderTrail), "player can choose alternate elementalist mechanic");
+        Check(!service.ClaimFirstClearReward(EquipmentMechanic.CinderTrail), "same first-clear attachment cannot be granted twice");
         Check(service.Profile.firstClearRewardClaimed && !service.Profile.pendingFirstClearReward, "first reward consumed only on accepted acquisition");
         Check(!service.ClaimFirstClearReward(EquipmentMechanic.FrostEcho), "first-clear reward cannot be claimed twice");
         service = Reload(service);
@@ -194,11 +195,11 @@ public static class UpgradeProgressionTests
         Check(!service.ExchangeMechanic(EquipmentMechanic.ReturningBlade) && service.Profile.mechanicMaterials == 13, "wrong-class exchange has no cost");
         service.Profile.level = 40; service.Save();
         Check(service.ExchangeMechanic(EquipmentMechanic.FrostEcho) && service.Profile.mechanicMaterials == 1, "targeted exchange spends12 once and retains added chest fragment");
-        Check(service.Profile.inventory.Exists(value => value.mechanic == EquipmentMechanic.FrostEcho && value.level == 40 && value.locked), "exchange produces chosen current-level protected gear");
+        Check(service.Attachment(EquipmentMechanic.FrostEcho).level == 40, "exchange produces chosen current-level independent attachment");
         Check(!service.ExchangeMechanic(EquipmentMechanic.FrostEcho), "insufficient materials cannot go negative");
         FillBag(service);
         service.Profile.mechanicMaterials = 12; service.Save();
-        Check(!service.ExchangeMechanic(EquipmentMechanic.FrostEcho) && service.Profile.mechanicMaterials == 12, "full bag plus queue exchange leaves currency intact");
+        Check(!service.ExchangeMechanic(EquipmentMechanic.FrostEcho) && service.Profile.mechanicMaterials == 12, "duplicate attachment exchange leaves currency intact even with full bag");
     }
 
     private static void EqualSlotUpgradePricesCloseTransferDiscount()

@@ -7,6 +7,9 @@ def member(src,key):
  while depth:depth+=(src[b]=='{')-(src[b]=='}');b+=1
  return src[a:b]
 fixture=(r/'Tests/BurnFinaleProductionTests.cs').read_text().split('public static class BurnFinaleProductionTests')[0]
+fixture=fixture.replace('public static class Mathf{','public static class Mathf{public static float Pow(float x,float y)=>(float)System.Math.Pow(x,y);')
+fixture=fixture.replace('public class GameSession{','public class GameSession{public NeutralProgression Progression=new NeutralProgression();')
+fixture+='namespace Emberfall{public class NeutralProgression{public float MechanicRangeMultiplier(EquipmentMechanic m)=>1;public float MechanicPowerMultiplier(EquipmentMechanic m)=>1;}}'
 fixture=fixture.replace('public enum HeroClass{Arcanist}','public enum HeroClass{Arcanist,Ranger}public enum EquipmentMechanic{VenomSpread}')
 fixture=fixture.replace('public static Vector3 zero=>','public static Vector3 up=>new Vector3(0,1,0);public float sqrMagnitude=>x*x+y*y+z*z;public static Vector3 operator +(Vector3 a,Vector3 b)=>new Vector3(a.x+b.x,a.y+b.y,a.z+b.z);public static Vector3 operator *(Vector3 a,float v)=>new Vector3(a.x*v,a.y*v,a.z*v);public static Vector3 zero=>')
 fixture=fixture.replace('public static bool Area','public static bool Direct(Vector3 a,Vector3 b)=>true;public static bool Area')

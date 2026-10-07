@@ -43,7 +43,7 @@ program='''using System;using UnityEngine;using Emberfall;class Program{static i
 with tempfile.TemporaryDirectory(prefix='practice-pressure-') as d:
  p=Path(d);actual=p/'Actual.cs';actual.write_text(body);(p/'Fixture.cs').write_text(fixture);(p/'Math.cs').write_text(math);(p/'Program.cs').write_text(program)
  catalog=(root/'Assets/Scripts/Core/GameTypes.cs').read_text();(p/'Budget.cs').write_text('namespace Emberfall{public static class BuildCatalog{'+member(catalog,'public static float ConcentratedVenomCoefficient(')+'}}')
- for rel in ['Core/CombatImpactBatch','Core/CampPracticeRecord','Core/ThreatAdmissionPolicy','Core/DestructiblePropRules','Combat/ConcentratedVenomRules','World/WorldTraversal','Combat/EnemyImpactRegion']:(p/(Path(rel).name+'.cs')).write_text((root/'Assets/Scripts'/(rel+'.cs')).read_text())
+ for rel in ['Core/CombatImpactBatch','Core/CampPracticeRecord','Core/ThreatAdmissionPolicy','Core/DestructiblePropRules','Combat/ConcentratedVenomRules','World/WorldTraversal','World/WorldTraversal.Platforms','Combat/EnemyImpactRegion']:(p/(Path(rel).name+'.cs')).write_text((root/'Assets/Scripts'/(rel+'.cs')).read_text())
  project=p/'Test.csproj';project.write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net8.0</TargetFramework><NoWarn>0649;0414;0169</NoWarn></PropertyGroup></Project>');(p/'NuGet.Config').write_text('<configuration><packageSources><clear/></packageSources></configuration>');env=dict(os.environ,DOTNET_CLI_HOME=str(p/'cli'),DOTNET_NOLOGO='1')
  def run(args):
   q=subprocess.run([sdk]+args,env=env,text=True,capture_output=True);print(q.stdout+q.stderr);return q

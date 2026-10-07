@@ -5,9 +5,10 @@ from pathlib import Path
 root=Path(__file__).resolve().parents[1]
 spec=importlib.util.spec_from_file_location('v',root/'Tools/cloud-validation.py');m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
 with tempfile.TemporaryDirectory(prefix='draft-variant-effects-') as directory:
- p=Path(directory);names=['GameTypes','ProgressionService','CombatBalance','SkillDamageBudgets','HubTravelRules','MasteryCoreRuntime','TierRewardRules','TierRewardBand','ProgressionGoalState','ChapterProgression','ProgressionService.Chapter','ProgressionService.Reforge','ReforgeQuote','RoomTactics']
+ p=Path(directory);names=['GameTypes','ProgressionService','CombatBalance','SkillDamageBudgets','HubTravelRules','MasteryCoreRuntime','TierRewardRules','TierRewardBand','ProgressionGoalState','ChapterProgression','ProgressionService.Chapter','ProgressionService.Attachments','ProgressionService.AutomaticGrowth','ProgressionService.Reforge','ReforgeQuote','RoomTactics']
  sources=[root/('Assets/Scripts/Core/'+f+'.cs') for f in names]+[root/'Assets/Scripts/Combat/ConcentratedVenomRules.cs',root/'Tests/ProgressionTests.cs',root/'Tests/BuildDraftVariantEffectsTests.cs']
- service=p/'ProgressionService.cs';original=(root/'Assets/Scripts/Core/ProgressionService.cs').read_text();service.write_text(original);sources=[service if f.name=='ProgressionService.cs' else f for f in sources]
+ attachments=p/'ProgressionService.Attachments.cs';attachmentOriginal=(root/'Assets/Scripts/Core/ProgressionService.Attachments.cs').read_text();attachments.write_text(attachmentOriginal);sources=[attachments if f.name=='ProgressionService.Attachments.cs' else f for f in sources]
+ service=p/'ProgressionService.cs';original=(root/'Assets/Scripts/Core/ProgressionService.cs').read_text();service.write_text(original);attachments.write_text(attachmentOriginal);sources=[service if f.name=='ProgressionService.cs' else f for f in sources]
  project=m.write_project(p/'project',sources,'using System;class Program{static void Main(string[] args){Console.WriteLine(BuildDraftVariantEffectsTests.Run(args[0]));}}')
  config=p/'NuGet.Config';config.write_text('<configuration><packageSources><clear/></packageSources></configuration>');env=dict(os.environ,DOTNET_CLI_HOME=str(p/'cli'),DOTNET_NOLOGO='1');dn=sys.argv[1]
  def run(args):
@@ -17,6 +18,6 @@ with tempfile.TemporaryDirectory(prefix='draft-variant-effects-') as directory:
  for index,(old,new,expected) in enumerate([
   ('owner.SkillEffectSummary(index,before)','GameBalance.SkillEvolution(source.heroClass,index,before)','before uses actual equipped current mechanism'),
   ('preview.SkillEffectSummary(index,after)','GameBalance.SkillEvolution(source.heroClass,index,after)','B both before and after replace fan descriptions'),
-  ('HasVariant(item)&&item.mechanicVariantUnlocked&&item.mechanicVariant==1','HasVariant(item)&&item.mechanicVariant==1','locked forged B cannot override preview')]):
-  assert old in original;service.write_text(original.replace(old,new));assert run(['build',str(project),'--no-restore','-v:q']).returncode==0
-  q=run([str(project.parent/'bin/Debug/net8.0/Validation.dll'),str(p/('negative-'+str(index)))]);assert q.returncode!=0 and expected in q.stdout+q.stderr;print('PASS compiled behavioral mutation rejected:',expected);service.write_text(original)
+  ('attachment!=null)return attachment.variantUnlocked&&attachment.variant==1','attachment!=null)return attachment.variant==1','locked forged B cannot override preview')]):
+  target=service;baseline=original;assert old in baseline;target.write_text(baseline.replace(old,new));assert run(['build',str(project),'--no-restore','-v:q']).returncode==0
+  q=run([str(project.parent/'bin/Debug/net8.0/Validation.dll'),str(p/('negative-'+str(index)))]);assert q.returncode!=0 and expected in q.stdout+q.stderr;print('PASS compiled behavioral mutation rejected:',expected);service.write_text(original);attachments.write_text(attachmentOriginal)

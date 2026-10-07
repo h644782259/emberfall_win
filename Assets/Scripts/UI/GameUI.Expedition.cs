@@ -5,6 +5,15 @@ namespace Emberfall
     public sealed partial class GameUI
     {
         private int selectedBlessing = -1, campTab;
+        private float lastBlessingClick=-10;
+        private void ClickBlessing(int index)
+        {
+            if(!GUI.enabled||UITransitionBlocked)return;
+            bool twice=selectedBlessing==index&&Time.unscaledTime-lastBlessingClick<.45f;
+            selectedBlessing=index;lastBlessingClick=Time.unscaledTime;
+            if(twice&&session.ConfirmBlessing(index))
+            {selectedBlessing=-1;lastBlessingClick=-10;CancelMobileScroll();BlockUITransition();}
+        }
         private Vector2 pendingScroll;
         private bool systemHistory;
         public void CancelForegroundInput()
@@ -12,6 +21,7 @@ namespace Emberfall
             CancelHotbarPointer(); rebindingSlot = -1;
             // IMGUI buttons have their own hotControl, unrelated to our hotbar.
             GUIUtility.hotControl=0;GUIUtility.keyboardControl=0;
+            lastBlessingClick=-10;
             BlockUITransition();
         }
         public void CancelBackgroundInput()
@@ -49,6 +59,7 @@ namespace Emberfall
         {
             if(MobileControls.Active){DrawMobileBlessingChoice();return;}
             RunBlessing[] offer = session.RunChoices.Offer;
+            ReconcileBlessingOffer(offer);
             Rect w = Modal(1000, 470, "星烬祝福", BlessingSubtitle(false));
             for (int i=0;i<offer.Length;i++)
             {
@@ -59,7 +70,9 @@ namespace Emberfall
                 bool compatible = RunChoices.IsCompatible(offer[i],session.Progression.Profile.heroClass,RunChoices.UsableRanks(session.Progression.Profile,false));
                 Text(new Rect(cardRect.x+20,cardRect.y+63,260,21),RunChoices.Association(offer[i],session.Progression.Profile,false),12,compatible?jade:muted);
                 Text(new Rect(cardRect.x+20,cardRect.y+102,260,93),RunChoices.Description(offer[i]),16,pale,false,true);
-                if(TabButton(new Rect(cardRect.x+20,cardRect.y+192,260,32), chosen?"已选择":"选择", chosen))selectedBlessing=i;
+                if(GUI.Button(cardRect,GUIContent.none,invisibleButton))
+                ClickBlessing(i);
+                Text(new Rect(cardRect.x+20,cardRect.y+202,260,24),chosen?"再点击确认":"点击预览 · 双击确认",13,chosen?gold:muted,true,false,TextAnchor.MiddleCenter);
             }
             if(PrimaryButton(new Rect(w.x+310,w.y+392,380,46), session.RoomChainRun!=null?"确认祝福并继续":"确认并进入下一波", gold, selectedBlessing>=0&&selectedBlessing<offer.Length, null, true))
             { if(session.ConfirmBlessing(selectedBlessing))selectedBlessing=-1; }
@@ -71,13 +84,15 @@ namespace Emberfall
             if(DrawReforgeSurface())return;
             if(DrawProgressionGoalSurface())return;
             if(DrawBuildPlanSurface())return;
+            if(campTab==4&&!MobileControls.Active){DrawTownActivitySurface();return;}
+            if(campTab==1&&!MobileControls.Active){DrawAttachmentWorkshop();return;}
             if(MobileControls.Active){DrawMobileCampWorkshop();return;}
             Rect w=Modal(980,620,"营地工坊",HubNpcServiceSubtitle(CurrentProgressionGoalStatus()));
             if(NavigationButton(new Rect(w.xMax-445,w.y+20,170,36), "切换职业", jade))OpenClassSwitch();
             if(NavigationButton(new Rect(w.xMax-255,w.y+20,170,36), "成长目标", jade))OpenProgressionGoals();
             if(NavigationButton(new Rect(w.xMax-69,w.y+20,44,32), "×", jade))ClosePanel();
-            string[] tabs={"战技","机制图鉴","待领取","实战试炼"};
-            for(int i=0;i<tabs.Length;i++){Rect tabRect=new Rect(w.x+26+i*233,w.y+110,220,36);if(TabButton(tabRect, tabs[i], campTab==i))campTab=i;Badge(tabRect,i==1?Attention.FirstClearClaimable:i==2?Attention.LootClaimable:false);}
+            string[] tabs={"战技","机制挂件","待领取","实战试炼"};
+            for(int i=0;i<tabs.Length;i++){Rect tabRect=new Rect(w.x+26+i*233,w.y+110,220,36);if(TabButton(tabRect, tabs[i], campTab==i))campTab=i;Badge(tabRect,i==1?Attention.FirstClearClaimable:i==2?Attention.LootPending:false);}
             ProgressionService p=session.Progression;
             if(campTab==0)
             {

@@ -47,7 +47,7 @@ with tempfile.TemporaryDirectory(prefix='threat-fairness-') as tmp:
   depth+=(catalogSource[end]=='{')-(catalogSource[end]=='}');end+=1
  catalog=catalogSource[start:end]
  (p/'BuildCatalog.cs').write_text('namespace Emberfall{public static class BuildCatalog{'+catalog+'}}')
- for rel in ['Assets/Scripts/Core/ThreatAdmissionPolicy.cs','Assets/Scripts/Core/DestructiblePropRules.cs','Assets/Scripts/Combat/ConcentratedVenomRules.cs','Assets/Scripts/World/WorldTraversal.cs','Assets/Scripts/Combat/EnemyImpactRegion.cs']:(p/Path(rel).name).write_bytes((root/rel).read_bytes())
+ for rel in ['Assets/Scripts/Core/ThreatAdmissionPolicy.cs','Assets/Scripts/Core/DestructiblePropRules.cs','Assets/Scripts/Combat/ConcentratedVenomRules.cs','Assets/Scripts/World/WorldTraversal.cs','Assets/Scripts/World/WorldTraversal.Platforms.cs','Assets/Scripts/Combat/EnemyImpactRegion.cs']:(p/Path(rel).name).write_bytes((root/rel).read_bytes())
  (p/'NuGet.Config').write_text('<configuration><packageSources><clear /></packageSources></configuration>');proj=p/'Test.csproj';proj.write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net8.0</TargetFramework><NoWarn>0649;0414;0169</NoWarn></PropertyGroup></Project>')
  env=dict(os.environ,DOTNET_CLI_HOME=str(p/'home'),DOTNET_CLI_TELEMETRY_OPTOUT='1',DOTNET_GENERATE_ASPNET_CERTIFICATE='false',DOTNET_NOLOGO='1')
  result=subprocess.run([sdk,'run','--project',str(proj)],env=env,capture_output=True,text=True);print(result.stdout,result.stderr);assert result.returncode==0

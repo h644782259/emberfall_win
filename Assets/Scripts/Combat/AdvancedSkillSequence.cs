@@ -49,6 +49,12 @@ namespace Emberfall
             if(heroClass==HeroClass.Ranger&&skill==9)
             {arrowBatch=FilledSkillVfx.BeginArrowBatch(owner,target,6f*range,color,priority:CombatVisualPriority.ActionBody,castId:castId);return;}
             if(heroClass==HeroClass.Ranger&&skill==7)lockedTarget=Nearest(target,10f*range);
+            if(heroClass==HeroClass.Arcanist&&skill==9)
+            {
+                AdvancedSkillVfx.Rune(owner,target,GameBalance.ArcanistPulseRadius*range,color,nextEvent,rank+1,identity:2);
+                CombatFx.Ring(target,GameBalance.ArcanistPulseRadius*range,color,nextEvent,.12f);
+                return;
+            }
             if (skill >= 6)
                 AdvancedSkillVfx.Rune(owner,skill==7 && heroClass==HeroClass.Ranger?origin:target,4.2f*range,color,nextEvent+steps*interval+.5f,rank+1,identity:heroClass==HeroClass.Vanguard?1:heroClass==HeroClass.Summoner?3:heroClass==HeroClass.Arcanist&&skill==4?2:0);
             else AdvancedSkillVfx.Rune(owner,origin,1.6f*range,color,.7f,rank,identity:heroClass==HeroClass.Vanguard?1:heroClass==HeroClass.Summoner?3:heroClass==HeroClass.Arcanist&&skill==4?2:0);
@@ -156,15 +162,15 @@ namespace Emberfall
                         Vector3 axis = Circle(step*.65f,6f*range);
                         AdvancedSkillVfx.Beam(owner,target-axis+Vector3.up,target+axis+Vector3.up,element,.65f,.34f);
                         AdvancedSkillVfx.Beam(owner,target+Vector3.up*10f,target,element,.65f,.24f);
-                        FilledSkillVfx.Impact(owner,target,4.4f*range,SkillVisualRecipes.Filled(SkillVisualRecipes.Ultimate(owner.Specialization,step,false)),element,CombatVisualPriority.ActionBody);
-                        owner.ElementalAdvancedArea(target,5.5f*range,damage*SkillDamageBudgets.AdvancedImpact(heroClass,skill,rank,step),castId,false);
+                        FilledSkillVfx.Impact(owner,target,GameBalance.ArcanistPulseRadius*range,SkillVisualRecipes.Filled(SkillVisualRecipes.Ultimate(owner.Specialization,step,false)),element,CombatVisualPriority.ActionBody);
+                        owner.ElementalAdvancedArea(target,GameBalance.ArcanistPulseRadius*range,damage*SkillDamageBudgets.AdvancedImpact(heroClass,skill,rank,step),castId,false);
                     }
                     else
                     {
-                        AdvancedSkillVfx.Rune(owner,target,6.5f*range,new Color(.92f,.83f,1f),.8f,3);
-                        FilledSkillVfx.Impact(owner,target,6.5f*range,SkillVisualRecipes.Filled(SkillVisualRecipes.Ultimate(owner.Specialization,step,true)),owner.Specialization==ElementalistSpecialization.Burn?new Color(1f,.43f,.12f):new Color(.2f,.75f,1f),CombatVisualPriority.Finale,castId);
-                        owner.ElementalAdvancedArea(target,6.5f*range,damage*SkillDamageBudgets.AdvancedImpact(heroClass,skill,rank,step),castId,true);
-                        if(rank==3) SpawnTail(target,5.5f*range,.3f,3f);
+                        AdvancedSkillVfx.Rune(owner,target,GameBalance.ArcanistFinaleRadius*range,new Color(.92f,.83f,1f),.8f,3);
+                        FilledSkillVfx.Impact(owner,target,GameBalance.ArcanistFinaleRadius*range,SkillVisualRecipes.Filled(SkillVisualRecipes.Ultimate(owner.Specialization,step,true)),owner.Specialization==ElementalistSpecialization.Burn?new Color(1f,.43f,.12f):new Color(.2f,.75f,1f),CombatVisualPriority.Finale,castId);
+                        owner.ElementalAdvancedArea(target,GameBalance.ArcanistFinaleRadius*range,damage*SkillDamageBudgets.AdvancedImpact(heroClass,skill,rank,step),castId,true);
+                        if(rank==3) SpawnTail(target,GameBalance.ArcanistPulseRadius*range,.3f,3f);
                     }
                     break;
             }

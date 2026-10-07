@@ -1,0 +1,5 @@
+PASS: 120 actual elemental entry/lease/lifecycle checks (managed Unity substitute, not rendered)
+
+PASS: old-area-particle-gate compiled and failed exact assertion: full decoration pool must retain actual Area primary field
+PASS: old-aura-parent-ownership compiled and failed exact assertion: aura main shape must be sibling of optional particles
+PASS: unbound-status-clock compiled and failed exact assertion: bound live status owns aura expiry across wall-clock advance

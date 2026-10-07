@@ -19,6 +19,7 @@ namespace Emberfall {
  public static class ChapterRoomGeometry{public static bool IsChapterLayout(int n)=>false;public static object FromLayout(int n,int seed)=>null;}
  public static partial class WorldBuilder {
   // Explicit boundaries: no claim that these unrelated layout builders run here.
+  static void BuildClimbableProps(Transform p,WorldResources r){}static void BuildTravelStation(Transform p,WorldResources r,int n){}
   static void BuildWilderness(Transform p,WorldResources r){}static void BuildCampFacilities(Transform p,WorldResources r,int n){}
   static void BuildChapterRoom(Transform p,WorldResources r,object layout){}static void BuildTacticalRoom(Transform p,WorldResources r,int n){}static void BuildLinkedRoom(Transform p,WorldResources r,int n){}static void BuildChallengeArena(Transform p,WorldResources r,int n){}static void BuildDungeon(Transform p,WorldResources r,int n){}static void BuildBreakablePockets(Transform p,int n){}
   public static void TestTree(Transform p,WorldResources r,int seed)=>Tree(p,r,new Vector3(5,0,5),1,seed);

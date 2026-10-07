@@ -1,0 +1,7 @@
+PASS: 10 combat review source contracts
+PASS: 13 actual friendly-projectile branch qualification/order/pierce/feedback assertions; managed boundaries, not Unity physics
+
+PASS compiled precise negative: mark-after-damage
+PASS compiled precise negative: lost-companion-callback
+PASS compiled precise negative: bypass-los
+PASS compiled precise negative: lost-pierce-stop

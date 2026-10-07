@@ -88,12 +88,14 @@ namespace Emberfall
         public static bool ConcentratedVenomEquipped(GameProfile profile)
         {
             if(profile==null||profile.heroClass!=HeroClass.Ranger||profile.inventory==null)return false;
+            if(profile.attachments!=null){var a=profile.attachments.Find(x=>x.mechanic==EquipmentMechanic.VenomSpread);if(a!=null)return a.mounted&&a.variantUnlocked&&a.variant==1;}
             var item=profile.inventory.Find(x=>x.id==profile.relicId);
             return item!=null&&item.slot==ItemSlot.Relic&&item.mechanic==EquipmentMechanic.VenomSpread&&item.mechanicVariantUnlocked&&item.mechanicVariant==1;
         }
         public static string VenomSkillOverride(GameProfile profile,int skill,int rank)
         {
             if(profile==null||profile.heroClass!=HeroClass.Ranger||skill!=0||profile.inventory==null)return "";
+            if(profile.attachments!=null){var a=profile.attachments.Find(x=>x.mechanic==EquipmentMechanic.VenomSpread);if(a!=null)return !a.mounted?"":VenomSkillSummary(Math.Max(1,Math.Min(3,rank)),a.variantUnlocked&&a.variant==1);}
             var item=profile.inventory.Find(x=>x.id==profile.relicId);
             if(item==null||item.slot!=ItemSlot.Relic||item.mechanic!=EquipmentMechanic.VenomSpread)return "";
             return VenomSkillSummary(Math.Max(1,Math.Min(3,rank)),item.mechanicVariantUnlocked&&item.mechanicVariant==1);
@@ -219,7 +221,7 @@ namespace Emberfall
     public sealed class RewardMoment
     {
         public long Sequence; public string SlotId; public HeroClass HeroClass; public RewardMomentKind Kind;
-        public ItemData Item; public FashionData Fashion; public int GoldDelta,MaterialsDelta,ThreadsDelta;
+        public ItemData Item; public FashionData Fashion; public MechanicAttachment Attachment; public int GoldDelta,MaterialsDelta,ThreadsDelta;
     }
 
     [Serializable]
@@ -273,6 +275,8 @@ namespace Emberfall
         public EquipmentMechanic[] equipmentMechanics;
         // A zero enum entry is not evidence: each slot explicitly records whether its mechanism is known.
         public int equipmentMechanicKnownMask;
+        public EquipmentMechanic[] mountedAttachments;
+        public int[] attachmentVariants;
     }
 
     /// <summary>Fixed class-local allocations. Inventory, equipment identity and rewards live only on GameProfile.</summary>
@@ -288,6 +292,8 @@ namespace Emberfall
         public SummonerRoute summonerRoute;
         public BuildPreset[] buildPresets;
         public bool classTutorialCompleted;
+        public int growthRevision;
+        public bool automaticGrowth=true;
         public ProgressionGoalKind progressionGoal;
         public string progressionGoalItemId;
         public int progressionGoalTier,progressionGoalLevel;
@@ -298,8 +304,23 @@ namespace Emberfall
     public enum ProgressionGoalKind { None, Core, Variant, Ascension, SecondPreset, Tier, Reforge, ClassTutorial }
 
     [Serializable]
+    public sealed class MechanicAttachment
+    {
+        public string id, legacySourceId;
+        public EquipmentMechanic mechanic;
+        public int level=1, upgradeRank, variant;
+        public Rarity rarity=Rarity.Epic;
+        public bool mounted=true, variantUnlocked;
+    }
+
+    [Serializable]
     public class GameProfile
     {
+        public int attachmentRevision;
+        public List<MechanicAttachment> attachments=new List<MechanicAttachment>();
+        public List<string> growthRewardReceipts=new List<string>();
+        public bool automaticGrowth=true;
+        public int growthRevision;
         public int classStateRevision;
         public ClassBuildState[] classStates;
         public int version = 1;
@@ -364,6 +385,7 @@ namespace Emberfall
         public string lastDungeonRewardId;
         public RewardPresentationReceipt lastModeRewardDetails,lastDungeonRewardDetails,lastChapterRewardDetails;
         public List<string> sideEventRewardReceipts = new List<string>();
+        public int quarryWorkLevel,starChartTier;
         public int currentHub;
         public int unlockedHubMask=1;
         public List<ItemData> inventory = new List<ItemData>();
@@ -393,6 +415,7 @@ namespace Emberfall
 
     public static class GameBalance
     {
+        public const float ArcanistFinaleRadius=9.5f,ArcanistPulseRadius=8f;
         public const int SkillCount = 10;
         public const int HotbarSize = 10;
         public const int HotbarPotion = -2;

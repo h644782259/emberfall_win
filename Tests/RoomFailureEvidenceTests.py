@@ -29,6 +29,14 @@ with tempfile.TemporaryDirectory(prefix='room-failure-evidence-') as temporary:
  failed=subprocess.run(command,capture_output=True,text=True)
  assert failed.returncode and 'actual session snapshot must preserve exact room failure reason' in failed.stdout+failed.stderr,failed.stdout+failed.stderr
  print('PASS: old room-failure-to-Abandoned production snapshot mutation fails')
+ host.write_text(original)
+ presentation=path/'RunRecapPresentation.cs';good=presentation.read_text()
+ assert 'Tip=HasGenerationFailure?ChooseTip(snapshot):' in good
+ presentation.write_text(good.replace('Tip=HasGenerationFailure?ChooseTip(snapshot):','Tip='))
+ failed=subprocess.run(command,capture_output=True,text=True)
+ assert failed.returncode and 'generation failure overrides unused ember and frost advice' in failed.stdout+failed.stderr,failed.stdout+failed.stderr
+ print('PASS: compiled mechanism-advice priority regression rejected')
+ presentation.write_text(good)
 # Check production callsites which the managed host does not execute.
 main=(root/'Assets/Scripts/Core/GameSession.cs').read_text()
 assert 'RoomChainRun.Fail(RoomFailureReason.Death)' in method(main,'public void OnPlayerDied(')

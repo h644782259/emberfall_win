@@ -1,0 +1,16 @@
+/tmp/practice-hotbar-80el92bf/Methods.cs(28,64): error CS0103: The name 'UIIconAtlas' does not exist in the current context [/tmp/practice-hotbar-80el92bf/Test.csproj]
+
+Build FAILED.
+
+/tmp/practice-hotbar-80el92bf/Methods.cs(28,64): error CS0103: The name 'UIIconAtlas' does not exist in the current context [/tmp/practice-hotbar-80el92bf/Test.csproj]
+    0 Warning(s)
+    1 Error(s)
+
+Time Elapsed 00:00:03.83
+Traceback (most recent call last):
+  File "/workspace/emberfall_win_progression/Tests/PracticeHotbarNavigationProductionTests.py", line 38, in <module>
+    subprocess.run(build,env=env,check=True);subprocess.run(run,env=env,check=True)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/tmp/emberfall-dotnet/dotnet', 'build', '/tmp/practice-hotbar-80el92bf/Test.csproj', '--configfile', '/tmp/practice-hotbar-80el92bf/NuGet.Config', '-v:q']' returned non-zero exit status 1.

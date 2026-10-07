@@ -1,7 +1,7 @@
 using System;using System.IO;using System.Collections.Generic;using System.Linq;using Emberfall;using UnityEngine;
 namespace UnityEngine{
  public struct Vector2{public float x,y;public static Vector2 zero=>new Vector2();}
- public class Texture{}public struct Matrix4x4{public float m00,m11;}public enum ScaleMode{ScaleToFit}public enum EventType{MouseDown,MouseUp,MouseDrag,ScrollWheel,Repaint,Used}public class Event{public static Event current=new Event{type=EventType.Repaint};public EventType type;public void Use(){type=EventType.Used;}}
+ public class GUIContent{public GUIContent(string s){}}public class GUIStyle{public float CalcHeight(GUIContent c,float width)=>50;}public class Texture{}public struct Matrix4x4{public float m00,m11;}public enum ScaleMode{ScaleToFit}public enum EventType{MouseDown,MouseUp,MouseDrag,ScrollWheel,Repaint,Used}public class Event{public static Event current=new Event{type=EventType.Repaint};public EventType type;public void Use(){type=EventType.Used;}}
  public struct Rect{public bool Contains(Vector2 p)=>p.x>=x&&p.x<=xMax&&p.y>=y&&p.y<=yMax;public float x,y,width,height;public float xMax=>x+width;public float yMax=>y+height;public Rect(float a,float b,float w,float h){x=a;y=b;width=w;height=h;}}
  public static class Mathf{public static float Lerp(float a,float b,float t)=>a+(b-a)*t;public static float Abs(float x)=>Math.Abs(x);public static float Clamp01(float x)=>Math.Max(0,Math.Min(1,x));public static float Min(float a,float b)=>Math.Min(a,b);public static float Max(float a,float b)=>Math.Max(a,b);public static int RoundToInt(float x)=>(int)Math.Round(x);public static float Clamp(float x,float a,float b)=>Math.Min(b,Math.Max(a,x));public static int Clamp(int x,int a,int b)=>Math.Min(b,Math.Max(a,x));}
  public static class Time{public static float unscaledTime;}
@@ -21,7 +21,9 @@ namespace Emberfall{
  void DrawRewardRadiance(Rect r,Color c,float progress){}
   bool chestDetails,chestOpening,rewardSoundPlayed;int revealedChest=-1;string chestRevealResult,chestReceiptId,mobileChestError;float chestRevealedAt;Rect chestRevealOrigin;Vector2 desktopChestResultScroll,mobileChestScroll;
   readonly List<(string caption,Rect bounds)> buttons=new List<(string,Rect)>();string click;bool clicked;int scrollDepth;
-  bool Button(Rect r,string s,Color c,bool enabled=true,string reason=null,bool highlight=false){buttons.Add((s,r));if(!enabled||clicked||click!=s)return false;clicked=true;return true;}
+  bool DrawButton(Rect r,string s,ButtonRole role,bool enabled=true)=>Button(r,s,gold,enabled,null,false,role);
+  enum ButtonRole{Primary,Navigation,Selection,Danger,Toggle}GUIStyle Style(int size,bool bold=false,bool wrap=false)=>new GUIStyle();bool PrimaryButton(Rect r,string s,Color c,bool enabled=true,string reason=null,bool emphasis=false)=>Button(r,s,c,enabled,reason,emphasis);bool NavigationButton(Rect r,string s,Color c,bool enabled=true,string reason=null)=>Button(r,s,c,enabled,reason);
+  bool Button(Rect r,string s,Color c,bool enabled=true,string reason=null,bool highlight=false,ButtonRole role=ButtonRole.Primary){buttons.Add((s,r));if(!enabled||clicked||click!=s)return false;clicked=true;return true;}
   readonly List<int> resourceIcons=new List<int>();readonly List<string> resourceNumbers=new List<string>();int legacyDraws;
   void DrawIcon(Rect r,int icon,Color c){resourceIcons.Add(icon);}void DrawChestGoldReward(Rect r,ChestReward reward,Color c){legacyDraws++;}
   void Fill(Rect r,Color c){}void Border(Rect r,Color c){}void Text(Rect r,string s,int size,Color c,bool bold=false,bool wrap=false){resourceNumbers.Add(s);if(s.StartsWith("+")||s.StartsWith("-"))actualNumbers.Add((r,size,s));}
@@ -39,7 +41,7 @@ namespace Emberfall{
   static int n;static void C(bool ok,string message){n++;if(!ok)throw new Exception(message);}
   public static void Run(string root){
    foreach(var size in new[]{(568f,320f),(640f,360f),(844f,390f),(1024f,768f)})foreach(float ratio in new[]{1f,1.5f,2f})foreach(bool duplicate in new[]{false,true})foreach(bool reduced in new[]{false,true}){
-    var p=new ProgressionService(Path.Combine(root,Guid.NewGuid().ToString("N")));p.NewGame(HeroClass.Vanguard);MobileControls.Active=true;EffectPreferences.ReducedEffects=reduced;
+    var p=new ProgressionService(Path.Combine(root,Guid.NewGuid().ToString("N")));p.NewGame(HeroClass.Arcanist);MobileControls.Active=true;EffectPreferences.ReducedEffects=reduced;
     var ui=new GameUI{session=new GameSession{Progression=p},TouchRatio=ratio,width=size.Item1*ratio,height=size.Item2*ratio};
     var receipt=new ChestReward{id="actual-layout",rulesRevision=2,rewardKind=ChestRewardKind.SingleChest,rarityIndex=3,slotIndex=1,duplicate=duplicate,hasCurrencyDeltas=true,goldDelta=1100,materialsDelta=1,materialKind=RewardMaterialKind.StarAshFragment,threadsDelta=9};
     string before=JsonUtility.ToJson(p.Profile,true);ui.DrawMobileChestResult(ui.MobilePanelGeometry(),receipt,ui.gold,true);
@@ -49,7 +51,7 @@ namespace Emberfall{
     C(JsonUtility.ToJson(p.Profile,true)==before,"real result rendering does not mutate progression");
    }
    foreach(bool mobile in new[]{false,true})foreach(bool mutedAudio in new[]{false,true}){
-    var p=new ProgressionService(Path.Combine(root,Guid.NewGuid().ToString("N")));p.NewGame(HeroClass.Vanguard);MobileControls.Active=mobile;EffectPreferences.ReducedEffects=false;GameAudio.Muted=mutedAudio;GameAudio.Calls.Clear();Time.unscaledTime=0;
+    var p=new ProgressionService(Path.Combine(root,Guid.NewGuid().ToString("N")));p.NewGame(HeroClass.Arcanist);MobileControls.Active=mobile;EffectPreferences.ReducedEffects=false;GameAudio.Muted=mutedAudio;GameAudio.Calls.Clear();Time.unscaledTime=0;
     var ui=new GameUI{session=new GameSession{Progression=p},panel=Panel.Camp,width=mobile?568:1280,height=mobile?320:720};ui.PrepareRewardMoment();
     p.Profile.fashionThreads=12;p.Save();var quote=p.QuoteThreadMaterialExchange();Directory.CreateDirectory(p.SaveFilePath+".tmp");C(!p.ExchangeThreadsForMaterial(quote,true),"real failed exchange rejected");Directory.Delete(p.SaveFilePath+".tmp");ui.PrepareRewardMoment();C(ui.rewardMoment==null&&GameAudio.Calls.Count==0,"failed action never plays visual or audio");
     C(p.ExchangeThreadsForMaterial(quote,true),"real exchange commits");string saved=JsonUtility.ToJson(p.Profile,true);ui.PrepareRewardMoment();ui.DrawRewardMoment();C(ui.rewardMoment.Kind==RewardMomentKind.MaterialExchange&&ui.actualNumbers.Select(x=>x.text).SequenceEqual(new[]{"+1","-6"}),"actual moment shows gain and spend, not invented positive totals");
@@ -60,7 +62,7 @@ namespace Emberfall{
    }
    GameAudio.Muted=false;
    foreach(bool mobile in new[]{false,true})foreach(bool duplicate in new[]{false,true})foreach(bool reduced in new[]{false,true}){
-    var p=new ProgressionService(Path.Combine(root,Guid.NewGuid().ToString("N")));p.NewGame(HeroClass.Vanguard);p.PrepareDungeonChest();p.OpenDungeonChest();var receipt=p.LastChestReward;receipt.rarityIndex=3;receipt.slotIndex=0;receipt.duplicate=duplicate;receipt.hasCurrencyDeltas=true;receipt.goldDelta=1100;receipt.materialsDelta=1;receipt.materialKind=RewardMaterialKind.StarAshFragment;receipt.threadsDelta=9;
+    var p=new ProgressionService(Path.Combine(root,Guid.NewGuid().ToString("N")));p.NewGame(HeroClass.Arcanist);p.PrepareDungeonChest();p.OpenDungeonChest();var receipt=p.LastChestReward;receipt.rarityIndex=3;receipt.slotIndex=0;receipt.duplicate=duplicate;receipt.hasCurrencyDeltas=true;receipt.goldDelta=1100;receipt.materialsDelta=1;receipt.materialKind=RewardMaterialKind.StarAshFragment;receipt.threadsDelta=9;
     MobileControls.Active=mobile;EffectPreferences.ReducedEffects=reduced;GameAudio.Calls.Clear();Time.unscaledTime=0;
     var ui=new GameUI{session=new GameSession{Progression=p},width=568,height=320,chestReceiptId=receipt.Id,chestRevealResult=receipt.summary};
     C(Math.Abs(ui.ChestDuration-(reduced?.15f:duplicate?.7f:1.94f))<.001f,"first and duplicate use distinct duration; reduced mode stays brief");
@@ -70,12 +72,13 @@ namespace Emberfall{
     ui.Frame();C(GameAudio.Calls.Count==1&&GameAudio.Calls[0]==(duplicate?SoundCue.UI:SoundCue.Victory),"actual desktop/mobile first acquisition and duplicate completion use distinct audio");ui.Frame();C(GameAudio.Calls.Count==1,"completed receipt repaints never replay audio");
    }
    foreach(bool mobile in new[]{false,true}){
-    MobileControls.Active=mobile;EffectPreferences.ReducedEffects=false;var p=new ProgressionService(Path.Combine(root,Guid.NewGuid().ToString("N")));p.NewGame(HeroClass.Vanguard);p.Profile.level=45;p.Profile.bestFloor=5;p.Profile.highestAdventureTier=5;p.Profile.clearedRuns=1;p.Profile.pendingFirstClearReward=true;p.Profile.mechanicMaterials=100;p.Save();
+    MobileControls.Active=mobile;EffectPreferences.ReducedEffects=false;var p=new ProgressionService(Path.Combine(root,Guid.NewGuid().ToString("N")));p.NewGame(HeroClass.Arcanist);p.Profile.level=45;p.Profile.bestFloor=5;p.Profile.highestAdventureTier=5;p.Profile.clearedRuns=1;p.Profile.pendingFirstClearReward=true;p.Profile.mechanicMaterials=100;p.Save();
     var ui=new GameUI{session=new GameSession{Progression=p},panel=Panel.Camp,width=568,height=320};ui.PrepareRewardMoment();
     var mechanic=Enum.GetValues(typeof(EquipmentMechanic)).Cast<EquipmentMechanic>().First(m=>m!=EquipmentMechanic.None&&BuildCatalog.MechanicClass(m)==p.Profile.heroClass);
     foreach(int action in new[]{0,1,2}){
-     bool ok=action==0?p.ClaimFirstClearReward(mechanic):action==1?p.ExchangeMechanic(mechanic):p.AscendMechanic(p.LastRewardMoment.Item.id,true);C(ok,"real core/exchange/ascend action commits");
-     GameAudio.Calls.Clear();ui.PrepareRewardMoment();ui.DrawRewardMoment();C(CollectionModelPreview.Shown.id==p.LastRewardMoment.Item.id&&CollectionModelPreview.Slot==(int)p.LastRewardMoment.Item.slot,"safe result renderer receives actual committed item and highlighted slot");C(GameAudio.Calls.Single()==(action==0?SoundCue.Victory:action==1?SoundCue.Loot:SoundCue.LevelUp),"actual core/exchange/ascend moment audio is graded");
+     if(action==1)mechanic=Enum.GetValues(typeof(EquipmentMechanic)).Cast<EquipmentMechanic>().First(m=>m!=EquipmentMechanic.None&&BuildCatalog.MechanicClass(m)==p.Profile.heroClass&&p.Attachment(m)==null);if(action==2){p.UpgradeAttachment(mechanic,true);p.UpgradeAttachment(mechanic,true);p.UpgradeAttachment(mechanic,true);}
+     bool ok=action==0?p.ClaimFirstClearReward(mechanic):action==1?p.ExchangeMechanic(mechanic):p.AscendAttachment(mechanic,true);C(ok,"real core/exchange/ascend action commits");
+     GameAudio.Calls.Clear();ui.PrepareRewardMoment();ui.DrawRewardMoment();C(p.LastRewardMoment.Attachment.mechanic==mechanic&&ui.rewardMoment.Attachment.id==p.Attachment(mechanic).id,"result displays actual independent attachment identity");C(GameAudio.Calls.Single()==(action==0?SoundCue.Victory:action==1?SoundCue.Loot:SoundCue.LevelUp),"actual core/exchange/ascend moment audio is graded");
     }
     ui.panel=Panel.Inventory;ui.PrepareRewardMoment();C(ui.rewardMoment==null,"leaving source panel clears transient reveal");
    }

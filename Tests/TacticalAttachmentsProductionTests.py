@@ -23,7 +23,7 @@ extra=r'''
 '''
 source=source.replace(marker,extra+marker)
 old=" (path/'Program.cs').write_text('System.Console.WriteLine(TacticalLiveVisualTests.Run());')"
-source=source.replace(old," (path/'Program.cs').write_text((root/'Tests/TacticalAttachmentsProductionTests.cs').read_text().replace('RESOURCE_ROOT',str(root/'Assets/Resources')))" )
+source=source.replace(old," (path/'Program.cs').write_text((root/'Tests/TacticalAttachmentsProductionTests.cs').read_text().replace('RESOURCE_ROOT',(root/'Assets/Resources').as_posix()))" )
 # Adapter-specific compiled mutants must fail against the actual loaded chain.
 source=source.replace(" visual=path/'TacticalEnemyVisual.cs';", """
  adapter=path/'TacticalAttachmentArt.cs';good=adapter.read_text()

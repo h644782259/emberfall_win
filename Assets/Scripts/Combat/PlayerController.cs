@@ -391,7 +391,7 @@ namespace Emberfall
             Vector3 beforeBoundary = transform.position;
             Vector3 bounded = transform.position;
             float bound = Mathf.Max(1,session.ArenaRadius - .65f);
-            float airborneHeight = jumping ? bounded.y : 0;
+            float airborneHeight = jumping ? bounded.y : WorldTraversal.SurfaceHeight(bounded,.45f);
             bounded.y = 0;
             bounded = Vector3.ClampMagnitude(bounded,bound);
             bounded.y = airborneHeight;
@@ -492,13 +492,13 @@ namespace Emberfall
         private readonly List<MobileSkillPolicy.Candidate> mobileAimCandidates=new List<MobileSkillPolicy.Candidate>();
         internal void PrepareMobileSkillAim(int skill)
         {EnemyController enemy;Vector3 point;ResolveMobileSkillAim(skill,out enemy,out point);AimTarget=enemy;aimPoint=point;}
-        internal void ResolveMobileSkillAim(int skill,out EnemyController enemy,out Vector3 point)
+        internal void ResolveMobileSkillAim(int skill,out EnemyController enemy,out Vector3 point,bool observeOnly=false)
         {
             var preview=SkillTargetingController.Describe(HeroClass,skill,session.Progression.Profile.skillRanks[skill]);
             if(preview.shape==SkillTargetingController.Shape.Self){enemy=null;point=transform.position;return;}
             if(HeroClass==HeroClass.Summoner&&(skill==2||skill==4||skill==9))
             {var team=SummonedCompanion.ExplicitFocus(this);if(team!=null){enemy=team;point=CombatFx.Flat(team.transform.position);return;}}
-            var pinned=MobilePinnedTarget;
+            var pinned=observeOnly?ReadMobilePinnedTarget():MobilePinnedTarget;
             if(pinned!=null&&MobilePinAppliesToSkill(skill)){enemy=pinned;point=CombatFx.Flat(pinned.transform.position);return;}
             float range=preview.distance>0?preview.distance:14f;
             mobileAimCandidates.Clear();
@@ -693,7 +693,7 @@ namespace Emberfall
                     (counterThrust ? (Vector3.Dot(delta,transform.forward) >= 0 &&
                         (delta-transform.forward*Vector3.Dot(delta,transform.forward)).magnitude <= .35f+enemy.HitFootprintBonus)
                         : (delta.sqrMagnitude < .36f || Vector3.Angle(transform.forward,delta) <= arc*.5f)) &&
-                    CombatSight.Melee(transform.position, enemy.transform.position))
+                    Mathf.Abs(transform.position.y-enemy.transform.position.y)<.65f&&CombatSight.Melee(transform.position, enemy.transform.position))
                 {
                     if (!hit) { firstHit = enemy; firstHitPosition = enemy.transform.position; }
                     hit = true;
@@ -764,10 +764,10 @@ namespace Emberfall
             }
             if (HeroClass == HeroClass.Vanguard && HasMechanic(EquipmentMechanic.ReturningBlade) && !ReturningCounterVariant)
             {
-                EnemyController bounce = NearestOtherEnemy(position, enemy, 4f);
+                EnemyController bounce = NearestOtherEnemy(position, enemy, 4f*session.Progression.MechanicRangeMultiplier(EquipmentMechanic.ReturningBlade));
                 if (bounce != null && returningBladeProc.TryTrigger(1.5f))
                 {
-                    bounce.TakeDamage(CombatAttack * 1.1f, CombatFx.Flat(bounce.transform.position - position).normalized, .12f);
+                    bounce.TakeDamage(CombatAttack * 1.1f * session.Progression.MechanicPowerMultiplier(EquipmentMechanic.ReturningBlade), CombatFx.Flat(bounce.transform.position - position).normalized, .12f);
                     AdvancedSkillVfx.Beam(this, position + Vector3.up, bounce.transform.position + Vector3.up, GameBalance.ClassColor(HeroClass), .25f, .14f);
                     // A returned blade strengthens a deliberate next heavy attack,
                     // while a kill carries the blade to a fresh target.
@@ -838,10 +838,10 @@ namespace Emberfall
                         int remaining = 2;
                         foreach (EnemyController nearby in session.Enemies.ToArray())
                             if (ValidAimTarget(nearby) && nearby != enemy && nearby.StatusEffects != null &&
-                                CombatFx.Flat(nearby.transform.position - enemy.transform.position).sqrMagnitude <= 3.5f * 3.5f &&
+                                CombatFx.Flat(nearby.transform.position - enemy.transform.position).sqrMagnitude <= Mathf.Pow(3.5f*session.Progression.MechanicRangeMultiplier(EquipmentMechanic.VenomSpread),2) &&
                                 CombatSight.Direct(enemy.transform.position, nearby.transform.position))
                             {
-                                nearby.StatusEffects.Poison(this, 4f, CombatAttack * .14f);
+                                nearby.StatusEffects.Poison(this, 4f, CombatAttack * .14f*session.Progression.MechanicPowerMultiplier(EquipmentMechanic.VenomSpread));
                                 if (--remaining == 0) break;
                             }
                         session.RecordCombatAction("毒种蔓延");
@@ -866,6 +866,7 @@ namespace Emberfall
             get
             {
                 if (!HasMechanic(EquipmentMechanic.ReturningBlade)) return false;
+                var attachment=session.Progression.Attachment(EquipmentMechanic.ReturningBlade);if(attachment!=null)return attachment.variantUnlocked&&attachment.variant==1;
                 ItemData item = session.Progression.Equipped(ItemSlot.Weapon);
                 return item != null && item.mechanicVariantUnlocked && item.mechanicVariant == 1;
             }
@@ -873,6 +874,7 @@ namespace Emberfall
 
         internal int MechanicVariant(EquipmentMechanic mechanic)
         {
+            var attachment=session.Progression.Attachment(mechanic);if(attachment!=null)return session.Progression.AttachmentVariant(mechanic);
             ItemData item = session.Progression.Equipped(BuildCatalog.MechanicSlot(mechanic));
             return item != null && item.mechanic == mechanic ? item.mechanicVariant : 0;
         }
@@ -1047,12 +1049,13 @@ namespace Emberfall
         internal bool TryJump()
         {
             if (session == null || IsDead || !session.HasStarted || session.InputBlocked || jumping || TraversalStartedThisFrame || movementSkillLock > 0 || (charge != null && charge.IsCharging)) return false;
-            Vector3 origin = CombatFx.Flat(transform.position);
-            if (!WorldTraversal.IsWalkable(origin, .45f)) return false;
+            Vector3 origin = transform.position;
+            if (!WorldTraversal.CanStand(origin, .45f)) return false;
             jumpOrigin = origin;
             jumpDestination = origin;
             Vector3 landing;
-            if(jumpInput.sqrMagnitude>.01f && WorldTraversal.TryResolveBlink(origin,jumpInput,5.5f,.45f,Mathf.Max(1,session.ArenaRadius-.65f),out landing) && WorldTraversal.CanLeap(origin,landing,.45f))
+            if(jumpInput.sqrMagnitude>.01f&&WorldTraversal.TryResolvePlatformJump(origin,jumpInput,5.5f,.45f,out landing))jumpDestination=landing;
+            else if(jumpInput.sqrMagnitude>.01f && WorldTraversal.TryResolveBlink(origin,jumpInput,5.5f,.45f,Mathf.Max(1,session.ArenaRadius-.65f),out landing) && WorldTraversal.CanLeap(origin,landing,.45f))
                 jumpDestination=landing;
             jumpAge = 0;
             jumping = true;
@@ -1137,26 +1140,10 @@ namespace Emberfall
         }
 
         private bool CanUseMovementSkill(int skill, int rank)
-        {
-            bool forwardDash = HeroClass == HeroClass.Vanguard && skill == 5;
-            bool retreat = HeroClass == HeroClass.Ranger && skill == 4;
-            if (!forwardDash && !retreat) return true;
-            Vector3 direction = CombatFx.Flat((ValidAimTarget(AimTarget) ? AimTarget.transform.position : aimPoint) - transform.position);
-            if (direction.sqrMagnitude < .0001f) direction = transform.forward;
-            direction.Normalize();
-            if (retreat) direction = -direction;
-            float distance = (forwardDash ? 7f : 5f) * GameBalance.SkillRangeMultiplier(rank);
-            Vector3 end = Vector3.ClampMagnitude(CombatFx.Flat(transform.position) + direction * distance, session.ArenaRadius - .65f);
-            return WorldTraversal.CanLeap(transform.position, end, .45f);
-        }
+        { return CanUseMovementSkillAt(skill,rank,ValidAimTarget(AimTarget)?AimTarget.transform.position:aimPoint); }
 
         internal bool SkillTargetingReady(int skill)
-        {
-            if(session==null||IsDead||!session.HasStarted||session.InputBlocked||jumping||skill<0||skill>=GameBalance.SkillCount||GameBalance.IsPassive(skill)||
-                charge!=null&&(charge.IsCharging||charge.ConsumedThisFrame))return false;
-            int rank=session.Progression.Profile.skillRanks[skill];
-            return rank>0&&skillRuntime.Remaining(skill)<=0&&Energy>=GameBalance.SkillEnergyCost(HeroClass,skill)&&CanUseMovementSkill(skill,rank);
-        }
+        { return SkillBudgetReady(skill)&&CanUseMovementSkill(skill,session.Progression.Profile.skillRanks[skill]); }
         internal Vector3 ResolveSkillGroundTarget(Vector3 point,float range,bool fixedPoint=false)
         {
             Vector3 target=fixedPoint?point:transform.position+Vector3.ClampMagnitude(CombatFx.Flat(point-transform.position),9f*range);
@@ -1172,7 +1159,7 @@ namespace Emberfall
         internal bool CanBeginSkillTargeting(int skill)
         {
             if(SkillTargetingReady(skill))return true;
-            if(session==null || IsDead || !session.HasStarted || session.InputBlocked || skill<0 || skill>=GameBalance.SkillCount || GameBalance.IsPassive(skill)) return false;
+            if(session==null || session.Player!=this || skillRuntime==null || IsDead || !session.HasStarted || session.InputBlocked || skill<0 || skill>=GameBalance.SkillCount || GameBalance.IsPassive(skill)) return false;
             if (jumping) { session.ReportControlFailure("skill"+skill,"空中"); return false; }
             if(charge != null && (charge.IsCharging || charge.ConsumedThisFrame)) { session.ReportControlFailure("skill"+skill,"施法中"); return false; }
             int rank=session.Progression.Profile.skillRanks[skill];
@@ -1180,9 +1167,11 @@ namespace Emberfall
             if(rank<=0) failure="按 K 学习这个技能后再施放。";
             else if(skillRuntime.Remaining(skill)>0) failure=GameBalance.SkillName(HeroClass,skill)+" 冷却中（"+skillRuntime.Remaining(skill).ToString("0.0")+" 秒）";
             else if(Energy<GameBalance.SkillEnergyCost(HeroClass,skill)) failure="能量不足：普攻命中回复 8 点，持续回复每秒 4 点。";
+            else if(!SkillHealingHasEffect(skill,rank)) failure="生命已满，无需使用治疗技能。";
+            else if(skill==6&&session.ChallengeRun&&session.InDungeon&&session.HealingCharges<=0) failure="治疗充能已耗尽。";
             else if(!CanUseMovementSkill(skill,rank)) failure="前方有障碍或没有安全落点，请走桥或调整方向。";
             if(failure==null) return true;
-            session.ReportControlFailure("skill"+skill,rank<=0?"未学":skillRuntime.Remaining(skill)>0?"冷却":Energy<GameBalance.SkillEnergyCost(HeroClass,skill)?"缺能":"无落点");
+            session.ReportControlFailure("skill"+skill,rank<=0?"未学":skillRuntime.Remaining(skill)>0?"冷却":Energy<GameBalance.SkillEnergyCost(HeroClass,skill)?"缺能":!SkillHealingHasEffect(skill,rank)?"无需治疗":skill==6&&session.ChallengeRun&&session.InDungeon&&session.HealingCharges<=0?"无充能":"无落点");
             if (CombatReviewEvents.Enabled && Energy<GameBalance.SkillEnergyCost(HeroClass,skill)) CombatReviewEvents.Emit("noenergy",CombatReviewObjectId.Get(this),skill:skill);
             if(skillFeedbackCooldown<=0) { session.Notify(failure); skillFeedbackCooldown=.8f; }
             return false;
@@ -1263,8 +1252,7 @@ namespace Emberfall
             }
             if (!CanUseMovementSkill(slot, rank)) { TraversalFailure(); return; }
             // Limited healing rank one has no defensive benefit: do not pay for an empty heal.
-            if (slot == 6 && rank == 1 && session.ChallengeRun && session.InDungeon && Health >= MaxHealth
-                && (HeroClass != HeroClass.Summoner || !SummonedCompanion.HasHealingTarget(this)))
+            if (!SkillHealingHasEffect(slot,rank))
             { session.Notify("生命已满，无需使用治疗技能。"); return; }
             if (slot == 6 && skillRuntime.Remaining(slot) <= 0 && Energy >= GameBalance.SkillEnergyCost(HeroClass, slot) && !session.TrySpendHealingCharge()) return;
             if (!skillRuntime.TryConsume(slot, rank, ActiveRunBonuses == null ? 1f : ActiveRunBonuses.CooldownMultiplier))
@@ -1368,7 +1356,7 @@ namespace Emberfall
                     CombatArea.Spawn(this,session,transform.position,3.7f*range,Damage(SkillDamageBudgets.OpeningImpact(HeroClass,slot,rank)*novaPower),0,0,0,1f,new Color(.51f,.92f,1f),statusSkill:0,statusRank:rank,castId:castId,visual:SkillVisualRecipe.Ice);
                     if (frostEcho)
                     {
-                        CombatArea.Spawn(this,session,transform.position,3.7f*range*BuildCatalog.FrostEchoRadiusMultiplier(wideEcho),Damage(BuildCatalog.FrostEchoCoefficient(wideEcho)*power),0,.7f,0,1f,new Color(.51f,.92f,1f),statusSkill:0,statusRank:rank,castId:castId,visual:SkillVisualRecipe.Ice,trackedMechanic:1);
+                        CombatArea.Spawn(this,session,transform.position,3.7f*range*BuildCatalog.FrostEchoRadiusMultiplier(wideEcho)*session.Progression.MechanicRangeMultiplier(EquipmentMechanic.FrostEcho),Damage(BuildCatalog.FrostEchoCoefficient(wideEcho)*power*session.Progression.MechanicPowerMultiplier(EquipmentMechanic.FrostEcho)),0,.7f,0,1f,new Color(.51f,.92f,1f),statusSkill:0,statusRank:rank,castId:castId,visual:SkillVisualRecipe.Ice,trackedMechanic:1);
                         session.RecordCombatAction("霜环回响");
                     }
                     if(rank>=2) CombatArea.Spawn(this,session,transform.position,3.7f*range,Damage(SkillDamageBudgets.OpeningImpact(HeroClass,slot,rank,1)),0,.5f,0,1f,new Color(.51f,.92f,1f),statusSkill:0,statusRank:rank,castId:castId,visual:SkillVisualRecipe.Ice);
@@ -1392,7 +1380,7 @@ namespace Emberfall
                     if (HasMechanic(EquipmentMechanic.CinderTrail))
                     {
                         // Four ticks total 40% of the base first meteor impact.
-                        CombatArea.Spawn(this,session,target,3f*range*BuildCatalog.CinderTrailRadiusMultiplier(MechanicVariant(EquipmentMechanic.CinderTrail)==1),CombatAttack*SkillDamageBudgets.MeteorTrailTick(rank,MechanicVariant(EquipmentMechanic.CinderTrail)==1),0,1.2f,1.5f,.5f,new Color(1f,.43f,.22f),castId:castId,visual:SkillVisualRecipe.Fire,trackedMechanic:0);
+                        CombatArea.Spawn(this,session,target,3f*range*session.Progression.MechanicRangeMultiplier(EquipmentMechanic.CinderTrail)*BuildCatalog.CinderTrailRadiusMultiplier(MechanicVariant(EquipmentMechanic.CinderTrail)==1),CombatAttack*SkillDamageBudgets.MeteorTrailTick(rank,MechanicVariant(EquipmentMechanic.CinderTrail)==1)*session.Progression.MechanicPowerMultiplier(EquipmentMechanic.CinderTrail),0,1.2f,1.5f,.5f,new Color(1f,.43f,.22f),castId:castId,visual:SkillVisualRecipe.Fire,trackedMechanic:0);
                         session.RecordCombatAction("余烬地带");
                     }
                 }

@@ -3,7 +3,7 @@ public static class RewardPolishFaults{public static bool GrantOnce;}
 public static class RewardPolishServiceTests
 {
  static int n;static void C(bool ok,string why){n++;if(!ok)throw new Exception(why);}static string Json(object o)=>JsonUtility.ToJson(o,true);
- static ProgressionService New(string root){var p=new ProgressionService(Path.Combine(root,Guid.NewGuid().ToString("N")));p.NewGame(HeroClass.Vanguard);return p;}
+ static ProgressionService New(string root){var p=new ProgressionService(Path.Combine(root,Guid.NewGuid().ToString("N")));p.NewGame(HeroClass.Arcanist);return p;}
  sealed class Roll:Random{public override int Next(int max)=>0;}
  static ItemData Copy(ItemData item)=>JsonUtility.FromJson<ItemData>(Json(item));
  public static string Run(string root)
@@ -36,9 +36,10 @@ public static class RewardPolishServiceTests
    var p=New(root);p.Profile.level=45;p.Profile.bestFloor=5;p.Profile.highestAdventureTier=5;p.Profile.clearedRuns=1;p.Profile.pendingFirstClearReward=true;p.Profile.mechanicMaterials=100;p.Save();
    var mechanic=Enum.GetValues(typeof(EquipmentMechanic)).Cast<EquipmentMechanic>().First(m=>m!=EquipmentMechanic.None&&BuildCatalog.MechanicClass(m)==p.Profile.heroClass);
    Directory.CreateDirectory(p.SaveFilePath+".tmp");C(!p.ClaimFirstClearReward(mechanic)&&p.LastRewardMoment==null,"failed first core has no presentation");Directory.Delete(p.SaveFilePath+".tmp");
-   C(p.ClaimFirstClearReward(mechanic)&&p.LastRewardMoment.Kind==RewardMomentKind.FirstCore&&p.LastRewardMoment.Item.mechanic==mechanic,"first core publishes actual committed item");long seq=p.LastRewardMoment.Sequence;C(!p.ClaimFirstClearReward(mechanic)&&p.LastRewardMoment.Sequence==seq,"claimed core never replays");
+   C(p.ClaimFirstClearReward(mechanic)&&p.LastRewardMoment.Kind==RewardMomentKind.FirstCore&&p.LastRewardMoment.Attachment.mechanic==mechanic,"first core publishes actual committed attachment");long seq=p.LastRewardMoment.Sequence;C(!p.ClaimFirstClearReward(mechanic)&&p.LastRewardMoment.Sequence==seq,"claimed core never replays");
+   C(!p.ExchangeMechanic(mechanic)&&p.LastRewardMoment.Sequence==seq,"same mechanism purchase rejected without replay");mechanic=Enum.GetValues(typeof(EquipmentMechanic)).Cast<EquipmentMechanic>().First(m=>m!=EquipmentMechanic.None&&BuildCatalog.MechanicClass(m)==p.Profile.heroClass&&p.Attachment(m)==null);
    Directory.CreateDirectory(p.SaveFilePath+".tmp");C(!p.ExchangeMechanic(mechanic)&&p.LastRewardMoment.Sequence==seq,"failed mechanic exchange publishes no moment");Directory.Delete(p.SaveFilePath+".tmp");
-   C(p.ExchangeMechanic(mechanic)&&p.LastRewardMoment.Kind==RewardMomentKind.MechanicExchange&&p.LastRewardMoment.MaterialsDelta==-12,"core exchange snapshot carries exact cost");string id=p.LastRewardMoment.Item.id;p.Equip(id);
+   C(p.ExchangeMechanic(mechanic)&&p.LastRewardMoment.Kind==RewardMomentKind.MechanicExchange&&p.LastRewardMoment.MaterialsDelta==-12,"core exchange snapshot carries exact cost");C(p.LastRewardMoment.Attachment.mechanic==mechanic,"exchange snapshots independent attachment");var legacy=p.CreateMechanicItem(mechanic);legacy.rarity=Rarity.Epic;C(p.CollectLoot(legacy),"legacy equipment investment fixture acquired");string id=legacy.id;p.Equip(id);
    seq=p.LastRewardMoment.Sequence;Directory.CreateDirectory(p.SaveFilePath+".tmp");C(!p.AscendMechanic(id,true)&&p.LastRewardMoment.Sequence==seq,"failed ascension publishes no moment");Directory.Delete(p.SaveFilePath+".tmp");
    C(p.AscendMechanic(id,true)&&p.LastRewardMoment.Kind==RewardMomentKind.Ascension&&p.LastRewardMoment.Item.rarity==Rarity.Legendary&&p.LastRewardMoment.MaterialsDelta==-24,"ascension snapshot carries actual transformed identity and cost");seq=p.LastRewardMoment.Sequence;C(!p.AscendMechanic(id,true)&&p.LastRewardMoment.Sequence==seq,"repeat ascension cannot replay");
    var equipped=p.Profile.inventory.Find(x=>x.id==id);equipped.mechanicVariantUnlocked=true;equipped.mechanicVariant=1;var wrong=Copy(equipped);wrong.id=Guid.NewGuid().ToString("N");wrong.baseAttack+=10;wrong.mechanicVariant=0;C(!p.IsStrictEquipmentUpgrade(wrong),"loss of selected mechanism variant disqualifies upgrade");wrong.mechanic=EquipmentMechanic.None;C(!p.IsStrictEquipmentUpgrade(wrong),"loss of mechanic disqualifies upgrade");

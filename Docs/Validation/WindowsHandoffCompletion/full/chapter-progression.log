@@ -1,0 +1,6 @@
+  正在确定要还原的项目…
+  已还原 E:\emberfall_win\Tests\TestResults\Temp\chapter-transactions-c0ht8h81\Test.csproj (用时 55 毫秒)。
+PASS: 212 actual chapter save/receipt/sequence/difficulty/reload assertions
+14 atomic mode reward/receipt assertions passed
+PASS: 103 shared adventure, preset variant and tutorial persistence checks (managed fixtures)
+PASS: legacy reload inference and old-receipt replay mutations fail real production assertions

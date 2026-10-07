@@ -29,7 +29,7 @@ namespace Emberfall
                 Rect tab = MobilePanelRect(layout.Tab(i, tabs.Length));
                 if (TabButton(tab, tabs[i], campTab == i) && campTab != i)
                 { campTab = i; mobileWorkshopStatus = null; CancelMobileScroll(); BlockUITransition(); }
-                Badge(tab, i == 1 ? Attention.FirstClearClaimable : i == 2 && Attention.LootClaimable);
+                Badge(tab, i == 1 ? Attention.FirstClearClaimable : i == 2 && Attention.LootPending);
             }
             float contentWidth = layout.TabbedBody.Width - 16;
             float contentHeight = DrawMobileWorkshopContent(contentWidth, false);

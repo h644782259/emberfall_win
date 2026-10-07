@@ -48,9 +48,11 @@ namespace Emberfall
             collectionModel.SetViewport(viewport.width*Mathf.Abs(GUI.matrix.m00),viewport.height*Mathf.Abs(GUI.matrix.m11),MobileControls.Active);
             Texture image=collectionModel.Render(p.Profile.heroClass,weapon,armor,relic,wings,fashionWeapon);
             Fill(viewport,new Color(.035f,.06f,.09f));if(image!=null)GUI.DrawTexture(viewport,image,ScaleMode.ScaleToFit,false);
-            string note=(equipmentAppearanceCandidate?"候选":"当前")+" · "+(equipmentAppearanceDetail?"展示观看":"战斗观看：实际默认俯角 / 视野")+" · 固定镜头\n"+
-                (fashionWeapon!=null?"保留已穿兵装外观：会覆盖装备武器轮廓。":"保留实际时装；候选继承部位强化 +"+p.SlotUpgradeRank(item.slot))+"\n金色仅标所选部位；时装覆盖时该装备可能不可见。\n短移动/普攻只采样姿态；不造成伤害、召唤、耗能或写存档。";
-            Text(new Rect(area.x,viewport.yMax+4*u,area.width,86*u),note,Mathf.RoundToInt(11*u),muted,false,true);
+            string note=(equipmentAppearanceCandidate?"候选":"当前")+" · "+(equipmentAppearanceDetail?"展示观看":"战斗观看")+" · "+
+                (fashionWeapon!=null?"兵装外观覆盖武器":"部位强化 +"+p.SlotUpgradeRank(item.slot));
+            Text(new Rect(area.x,viewport.yMax+4*u,area.width,30*u),note,Mathf.RoundToInt(11*u),muted,false,true);
+            bool worn=IsEquipped(item),canEquip=item.level<=p.Profile.level&&!worn;
+            if(Button(new Rect(area.x,viewport.yMax+40*u,area.width,40*u),worn?"已穿戴":canEquip?"穿戴预览装备":"需要 "+item.level+" 级",jade,canEquip))Feedback(p.Equip(item.id),"装备已穿戴 · 挂件沿用");
             return true;
         }
     }

@@ -6,7 +6,7 @@ root=Path(__file__).resolve().parents[1];dotnet=sys.argv[1] if len(sys.argv)>1 e
 s=(root/'Assets/Scripts/Core/GameSession.cs').read_text();a=s.index('public bool TryCollectGroundLoot(string itemId');b=s.index('{',a)+1;n=1
 while n:n+=(s[b]=='{')-(s[b]=='}');b+=1
 method=s[a:b]
-core=['GameTypes','CombatBalance','ProgressionService','HubTravelRules','MasteryCoreRuntime','CastFirstHitReceipt','TierRewardRules','TierRewardBand','ProgressionGoalState','ChapterProgression','ProgressionService.Chapter','ProgressionService.Reforge','ReforgeQuote','RoomTactics']
+core=['GameTypes','CombatBalance','ProgressionService','HubTravelRules','MasteryCoreRuntime','CastFirstHitReceipt','TierRewardRules','TierRewardBand','ProgressionGoalState','ChapterProgression','ProgressionService.Chapter','ProgressionService.Attachments','ProgressionService.AutomaticGrowth','ProgressionService.Reforge','ReforgeQuote','RoomTactics']
 with tempfile.TemporaryDirectory(prefix='loot-callback-') as d:
  p=Path(d)
  for name in core:(p/(name+'.cs')).write_text((root/'Assets/Scripts/Core'/(name+'.cs')).read_text())

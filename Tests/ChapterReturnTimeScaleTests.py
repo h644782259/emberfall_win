@@ -8,7 +8,7 @@ def member(file,signature):
  s=(root/file).read_text();a=s.index(signature);b=s.index('{',a)+1;d=1
  while d:d+=(s[b]=='{')-(s[b]=='}');b+=1
  return s[a:b]
-core=['CombatImpactBatch','CampPracticeRecord','ThreatAdmissionPolicy','RunMechanismEvidence','RunChoices','RunChoices.Rooms','RunChoices.Chapter','GameTypes','ProgressionService','ProgressionService.Chapter','ProgressionService.Reforge','ReforgeQuote','ChapterProgression','ChapterResultSnapshot','ChapterCombatRun','RoomTactics','RoomTacticalRegion','CombatBalance','HubTravelRules','MasteryCoreRuntime','TierRewardRules','TierRewardBand','ProgressionGoalState','AdventureResultPolicy','GameSession.Chapter','GameSession.ChapterSeals','EscapePostPolicy','ApplicationPauseState','SafeSaveFlow','SaveLifecycleGate','RoomChainState','ExpeditionModeState']
+core=['CombatImpactBatch','CampPracticeRecord','ThreatAdmissionPolicy','RunMechanismEvidence','RunChoices','RunChoices.Rooms','RunChoices.Chapter','GameTypes','ProgressionService','ProgressionService.Chapter','ProgressionService.Attachments','ProgressionService.AutomaticGrowth','ProgressionService.Reforge','ReforgeQuote','ChapterProgression','ChapterResultSnapshot','ChapterCombatRun','RoomTactics','RoomTacticalRegion','CombatBalance','HubTravelRules','MasteryCoreRuntime','TierRewardRules','TierRewardBand','ProgressionGoalState','AdventureResultPolicy','GameSession.Chapter','GameSession.ChapterSeals','EscapePostPolicy','ApplicationPauseState','SafeSaveFlow','SaveLifecycleGate','RoomChainState','ExpeditionModeState']
 with tempfile.TemporaryDirectory(prefix='chapter-return-clock-') as t:
  p=Path(t)
  for n in core:(p/(n+'.cs')).write_text((root/'Assets/Scripts/Core'/(n+'.cs')).read_text())
@@ -32,7 +32,7 @@ with tempfile.TemporaryDirectory(prefix='chapter-return-clock-') as t:
  methods.append(member('Assets/Scripts/Core/GameSession.RoomTactics.cs','private static bool LiveRoomEnemy('))
  methods+=[member('Assets/Scripts/Core/GameSession.Expedition.cs','private void ResetExpedition('),member('Assets/Scripts/Core/GameSession.Modes.cs','public bool ModeFinished')]
  # NPC pose/audio cleanup has its own Unity fixture; this replay isolates the chapter clock.
- (p/'Lifecycle.cs').write_text('using System.Collections.Generic;using UnityEngine;namespace Emberfall{public sealed partial class GameSession{void EndHubNpcConversation(){}'+''.join(methods)+'}}')
+ (p/'Lifecycle.cs').write_text('using System.Collections.Generic;using UnityEngine;namespace Emberfall{public sealed partial class GameSession{'+''.join(methods)+'}}')
  ui='namespace Emberfall{public sealed class GameUI{GameSession session;public void RebindProgressionNotifications(ProgressionService a,ProgressionService b){}void BlockUITransition(){}public GameUI(GameSession s){session=s;}public void Return()=>ReturnFromChapter();'+member('Assets/Scripts/UI/GameUI.Chapter.cs','private void ReturnFromChapter()')+'}}'
  (p/'UI.cs').write_text(ui)
  enemy=(root/'Assets/Scripts/Combat/EnemyController.cs').read_text();a=enemy.index('            int challengeTier = game.InDungeon ? game.DungeonTier : 1;');b=enemy.index('            Health = MaxHealth;',a)+len('            Health = MaxHealth;')

@@ -1,0 +1,4 @@
+PASS: 5261 actual brook/courtyard/both tactical water-entry shoreline/mesh/ownership/traversal checks (managed, not Unity rendering)
+
+PASS: old missing shoreline call compiled and failed exact actual-entry assertion
+PASS: old shared-backface topology compiled and failed exact WATERLINE_NORMAL_ZERO assertion

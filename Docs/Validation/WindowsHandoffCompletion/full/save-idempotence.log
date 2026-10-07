@@ -1,0 +1,11 @@
+
+Emberfall: 保存失败：发现可恢复的临时存档，已保留且未覆盖。请先备份整个存档目录，再处理临时存档恢复。
+Emberfall: 保存失败：临时存档路径被目录占用，未覆盖原文件或备份。
+Emberfall: 保存失败：当前存档已删除或移走。请读取其他存档或创建新角色。
+Emberfall: 保存失败：当前存档已删除或移走。请读取其他存档或创建新角色。
+Unhandled exception. System.IO.IOException: 客户端没有所需的特权。 : 'E:\emberfall_win\Tests\TestResults\Temp\EmberfallCloudValidation-u311dn21\saves\idempotent-save-6b7f0c3bdd0945fcb90351e86d2c9dbe\case-17\emberfall-save-f6eb79f5529e4ad0be63be1064b42921.json.tmp'
+   at Interop.Kernel32.CreateSymbolicLink(String symlinkFileName, String targetFileName, Boolean isDirectory)
+   at System.IO.File.CreateSymbolicLink(String path, String pathToTarget)
+   at SaveIdempotenceTests.LinkedStorageArtifactsArePreserved() in E:\emberfall_win\Tests\SaveIdempotenceTests.cs:line 192
+   at SaveIdempotenceTests.Run(String directory) in E:\emberfall_win\Tests\SaveIdempotenceTests.cs:line 28
+   at Program.Main(String[] args) in E:\emberfall_win\Tests\TestResults\Temp\EmberfallCloudValidation-u311dn21\save-idempotence\Program.cs:line 1

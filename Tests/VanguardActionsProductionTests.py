@@ -57,13 +57,13 @@ with tempfile.TemporaryDirectory(prefix='vanguard-actions-') as d:
  (p/'Fixture.cs').write_text(fixture)
  (p/'Test.csproj').write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net8.0</TargetFramework><OutputType>Exe</OutputType><NoWarn>0649;0169</NoWarn></PropertyGroup></Project>')
  (p/'NuGet.Config').write_text('<configuration><packageSources><clear /></packageSources></configuration>')
- subprocess.run([sys.argv[1] if len(sys.argv)>1 else 'dotnet','run','--project',str(p/'Test.csproj'),'--',str(root/'Assets/Resources/VanguardActions/Swordguard.bytes')],check=True,env=dict(os.environ,DOTNET_CLI_HOME='/tmp/emberfall-vanguard-cli'))
+ subprocess.run([sys.argv[1] if len(sys.argv)>1 else 'dotnet','run','--project',str(p/'Test.csproj'),'--',str(root/'Assets/Resources/VanguardActions/Swordguard.bytes')],check=True,env=dict(os.environ,DOTNET_CLI_HOME=str(p/'cli')))
  # Compiled negative controls exercise actual loader/adapter, not copied algorithms.
  adapter=p/'CombatModel.VanguardArt.cs';original=adapter.read_text()
  for label,old,new in [('missing-load','vanguardArt=VanguardActionLibrary.Load();','vanguardArt=null;'),('skip-motion','if(vanguardArt==null||pilotOwnerDead||dying)return;','if(true)return;'),('dead-writer','if(vanguardArt==null||pilotOwnerDead||dying)return;','if(vanguardArt==null)return;')]:
   assert old in original
   adapter.write_text(original.replace(old,new,1))
-  result=subprocess.run([sys.argv[1] if len(sys.argv)>1 else 'dotnet','run','--project',str(p/'Test.csproj'),'--',str(root/'Assets/Resources/VanguardActions/Swordguard.bytes')],capture_output=True,text=True,env=dict(os.environ,DOTNET_CLI_HOME='/tmp/emberfall-vanguard-cli'))
+  result=subprocess.run([sys.argv[1] if len(sys.argv)>1 else 'dotnet','run','--project',str(p/'Test.csproj'),'--',str(root/'Assets/Resources/VanguardActions/Swordguard.bytes')],capture_output=True,text=True,env=dict(os.environ,DOTNET_CLI_HOME=str(p/'cli')))
   assert result.returncode!=0 and 'Unhandled exception. System.Exception' in result.stderr,(label,result.stdout,result.stderr)
   print('PASS compiled negative control:',label)
  adapter.write_text(original)

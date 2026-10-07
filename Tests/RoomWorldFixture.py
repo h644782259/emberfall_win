@@ -25,4 +25,5 @@ def attach(root, fixture, math, originals, member):
         member(source('WorldBuilder.ChallengeArenas.cs'),'private static void BuildBreakablePockets('),
         member(source('WorldBuilder.cs'),'private static void Pillar(')])+'}}'
     originals['RoomWorldBoundary.cs']=(root/'Tests/RoomWorldBoundary.cs').read_text()
+    originals['WorldTraversal.Platforms.cs']=source('WorldTraversal.Platforms.cs')
     return fixture,math

@@ -63,6 +63,7 @@ namespace Emberfall
 
         // Shared entry point for keyboard and UI. Successful immediate casts return
         // true without ever entering placement mode; rejected requests keep a preview.
+        public bool CanBeginThisFrame { get { return castFrame != Time.frameCount; } }
         public bool Begin(int index)
         {
             if(castFrame==Time.frameCount||owner==null||index<0||index>=GameBalance.SkillCount||GameBalance.IsPassive(index))return false;
@@ -211,7 +212,7 @@ namespace Emberfall
             {
                 if (skill == 0) return new Preview(Shape.Self, 3.7f * r);
                 if (skill == 5) return new Preview(Shape.Self, 2.8f * r);
-                float size = skill == 1 ? (rank == 3 ? 3.2f : 3f) : skill == 2 ? 3.9f : skill == 4 ? 6 : skill == 7 ? 5.3f : 6.5f;
+                float size = skill == 1 ? (rank == 3 ? 3.2f : 3f) : skill == 2 ? 3.9f : skill == 4 ? 6 : skill == 7 ? 5.3f : GameBalance.ArcanistFinaleRadius;
                 return new Preview(Shape.Ground, size * r, 9 * r);
             }
             if (skill == 0) return new Preview(Shape.Cone, 0, 23 * r, 50);

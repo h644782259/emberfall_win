@@ -54,6 +54,7 @@ namespace Emberfall
             defeated[index]=true;kills++;
             if(Room.Boss && kills==Room.EnemyCount && spawnedCount==Room.EnemyCount)Finished=true;
             if(Room.Objective==RoomObjective.Hunt && defeated[0] && spawnedCount==Room.EnemyCount)DoorUnlocked=true;
+            if(Room.Index<2&&Room.Branch==RoomBranch.None&&kills==Room.EnemyCount&&spawnedCount==Room.EnemyCount)DoorUnlocked=true;
             return true;
         }
         // No deadline or reinforcements: clearing enemies always leaves a safe way to finish.

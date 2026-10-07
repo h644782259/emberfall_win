@@ -14,7 +14,7 @@ assert 'if(session.NearChapterExit)session.EnterNextChapterRoom();' in mobile,'r
 assert 'session.ChapterObjectiveCompact' in modes and modes.index('if(session.ChapterActive)')<modes.index('if(session.RoomChainRun!=null)'),'chapter mobile state precedes nullable legacy mode access'
 assert ui.index('else if(session.ChapterFinished)DrawChapterResult();')<ui.index('else if(session.ModeFinished)'),'chapter result does not fall into legacy mode reward recap'
 presentation=(r/'ChapterEntryPresentation.cs').read_text()
-assert 'ChapterEntryPresentation.Result(session.ChapterResult)' in chapter and presentation.index('if(!result.Saved)return')<presentation.index('text+="奖励已保存'),'committed result uses saved actual snapshot only'
+assert 'ChapterEntryPresentation.Result(session.ChapterResult)' in chapter and presentation.index('if(!result.Saved)return')<presentation.index('text=ChapterDefinition.Get(result.Node).Name',presentation.index('if(!result.Saved)return')),'committed result uses saved actual snapshot only'
 assert 'else if (session.IsDead) {if(session.ChapterFinished)DrawChapterResult();else DrawDeath();}' in ui,'chapter failure routes evidence while nonchapter death retains original UI'
 assert 'if(!session.ChapterResultReady)' in chapter and 'session.ContinueChapterResult()' in chapter,'chapter result waits for actual boss visual and explicit continue'
 assert 'if(panel==Panel.Chapter||panel==Panel.HubDialogue||session.ChapterFinished)return;' in ui,'toast cannot cover chapter or dialogue actions'

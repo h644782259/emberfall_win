@@ -20,6 +20,7 @@ public static class RoomSideBranchProductionTests
         if(session.RoomChainRun.Room.Index!=RoomTactics.EventRoom(seed))return;
         var room=session.RoomChainRun.Room;var branch=session.RoomChainRun.SelectedBranch;
         int enemies=session.Enemies.Count;
+        if(session.RunChoices.AwaitingChoice)Check(session.ConfirmBlessingForTest(0),"resolve first-room modal before optional crystal");
         session.Player.Teleport(new Vector3(-RoomTactics.Mirror(seed)*12,0,-6));
         Check(session.StartSideEvent(),"reachable optional crystal starts both enemies");started++;
         Check(session.Enemies.Count==enemies+2,"side encounter creates exactly two enemies");
@@ -42,12 +43,12 @@ public static class RoomSideBranchProductionTests
                 Complete(session);
                 if(action==2)Side(session,seed);
                 session.Tick();session.Tick();
-                if(room==0)Check(session.ConfirmBlessingForTest(0),"first-room blessing remains available");
+                if(room==0)Check(!session.RunChoices.AwaitingChoice||session.ConfirmBlessingForTest(0),"first-room blessing resolves once");
                 session.Player.Teleport(new Vector3(0,0,14));session.EnterNextRoom();
                 if(room==0)Check(!session.SideStillActiveForTest,"completed room transition abandons side state");
             }
             session.CancelRoomBranchChoice();session.EnterNextRoom();
-            Check(session.ConfirmRoomBranch(RoomBranch.Seal)&&!session.RoomChainRun.Failed,"direct or optional-event path enters seal corridor after cancel/reopen");
+            Check(session.ConfirmRoomBranch(RoomBranch.Seal)&&!session.RoomChainRun.Failed,"seal admission seed="+seed+" action="+action+" room="+session.RoomChainRun.Room.Index+" notice="+session.LastNotice);
             Check(!session.SideStillActiveForTest,"confirmed branch transition abandons second-room side state");
             Check(session.RoomChainRun.Room.Index==2&&session.Enemies.Count==4,"third-room seal roster remains four");
             if(action!=0)Side(session,seed);

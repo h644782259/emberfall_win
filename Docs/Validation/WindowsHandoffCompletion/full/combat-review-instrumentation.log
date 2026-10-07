@@ -1,0 +1,2 @@
+未能将“E:\emberfall_win\Tests\TestResults\Temp\EmberfallReviewInstrumentation-b103824v\home\.dotnet\tools”添加到 PATH 环境变量。请将此目录添加到 PATH，以使用通过 "dotnet tool install" 安装的工具。
+PASS: 17 extracted production capture statements; disabled/unsubscribed 340,000 executions perform zero ID API reads; enabled captures retain complete IDs and damage payload. API doubles, no Unity allocation/frame claim.

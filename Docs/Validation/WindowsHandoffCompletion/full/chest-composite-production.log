@@ -1,0 +1,3 @@
+未能将“E:\emberfall_win\Tests\TestResults\Temp\chest-composite-qza_1u8e\cli\.dotnet\tools”添加到 PATH 环境变量。请将此目录添加到 PATH，以使用通过 "dotnet tool install" 安装的工具。
+PASS: 97 real GUI drawing/cache samples, exact ownership and opaque-alpha oracle
+PASS: old double-alpha composition negative control fails the opacity oracle

@@ -10,7 +10,7 @@ def method(marker):
  while depth:depth+=(source[b]=='{')-(source[b]=='}');b+=1
  return source[a:b]
 methods='\n'.join(method(m) for m in ['public void OnPlayerDied()','public void Respawn()','private bool PreserveWorldLoot()','public void CollectRemainingDungeonLoot()','public bool TryCollectGroundLoot(string itemId'])
-helpers=['GameTypes','CombatBalance','ProgressionService','HubTravelRules','MasteryCoreRuntime','TierRewardRules','TierRewardBand','ProgressionGoalState','ChapterProgression','ProgressionService.Chapter','ProgressionService.Reforge','ReforgeQuote','RoomTactics']
+helpers=['GameTypes','CombatBalance','ProgressionService','HubTravelRules','MasteryCoreRuntime','TierRewardRules','TierRewardBand','ProgressionGoalState','ChapterProgression','ProgressionService.Chapter','ProgressionService.Attachments','ProgressionService.AutomaticGrowth','ProgressionService.Reforge','ReforgeQuote','RoomTactics']
 with tempfile.TemporaryDirectory(prefix='death-loot-') as d:
  p=Path(d)
  for n in helpers:(p/(n+'.cs')).write_text((root/'Assets/Scripts/Core'/(n+'.cs')).read_text())

@@ -35,6 +35,7 @@ namespace Emberfall
  public sealed partial class GameSession:MonoBehaviour
  {
   // Practice is outside these chapter lifecycle tests.
+  private void EndHubNpcConversation(){} // Conversation panels are outside this lifecycle fixture.
   private bool retryingRoomChain=false;private int roomRetrySeed=0;public bool RoomBranchChoiceOpen=>false;public bool PracticeActive=>false;public CampPracticeRecord PracticeRecord=>throw new System.InvalidOperationException("ordinary chapter cannot access practice result");public void EndPractice(string reason=""){}
   public ProgressionService Progression;public PlayerController Player=new PlayerController();public bool HasStarted=true,InDungeon,IsDead,Paused,BackgroundPaused,IsInCamp=true;
   public bool InputBlocked=>Paused||BackgroundPaused||IsDead||ChapterFinished;public bool CombatEnded=>ChapterFinished||DungeonCleared;
@@ -127,7 +128,7 @@ namespace Emberfall
    s=new GameSession{Progression=new ProgressionService(Path.Combine(folder,"mechanism-result"))};check(s.Progression.CreateNewSlot(HeroClass.Arcanist),"mechanism result save");s.FixtureUnlock();s.SelectedChapterNode=ChapterNode.StarPlatform;check(s.ConfirmChapterEnter(),"mechanism result enters");
    for(int i=0;i<6;i++){var token=s.MechanismEvidence.Register(s.Player,s.Player.CombatEpoch,0);if(i<4)token.Record(s.Player,s.Player.CombatEpoch,1);}
    foreach(var enemy in new List<EnemyController>(s.Enemies))s.OnEnemyKilled(enemy);
-   check(s.ChapterResult.EmberCreated==6&&s.ChapterResult.EmberEffective==4&&ChapterEntryPresentation.Result(s.ChapterResult).Contains("生成 6 / 生效 4"),"E chapter structured snapshot and result use distinct effective instances");
+   check(s.ChapterResult.EmberCreated==6&&s.ChapterResult.EmberEffective==4&&!ChapterEntryPresentation.Result(s.ChapterResult).Contains("生成 6 / 生效 4"),"E chapter structured snapshot retains distinct instances while successful text stays compact");
    for(int alive=1;alive<=2;alive++)
    {
     s=new GameSession{Progression=new ProgressionService(Path.Combine(folder,"forest-mastery-"+alive))};check(s.Progression.CreateNewSlot(HeroClass.Vanguard),"forest mastery slot");s.FixtureUnlock();s.SelectedChapterDifficulty=ChapterDifficulty.Hard;check(s.ConfirmChapterEnter(),"forest mastery enters Hard");

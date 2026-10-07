@@ -638,6 +638,7 @@ namespace Emberfall
 
         private bool InsideImpact(Vector3 point)
         {
+            if(Mathf.Abs(transform.position.y-point.y)>=.65f)return false;
             return EnemyImpactRegion.Contains(transform.position,targetPoint,point,ImpactRadius);
         }
 

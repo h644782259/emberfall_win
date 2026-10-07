@@ -23,7 +23,7 @@ for(int step=0;step<49;step++){float attack=step/48f;model.ReplayWolf(step*.13f,
 var tip=jaw.transform.TransformPoint(jaw.sharedMesh.vertices[0]);moved|=Math.Abs(tip.y-initial.y)>.02f;hingeMoved|=!jaw.transform.parent.localRotation.Equals(Quaternion.identity);
 if(step==0||step==12||step==24){var geometry=parts.Select(x=>new{name=x.transform.name,mesh=x.sharedMesh.name,vertices=x.sharedMesh.vertices.Select(v=>{var w=x.transform.TransformPoint(v)-host.transform.position;return new[]{w.x,w.y,w.z};}).ToArray(),triangles=x.sharedMesh.triangles}).ToArray();cases.Add(new{name="Wolf-pose-"+step,parts=geometry});}}
 Check(moved&&hingeMoved,"jaw geometry follows live animated hinge");System.IO.File.WriteAllText("OUTPUT",JsonSerializer.Serialize(cases));Console.WriteLine("PASS actual wolf factory/decoded buffers plus exact quadruped Animate branch: 49 poses, fore/hind dispatch, original bite hinge, finite vertices, stable shared meshes, navigation owner unchanged. Managed TRS, NOT Unity.");}}
-'''.replace('OUTPUT',str(out/'wolf-motion.json')))
+'''.replace('OUTPUT',(out/'wolf-motion.json').as_posix()))
 subprocess.run([dotnet,'run','--project',str(p/'Export.csproj')],env=dict(os.environ,DOTNET_CLI_HOME=str(out/'cli')),check=True)
 
 model=p/'Model.cs';good=model.read_text();mutant=good.replace('Quaternion.Euler(-Mathf.Sin(attack*Mathf.PI)*26f,0,0)','Quaternion.identity');assert mutant!=good;model.write_text(mutant)

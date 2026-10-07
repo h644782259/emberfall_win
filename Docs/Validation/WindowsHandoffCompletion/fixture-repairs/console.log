@@ -1,0 +1,19 @@
+未能将“E:\emberfall_win\Tests\TestResults\Temp\chapter-return-clock-6bx8oa6j\cli\.dotnet\tools”添加到 PATH 环境变量。请将此目录添加到 PATH，以使用通过 "dotnet tool install" 安装的工具。
+
+已成功生成。
+    0 个警告
+    0 个错误
+
+已用时间 00:00:03.14
+Emberfall: 保存失败：临时存档路径被目录占用，未覆盖原文件或备份。
+Emberfall: 保存失败：临时存档路径被目录占用，未覆盖原文件或备份。
+Emberfall: 保存失败：临时存档路径被目录占用，未覆盖原文件或备份。
+PASS: 126 actual UI/session/chapter/time-scale/save/reset assertions (managed scene doubles)
+PASS: both compiled old transition/discard clock mutations fail exact production-chain assertions
+PASS chapter-return-time-scale
+未能将“E:\emberfall_win\Tests\TestResults\Temp\effect-priority-5fqabkpj\cli\.dotnet\tools”添加到 PATH 环境变量。请将此目录添加到 PATH，以使用通过 "dotnet tool install" 安装的工具。
+PASS: 164 actual priority emission/global cap/contact/finale checks; engine doubles, not GPU
+PASS: 5 compiled exact-negative priority/contact/finale controls
+PASS effectpriorityproduction
+Standalone production-logic tests; optional Unity API/source compilation. No Unity Editor execution, real JsonUtility, rendering, shaders, or platform build executed.
+Report: Tests\TestResults\Handoff-LeafFixtureRepairs\report.json
