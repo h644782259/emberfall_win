@@ -115,7 +115,7 @@
   {
     "name": "room-failure-evidence",
     "classification": "introduced test fixture dependency; repaired before final targeted pass",
-    "finalTargetedLog": "RoomFailureEvidenceTests.log"
+    "finalTargetedLog": "../RoomFailureEvidenceTests-final.log"
   },
   {
     "name": "chapter-host-production",
