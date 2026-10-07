@@ -6,6 +6,7 @@ namespace Emberfall
     public sealed class CollectionModelPreview : IDisposable
     {
         const int PreviewLayer=31;
+        private static int nextStage;
         GameObject stage,avatar;
         Transform turnRing;
         Camera camera;
@@ -200,9 +201,9 @@ namespace Emberfall
         }
         void CreateStage()
         {
-            stage=new GameObject("Collection preview (isolated)"){hideFlags=HideFlags.HideAndDontSave};stage.transform.position=new Vector3(0,-10000,0);
+            stage=new GameObject("Collection preview (isolated)"){hideFlags=HideFlags.HideAndDontSave};stage.transform.position=new Vector3(0,-1000-(++nextStage%256)*64,0);
             var lens=new GameObject("Preview camera");lens.transform.SetParent(stage.transform,false);camera=lens.AddComponent<Camera>();
-            camera.enabled=false;camera.orthographic=true;camera.clearFlags=CameraClearFlags.SolidColor;camera.backgroundColor=new Color(.035f,.06f,.09f);
+            camera.enabled=false;camera.useOcclusionCulling=false;camera.orthographic=true;camera.clearFlags=CameraClearFlags.SolidColor;camera.backgroundColor=new Color(.035f,.06f,.09f);
             camera.cullingMask=1<<PreviewLayer;camera.nearClipPlane=.1f;camera.farClipPlane=30;camera.allowHDR=false;camera.allowMSAA=true;
             AddLight("Preview key",new Vector3(35,155,0),1.05f,new Color(1,.91f,.8f));
             AddLight("Preview fill",new Vector3(15,30,0),.45f,new Color(.63f,.78f,1));

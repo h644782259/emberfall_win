@@ -1130,7 +1130,10 @@ namespace Emberfall
             float x = width - (MobileControls.Active ? 284 : 238);
             float y = height - 54;
             DrawHubActions(x, y - 50);
-            if (IconButton(new Rect(x, y, 38, 38), "inventory", "I", "行囊与装备 · I\n查看属性、替换与强化装备，出售闲置物品，购买药剂。", jade))
+            Rect catalog=new Rect(x-46,y,38,38);
+            if(IconButton(catalog,"skills","","图鉴 / 待领",gold)){panel=Panel.Camp;campTab=1;session.SetUIBlocking(true);}
+            Badge(catalog,Attention.Rewards);
+            if (IconButton(new Rect(x, y, 38, 38), "inventory", "I", "行囊 · I\n查看属性、穿戴装备与时装，使用已有补给。交易请找商人，强化请找铁匠。", jade))
                 TogglePanel(Panel.Inventory);
             if (IconButton(new Rect(x + 46, y, 38, 38), "skills", "K", "技能树 · K\n按分支学习或进阶技能，配置十格快捷栏。\n可用技能点：" + p.skillPoints, gold, p.skillPoints > 0 ? "+" + p.skillPoints : null))
                 TogglePanel(Panel.Skills);
@@ -1229,8 +1232,6 @@ namespace Emberfall
             Text(new Rect(w.x + 24, w.y + 59, 238, 31), HubInventoryHint, 11, muted, false, true);
             Text(new Rect(w.x + 530, w.y + 55, 600, 31), HubNpcServiceSubtitle(""), 13, pale, false, true);
             if (NavigationButton(new Rect(w.xMax - 69, w.y + 20, 44, 32), "×", jade)) ClosePanel();
-            Badge(new Rect(w.x+270,w.y+55,245,30),Attention.Rewards);
-            if (NavigationButton(new Rect(w.x+270,w.y+55,245,30), "机制图鉴 / 待领取", jade)) { panel=Panel.Camp; campTab=1; }
             Text(new Rect(w.x + 789, w.y + 28, 268, 30), Money(p.gold) + " 金币", 21, gold, true, false, TextAnchor.MiddleRight);
             float left = w.x + 24;
             Text(new Rect(left, w.y + 112, 112, 23), "身上装备", 16, jade, true);
@@ -1239,20 +1240,7 @@ namespace Emberfall
                 panel = Panel.Fashion;
                 return;
             }
-            for (int i = 0; i < 3; i++)
-            {
-                ItemData item = progression.Equipped((ItemSlot)i);
-                Rect row = new Rect(left, w.y + 148 + i * 78, 232, 66);
-                bool chosen = item != null && item.id == selectedItem;
-                Fill(row, chosen ? new Color(.10f, .19f, .23f) : card);
-                Color color = item == null ? muted : GameBalance.RarityColor(item.rarity);
-                Fill(new Rect(row.x, row.y, 3, row.height), color);
-                if (chosen) Border(row, jade);
-                Text(new Rect(row.x + 12, row.y + 9, 135, 16), GameBalance.SlotName((ItemSlot)i) + " · 部位 +" + progression.SlotUpgradeRank((ItemSlot)i), 11, muted);
-                Text(new Rect(row.x + 154, row.y + 9, 65, 16), "穿戴中", 10, jade, false, false, TextAnchor.MiddleRight);
-                Text(new Rect(row.x + 12, row.y + 33, 208, 24), item == null ? "暂无装备" : ItemTitle(item), 14, color, true);
-                if (item != null && GUI.Button(row, GUIContent.none, invisibleButton)) selectedItem = item.id;
-            }
+            DrawCurrentWear(new Rect(left,w.y+148,232,232),1);
             StatBlock stats = progression.GetStats();
             Rule(left, w.y + 389, 232, jade);
             Text(new Rect(left, w.y + 402, 232, 22), "角色属性 · Lv." + p.level, 15, jade, true);
@@ -1274,7 +1262,7 @@ namespace Emberfall
             }
 
             float middle = w.x + 272;
-            Text(new Rect(middle, w.y + 112, 280, 23), "背包 · " + bagItems.Count + " / " + unequippedCount + " 件", 16, jade, true);
+            Text(new Rect(middle, w.y + 112, 280, 23), "背包 · " + bagItems.Count + " 件", 16, jade, true);
             Text(new Rect(middle + 280, w.y + 117, 144, 17), "总容量 " + p.inventory.Count + " / " + ProgressionService.InventoryCapacity, 11, muted, false, false, TextAnchor.MiddleRight);
             bool changed = false;
             string[] filters = { "全部", "武器", "护甲", "饰品" };
@@ -1295,52 +1283,33 @@ namespace Emberfall
                     changed = true;
                 }
             if (changed) { RebuildBagItems(); ResolveSelectedItem(); }
-            Rect viewport = new Rect(middle, w.y + 213, 424, 330);
+            Rect viewport = new Rect(middle, w.y + 213, inventoryComparisonOpen?424:864, 330);
             Fill(viewport, new Color(.025f, .05f, .075f));
-            float contentHeight = Mathf.Max(viewport.height - 2, bagItems.Count * 110 + 4);
-            Rect content = new Rect(0, 0, 407, contentHeight);
-            inventoryScroll.y = Mathf.Clamp(inventoryScroll.y, 0, Mathf.Max(0, contentHeight - viewport.height));
-            GUIStyle priorThumb = GUI.skin.verticalScrollbarThumb;
-            GUI.skin.verticalScrollbarThumb = scrollThumb;
-            inventoryScroll = BeginTouchScroll("inventory",viewport,inventoryScroll,content);
-            string sellId = null;
-            for (int rowIndex = 0; rowIndex < bagItems.Count; rowIndex++)
+            int columns=inventoryComparisonOpen?3:6;
+            float cellWidth=(viewport.width-24)/columns-4,cellHeight=100;
+            float contentHeight=Mathf.Max(viewport.height,((bagItems.Count+columns-1)/columns)*cellHeight+8);
+            inventoryScroll=BeginTouchScroll("inventory",viewport,inventoryScroll,new Rect(0,0,viewport.width-18,contentHeight));
+            for(int index=0;index<bagItems.Count;index++)
             {
-                ItemData item = bagItems[rowIndex];
-                ItemData preview = EquipmentPreview(item);
-                Rect row = new Rect(4, 4 + rowIndex * 110, 398, 102);
-                bool chosen = item.id == selectedItem;
-                bool improvement = IsEquipmentUpgrade(item);
-                bool levelLocked=!ProgressionAttention.LevelEligible(p,item);
-                Color color = GameBalance.RarityColor(item.rarity);
-                DrawCollectionItemCard(row,UIIconAtlas.EquipmentCardIcon(item.slot),levelLocked?muted:color,ItemTitle(preview),
-                    GameBalance.RarityName(item.rarity)+" · "+GameBalance.SlotName(item.slot)+" · Lv."+item.level,
-                    (levelLocked?"需达到装备等级 · ":improvement?"↑ 属性提升 · ":"")+"评分 "+ProgressionService.EquipmentScore(preview).ToString("0.#")+" · "+progression.PresetReferences(item.id),chosen);
-                Badge(new Rect(row.xMax-18,row.y+8,10,10),improvement&&!reviewedEquipment.Contains(item.id));
-                Rect selectRect = new Rect(row.x, row.y, row.width, 70);
-                if (GUI.Button(selectRect, GUIContent.none, invisibleButton)) {selectedItem = item.id;ReviewEquipment(item);}
-                if(NavigationButton(new Rect(row.x+12,row.y+73,112,26),"预览",jade))
-                {selectedItem=item.id;ReviewEquipment(item);equipmentAppearanceItem=item.id;equipmentAppearanceOpen=true;equipmentAppearanceCandidate=true;collectionOwner=session.Player;BlockUITransition();}
+                ItemData item=bagItems[index];
+                Rect tile=new Rect(4+(index%columns)*(cellWidth+4),4+(index/columns)*cellHeight,cellWidth,94);
+                if(tile.yMax<inventoryScroll.y||tile.y>inventoryScroll.y+viewport.height)continue;
+                Color rarity=GameBalance.RarityColor(item.rarity);
+                if(DrawButton(new Rect(tile.x,tile.y,tile.width-44,48),"",selectedItem==item.id?ButtonRole.SelectedRow:ButtonRole.Row))
+                {selectedItem=item.id;ReviewEquipment(item);}
+                if(DrawInventoryLock(new Rect(tile.xMax-44,tile.y,44,44),item.locked))Feedback(progression.SetItemLocked(item.id,!item.locked),"装备锁定状态已更新");
+                DrawIcon(new Rect(tile.x+8,tile.y+6,34,34),UIIconAtlas.EquipmentCardIcon(item.slot),rarity);
+                Text(new Rect(tile.x+46,tile.y+7,40,17),GameBalance.SlotName(item.slot),11,rarity,true);
+                Text(new Rect(tile.x+46,tile.y+25,40,17),"Lv."+item.level+(IsEquipmentUpgrade(item)?" ↑":""),11,item.level>p.level?gold:muted);
                 bool worn=IsEquipped(item);
-                if(Button(new Rect(row.x+132,row.y+73,112,26),worn?"已穿戴":"穿戴",jade,!worn&&!levelLocked))Feedback(progression.Equip(item.id),"装备已穿戴 · 挂件沿用");
-                Rect sellRect = new Rect(row.x+252,row.y+73,134,26);
-                // Keep the sale target separate from the selection target inside the scroll view.
-                if (DangerButton(sellRect, item.locked ? "不可出售" : "出售 " + progression.SellValue(item) + " 金", gold,
-                    !item.locked, item.locked ? "装备已锁定，无法出售。\n选中这件装备，在右侧详情点击‘已锁定’解除保护后即可出售。\n特殊机制装备掉落时会自动锁定，避免误卖。" : "出售这件装备，穿戴与锁定装备受保护。")) sellId = item.id;
-                Rect visibleRow = new Rect(viewport.x + row.x, viewport.y + row.y - inventoryScroll.y, row.width, 70);
-                if (viewport.Contains(Mouse) && visibleRow.Contains(Mouse))
-                    tooltip = ItemTitle(preview) + "\n换装后：攻击 " + preview.attack + " · 防御 " + preview.defense + " · 生命 " + preview.health +
-                        (improvement ? "\n↑ " + EquipmentUpgradeHint(item) : "") +
-                        (item.locked ? "\n锁定保护 · 不可出售；选中后在右侧详情点击‘已锁定’解锁。" : "") +
-                        "\n已计入自动继承的部位强化；数值按本件装备基础属性计算。\n评分不代表实际职业 DPS；右侧价格按钮直接出售。";
+                if(InventoryAction(new Rect(tile.x+4,tile.y+49,(tile.width-12)*.5f,40),"穿戴",!worn&&item.level<=p.level,worn?"已穿戴":item.name))Feedback(progression.Equip(item.id),"装备已穿戴");
+                if(Button(new Rect(tile.center.x+2,tile.y+49,(tile.width-12)*.5f,40),"对比",jade)){selectedItem=item.id;inventoryComparisonOpen=true;}
             }
             EndTouchScroll();
-            GUI.skin.verticalScrollbarThumb = priorThumb;
-            if (sellId != null) SellInventoryItem(sellId);
             picked = ResolveSelectedItem();
             if (bagItems.Count == 0)
                 Text(new Rect(middle + 22, w.y + 322, 380, 76), inventoryFilter < 0 ? "背包已整理完毕\n继续打怪或探索副本，收集新的战利品。" : "这个分类暂无闲置装备\n切换分类，或继续探索收集战利品。", 16, muted, false, true, TextAnchor.MiddleCenter);
-            DrawItemDetail(new Rect(w.x + 712, w.y + 112, 424, 431), picked);
+            if(inventoryComparisonOpen&&picked!=null)DrawInventoryComparison(new Rect(w.x+712,w.y+112,424,431),picked,1);
             Rect supply = new Rect(left, w.y + 558, 1112, 50);
             Fill(supply, card);
             Rect potionSummary = new Rect(supply.x + 15, supply.y + 8, 530, 34);
@@ -1348,8 +1317,7 @@ namespace Emberfall
             Text(new Rect(potionSummary.x + 42, potionSummary.y, potionSummary.width - 42, potionSummary.height), "生命药剂  × " + p.potions, 15, pale, true, false, TextAnchor.MiddleLeft);
             if (potionSummary.Contains(Mouse)) tooltip = PotionTooltip(p);
             if (!MobileControls.Active && NavigationButton(new Rect(supply.x + 606, supply.y + 8, 224, 34), "放入快捷栏", jade)) TogglePanel(Panel.PotionAssignment);
-            if (Button(new Rect(supply.x + 848, supply.y + 8, 248, 34), "购买药剂 · " + ProgressionService.PotionPrice + " 金", gold, p.gold >= ProgressionService.PotionPrice, "购买一瓶生命药剂。"))
-                Feedback(progression.BuyPotion(), "已购买生命药剂 · -" + ProgressionService.PotionPrice + " 金币");
+            if(Button(new Rect(supply.x+848,supply.y+8,248,34),"使用",jade,p.potions>0&&session.Player!=null&&session.Player.Health<session.Player.MaxHealth-.5f))session.DrinkPotion();
         }
 
         private void DrawFashion()
@@ -1389,9 +1357,9 @@ namespace Emberfall
             unequippedCount = 0;
             List<ItemData> inventory = session.Progression.Profile.inventory;
             for (int i = inventory.Count - 1; i >= 0; i--)
-                if (inventory[i] != null && !IsEquipped(inventory[i]))
+                if (inventory[i] != null)
                 {
-                    unequippedCount++;
+                    if(!IsEquipped(inventory[i]))unequippedCount++;
                     if (inventoryFilter < 0 || (int)inventory[i].slot == inventoryFilter) bagItems.Add(inventory[i]);
                 }
             bagItems.Sort(CompareInventoryItems);
@@ -1399,8 +1367,9 @@ namespace Emberfall
 
         private int CompareInventoryItems(ItemData a, ItemData b)
         {
-            int upgradeComparison = IsEquipmentUpgrade(b).CompareTo(IsEquipmentUpgrade(a));
-            if (upgradeComparison != 0) return upgradeComparison;
+            int category = a.slot.CompareTo(b.slot);
+            if (inventoryFilter < 0 && category != 0) return category;
+
             int comparison = inventorySort == 1 ? b.level.CompareTo(a.level) : inventorySort == 2 ? b.rarity.CompareTo(a.rarity) : EquipmentPreviewScore(b).CompareTo(EquipmentPreviewScore(a));
             if (comparison != 0) return comparison;
             comparison = b.level.CompareTo(a.level);
@@ -1446,48 +1415,6 @@ namespace Emberfall
         {
             Text(new Rect(x + 2, y, 151, 22), label, 13, muted);
             Text(new Rect(x + 157, y, 78, 27), value, 19, color, true, false, TextAnchor.UpperRight);
-        }
-
-        private void DrawItemDetail(Rect r, ItemData item)
-        {
-            Fill(r, card);
-            if (item == null)
-            {
-                Text(new Rect(r.x + 24, r.y + 175, r.width - 48, 70), "选择一件装备\n在这里查看属性、装备与强化。", 16, muted, false, true, TextAnchor.MiddleCenter);
-                return;
-            }
-            ProgressionService progression = session.Progression;
-            bool isEquipped = IsEquipped(item);
-            ItemData preview = EquipmentPreview(item);
-            int slotRank = progression.SlotUpgradeRank(item.slot);
-            Color rarityColor = GameBalance.RarityColor(item.rarity);
-            bool levelLocked=!ProgressionAttention.LevelEligible(progression.Profile,item);
-            Fill(new Rect(r.x, r.y, r.width, 3), rarityColor);
-            Text(new Rect(r.x + 18, r.y + 17, r.width - 36, 23), GameBalance.RarityName(item.rarity) + " / " + GameBalance.SlotName(item.slot)+" · "+progression.PresetReferences(item.id), 13, rarityColor, true);
-            Text(new Rect(r.x+18,r.y+45,r.width-36,31),ItemTitle(preview),22,levelLocked?muted*.65f:pale,true);
-            if(DrawEquipmentAppearanceDetail(new Rect(r.x+18,r.y+82,r.width-36,r.height-90),item,1))return;
-            ItemData equipped=progression.Equipped(item.slot);
-            DrawEquipmentComparison(new Rect(r.x+18,r.y+88,r.width-36,61),equipped,item);
-            Text(new Rect(r.x+18,r.y+155,205,22),(levelLocked?"锁 · 需要 "+item.level+"级":"Lv."+item.level)+" · 部位强化 +"+slotRank,14,levelLocked?gold:muted);
-            Text(new Rect(r.x+230,r.y+155,175,22),isEquipped?"当前属性":"当前 → 换装后",14,muted,false,false,TextAnchor.MiddleRight);
-            ItemStat(r.x+18,r.y+180,"攻击",preview.attack,equipped==null?0:equipped.attack,isEquipped);
-            ItemStat(r.x+18,r.y+209,"防御",preview.defense,equipped==null?0:equipped.defense,isEquipped);
-            ItemStat(r.x+18,r.y+238,"生命",preview.health,equipped==null?0:equipped.health,isEquipped);
-            string mechanic=EquipmentComparisonPresentation.Changes(equipped,item,progression.Profile.heroClass);
-            Rect mechanism=new Rect(r.x+18,r.y+270,r.width-36,42);
-            if(mechanism.Contains(Mouse))tooltip=mechanic;
-            DrawPersistentMechanismDetail(new Rect(r.x+18,r.y+270,r.width-36,85),equipped,item);
-            if(ToggleButton(new Rect(r.x+292,r.y+17,114,25), item.locked?"已锁定":"锁定", item.locked, true, "锁定后不可出售，仍可穿戴。")){bool locked=!item.locked;Feedback(progression.SetItemLocked(item.id,locked),locked?"已锁定":"已解锁");}
-            bool canEquip = item.level <= progression.Profile.level && !isEquipped;
-            string equipCaption = isEquipped ? "已装备" : !canEquip ? "需要 Lv." + item.level : "装备此物品";
-            if (Button(new Rect(r.x + 18, r.y + 365, 187, 40), equipCaption, jade, canEquip, null, true)) Feedback(progression.Equip(item.id), "已装备 " + item.name);
-            bool maxUpgrade = slotRank >= ProgressionService.MaximumUpgrade;
-            int upgradeCost = progression.UpgradeCost(item);
-            if (Button(new Rect(r.x + 219, r.y + 365, 187, 40), maxUpgrade ? "部位已达 +" + ProgressionService.MaximumUpgrade : "强化部位 · " + upgradeCost + " 金", gold, !maxUpgrade && progression.Profile.gold >= upgradeCost, maxUpgrade ? "此部位已达到强化上限，换装仍会自动继承。" : "消耗 " + upgradeCost + " 金币，将" + GameBalance.SlotName(item.slot) + "部位提升至 +" + (slotRank + 1) + "；当前与以后换上的装备均生效，无需穿戴所选装备。"))
-                Feedback(progression.Upgrade(item.id), GameBalance.SlotName(item.slot) + "部位强化 +" + (slotRank + 1) + " · -" + upgradeCost + " 金币");
-            Text(new Rect(r.x + 18, r.y + 409, 220, 18), "属性含强化 · 机制不计分", 11, jade);
-            if(NavigationButton(new Rect(r.x+245,r.y+409,160,24), "外观比较", jade)){equipmentAppearanceOpen=true;collectionOwner=session.Player;BlockUITransition();}
-
         }
 
         private void ReturnToInventory()

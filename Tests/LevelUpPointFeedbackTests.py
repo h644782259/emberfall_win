@@ -19,7 +19,9 @@ class Transform { public Vector3 position; }
 class Hero { public Transform transform=new Transform();public int Heals;public void RefreshStats(bool heal){if(heal)Heals++;} }
 enum SoundCue {LevelUp} static class GameAudio {public static int Calls;public static void Play(SoundCue cue){Calls++;} }
 static class GameBalance { BUDGET }
+class ProgressionService{public string LevelGrowthDescription()=>"base stat growth";}
 class GameSession {
+ public ProgressionService Progression=new ProgressionService();
  public Hero Player=new Hero();public List<string> Floating=new List<string>(),Notices=new List<string>();
  void SpawnFloatingText(Vector3 position,string text,Color c){Floating.Add(text);}void Notify(string text){Notices.Add(text);}
  CALLBACK

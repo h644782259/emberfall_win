@@ -22,6 +22,7 @@ guardkeys=['if (slot == 5)','if (HeroClass == HeroClass.Vanguard && slot == 4)',
 cast=player[player.index('private void CastSkillCore'):]
 guards=''.join('internal void Guard'+str(i)+'(int rank,float power,float range,Color color,int castId)'+block(cast,k) for i,k in enumerate(guardkeys))
 fixture='''using System;using UnityEngine;namespace Emberfall {
+public static class FlameRide{public static void Spawn(PlayerController p,GameSession g,float d,float a,int cast){}}
 public enum HeroClass{Vanguard,Arcanist,Ranger,Summoner}public enum ElementalistSpecialization{None,Burn}
 public class Profile{public int[] skillRanks=new int[10];}public class Progression{public Profile Profile=new Profile();}
 public static class GameBalance{public static float SkillRangeMultiplier(int r)=>1+(r-1)*.15f;public static Color ClassColor(HeroClass h)=>new Color(1,.8f,.3f,1);public static string SkillName(HeroClass h,int slot)=>"passive";}

@@ -181,15 +181,7 @@ namespace Emberfall
             switch(skill)
             {
                 case 4:
-                    owner.SkillDash(-forward,5f*range,.65f+(rank-1)*.15f);
-                    owner.MobilityBuff(rank);
-                    for(int i=0;i<3+rank-1;i++)
-                    {
-                        Vector3 dir=Quaternion.Euler(0,(i-(rank+1)*.5f)*9f,0)*forward;
-                        if (CombatSight.Direct(owner.transform.position, owner.transform.position + dir))
-                            CombatProjectile.Friendly(owner,session,owner.transform.position+dir,dir,damage*SkillDamageBudgets.AdvancedImpact(heroClass,skill,rank,step),color,rank>=2,true,false,range,21f*range,rank==3?Nearest(target,8f*range):null,castId:castId);
-                    }
-                    if(rank==3) SpawnTail(origin,3f*range,1.2f);
+                    // Slot 4 now releases through PlayerController.BeginRangerVault.
                     break;
                 case 5:
                     AdvancedSkillVfx.Rune(owner,target,3.7f*range,new Color(.55f,.95f,.3f),4.3f+rank,rank+1);

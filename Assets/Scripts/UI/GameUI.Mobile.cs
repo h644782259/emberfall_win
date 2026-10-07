@@ -43,6 +43,7 @@ namespace Emberfall
                 if(targeting!=null&&!targeting.Begin(skill))
                 {if(string.IsNullOrEmpty(session.ControlFailure("skill"+skill)))session.ReportControlFailure("skill"+skill,"暂不可用");}}
         }
+        public bool MobileInteractionVisible {get{return session!=null&&!session.PracticeActive&&(session.NearChapterExit||session.NearRoomExit||session.SideEventAvailable||session.NearbyHubNpc!=HubNpcKind.None||session.IsNearDungeonEntrance);}}
         private bool CanMobileInteract {get{return session!=null&&!session.PracticeActive&&!session.InputBlocked&&!session.DungeonSelectionOpen&&(session.NearChapterExit||session.NearRoomExit||session.SideEventAvailable||session.NearbyHubNpc!=HubNpcKind.None||session.IsInCamp||session.InDungeon||session.IsNearDungeonEntrance);}}
         public void ActivateMobileInteraction(int triggeringFinger=TouchReleaseLatch.AnyPointer)
         {
@@ -123,13 +124,16 @@ namespace Emberfall
             DrawCompanionCommands();
             Text(TouchRect(22,71,155,11),CurrentCombatResult(),TouchFont(9),pale,true);
             string interaction=session.NearChapterExit?"沿星路前进":session.NearRoomExit?"进入下一间":session.SideEventAvailable?"晶核挑战":session.NearbyHubNpc!=HubNpcKind.None?HubNpcMobileLabel(session.NearbyHubNpc):session.IsInCamp?"营地工坊":session.InDungeon?"返回营地":session.IsNearDungeonEntrance?"进入副本":"靠近入口";
+            if(MobileInteractionVisible)
+            {
             Rect interact=TouchRect(l.Interact);blockedRects.Add(interact);
             // One pointer owner handles real touches and simulated/attached mice.
             // This is presentation only: a second IMGUI Button here would dispatch
             // again after a room transition changed the context on pointer release.
             Box(interact,CanMobileInteract?gold:muted,false);
             Text(interact,interaction,TouchFont(12),CanMobileInteract?gold:muted,true,false,TextAnchor.MiddleCenter);
-            Badge(interact,Attention.Rewards&&session.IsInCamp);
+
+            }
             EnemyController boss=null;foreach(var e in session.Enemies)if(e!=null&&e.IsBoss&&!e.IsDead){boss=e;break;}
             if(boss!=null){blockedRects.Add(TouchRect(l.BossHealth));Bar(TouchRect(l.BossHealth),boss.Health/Mathf.Max(1,boss.MaxHealth),new Color(.93f,.34f,.29f));}
             var targeting=session.Player==null?null:session.Player.GetComponent<SkillTargetingController>();
@@ -264,13 +268,16 @@ namespace Emberfall
                 Text(TouchRect(x + 12, y + 245, 496, 39), string.IsNullOrEmpty(session.Notification)?"自动保存持续写入当前角色。\n如需手动保存，请返回上一页点击「保存」。":PlatformText(session.Notification), TouchFont(12), string.IsNullOrEmpty(session.Notification)?muted:gold, false, true);
                 return;
             }
-            string[] labels = { "继续冒险", "保存", "读取存档", "返回主菜单", "营地 / 撤离", "前往遗迹", "城镇旅行地图", "操作指南" };
+            string[] labels = { "继续冒险", "保存", "读取存档", "返回主菜单", "营地 / 撤离", "前往遗迹", "城镇旅行地图", "操作指南", "行囊", "图鉴 / 待领" };
             for (int i = 0; i < labels.Length; i++)
             {
-                if (!DrawButton(TouchRect(x + 12 + (i % 2) * 256, y + 51 + (i / 2) * 58, 240, 48), labels[i],
+                if(i==9)Badge(TouchRect(x+12+(i%3)*168,y+51+(i/3)*58,160,48),Attention.Rewards);
+                if (!DrawButton(TouchRect(x + 12 + (i % 3) * 168, y + 51 + (i / 3) * 58, 160, 48), labels[i],
                     i == 0 ? ButtonRole.Primary : i == 3 ? ButtonRole.Danger : i == 1 ? ButtonRole.Action : ButtonRole.Navigation)) continue;
                 switch (i)
                 {
+                    case 8: session.SetPaused(false);TogglePanel(Panel.Inventory);break;
+                    case 9: session.SetPaused(false);panel=Panel.Camp;campTab=1;session.SetUIBlocking(true);break;
                     case 0: session.SetPaused(false); break;
                     case 1: RequestManualSave(); break;
                     case 2: OpenSaveSelection(); break;

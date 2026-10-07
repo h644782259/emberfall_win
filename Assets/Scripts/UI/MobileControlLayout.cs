@@ -36,7 +36,7 @@ namespace Emberfall
             Jump=Centered(Width-224,Height-56,56);
             Cancel=Jump; // Same thumb position, mutually exclusive with jump.
             Potion=Centered(50,Height-211,54);
-            Interact=new Area(78,Height-244,108,48);
+            Interact=new Area(102,82,60,48);
             float groupShift=positionPreset<0?-Math.Min(16,Height-316):positionPreset>0?2:0;
             for(int i=0;i<Skills.Length;i++)
                 Skills[i]=Centered(Width-252+(i%5)*54,Height-(i<5?204:140)+groupShift,48);

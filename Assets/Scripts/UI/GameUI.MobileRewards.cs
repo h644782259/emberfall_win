@@ -12,6 +12,11 @@ namespace Emberfall
 
         private void DrawMobileFashion()
         {
+            panel=Panel.Inventory;inventoryFashionOpen=true;DrawMobileInventory();
+        }
+
+        private void DrawLegacyMobileFashion()
+        {
             var progression = session.Progression; var profile = progression.Profile;
             if (mobileFashionProfile != progression.CurrentSlotId || mobileFashionStatusOwner != session.Player)
             {

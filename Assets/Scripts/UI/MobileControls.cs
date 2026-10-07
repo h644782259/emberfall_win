@@ -89,7 +89,7 @@ namespace Emberfall
         {
             if (!Active || instance == null || instance.session == null || instance.session.InputBlocked) return false;
             Vector2 point = instance.ToUI(screen);
-            return instance.IsOpportunityPoint(point) || (instance.ui!=null&&instance.ui.CompanionCommandsVisible&&(Area(Layout.FocusCommand).Contains(point)||Area(Layout.RecallCommand).Contains(point))) || instance.IsMovementStart(screen) || instance.Attack.Contains(point) || instance.Dodge.Contains(point) || instance.Potion.Contains(point) || Area(Layout.Interact).Contains(point) || instance.Jump.Contains(point) || instance.Cancel.Contains(point);
+            return instance.IsOpportunityPoint(point) || (instance.ui!=null&&instance.ui.CompanionCommandsVisible&&(Area(Layout.FocusCommand).Contains(point)||Area(Layout.RecallCommand).Contains(point))) || instance.IsMovementStart(screen) || instance.Attack.Contains(point) || instance.Dodge.Contains(point) || instance.Potion.Contains(point) || (instance.ui!=null&&instance.ui.MobileInteractionVisible&&Area(Layout.Interact).Contains(point)) || instance.Jump.Contains(point) || instance.Cancel.Contains(point);
         }
         // Screen-space third, intersected with the safe area; all visible HUD wins.
         private bool IsMovementStart(Vector2 screen)
@@ -152,7 +152,7 @@ namespace Emberfall
                 }
                 else if (ui!=null&&ui.CompanionCommandsVisible&&(Area(Layout.FocusCommand).Contains(point)||Area(Layout.RecallCommand).Contains(point)))
                 {ui.ActivateFreeCommand(Area(Layout.RecallCommand).Contains(point));role=Role.Consumed;}
-                else if (Area(Layout.Interact).Contains(point)) { if(ui!=null)ui.ActivateMobileInteraction(finger);role=Role.Consumed; }
+                else if (ui!=null&&ui.MobileInteractionVisible&&Area(Layout.Interact).Contains(point)) { if(ui!=null)ui.ActivateMobileInteraction(finger);role=Role.Consumed; }
                 else if (Dodge.Contains(point)) { CheckDodgeFeedback(); dodge = true; role = Role.Consumed; }
                 else if (Potion.Contains(point)) { CheckPotionFeedback(); potion = true; role = Role.Consumed; }
                 else if (Cancel.Contains(point) && CanCancel)

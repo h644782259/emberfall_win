@@ -240,7 +240,7 @@ namespace UnityEngine
     public class Camera:MonoBehaviour
     {
         public static int Renders;public static bool ThrowOnRender;public static Action DuringRender;
-        public bool orthographic,allowHDR,allowMSAA;public float aspect,orthographicSize,nearClipPlane,farClipPlane,fieldOfView;
+        public bool useOcclusionCulling;public bool orthographic,allowHDR,allowMSAA;public float aspect,orthographicSize,nearClipPlane,farClipPlane,fieldOfView;
         public CameraClearFlags clearFlags;public Color backgroundColor;public int cullingMask;public RenderTexture targetTexture;
         public void Render(){if(!targetTexture.IsCreated())throw new Exception("render to uncreated texture");DuringRender?.Invoke();if(ThrowOnRender)throw new Exception("simulated native render failure");Renders++;targetTexture.Populated=true;}
     }

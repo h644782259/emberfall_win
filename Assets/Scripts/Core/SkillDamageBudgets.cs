@@ -48,6 +48,11 @@ namespace Emberfall
             if(hero==HeroClass.Ranger)return new PeriodicSkillBudget(.3f,4f+(rank-1),.4f,rank==1?3.8f:rank==2?5.4f:7.2f,rank==3?1.6f:0);
             return new PeriodicSkillBudget(0,0,1,0,0);
         }
+        // Same single-target ceiling as the former 3/4/5 arrow retreat volley.
+        public static float RangerVault(int rank)
+        {rank=Rank(rank);return .32f*(1f+(rank-1)*.3f)*(rank+2)*1.65f;}
+        public const float FlameRideTick=.18f;
+        public const float FlameRideInterval=.5f;
         public const float BasicEnergyOnHit=8f;
         // Nominal release/recovery timing is gameplay data, not the current model's
         // animation age. Visual settling may extend beyond these values safely.

@@ -50,6 +50,12 @@ public static class SkillDamageBudgetTests
   Check(crit.Apply(target,new CombatDamage(float.NaN,false),false).Amount==0,"invalid damage safe");
   Check(Near(SkillDamageBudgets.MeteorAftermath(3).TotalCoefficient,1.6f),"meteor residual no hidden fivefold budget");
   Check(SkillDamageBudgets.TickCount(0,.5f)==1&&SkillDamageBudgets.TickCount(2,.5f)==5&&SkillDamageBudgets.TickCount(4.5f,.6f)==8,"inclusive startup tick conventions match scheduler");
+  for(int rank=1;rank<=3;rank++){
+   float expected=.32f*(1+(rank-1)*.3f)*(rank+2)*1.65f;
+   Check(Near(SkillDamageBudgets.RangerVault(rank),expected),"vault preserves prior volley ceiling");
+   Check(SkillDamageBudgets.RangerVault(rank)/GameBalance.EffectiveCooldown(HeroClass.Ranger,4,rank)<.42f,"vault cooldown-normalized coefficient cap");
+   Check(Near(SkillDamageBudgets.FlameRideTick/SkillDamageBudgets.FlameRideInterval,.36f),"nonstacking flame ride active DPS");
+  }
   return "PASS: "+checks+" per-skill coefficient and shared-volley budget assertions";
  }
 }

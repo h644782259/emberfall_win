@@ -22,14 +22,14 @@ namespace Emberfall
       if(touchScrollOwner!=owner||touchScroll.Finger!=t.fingerId)continue;
       bool consume=touchScroll.Advance(t.fingerId,pointer.x,pointer.y,t.phase==TouchPhase.Ended,t.phase==TouchPhase.Canceled);
       position.y=touchScroll.Position;touchScrollFrame=Time.frameCount;
-      if(consume){touchScrollSuppressed=Time.frameCount;GUIUtility.hotControl=0;}
+      if(consume||t.phase==TouchPhase.Canceled){touchScrollSuppressed=Time.frameCount;GUIUtility.hotControl=0;}
      }
     }
     else if(touchScrollOwner==owner)position.y=touchScroll.Position;
     bool suppress=touchScrollSuppressed==Time.frameCount||touchScrollOwner==owner&&touchScroll.Dragging;
     if(suppress)
     {
-     GUI.enabled=false;
+     // Consume only input events. Repaint keeps the normal enabled appearance.
      if(Event.current.isMouse&&Event.current.type!=EventType.Repaint&&Event.current.type!=EventType.Layout)Event.current.Use();
     }
    }
@@ -43,6 +43,6 @@ namespace Emberfall
    bool found=false;for(int i=0;i<Input.touchCount;i++)if(Input.GetTouch(i).fingerId==touchScroll.Finger){found=true;break;}
    if(!found)CancelMobileScroll();
   }
-  private void CancelMobileScroll(){touchScroll.Cancel();touchScrollOwner=null;touchScrollSuppressed=-1;}
+  private void CancelMobileScroll(){GUIUtility.hotControl=0;touchScroll.Cancel();touchScrollOwner=null;touchScrollSuppressed=-1;}
  }
 }

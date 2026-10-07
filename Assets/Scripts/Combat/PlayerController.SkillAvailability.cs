@@ -37,7 +37,7 @@ namespace Emberfall
             if(!forwardDash&&!retreat)return true;
             Vector3 direction=CombatFx.Flat(point-transform.position);
             if(direction.sqrMagnitude<.0001f)direction=transform.forward;
-            direction.Normalize();if(retreat)direction=-direction;
+            direction.Normalize(); // Ranger vault advances toward aim, matching its landing arc.
             float distance=(forwardDash?7f:5f)*GameBalance.SkillRangeMultiplier(rank);
             Vector3 end=Vector3.ClampMagnitude(CombatFx.Flat(transform.position)+direction*distance,session.ArenaRadius-.65f);
             return WorldTraversal.CanLeap(transform.position,end,.45f);

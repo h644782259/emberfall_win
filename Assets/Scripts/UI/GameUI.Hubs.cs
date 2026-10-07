@@ -90,9 +90,9 @@ namespace Emberfall
         {
             get
             {
-                if (session.InDungeon || session.NearbyHubNpc != inventoryHubNpc) return "行囊与装备";
+                if (session.InDungeon || session.NearbyHubNpc != inventoryHubNpc) return "行囊";
                 return inventoryHubNpc == HubNpcKind.Merchant ? "商人 · 行囊与补给" :
-                    inventoryHubNpc == HubNpcKind.Blacksmith ? "铁匠 · 装备与强化" : "行囊与装备";
+                    inventoryHubNpc == HubNpcKind.Blacksmith ? "铁匠 · 装备与强化" : "行囊";
             }
         }
 

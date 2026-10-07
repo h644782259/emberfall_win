@@ -15,15 +15,15 @@ namespace Emberfall
         private void ReconcileCollectionPreview()
         {
             if(session!=null&&(session.BackgroundPaused||session.Paused)){ReleaseCollectionModel();return;}
-            if(session==null || !session.HasStarted || session.IsDead || session.ModeFinished || session.DungeonSelectionOpen || session.RunChoices.AwaitingChoice || (panel!=Panel.Fashion&&panel!=Panel.Chests&&!(panel==Panel.Inventory&&equipmentAppearanceOpen)))ReleaseCollectionPreview();
+            if(session==null || !session.HasStarted || session.IsDead || session.ModeFinished || session.DungeonSelectionOpen || session.RunChoices.AwaitingChoice || (panel!=Panel.Fashion&&panel!=Panel.Chests&&panel!=Panel.Inventory))ReleaseCollectionPreview();
             else if(collectionOwner!=session.Player){ReleaseCollectionPreview();collectionOwner=session.Player;}
         }
         private void OnDisable(){ReleaseCollectionModel();ClearRewardMoment();}
-        private void OnApplicationFocus(bool focused){if(!focused)ClearRewardMoment();if(focused&&collectionModel!=null)collectionModel.Invalidate();}
-        private void OnApplicationPause(bool paused){if(paused)ClearRewardMoment();if(!paused&&collectionModel!=null)collectionModel.Invalidate();}
-        private void ReleaseCollectionModel(){if(collectionModel!=null)collectionModel.Dispose();collectionModel=null;}
+        private void OnApplicationFocus(bool focused){if(!focused)ClearRewardMoment();if(focused){if(collectionModel!=null)collectionModel.Invalidate();if(wearModel!=null)wearModel.Invalidate();}}
+        private void OnApplicationPause(bool paused){if(paused)ClearRewardMoment();if(!paused){if(collectionModel!=null)collectionModel.Invalidate();if(wearModel!=null)wearModel.Invalidate();}}
+        private void ReleaseCollectionModel(){if(wearModel!=null)wearModel.Dispose();wearModel=null;if(collectionModel!=null)collectionModel.Dispose();collectionModel=null;}
         private void ReleaseCollectionPreview()
-        {ReleaseCollectionModel();collectionViewing.Reset();collectionTrial=null;collectionOwner=null;collectionNotice=null;collectionReceiptKey=null;collectionPreviewYaw=20;mobileFashionPreview=true;equipmentAppearanceOpen=false;equipmentAppearanceCandidate=false;equipmentAppearanceItem=null;}
+        {ReleaseCollectionModel();collectionViewing.Reset();collectionTrial=null;collectionOwner=null;collectionNotice=null;collectionReceiptKey=null;collectionPreviewYaw=20;mobileFashionPreview=true;}
         private void TrialFashion(FashionSlot slot,Rarity rarity)
         {collectionTrial=EquipmentComparisonPresentation.Trial(slot,rarity);collectionNotice=null;mobileFashionStatus=null;mobileFashionFailed=false;collectionViewing.TryOn(collectionTrial);}
         private void SetCollectionAngle(FashionSlot slot)

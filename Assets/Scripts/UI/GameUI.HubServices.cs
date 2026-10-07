@@ -41,7 +41,7 @@ namespace Emberfall
                 Text(new Rect(14*u,r.y+68*u,width-28*u,32*u),max?"此部位已强化至上限，新装备仍会继承。":stats,Mathf.RoundToInt(13*u),pale,false,true);
                 int cost=p.UpgradeCost(item);
                 if(PrimaryButton(new Rect(14*u,r.y+108*u,width-28*u,34*u),max?"已达上限":"强化至 +"+(rank+1)+" · "+cost+" 金币",gold,!max&&p.Profile.gold>=cost,max?"部位强化已达上限。":"金币不足时无法强化；新装备会自动继承部位强化。"))
-                {Feedback(p.Upgrade(item.id),GameBalance.SlotName(slot)+"部位已强化");BlockUITransition();}
+                {Feedback(p.Upgrade(item.id),GameBalance.SlotName(slot)+"部位已强化");}
             }
         }
         private void DrawMerchantServiceCards(float width,float u)
@@ -60,7 +60,8 @@ namespace Emberfall
                 Text(new Rect(12*u,y+8*u,width-actionWidth-30*u,26*u),item.name,Mathf.RoundToInt(16*u),GameBalance.RarityColor(item.rarity),true);
                 Text(new Rect(12*u,y+37*u,width-actionWidth-30*u,33*u),"等级 "+item.level+" · "+GameBalance.RarityName(item.rarity)+(item.locked?"\n锁定保护 · 不可出售":" · "+GameBalance.SlotName(item.slot)),Mathf.RoundToInt(12*u),item.locked?gold:muted,false,true);
                 Rect action=new Rect(width-actionWidth-12*u,y+22*u,actionWidth,36*u);
-                if(item.locked)
+                if(IsEquipped(item)){Button(action,"穿戴中",muted,false,"请先卸下装备再出售");}
+                else if(item.locked)
                 {
                     if(NavigationButton(action,"解锁保护",gold,true,"解除锁定后才可出售；解锁不会出售装备。"))unlock=item.id;
                 }

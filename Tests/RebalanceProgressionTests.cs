@@ -16,8 +16,26 @@ public static class RebalanceProgressionTests
     public static string Run(string directory)
     {
         root=directory; checks=cases=0;
-        SegmentAndMigration(); RecipesAndAtomicCosts(); CosmeticCollection(); ProductionStatBudget();
+        LevelGrowthRound(); SegmentAndMigration(); RecipesAndAtomicCosts(); CosmeticCollection(); ProductionStatBudget();
         return "PASS: "+checks+" rebalance progression assertions in "+cases+" isolated scenarios.";
+    }
+    private static void LevelGrowthRound()
+    {
+        float[] hp={20,15,17,13},attack={3,3.5f,3.2f,2.3f},armor={1.4f,1,1.1f,.75f};
+        foreach(HeroClass hero in Enum.GetValues(typeof(HeroClass)))
+        {
+            var p=Fresh(hero);p.Profile.weaponId=p.Profile.armorId=p.Profile.relicId=null;
+            for(int i=0;i<p.Profile.skillRanks.Length;i++)p.Profile.skillRanks[i]=0;
+            var prior=p.GetStats();
+            for(int level=2;level<=100;level++)
+            {
+                p.Profile.level=level;var next=p.GetStats();int h=(int)hero;
+                Check(Near(next.MaxHealth-prior.MaxHealth,hp[h])&&Near(next.Damage-prior.Damage,attack[h])&&Near(next.Armor-prior.Armor,armor[h]),"every level grants base attributes");prior=next;
+            }
+            p.Save();var loaded=Reload(p);var after=loaded.GetStats();
+            var again=Reload(loaded).GetStats();
+            Check(Near(after.Damage,again.Damage)&&Near(after.MaxHealth,again.MaxHealth),"reload does not apply growth twice");
+        }
     }
     private static void SegmentAndMigration()
     {

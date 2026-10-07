@@ -667,6 +667,17 @@ namespace Emberfall
             catch (UnauthorizedAccessException) { }
         }
 
+        public string LevelGrowthDescription()
+        {
+            switch(Profile.heroClass)
+            {
+                case HeroClass.Arcanist:return "每级：生命 +15 / 攻击 +3.5 / 防御 +1";
+                case HeroClass.Ranger:return "每级：生命 +17 / 攻击 +3.2 / 防御 +1.1";
+                case HeroClass.Summoner:return "每级：生命 +13 / 攻击 +2.3 / 防御 +0.75";
+                default:return "每级：生命 +20 / 攻击 +3 / 防御 +1.4";
+            }
+        }
+
         public StatBlock GetStats()
         {
             int level = Clamp(Profile.level, 1, MaximumLevel);
