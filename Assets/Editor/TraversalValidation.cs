@@ -16,7 +16,8 @@ namespace Emberfall.Editor
             check(!WorldTraversal.IsWalkable(new Vector3(7,0,-2)), "River water blocks ground movement");
             Vector3 stopped = WorldTraversal.Move(bank, Vector3.forward * 7);
             check(stopped.z < -3f && WorldTraversal.IsWalkable(stopped), "Swept fast ground movement stops at the river bank");
-            check(WorldTraversal.HasGroundPath(new Vector3(0,0,-6), new Vector3(0,0,3)), "The authored bridge is a continuous walkable crossing");
+            // Start at the bridge approach; the old -6 endpoint now contains authored camp props.
+            check(WorldTraversal.HasGroundPath(new Vector3(0,0,-3.9f), new Vector3(0,0,3)), "The authored bridge is a continuous walkable crossing");
             check(WorldTraversal.CanLeap(bank, landing), "A clear opposite-bank landing allows a leap across the river");
             check(!WorldTraversal.CanLeap(bank, new Vector3(7,0,-2)), "A leap cannot land in deep water");
             check(!WorldTraversal.CanLeap(new Vector3(5,0,-8), new Vector3(11,0,-8)), "A leap cannot pass through a solid boulder");

@@ -1,0 +1,5 @@
+PASS 4367 actual loaded pooled VFX ownership/reset/cap/warm-loop assertions; managed, not engine allocation/FPS.
+PASS compiled pool negative: NullReferenceException
+PASS compiled pool negative: retire clears owner
+PASS compiled pool negative: warm cycle reuses same root
+PASS compiled pool negative: return destroys each cast clipped geometry

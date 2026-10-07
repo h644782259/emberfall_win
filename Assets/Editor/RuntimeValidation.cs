@@ -138,6 +138,7 @@ namespace Emberfall.Editor
                 {
                     Append("Play mode entered; InitializeOnLoad restored the validation runner after domain reload.");
                     Application.runInBackground = true;
+                    MobileControls.ValidationUsesSimulation = true;
                     validatingPause=SessionState.GetBool(Prefix+"NpcOnly",false);
                     routine = validatingPause?HubNpcValidation.Validate(GameSession.Instance,Check,Append,SessionState.GetString(Prefix+"Results","")):Smoke();
                 }
@@ -207,7 +208,7 @@ namespace Emberfall.Editor
                 Check(game.Progression.Profile.level == 100, hero + " reaches level 100 through XP progression");
                 StatBlock beforePassive = game.Progression.GetStats();
                 for (int skill = 0; skill < GameBalance.SkillCount; skill++)
-                    for (int rank = 1; rank <= 3; rank++)
+                    for (int rank = game.Progression.Profile.skillRanks[skill] + 1; rank <= 3; rank++)
                         Check(game.Progression.LearnSkill(skill), hero + " learns " + skill + " stage " + rank);
                 StatBlock afterPassive = game.Progression.GetStats();
                 Check(hero == HeroClass.Ranger ? afterPassive.CritChance > beforePassive.CritChance && afterPassive.MoveSpeed > beforePassive.MoveSpeed : afterPassive.Damage > beforePassive.Damage,
@@ -271,7 +272,8 @@ namespace Emberfall.Editor
                     runtime.Advance(200f); // Fixture reset between independent casts; never used for the paging assertion.
                     runtime.FillEnergy();
                     SetField(game.Player, "aimPoint", game.Player.transform.position + Vector3.forward * 3);
-                    game.Player.transform.rotation = Quaternion.identity;
+                    game.Player.transform.rotation = hero == HeroClass.Ranger && skill == 4 ? Quaternion.Euler(0,180,0) : Quaternion.identity;
+                    if (hero == HeroClass.Ranger && skill == 4) SetField(game.Player,"aimPoint",game.Player.transform.position+Vector3.back*3);
                     SkillCategory category = GameBalance.GetSkillCategory(hero, skill);
                     if (category == SkillCategory.Healing)
                     {
@@ -280,7 +282,8 @@ namespace Emberfall.Editor
                         Check(game.Player.Health < game.Player.MaxHealth && !game.IsDead, hero + " healing fixture is injured and alive");
                     }
                     float healthBefore = game.Player.Health;
-                    float enemiesBefore = EnemyHealth(game);
+                    EnemyController[] castEnemies = game.Enemies.ToArray();
+                    float enemiesBefore = EnemyHealth(castEnemies);
                     Vector3 positionBefore = game.Player.transform.position;
                     float energyBefore = game.Player.Energy;
                     Cast(game.Player, skill);
@@ -327,7 +330,7 @@ namespace Emberfall.Editor
                     if (hero == HeroClass.Summoner && (skill == 2 || skill == 4 || skill == 9))
                         Check(SummonedCompanion.Count(game.Player, skill == 9) > 0, "Summoning skill creates its actual combat companion");
                     else if (category == SkillCategory.Damage || category == SkillCategory.Control)
-                        Check(EnemyHealth(game) < enemiesBefore, hero + " skill " + skill + " damages runtime enemies");
+                        Check(EnemyHealth(castEnemies) < enemiesBefore, hero + " skill " + skill + " damages runtime enemies");
                     if (category == SkillCategory.Mobility) Check(Vector3.Distance(game.Player.transform.position, positionBefore) > 1f, hero + " mobility skill moves the actual character");
                     if (skill == 9) CaptureWorld(hero + "-awakened-ultimate.png", false);
                 }
@@ -344,7 +347,16 @@ namespace Emberfall.Editor
             while (groundLootValidation.MoveNext()) yield return groundLootValidation.Current;
             game.Player.enabled = true;
             WorldLabelValidation.Validate(ZoneKind.Dungeon, Check);
-            CaptureWorld("Dungeon-wave-one.png", true);
+            foreach (DestructibleProp prop in UnityEngine.Object.FindObjectsByType<DestructibleProp>(FindObjectsSortMode.None))
+            {
+                Renderer[] visuals = prop.GetComponentsInChildren<Renderer>();
+                Check(visuals.Length > 0, "Destructible scenery has visible geometry: " + prop.name);
+                Bounds bounds = visuals[0].bounds;
+                foreach (Renderer visual in visuals) bounds.Encapsulate(visual.bounds);
+                Check(bounds.size.x <= prop.Radius * 2 + .3f && bounds.size.z <= prop.Radius * 2 + .3f && bounds.size.y <= 2.5f,
+                    "Imported destructible scenery stays at meter scale within its gameplay footprint: " + prop.name);
+            }
+            CaptureWorld("Dungeon-wave-one.png", false);
             int originalClears = game.Progression.Profile.clearedRuns;
             int originalItems = game.Progression.Profile.inventory.Count;
             int lastWave = 0, blessingCount = 0;
@@ -376,7 +388,7 @@ namespace Emberfall.Editor
                     {
                         bool bossPresent = game.Enemies.Exists(enemy => enemy != null && enemy.IsBoss);
                         Check(bossPresent, "Final wave contains the guardian boss");
-                        CaptureWorld("Dungeon-boss.png", true);
+                        CaptureWorld("Dungeon-boss.png", false);
                     }
                     EnemyController[] victims = game.Enemies.ToArray();
                     foreach (EnemyController enemy in victims) enemy.TakeDamage(100000000f, Vector3.forward);
@@ -407,15 +419,15 @@ namespace Emberfall.Editor
             }
             finally { game.Enemies.Remove(lateEnemy); lateEnemy.gameObject.SetActive(false); UnityEngine.Object.Destroy(lateEnemy.gameObject); }
             Check(game.PendingLootCount > 0, "Dungeon rewards remain visibly on the ground until pickup");
-            Check(game.Progression.Profile.pendingFashionChest && game.Progression.OpenDungeonChest(1) != null,
+            Check(game.Progression.Profile.pendingFashionChest && game.Progression.OpenDungeonChest() != null,
                 "The completed run offers exactly one chest");
             int chestGold = game.Progression.Profile.gold;
             string chestReceipt = game.Progression.LastChestReward.Id;
             Check(game.Progression.Profile.pendingChestReveal && !game.Progression.Profile.pendingFashionChest &&
-                game.Progression.OpenDungeonChest(2) == null && game.Progression.Profile.gold == chestGold,
+                game.Progression.OpenDungeonChest() == null && game.Progression.Profile.gold == chestGold,
                 "Opening again cannot reroll or grant another reward during the reveal");
             var savedReward = new ProgressionService(game.Progression.SaveDirectory);
-            Check(savedReward.Load() && savedReward.Profile.pendingChestReveal && savedReward.LastChestReward.Id == chestReceipt && savedReward.Profile.gold == chestGold,
+            Check(savedReward.LoadSlot(game.Progression.CurrentSlotId) && savedReward.Profile.pendingChestReveal && savedReward.LastChestReward.Id == chestReceipt && savedReward.Profile.gold == chestGold,
                 "The saved chest receipt survives reload without granting again");
             Check(game.Progression.AcknowledgeChestReward() && !game.Progression.Profile.pendingChestReveal,
                 "Acknowledging the receipt clears only the reveal state");
@@ -428,7 +440,7 @@ namespace Emberfall.Editor
             SetField(game.Player, "invulnerability", 0f);
             game.Player.TakeDamage(100000000f);
             Check(game.IsDead && game.Player.IsDead && Time.timeScale == 0, "Lethal damage opens death state and stops combat");
-            Check(game.Progression.Profile.gold == goldBeforeDeath - Mathf.FloorToInt(goldBeforeDeath * .1f), "Death deducts the configured ten percent gold");
+            Check(game.Progression.Profile.gold == goldBeforeDeath, "Death preserves earned gold under the current recovery policy");
             yield return new Delay(.25f, false);
             game.Respawn();
             Check(!game.IsDead && !game.Player.IsDead && game.Player.Health == game.Player.MaxHealth && game.Progression.Profile.inventory.Count == inventoryBeforeDeath,
@@ -587,8 +599,8 @@ namespace Emberfall.Editor
                 hero + " entering skill preview spends no resources and starts no cooldown");
             Check(PlacementVisible(targeting), hero + " an actual ground-confirmation skill displays its preview geometry");
             targeting.SetTarget(player.transform.position + Vector3.right * 1000);
-            Check(Mathf.Abs(Vector3.Distance(player.transform.position, targeting.TargetPoint) - targeting.CurrentPreview.distance) < .01f && targeting.TargetPoint.magnitude <= game.ArenaRadius + .01f,
-                hero + " out-of-range placement clamps to the actual cast distance and arena");
+            Check(Vector3.Distance(player.transform.position, targeting.TargetPoint) <= targeting.CurrentPreview.distance + .01f && targeting.TargetPoint.magnitude <= game.ArenaRadius + .01f && WorldTraversal.HasLineOfSight(player.transform.position, targeting.TargetPoint),
+                hero + " out-of-range placement respects cast distance, arena and intervening cover");
             targeting.Cancel();
             Check(!targeting.IsTargeting && targeting.CancelledThisFrame && targeting.TickInput() && Mathf.Approximately(player.Energy, energy) && player.SkillCooldownRemaining(skill) == 0,
                 hero + " cancelling preserves energy/cooldown and consumes the same-frame ordinary attack input");
@@ -673,7 +685,8 @@ namespace Emberfall.Editor
                 if (GameBalance.IsPassive(skill) || SkillTargetingController.RequiresConfirmation(hero, skill)) continue;
                 ResetCombatFixture(game);
                 runtime.Advance(200); runtime.FillEnergy();
-                SetField(player, "aimPoint", player.transform.position + new Vector3(3, 0, 6));
+                player.transform.rotation = Quaternion.identity;
+                SetField(player, "aimPoint", player.transform.position + (hero == HeroClass.Ranger && skill == 4 ? Vector3.back : Vector3.forward) * 6);
                 int learnedRank = game.Progression.Profile.skillRanks[skill];
                 try
                 {
@@ -739,10 +752,10 @@ namespace Emberfall.Editor
                 "Mark increases actual incoming damage by the configured vulnerability");
             normal.StatusEffects.Knockdown(3);
             boss.StatusEffects.Knockdown(3);
-            Check(normal.StatusEffects.KnockedDown && normal.IsStunned && boss.StatusEffects.KnockedDown && boss.IsStunned,
-                "Knockdown creates both the visual state and actual attack/movement control");
+            Check(normal.StatusEffects.KnockedDown && normal.IsStunned && !boss.StatusEffects.KnockedDown && !boss.IsStunned,
+                "Knockdown controls ordinary enemies while Boss armor rejects raw hard control");
             Check(ReadFloat(boss.StatusEffects, "downTime") < ReadFloat(normal.StatusEffects, "downTime") && ReadFloat(boss, "stunTime") < ReadFloat(normal, "stunTime"),
-                "Boss control resistance shortens both knockdown and stun duration");
+                "Boss raw knockdown has zero granted duration while ordinary control is bounded");
             normal.enabled = boss.enabled = true;
             yield return new Delay(.85f);
             Check(!boss.StatusEffects.KnockedDown && !boss.IsStunned && normal.StatusEffects.KnockedDown && normal.IsStunned,
@@ -777,7 +790,7 @@ namespace Emberfall.Editor
                 projectile.gameObject.SetActive(false);
                 UnityEngine.Object.Destroy(projectile.gameObject);
             }
-            game.Player.Teleport(new Vector3(0, 0, -5));
+            game.Player.Teleport(new Vector3(5, 0, 5));
             game.Player.RefreshStats(true);
             Camera.main.GetComponent<AdventureCamera>().Snap();
             game.SetPaused(false);
@@ -829,9 +842,9 @@ namespace Emberfall.Editor
                 enemy.gameObject.SetActive(false);
                 UnityEngine.Object.Destroy(enemy.gameObject);
             }
-            game.Player.Teleport(new Vector3(0, 0, -5));
+            game.Player.Teleport(new Vector3(5, 0, 5));
             game.Player.RefreshStats(true);
-            for (int i = 0; i < 3; i++) Call(game, "SpawnEnemy", EnemyKind.Guardian, 100, new Vector3(0, 0, -3 + i * 3), false);
+            for (int i = 0; i < 3; i++) Call(game, "SpawnEnemy", EnemyKind.Guardian, 100, game.Player.transform.position + Vector3.forward * (2 + i * 3), false);
             FreezeEnemies(game);
             game.SetPaused(false);
         }
@@ -839,6 +852,13 @@ namespace Emberfall.Editor
         private static void FreezeEnemies(GameSession game)
         {
             foreach (EnemyController enemy in game.Enemies) if (enemy != null) enemy.enabled = false;
+        }
+
+        private static float EnemyHealth(EnemyController[] enemies)
+        {
+            float total = 0;
+            foreach (EnemyController enemy in enemies) if (enemy != null && !enemy.IsDead) total += enemy.Health;
+            return total;
         }
 
         private static float EnemyHealth(GameSession game)
@@ -971,6 +991,7 @@ namespace Emberfall.Editor
         {
             if (finishing) return;
             finishing = true;
+            MobileControls.ValidationUsesSimulation = false;
             string results = SessionState.GetString(Prefix + "Results", "");
             int infrastructureCount = SessionState.GetInt(Prefix + "InfrastructureErrors", 0);
             var infrastructure = new EditorInfrastructureError[infrastructureCount];

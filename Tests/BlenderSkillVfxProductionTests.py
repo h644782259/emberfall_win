@@ -24,6 +24,7 @@ fixture = fixture.replace('public static class Resources{public static T Load<T>
         public static readonly Dictionary<string,Object> Values=new Dictionary<string,Object>();
         public static T Load<T>(string name)where T:class=>Values.TryGetValue(name,out var value)?value as T:null;
     }''')
+fixture=fixture.replace('components.Add(c);return c;', 'components.Add(c);if(activeSelf)c.GetType().GetMethod("Awake",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)?.Invoke(c,null);return c;')
 with tempfile.TemporaryDirectory(prefix='emberfall-blender-vfx-') as directory:
     temp = Path(directory)
     for path in ['Assets/Scripts/Combat/BlenderSkillVfx.cs','Assets/Scripts/Combat/AuthoredActorMeshes.cs','Assets/Scripts/Combat/CombatVisualLease.cs','Assets/Scripts/Core/CombatVisualBudget.cs','Tests/BlenderSkillVfxProductionTests.cs']:

@@ -1,0 +1,45 @@
+  Determining projects to restore...
+  Restored /tmp/emberfall-editor-boundary-657e0t10/unity-editor-shim/Validation.csproj (in 102 ms).
+  Validation -> /tmp/emberfall-editor-boundary-657e0t10/unity-editor-shim/bin/Release/net8.0/UnityEditorBoundaryShim.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.13
+
+  Determining projects to restore...
+  Restored /tmp/emberfall-editor-boundary-657e0t10/runtime/Validation.csproj (in 112 ms).
+  Validation -> /tmp/emberfall-editor-boundary-657e0t10/runtime/bin/Release/net8.0/EmberfallRuntime.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:03.40
+
+  Determining projects to restore...
+  Restored /tmp/emberfall-editor-boundary-657e0t10/editor/Validation.csproj (in 73 ms).
+  Validation -> /tmp/emberfall-editor-boundary-657e0t10/editor/bin/Release/net8.0/EmberfallEditorBoundary.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.41
+
+  Determining projects to restore...
+  Restored /tmp/emberfall-editor-boundary-657e0t10/negative/Validation.csproj (in 61 ms).
+/tmp/emberfall-editor-boundary-657e0t10/GroundLootValidation.Old.cs(192,76): error CS1061: 'PlayerController' does not contain a definition for 'CombatEpoch' and no accessible extension method 'CombatEpoch' accepting a first argument of type 'PlayerController' could be found (are you missing a using directive or an assembly reference?) [/tmp/emberfall-editor-boundary-657e0t10/negative/Validation.csproj]
+/tmp/emberfall-editor-boundary-657e0t10/GroundLootValidation.Old.cs(194,113): error CS1061: 'PlayerController' does not contain a definition for 'CombatEpoch' and no accessible extension method 'CombatEpoch' accepting a first argument of type 'PlayerController' could be found (are you missing a using directive or an assembly reference?) [/tmp/emberfall-editor-boundary-657e0t10/negative/Validation.csproj]
+
+Build FAILED.
+
+/tmp/emberfall-editor-boundary-657e0t10/GroundLootValidation.Old.cs(192,76): error CS1061: 'PlayerController' does not contain a definition for 'CombatEpoch' and no accessible extension method 'CombatEpoch' accepting a first argument of type 'PlayerController' could be found (are you missing a using directive or an assembly reference?) [/tmp/emberfall-editor-boundary-657e0t10/negative/Validation.csproj]
+/tmp/emberfall-editor-boundary-657e0t10/GroundLootValidation.Old.cs(194,113): error CS1061: 'PlayerController' does not contain a definition for 'CombatEpoch' and no accessible extension method 'CombatEpoch' accepting a first argument of type 'PlayerController' could be found (are you missing a using directive or an assembly reference?) [/tmp/emberfall-editor-boundary-657e0t10/negative/Validation.csproj]
+    0 Warning(s)
+    2 Error(s)
+
+Time Elapsed 00:00:02.00
+
+PASS separate actual runtime/editor assemblies; old direct access negative control fails; UnityEditor APIs explicitly stubbed, no Unity import claim

@@ -1,0 +1,23 @@
+/tmp/single-chest-ui-mokkyha4/Methods.cs(34,16): error CS0103: The name 'NavigationButton' does not exist in the current context [/tmp/single-chest-ui-mokkyha4/project/Validation.csproj]
+/tmp/single-chest-ui-mokkyha4/Methods.cs(35,16): error CS0103: The name 'NavigationButton' does not exist in the current context [/tmp/single-chest-ui-mokkyha4/project/Validation.csproj]
+/tmp/single-chest-ui-mokkyha4/Methods.cs(44,20): error CS0103: The name 'PrimaryButton' does not exist in the current context [/tmp/single-chest-ui-mokkyha4/project/Validation.csproj]
+/tmp/single-chest-ui-mokkyha4/Methods.cs(56,59): error CS0103: The name 'PrimaryButton' does not exist in the current context [/tmp/single-chest-ui-mokkyha4/project/Validation.csproj]
+/tmp/single-chest-ui-mokkyha4/Methods.cs(57,20): error CS0103: The name 'PrimaryButton' does not exist in the current context [/tmp/single-chest-ui-mokkyha4/project/Validation.csproj]
+/tmp/single-chest-ui-mokkyha4/Methods.cs(95,28): error CS0103: The name 'PrimaryButton' does not exist in the current context [/tmp/single-chest-ui-mokkyha4/project/Validation.csproj]
+/tmp/single-chest-ui-mokkyha4/Methods.cs(96,17): error CS0103: The name 'NavigationButton' does not exist in the current context [/tmp/single-chest-ui-mokkyha4/project/Validation.csproj]
+/tmp/single-chest-ui-mokkyha4/Methods.cs(98,17): error CS0103: The name 'DrawButton' does not exist in the current context [/tmp/single-chest-ui-mokkyha4/project/Validation.csproj]
+/tmp/single-chest-ui-mokkyha4/Methods.cs(98,149): error CS0103: The name 'ButtonRole' does not exist in the current context [/tmp/single-chest-ui-mokkyha4/project/Validation.csproj]
+/tmp/single-chest-ui-mokkyha4/Methods.cs(98,170): error CS0103: The name 'ButtonRole' does not exist in the current context [/tmp/single-chest-ui-mokkyha4/project/Validation.csproj]
+/tmp/single-chest-ui-mokkyha4/Methods.cs(121,23): error CS0103: The name 'PrimaryButton' does not exist in the current context [/tmp/single-chest-ui-mokkyha4/project/Validation.csproj]
+/workspace/emberfall_win_native/Tests/SingleChestUIBoundary.cs(16,129): warning CS0649: Field 'GameUI.muted' is never assigned to, and will always have its default value [/tmp/single-chest-ui-mokkyha4/project/Validation.csproj]
+/workspace/emberfall_win_native/Tests/SingleChestUIBoundary.cs(16,114): warning CS0649: Field 'GameUI.gold' is never assigned to, and will always have its default value [/tmp/single-chest-ui-mokkyha4/project/Validation.csproj]
+/workspace/emberfall_win_native/Tests/SingleChestUIBoundary.cs(16,119): warning CS0649: Field 'GameUI.jade' is never assigned to, and will always have its default value [/tmp/single-chest-ui-mokkyha4/project/Validation.csproj]
+/workspace/emberfall_win_native/Tests/SingleChestUIBoundary.cs(16,124): warning CS0649: Field 'GameUI.pale' is never assigned to, and will always have its default value [/tmp/single-chest-ui-mokkyha4/project/Validation.csproj]
+
+The build failed. Fix the build errors and run again.
+Traceback (most recent call last):
+  File "/workspace/emberfall_win_native/Tests/SingleChestUIProductionTests.py", line 19, in <module>
+    subprocess.run([sys.argv[1] if len(sys.argv)>1 else 'dotnet','run','--project',str(project),'--',str(p/'saves')],check=True,env=dict(os.environ,DOTNET_CLI_HOME=str(p/'cli'),DOTNET_NOLOGO='1'))
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/tmp/emberfall-dotnet/dotnet', 'run', '--project', '/tmp/single-chest-ui-mokkyha4/project/Validation.csproj', '--', '/tmp/single-chest-ui-mokkyha4/saves']' returned non-zero exit status 1.

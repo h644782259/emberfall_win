@@ -14,10 +14,16 @@ namespace Emberfall
         private readonly List<int> staleFingers = new List<int>();
         private static MobileControls instance;
         public static bool SimulationEnabled { get; set; }
+#if UNITY_EDITOR
+        public static bool ValidationUsesSimulation { get; set; }
+#endif
         public static bool Active
         {
             get
             {
+#if UNITY_EDITOR
+                if (ValidationUsesSimulation) return SimulationEnabled;
+#endif
 #if UNITY_IOS || UNITY_ANDROID
                 return true;
 #else

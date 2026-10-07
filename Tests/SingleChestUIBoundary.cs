@@ -17,6 +17,11 @@ namespace Emberfall{
   bool chestDetails,chestOpening,rewardSoundPlayed;int revealedChest=-1;string chestRevealResult,chestReceiptId,mobileChestError;float chestRevealedAt;Rect chestRevealOrigin;Vector2 desktopChestResultScroll,mobileChestScroll,mobileChestArtScroll;
   readonly List<(string caption,Rect bounds)> buttons=new List<(string,Rect)>();string click;bool clicked;int scrollDepth;
   bool Button(Rect r,string s,Color c,bool enabled=true,string reason=null,bool highlight=false){buttons.Add((s,r));if(!enabled||clicked||click!=s)return false;clicked=true;return true;}
+  // Graphics boundary for the existing 483b47b button-role API; click semantics stay in Button.
+  enum ButtonRole { Action, Primary, Navigation, Danger, Tab, SelectedTab, Toggle, ActiveToggle, Row, SelectedRow }
+  bool DrawButton(Rect r,string s,ButtonRole role,bool enabled=true,string hint=null,int fontSize=0,string controlName=null)=>Button(r,s,gold,enabled,hint);
+  bool NavigationButton(Rect r,string s,Color accent,bool enabled=true,string hint=null,bool primary=false)=>DrawButton(r,s,ButtonRole.Navigation,enabled,hint);
+  bool PrimaryButton(Rect r,string s,Color accent,bool enabled=true,string hint=null,bool primary=false)=>DrawButton(r,s,ButtonRole.Primary,enabled,hint);
   readonly List<int> resourceIcons=new List<int>();readonly List<string> resourceNumbers=new List<string>();int legacyDraws;
   void DrawIcon(Rect r,int icon,Color c){resourceIcons.Add(icon);}void DrawChestGoldReward(Rect r,ChestReward reward,Color c){legacyDraws++;}bool DrawChestRewardModel(Rect r,ChestReward reward)=>false;
   void Fill(Rect r,Color c){}void Border(Rect r,Color c){}void Text(Rect r,string s,int size,Color c,bool bold=false,bool wrap=false){resourceNumbers.Add(s);}

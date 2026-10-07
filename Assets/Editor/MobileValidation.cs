@@ -107,7 +107,7 @@ namespace Emberfall.Editor
                 Vector2 offset = (Vector2)Field(typeof(GameUI), "guiOffset").GetValue(ui);
                 Func<Vector2, Vector2> screen = point => new Vector2(point.x * scale + offset.x, Screen.height - point.y * scale - offset.y);
                 float ratio=MobileControls.Layout.Scale/scale;
-                check(slots.Length == 10 && Mathf.Abs(slots[0].width-54*ratio)<.1f && slots[9].width>0, "Mobile HUD exposes all ten skills with 54-unit targets");
+                check(slots.Length == 10 && Mathf.Abs(slots[0].width-48*ratio)<.1f && slots[9].width>0, "Mobile HUD exposes all ten skills with 48-unit targets");
                 for (int i = 0; i < 10; i++)
                 {
                     check(safe.Contains(screen(slots[i].min)) && safe.Contains(screen(slots[i].max-Vector2.one*.01f)), "Skill target stays in safe area");

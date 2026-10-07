@@ -14,7 +14,7 @@ namespace Emberfall
         private static void ResetRegistry(){labels.Clear();evaluatedFrame=-1;nextOrder=0;}
         public void Initialize(TextMesh text,int priority=0)
         {
-            label=text;GameFont.Apply(label);visual=GetComponent<Renderer>();originalScale=transform.localScale;this.priority=priority;
+            label=text;if(label.font==null)GameFont.Apply(label);visual=GetComponent<Renderer>();originalScale=transform.localScale;this.priority=priority;
             Register();labels.Sort(Compare);evaluatedFrame=-1;
         }
         private static int Compare(WorldLabelPresentation a,WorldLabelPresentation b)

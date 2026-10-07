@@ -19,7 +19,8 @@ namespace Emberfall
         private static int active;
         private readonly Piece[] pieces=new Piece[FilledVfxRecipes.MaximumParts];
         private MaterialPropertyBlock block;
-        private void Awake(){block=new MaterialPropertyBlock();}
+        private void Awake() { EnsurePropertyBlock(); }
+        private void EnsurePropertyBlock() { if (block == null) block = new MaterialPropertyBlock(); }
         private int count,epoch,allocated;
         private GameSession session;
         private bool pooled,disposing;
@@ -110,6 +111,7 @@ namespace Emberfall
             EnsureAssets();FilledSkillVfx fx=null;
             while(idle.Count>0&&fx==null){var candidate=idle.Pop();if(candidate!=null&&!candidate.disposing)fx=candidate;}
             if(fx==null){var fresh=new GameObject("Filled effect");fresh.SetActive(false);fx=fresh.AddComponent<FilledSkillVfx>();instances.Add(fx);}
+            fx.EnsurePropertyBlock();
             var root=fx.gameObject;checked{fx.rentGeneration++;}fx.pooled=false;root.name="Filled "+type+" effect";root.transform.SetParent(parent,false);root.transform.localScale=Vector3.one;root.transform.position=at;
             root.transform.rotation=Quaternion.LookRotation(forward.sqrMagnitude>.0001f?forward.normalized:Vector3.forward);
             fx.owner=hero;fx.session=GameSession.Instance;fx.epoch=hero.CombatEpoch;fx.kind=type;fx.size=Mathf.Clamp(radius,.15f,8);
@@ -353,6 +355,7 @@ namespace Emberfall
         }
         private void ClearPieces()
         {
+            EnsurePropertyBlock();
             block.SetColor("_Color",new Color(0,0,0,0));block.SetFloat("_Opacity",0);block.SetFloat("_Progress",0);block.SetFloat("_Style",0);block.SetFloat("_EnvelopeMode",0);block.SetFloat("_EnvelopeAge",0);
             for(int i=0;i<allocated;i++)
             {
