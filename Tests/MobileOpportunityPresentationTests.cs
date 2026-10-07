@@ -26,7 +26,7 @@ namespace Emberfall {
  }
  public enum HeroClass{Arcanist}public static class GameBalance{public static bool IsPassive(int skill)=>skill==3||skill==8;public static float SkillEnergyCost(HeroClass c,int skill)=>10;}public class Profile{public int potions=3;public int[] skillRanks={1,1,1,1,1,1,1,1,1,1};public HeroClass heroClass;}public class Progression{public Profile Profile=new Profile();}public class GameSession{public bool InputBlocked;public bool ChallengeRun,InDungeon;public int HealingCharges;public PlayerController Player=new PlayerController();public Progression Progression=new Progression();public string Failure="";public string ControlFailure(string key)=>key=="attack"||key.StartsWith("skill")?Failure:"";public void ReportControlFailure(string key,string reason){}}
  public sealed partial class MobileControls{
- GameSession session=new GameSession();Rect Potion=new Rect(23,82,54,54),Dodge=new Rect(385,233,62,62),Attack=new Rect(465,221,84,84);public static MobileControlLayout Layout=new MobileControlLayout(568,320,163);Vector2 ToUI(Vector2 p)=>p;void Circle(Rect r,Color c,string text){}
+ GameSession session=new GameSession();Rect Potion=new Rect(23,82,54,54),Dodge=new Rect(385,233,62,62),Attack=new Rect(Layout.Attack.X,Layout.Attack.Y,Layout.Attack.Width,Layout.Attack.Height);public static MobileControlLayout Layout=new MobileControlLayout(568,320,163);Vector2 ToUI(Vector2 p)=>p;void Circle(Rect r,Color c,string text){}
  static int n;static void C(bool b,string s){n++;if(!b)throw new Exception(s);}
  public static void Run(){var v=new MobileControls();var hero=v.session.Player;
  foreach(var reason in new[]{"无目标","距离不足","被遮挡"})foreach(float scale in new[]{.86f,1f}){
@@ -50,7 +50,7 @@ namespace Emberfall {
  foreach(string reason in new[]{"","无目标","目标被遮挡","距离不足","缺能"}) {
  hero.SkillWindow=new CombatOpportunityState(CombatOpportunityKind.Shatter,1.25f,blockReason:reason,duration:4);hero.Reason=reason;hero.Energy=reason=="缺能"?0:100;GUI.Draws.Clear();view.DrawMobileSkillAvailability(slot,1);
  C(GUI.Draws.Count(x=>x.Text=="碎")==1&&GUI.Draws.Count(x=>x.Text=="1.3")==1,"one outer seal and true clock without inner duplicate");
- C(GUI.Draws.Where(x=>x.Text=="碎"||x.Text=="1.3").All(x=>x.Rect.y>=slot.yMax),"opportunity only outside button");
+ C(GUI.Draws.Where(x=>x.Text=="碎"||x.Text=="1.3").All(x=>x.Rect.yMax<=slot.y||x.Rect.y>=slot.yMax),"opportunity only outside button");
  C(reason.Length==0?GUI.Draws.Count==2:GUI.Draws.Count==3,"inner button has only one unavailable reason");
  C(GUI.Draws.All(x=>x.Text.Sum(c=>c>127?1.1f:.65f)*x.Font+2*unit<=x.Rect.width),"minimum compact captions fit scaled width");
  }
@@ -82,7 +82,7 @@ class Program {
  foreach(var dims in new[]{new[]{568f,320f,163f},new[]{844f,390f,163f},new[]{1024f,768f,163f},new[]{2272f,1280f,326f}})foreach(int preset in new[]{-1,0,1}) {
  var l=new Emberfall.MobileControlLayout(dims[0],dims[1],dims[2],preset);var hints=l.SkillOpportunities.Concat(new[]{l.CounterOpportunity,l.ComboOpportunity}).ToArray();
  foreach(var h in hints){C(h.X>=0&&h.Y>=0&&h.X+h.Width<=l.Width&&h.Y+h.Height<=l.Height,"all outer hints stay in safe-area coordinates");foreach(var slot in l.Skills)C(!h.Overlaps(slot),"all ten slots unobstructed");foreach(var control in new[]{l.Attack,l.Dodge,l.Jump,l.Potion,l.Interact,l.Menu,l.Inventory,l.SkillsMenu})C(!h.Overlaps(control),"outer hints never cover action controls: "+dims[0]+"/"+dims[1]+" preset "+preset+" hint "+h.X+","+h.Y+" control "+control.X+","+control.Y);}
- for(int i=0;i<hints.Length;i++)for(int j=i+1;j<hints.Length;j++)C(!hints[i].Overlaps(hints[j]),"simultaneous outer windows never overlap");
+ for(int i=0;i<hints.Length;i++)for(int j=i+1;j<hints.Length;j++)C(!hints[i].Overlaps(hints[j]),"simultaneous outer windows never overlap: "+i+"/"+j+" dims "+dims[0]+"x"+dims[1]+" preset "+preset);
  }
  Console.WriteLine("PASS actual meter arc/once-emphasis/owner-state and 12 layouts, 10 slots + 2 basic windows; managed GUI recorder, not Unity visual acceptance");
  }

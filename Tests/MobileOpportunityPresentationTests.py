@@ -19,5 +19,5 @@ with tempfile.TemporaryDirectory(prefix='mobile-opportunity-h05-') as t:
  ('MobileOpportunityMeter.cs','state.Fraction','state.Remaining/16f','arc uses actual total grant duration'),
  ('MobileOpportunityMeter.cs','changed||!hadWindow||lastKind!=state.Kind','true','pause resume same window never replays acquisition emphasis'),
  ('GameUI.MobileFeedback.cs','            string rejected=', '            if(window.Actionable)Text(caption,window.Caption,TouchFont(10),jade,true,false,TextAnchor.MiddleCenter);\n            string rejected=', 'inner button has only one unavailable reason'),
- ('MobileControlLayout.cs','Skills[i].Y+Skills[i].Height+1','Skills[i].Y+Skills[i].Height-5','opportunity only outside button')]:
+ ('MobileControlLayout.cs','key.Y-15','key.Y+5','opportunity only outside button')]:
   f=p/name;original=f.read_text();assert before in original;f.write_text(original.replace(before,after));run(oracle);f.write_text(original);print('PASS compiled negative:',oracle)

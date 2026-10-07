@@ -48,8 +48,8 @@ namespace Emberfall
                 float size=i==7?54:48;
                 Skills[i]=Centered(Width-dx[i],Height-dy[i]+shift,size);
                 Area key=Skills[i];
-                SkillOpportunities[identities[i]]=i==7?new Area(key.X-28,key.Y+17,24,14):
-                    new Area(key.X,i==0?key.Y-15:key.Y+key.Height+1,key.Width/2,14);
+                SkillOpportunities[identities[i]]=i==7?new Area(key.X-52,key.Y+17,48,14):
+                    new Area(key.X,(i==0||i==1||i==5)?key.Y-15:key.Y+key.Height+1,key.Width,14);
             }
             CounterOpportunity=new Area(Attack.X,Attack.Y+Attack.Height+1,Attack.Width/2,13);
             ComboOpportunity=new Area(Attack.X+Attack.Width/2,Attack.Y+Attack.Height+1,Attack.Width/2,13);
