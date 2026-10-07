@@ -6,6 +6,10 @@ Skill readiness uses the actual learned rank, cooldown, energy, player lifecycle
 
 Platform-specific main changes are preserved. In particular, iOS retains eight active buttons [0,1,2,4,5,6,7,9], 60/72 sizing and ultimate at button seven. Two noninteractive passive identity cards are still pending layout work; this checkpoint does not claim completion of the ten-visible-identities request.
 
-`report.json` records targeted results and production source hashes. Recorded exception output in negative tests is expected; the runners require specific assertion failures. The Windows mobile interaction source test also fails on unchanged main at the NPC destination assertion; its paired baseline log is included. Other targeted checks pass. Full managed validation is still pending on this branch.
+`report.json` records targeted results and production source hashes. Recorded exception output in negative tests is expected; the runners require specific assertion failures. The Windows mobile interaction source test also fails on unchanged main at the NPC destination assertion; its paired baseline log is included. Other targeted checks pass. Frozen full managed validation is recorded below.
 
 The compile uses pinned UnityEngine 2021.3.33 reference assemblies, not the project's Unity 6000.6.3f1 Editor/native toolchain. No Unity rendering, device touch delivery, native build, screenshot alignment or visual acceptance was executed. Library reference-image downloads failed, and no local image was viewed. Native follow-up must cover narrow phone/tablet safe areas, large text, simultaneous movement/casting, focus/pause/scene transitions, and actual icon/quantity/readiness legibility.
+
+## Frozen full validation
+
+Completed 2026-10-07T11:17:31.770711+00:00: **251/288 passed**, 37 failed; `sourceChangedDuringRun` is empty. Every final failure matches the archived main baseline: **False**. See `full/report.json` and `full/baseline-comparison.json`. False requires investigation; it is never a passing certification. No Unity/native/device acceptance is claimed.

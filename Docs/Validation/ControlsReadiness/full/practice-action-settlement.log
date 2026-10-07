@@ -1,0 +1,9 @@
+/tmp/practice-settlement-rinrxsd5/Player.cs(280,18): error CS0103: The name 'MobilePinnedActionReasonFor' does not exist in the current context [/tmp/practice-settlement-rinrxsd5/Test.csproj]
+
+The build failed. Fix the build errors and run again.
+
+Traceback (most recent call last):
+  File "/workspace/emberfall_win_controls/Tests/PracticeActionSettlementProductionTests.py", line 78, in <module>
+    assert run(['run','--project',str(p/'Test.csproj')]).returncode==0
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
