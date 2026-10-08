@@ -115,6 +115,7 @@ public static class CollectionRenderLifecycleTests
         var imported=new CollectionModelPreview();imported.SetComposition(CollectionPreviewComposition.Weapon);Time.frameCount++;Draw(imported);
         var importedCamera=UnityEngine.Object.FindObjectsOfType<Camera>()[0];
         Check(Math.Abs(importedCamera.transform.position.x-6)<.0001f,"weapon composition frames actual imported sword renderer bounds");
+        float uncenteredSize=importedCamera.orthographicSize;imported.SetCenterOnAvatar(true);Time.frameCount++;Draw(imported);Check(Math.Abs(importedCamera.transform.position.x)<.0001f&&importedCamera.orthographicSize>uncenteredSize,"centered imported weapon preserves asymmetric envelope without clipping");imported.SetCenterOnAvatar(false);
         imported.SetComposition(CollectionPreviewComposition.Back);Time.frameCount++;Draw(imported);
         Check(importedCamera.transform.position.x < -1,"back composition includes actual imported back renderer bounds");
         imported.Dispose();CombatModel.ImportedGroups=false;

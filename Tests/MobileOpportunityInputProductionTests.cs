@@ -9,8 +9,8 @@ public static class MobileOpportunityInputProductionTests
   foreach(int preset in new[]{-1,0,1})for(int slot=0;slot<12;slot++)
   {
    MobileControls.ResetInput();MobileControls.Layout=new MobileControlLayout(568,320,163,preset);
-   var session=new GameSession();var hero=new PlayerController(session);var controls=new MobileControls(session,new GameUI());var enemy=new EnemyController(8);session.Enemies.Add(enemy);hero.PinMobileTarget(enemy);
-   var area=slot<10?MobileControls.Layout.SkillOpportunities[slot]:slot==10?MobileControls.Layout.CounterOpportunity:MobileControls.Layout.ComboOpportunity;
+   var session=new GameSession();var hero=new PlayerController(session);var ui=new GameUI{mobileSkillPage=slot>=5&&slot<9?1:0};var controls=new MobileControls(session,ui);var enemy=new EnemyController(8);session.Enemies.Add(enemy);hero.PinMobileTarget(enemy);
+   var area=slot<10?ui.MobileOpportunityArea(slot):slot==10?MobileControls.Layout.CounterOpportunity:MobileControls.Layout.ComboOpportunity;
    if(area.Width==0||area.Height==0){C(slot==3||slot==8,"only hidden passive identities have no opportunity hit area");continue;}
    foreach(var skillBox in MobileControls.Layout.Skills)C(!area.Overlaps(skillBox),"hint interception never enlarges or replaces a skill button");
    var point=controls.Control(area);C(!MobileControls.IsScreenPointOverControls(point),"invisible hint preserves world hit area");

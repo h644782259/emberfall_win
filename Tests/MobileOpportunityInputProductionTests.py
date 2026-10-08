@@ -13,7 +13,7 @@ def extract(path,signature):
 with tempfile.TemporaryDirectory(prefix='opportunity-input-') as t:
  p=Path(t)
  for path in ['Combat/PlayerController.SkillAvailability.cs','Core/CombatImpactBatch.cs','Core/SkillRuntime.cs','Core/GameTypes.cs','Core/CombatBalance.cs','Core/MobileCameraGesture.cs','Core/SkillDamageBudgets.cs','Combat/MobileSkillPolicy.cs','Combat/PlayerController.MobileFocus.cs','Combat/SkillChargeController.cs','UI/MobileControlLayout.cs','Core/CombatOpportunityState.cs','UI/MobileControls.OpportunityInput.cs','Core/CastFirstHitReceipt.cs','Combat/PlayerController.CastReceipts.cs']:(p/Path(path).name).write_text((r/'Assets/Scripts'/path).read_text())
- include_mobile_binding_sources(p,r)
+ include_mobile_binding_sources(p,r,True)
  fixture=(r/'Tests/MobilePinnedTargetProductionTests.cs').read_text()
  fixture=fixture.replace('public void SetTarget(Vector3 p){TargetPoint=p;}public bool Confirm()=>true;', 'public int AimWrites,Confirms;public void SetTarget(Vector3 p){AimWrites++;TargetPoint=p;}public bool Confirm(){Confirms++;return true;}public void BeginAimForTest(){skill=1;TargetPoint=Vector3.one;}')
  (p/'Fixture.cs').write_text(fixture)
