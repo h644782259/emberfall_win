@@ -67,6 +67,6 @@ class Program{static void Main(){Console.WriteLine("PASS: "+Emberfall.SnapshotCh
 '''.replace('CHARGE',charge).replace('CONFIRM',confirm)
 spec=importlib.util.spec_from_file_location('cv',root/'Tools/cloud-validation.py');cv=importlib.util.module_from_spec(spec);spec.loader.exec_module(cv)
 with tempfile.TemporaryDirectory(prefix='contract-snapshot-') as folder:
- out=Path(folder);(out/'Replay.cs').write_text(shell);p=cv.write_project(out/'project',[out/'Replay.cs',root/'Assets/Scripts/Combat/CompanionDirective.cs',root/'Assets/Scripts/Combat/CompanionRules.cs'],program='');p.write_text(p.read_text().replace('<OutputType>Library</OutputType>','<OutputType>Exe</OutputType>'))
+ out=Path(folder);(out/'Replay.cs').write_text(shell);p=cv.write_project(out/'project',[out/'Replay.cs',root/'Assets/Scripts/Combat/CompanionDirective.cs',root/'Assets/Scripts/Combat/CompanionRules.cs',root/'Assets/Scripts/UI/CompanionCommandPresentation.cs'],program='');p.write_text(p.read_text().replace('<OutputType>Library</OutputType>','<OutputType>Exe</OutputType>'))
  config=out/'NuGet.Config';config.write_text('<configuration><packageSources><clear /></packageSources></configuration>');env=os.environ.copy();env.update(DOTNET_CLI_HOME=str(out/'cli'),DOTNET_NOLOGO='1',DOTNET_CLI_TELEMETRY_OPTOUT='1')
  dotnet=sys.argv[1] if len(sys.argv)>1 else 'dotnet';subprocess.run([dotnet,'build',str(p),'--configfile',str(config),'-v:q'],env=env,check=True);subprocess.run([dotnet,str(p.parent/'bin/Debug/net8.0/Validation.dll')],env=env,check=True)

@@ -22,7 +22,7 @@ namespace Emberfall
             UpgradeRank = Mathf.Clamp(item.upgradeLevel, 0, ProgressionService.MaximumUpgrade);
             Accent = GameBalance.RarityColor((Rarity)RarityRank);
             Metal = Color.Lerp(new Color(.42f, .48f, .55f), new Color(.84f, .89f, .94f),
-                Mathf.Clamp01((Tier - 1) / 3f*.6f+RarityRank*.13f));
+                Mathf.Clamp((Tier - 1) / 3f*.6f+RarityRank*.13f,0f,1f));
             Glow = Color.Lerp(Accent, Color.white, .18f + UpgradeRank * .025f);
         }
 

@@ -74,6 +74,6 @@ with tempfile.TemporaryDirectory(prefix='blessing-damage-') as folder:
  core=[root/'Assets/Scripts'/f for f in ['Core/GameTypes.cs','Core/CombatBalance.cs','Core/SkillRuntime.cs','Core/CampRouteCards.cs','Core/RunChoices.cs','Core/RunChoices.Rooms.cs','Combat/CombatDamage.cs']]+[root/'Tests/SkillRuntimeTests.cs',root/'Tests/BlessingDamageBudgetTests.cs',root/'Tests/RunChoicesTests.cs',root/'Tests/RoomBlessingRouteTests.cs']
  run('budget',core,'using System;class Program{static void Main(){Console.WriteLine(BlessingDamageBudgetTests.Run());Console.WriteLine(RunChoicesTests.Run());Console.WriteLine(RoomBlessingRouteTests.Run());}}')
  run('player',core,player_program)
- pet=[root/'Assets/Scripts/Combat/CompanionDirective.cs',root/'Assets/Scripts/Combat/CompanionRules.cs']
+ pet=[root/'Assets/Scripts/Combat/CompanionDirective.cs',root/'Assets/Scripts/Combat/CompanionRules.cs',root/'Assets/Scripts/UI/CompanionCommandPresentation.cs']
  run('partner',pet,shell)
  run('partner-negative',pet,shell.replace(' * Owner.RunAttackMultiplier',''),'partner ordinary attack includes Fervor exactly once')
