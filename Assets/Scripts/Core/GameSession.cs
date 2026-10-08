@@ -40,7 +40,7 @@ namespace Emberfall
                 if (!HasStarted) return "踏入星烬纪元";
                 if (IsDead) return "旅途尚未结束 · 返回营地重整旗鼓";
                 if(SpecialAdventure)return ModeName+" · "+ModeObjectiveStatus;
-                if (InDungeon) return DungeonCleared ? "遗迹已肃清 · 收集地面战利品 · 按 T 返回" :
+                if (InDungeon) return DungeonCleared ? "遗迹已肃清 · 前往南侧传送点返回营地" :
                     "肃清遗迹 " + DungeonWave + "/" + TotalWaves + " · 剩余 " + Enemies.Count + " 个敌人";
                 if (Progression.Profile.level < 2) return "击败原野怪物，升至 2 级 · 按 K 查看职业技能";
                 if (Progression.Profile.skillRanks[0] == 0) return "你已获得技能点！按 K 学习第一个职业技能";
@@ -287,6 +287,7 @@ namespace Emberfall
             if(ChapterActive)TickChapterRun();
             if (!InputBlocked)
             {
+                if(Input.GetKeyDown(KeyCode.E)){if(NearDungeonReturn)ReturnToCamp();else if(SideEventAvailable)StartSideEvent();}
                 bool touchPotionRequested = MobileControls.ConsumePotion();
                 if (Input.GetKeyDown(KeyCode.F) || touchPotionRequested) DrinkPotion();
                 if (Input.GetKeyDown(KeyCode.T)) { if(NearChapterExit)EnterNextChapterRoom();else if(NearRoomExit)EnterNextRoom();else if (InDungeon) { if (DungeonCleared) ReturnToCamp(); else Notify("先击败本轮敌人；按 H 可放弃副本返回营地。"); } else EnterDungeon(); }
@@ -537,7 +538,7 @@ namespace Emberfall
                 bool settled=TrySettleDungeonReward();
                 LastRunSummary = BuildRunSummary(true);
                 Player.Heal(Player.MaxHealth);
-                Notify(settled?"遗迹通关 · 选择一个宝箱开启，然后拾取战利品":"遗迹已通关，但奖励尚未保存。请重试结算，或打开菜单处理存档。");
+                Notify(settled?"遗迹通关 · 领取宝箱与战利品后，前往南侧传送点返回营地":"遗迹已通关，但奖励尚未保存。请重试结算，或打开菜单处理存档。");
             }
             waveRoutine = null;
         }

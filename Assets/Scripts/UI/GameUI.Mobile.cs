@@ -61,19 +61,21 @@ namespace Emberfall
             {
                 var layout=MobileControls.Layout;
                 if(MobileDungeonEntranceVisible)return layout.DungeonEntrance;
+                if(session!=null&&(session.SideEventAvailable||session.NearDungeonReturn))return new MobileControlLayout.Area(layout.Width*.5f-66,layout.Height*.62f-22,132,44);
                 if(session!=null&&session.NearbyHubNpc!=HubNpcKind.None&&!session.NearChapterExit&&!session.NearRoomExit&&!session.SideEventAvailable)
                     return new MobileControlLayout.Area(Mathf.Max(layout.Width*.5f-48,254),layout.Height*.62f-22,96,44);
                 return layout.Interact;
             }
         }
-        public bool MobileInteractionVisible {get{return session!=null&&!session.PracticeActive&&(session.NearChapterExit||session.NearRoomExit||session.SideEventAvailable||session.NearbyHubNpc!=HubNpcKind.None||MobileDungeonEntranceVisible);}}
-        private bool CanMobileInteract {get{return session!=null&&!session.PracticeActive&&!session.InputBlocked&&!session.DungeonSelectionOpen&&(session.NearChapterExit||session.NearRoomExit||session.SideEventAvailable||session.NearbyHubNpc!=HubNpcKind.None||session.IsInCamp||session.InDungeon||session.IsNearDungeonEntrance);}}
+        public bool MobileInteractionVisible {get{return session!=null&&!session.PracticeActive&&(session.NearDungeonReturn||session.NearChapterExit||session.NearRoomExit||session.SideEventAvailable||session.NearbyHubNpc!=HubNpcKind.None||MobileDungeonEntranceVisible);}}
+        private bool CanMobileInteract {get{return session!=null&&!session.PracticeActive&&!session.InputBlocked&&!session.DungeonSelectionOpen&&(session.NearDungeonReturn||session.NearChapterExit||session.NearRoomExit||session.SideEventAvailable||session.NearbyHubNpc!=HubNpcKind.None||session.IsInCamp||session.InDungeon||session.IsNearDungeonEntrance);}}
         public void ActivateMobileInteraction(int triggeringFinger=TouchReleaseLatch.AnyPointer)
         {
             if(!CanMobileInteract||UITransitionBlocked)return;
             try
             {
                 if(MobileDungeonEntranceVisible)session.EnterDungeon();
+                else if(session.NearDungeonReturn)session.ReturnToCamp();
                 else if(session.NearChapterExit)session.EnterNextChapterRoom();
                 else if(session.NearRoomExit)session.EnterNextRoom();
                 else if(session.SideEventAvailable)session.StartSideEvent();
@@ -138,7 +140,7 @@ namespace Emberfall
             DrawMobileHotbar();
             DrawCompanionCommands();
 
-            string interaction=MobileDungeonEntranceVisible?"进入副本":session.NearChapterExit?"沿星路前进":session.NearRoomExit?"进入下一间":session.SideEventAvailable?"晶核挑战":session.NearbyHubNpc!=HubNpcKind.None?HubNpcMobileLabel(session.NearbyHubNpc):session.IsInCamp?"营地工坊":session.InDungeon?"返回营地":session.IsNearDungeonEntrance?"进入副本":"靠近入口";
+            string interaction=MobileDungeonEntranceVisible?"进入副本":session.NearDungeonReturn?"返回营地":session.NearChapterExit?"沿星路前进":session.NearRoomExit?"进入下一间":session.SideEventAvailable?"开启晶核挑战":session.NearbyHubNpc!=HubNpcKind.None?HubNpcMobileLabel(session.NearbyHubNpc):session.IsInCamp?"营地工坊":session.InDungeon?"返回营地":session.IsNearDungeonEntrance?"进入副本":"靠近入口";
             if(MobileInteractionVisible)
             {
             Rect interact=TouchRect(MobileInteractionArea);blockedRects.Add(interact);
@@ -186,7 +188,7 @@ namespace Emberfall
         }
         private void DrawMobileControlSurface(Rect r,bool ready,bool pressed)
         {
-            DrawIcon(r,UIIconAtlas.ControlDisc(),new Color(.75f,.87f,.92f,pressed&&ready?.10f:.045f));
+            DrawIcon(r,UIIconAtlas.ControlDisc(),new Color(.035f,.065f,.09f,pressed&&ready?.36f:.24f));
             if(ready)DrawIcon(r,UIIconAtlas.ControlRing(true),new Color(.32f,.88f,1f,.12f));
             DrawIcon(r,UIIconAtlas.ControlRing(),ready?new Color(.35f,1f,.76f,.85f):new Color(.8f,.88f,.94f,.48f));
         }
@@ -326,7 +328,7 @@ namespace Emberfall
             Fill(TouchRect(x,bodyY,sidebarWidth,bodyHeight),new Color(.025f,.05f,.065f,.65f));
             for (int i=0;i<tabs.Length;i++)
                 if (PauseSidebarTab(TouchRect(x,bodyY+i*52,sidebarWidth,48),tabs[tabOrder[i]],mobilePausePage==tabOrder[i],TouchRatio) && mobilePausePage!=tabOrder[i])
-                { mobilePausePage=tabOrder[i]; BlockUITransition(); }
+                { mobilePausePage=tabOrder[i]; }
             float contentX=x+sidebarWidth+16,bodyWidth=panelWidth-sidebarWidth-16,contentWidth=bodyWidth-18;
             string notice=string.IsNullOrEmpty(session.Notification)?"":PlatformText(session.Notification);
             float noticeHeight=string.IsNullOrEmpty(notice)?0:Mathf.Max(32,Style(TouchFont(11),false,true).CalcHeight(new GUIContent(notice),contentWidth*TouchRatio)/TouchRatio+8);

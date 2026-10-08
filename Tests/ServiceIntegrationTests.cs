@@ -92,7 +92,7 @@ public static class ServiceIntegrationTests
         {
             var m=new MerchantServiceLayout(size.Item1,size.Item2);C(!Overlap(m.Balance,m.Close)&&!Overlap(m.Balance,m.Header)&&m.Balance.Width>=224,"multi-digit coin region is separate from title and close hitbox");
             C(m.Action.Width<=136&&!Overlap(m.Info,m.Action)&&!Overlap(m.Tab(0),m.Tab(1))&&!Overlap(m.Tab(1),m.Tab(2)),"purchase/sale tabs and compact footer actions do not collide");
-            for(int j=0;j<9;j++){var a=m.Tile(j);C(a.Width<=132&&a.Width>=100&&a.X+a.Width<=m.Body.Width,"three-column compact products and price strips fit scroll width");for(int k=j+1;k<9;k++)C(!Overlap(a,m.Tile(k)),"product grid hitboxes are disjoint");}
+            for(int j=0;j<9;j++){var a=m.Tile(j);C(a.Width<=180&&a.Width>=120&&a.XMax<=m.Body.Width-16+.01f,"responsive products and price strips fit scroll width");for(int k=j+1;k<9;k++)C(!Overlap(a,m.Tile(k)),"product grid hitboxes are disjoint");}
             var s=new SmithServiceLayout(size.Item1,size.Item2);C(!Overlap(s.Header,s.Close)&&!Overlap(s.Header,s.Balance)&&!Overlap(s.Balance,s.Close)&&s.Balance.Width>=224&&!Overlap(s.Detail,s.Primary),"smith detail scroll cannot overlap primary/close");
             for(int j=0;j<3;j++){C(!Overlap(s.Category(j),s.Detail)&&!Overlap(s.Equipment(j),s.Detail)&&s.Equipment(j).Height>=44,"categories and equipped-slot selectors stay separate and tappable");C(!Overlap(s.Equipment(j),s.Primary),"all three equipment slots fit above footer");}
         }

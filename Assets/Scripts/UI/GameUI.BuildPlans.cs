@@ -178,7 +178,7 @@ namespace Emberfall
                 {
                     int selectedPlan=slot;
                     DraftButton(ref y,width,unit,(buildPlanDetails==slot?"收起":"展开")+"方案 "+BuildPlanName(slot)+" · 详情与引用修复",true,draw,()=>
-                    {buildPlanDetails=buildPlanDetails==selectedPlan?-1:selectedPlan;CancelMobileScroll();BlockUITransition();});
+                    {buildPlanDetails=buildPlanDetails==selectedPlan?-1:selectedPlan;CancelMobileScroll();});
                     if(buildPlanDetails==slot)
                     {
                         BuildPlanParagraph(ref y,width,unit,p.BuildPresetSummary(slot),pale,draw);

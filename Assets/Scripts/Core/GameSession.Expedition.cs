@@ -17,7 +17,21 @@ namespace Emberfall
         public int DungeonEntryLevel { get; private set; } = 2;
         public string LastRunSummary { get; private set; } = "";
         public bool IsInCamp { get { return !PracticeActive && HasStarted && !InDungeon && !IsDead && Player != null && (Vector3.Distance(Player.transform.position, new Vector3(0,0,-10)) < 7f || NearbyHubNpc!=HubNpcKind.None); } }
-        public bool SideEventAvailable { get { return InDungeon && !ChapterActive && ModeRun==null && (RoomChainRun==null || RoomChainRun.Room.Index==RoomTactics.EventRoom(runSeed)&&!RoomChainRun.Finished) && !DungeonCleared && sideCrystal!=null && !sideEventStarted && Player != null && Vector3.Distance(Player.transform.position, sideEventPosition) < 3.5f; } }
+        private bool SideEventEntryOpen { get { return HasStarted && InDungeon && !IsDead && !ChapterActive && ModeRun==null &&
+            (RoomChainRun==null || RoomChainRun.Room.Index==RoomTactics.EventRoom(runSeed)&&!RoomChainRun.Finished) && !DungeonCleared && !sideEventStarted && Player!=null; } }
+        public bool SideEventAvailable { get { return SideEventEntryOpen && sideCrystal!=null && Vector3.Distance(Player.transform.position,sideEventPosition)<3.5f; } }
+        private void RefreshSideEventVisibility()
+        {if(sideCrystal!=null&&sideCrystal.activeInHierarchy!=SideEventEntryOpen)sideCrystal.SetActive(SideEventEntryOpen);}
+
+        private GameObject dungeonReturnMarker;
+        public bool DungeonReturnAvailable {get{return HasStarted&&InDungeon&&DungeonCleared&&!ChapterActive&&ModeRun==null&&RoomChainRun==null&&!IsDead;}}
+        public bool NearDungeonReturn {get{return DungeonReturnAvailable&&Player!=null&&Vector3.Distance(Player.transform.position,new Vector3(0,0,-16))<3.5f;}}
+        private void RefreshDungeonReturnPortal()
+        {
+            if(DungeonReturnAvailable&&dungeonReturnMarker==null)
+            {dungeonReturnMarker=WorldBuilder.MakeDungeonReturnMarker(new Vector3(0,0,-16));transientObjects.Add(dungeonReturnMarker);}
+            if(dungeonReturnMarker!=null&&dungeonReturnMarker.activeInHierarchy!=DungeonReturnAvailable)dungeonReturnMarker.SetActive(DungeonReturnAvailable);
+        }
         private int runSeed, wavePopulation;
         private readonly Queue<EncounterSpawn> reinforcementQueue=new Queue<EncounterSpawn>();
         private float nextReinforcementAt;
@@ -194,6 +208,8 @@ namespace Emberfall
         {pendingSideRewards.RemoveAll(pending=>!object.ReferenceEquals(pending.Source,Progression));}
         private void TickSideEvent()
         {
+            RefreshSideEventVisibility();
+            RefreshDungeonReturnPortal();
             if(SideEventAvailable&&!sideEventOfferShown)
             {sideEventOfferShown=true;Notify("可选晶核 · 唤醒2敌，全灭得1材料+补给；北门开启后可随时放弃");}
             if(HasStarted&&SideEventRewardPending&&Time.unscaledTime>=nextSideRewardRetry)
@@ -205,7 +221,7 @@ namespace Emberfall
             sideEventPosition = RoomChainRun==null?new Vector3(12,0,-3):new Vector3(-RoomTactics.Mirror(runSeed)*12,0,-6);
             if(RoomChainRun!=null&&!WorldTraversal.CanReach(TacticalRoomGeometry.Entrance,sideEventPosition,.65f))return;
             sideCrystal = WorldBuilder.MakeSideEventCrystal(sideEventPosition);
-            sideCrystal.name = "Optional power crystal"; transientObjects.Add(sideCrystal);
+            sideCrystal.name = "Optional power crystal"; transientObjects.Add(sideCrystal);RefreshSideEventVisibility();
         }
         public bool StartSideEvent()
         {

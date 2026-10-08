@@ -29,7 +29,7 @@ namespace Emberfall
             CancelMobileScroll();
             // The fixed header carries feedback; preserve the current reading/action position.
             Feedback(!mobileWorkshopFailed, mobileWorkshopStatus);
-            BlockUITransition();
+
         }
 
         private void DrawMobileWorkshopAbilities(ref float y,float width,bool draw)

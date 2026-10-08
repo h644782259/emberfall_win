@@ -40,7 +40,7 @@ namespace Emberfall
             classSwitchPreview=session.Progression.PrepareClassSwitch(target,session.IsInCamp);
             classSwitchFingerprint=session.Progression.BuildStateFingerprint();
             classSwitchMessage=classSwitchPreview==null?session.Progression.LastError:null;
-            CancelMobileScroll();BlockUITransition();
+            CancelMobileScroll();
         }
         private bool DrawClassSwitchSurface()
         {

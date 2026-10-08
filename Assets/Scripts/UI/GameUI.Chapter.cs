@@ -23,12 +23,12 @@ namespace Emberfall
         {
             if(!ChapterSelectionIsCurrent()||!ChapterProgression.IsUnlocked(chapterSelectionOwner,node))return false;
             session.SelectedChapterNode=node;session.SelectedChapterDifficulty=ChapterDifficulty.Normal;session.SelectedChapterTactic=-1;
-            chapterScroll=Vector2.zero;chapterStoryExpanded=false;chapterRulesExpanded=false;chapterEntryError=null;CancelMobileScroll();BlockUITransition();return true;
+            chapterScroll=Vector2.zero;chapterStoryExpanded=false;chapterRulesExpanded=false;chapterEntryError=null;CancelMobileScroll();return true;
         }
         private bool SelectChapterDifficulty(ChapterDifficulty difficulty)
         {
             if(!ChapterSelectionIsCurrent()||!ChapterProgression.CanEnter(chapterSelectionOwner,session.SelectedChapterNode,difficulty))return false;
-            session.SelectedChapterDifficulty=difficulty;chapterEntryError=null;BlockUITransition();return true;
+            session.SelectedChapterDifficulty=difficulty;chapterEntryError=null;return true;
         }
         private void ChangeChapterTier(int delta)
         {
@@ -37,7 +37,7 @@ namespace Emberfall
             // The stepper stays in place; only its values change, with no screen transition.
         }
         private void SetChapterLimitedHealing(bool limited)
-        {if(!ChapterSelectionIsCurrent())return;session.SelectedChapterLimitedHealing=limited;BlockUITransition();}
+        {if(!ChapterSelectionIsCurrent())return;session.SelectedChapterLimitedHealing=limited;}
         private bool ConfirmSelectedChapter()
         {
             if(!ChapterSelectionIsCurrent()||!ChapterProgression.CanEnter(chapterSelectionOwner,session.SelectedChapterNode,session.SelectedChapterDifficulty))return false;
@@ -157,20 +157,20 @@ namespace Emberfall
             {
                 Text(new Rect(16*u,y*u,(contentWidth-32)*u,26*u),"出发战术 · 可选一项",Mathf.RoundToInt(16*u),pale,true);y+=36;
                 if(ChapterChoice(new Rect(0,y*u,contentWidth*u,48*u),"不携带战术",session.SelectedChapterTactic<0,true,u))
-                {session.SelectedChapterTactic=-1;BlockUITransition();EndTouchScroll();return;}
+                {session.SelectedChapterTactic=-1;EndTouchScroll();return;}
                 y+=60;
                 for(int i=0;i<3;i++)
                 {
                     var tactic=RunChoices.ChapterTactic(profile,mobile,i);
                     if(ChapterChoice(new Rect(0,y*u,contentWidth*u,48*u),RunChoices.Name(tactic),session.SelectedChapterTactic==i,true,u))
-                    {session.SelectedChapterTactic=i;BlockUITransition();EndTouchScroll();return;}
+                    {session.SelectedChapterTactic=i;EndTouchScroll();return;}
                     y+=54;string description=RunChoices.Description(tactic);
                     float dh=ChapterCopyHeight(description,contentWidth-32,u,12);
                     Text(new Rect(16*u,y*u,(contentWidth-32)*u,dh*u),description,Mathf.RoundToInt(12*u),muted,false,true);y+=dh+6;
                 }
             }
             float optionalW=(contentWidth-8)/2;
-            if(NavigationButton(new Rect(0,y*u,optionalW*u,48*u), chapterStoryExpanded?"收起故事线索":"展开故事线索", muted)){chapterStoryExpanded=!chapterStoryExpanded;BlockUITransition();EndTouchScroll();return;}
+            if(NavigationButton(new Rect(0,y*u,optionalW*u,48*u), chapterStoryExpanded?"收起故事线索":"展开故事线索", muted)){chapterStoryExpanded=!chapterStoryExpanded;EndTouchScroll();return;}
             if(NavigationButton(new Rect((optionalW+8)*u,y*u,optionalW*u,48*u), chapterRulesExpanded?"收起详细规则":"奖励与解锁规则", muted)){chapterRulesExpanded=!chapterRulesExpanded;BlockUITransition();EndTouchScroll();return;}
             y+=60;
             if(chapterStoryExpanded)ChapterParagraph(ref y,contentWidth,story,u,14);

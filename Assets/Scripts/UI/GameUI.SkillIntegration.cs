@@ -14,7 +14,7 @@ namespace Emberfall
                 bool selected=skillSection==i;
                 Text(hit,i==0?"战技":"职业精通",Mathf.RoundToInt(14*u),selected?gold:muted,selected,false,TextAnchor.MiddleCenter);
                 if(selected)Fill(new Rect(hit.x+8*u,hit.yMax-5*u,hit.width-16*u,2*u),gold);
-                if(GUI.Button(hit,GUIContent.none,invisibleButton)&&!selected){skillSection=i;CancelMobileScroll();BlockUITransition();}
+                if(GUI.Button(hit,GUIContent.none,invisibleButton)&&!selected){skillSection=i;CancelMobileScroll();}
             }
         }
         private float DrawSpecializationChoices(float width,float u,float y,bool draw)
@@ -123,7 +123,7 @@ namespace Emberfall
                 Text(new Rect(node.x,node.y+53*u,node.width,17*u),cap==0?"Lv."+MasteryProgressionRules.FirstUnlockLevel+" 解锁":rank+" / "+cap,Mathf.RoundToInt(11*u),muted,false,false,TextAnchor.MiddleCenter);
                 Fill(new Rect(node.x+8*u,node.y+70*u,node.width-16*u,u),muted*.25f);Fill(new Rect(node.x+8*u,node.y+70*u,(node.width-16*u)*Mathf.Min(1,rank/(float)Mathf.Max(1,cap)),u),jade);
                 Rect select=new Rect(node.x,node.y,node.width,72*u);
-                if(GUI.Button(select,GUIContent.none,invisibleButton)){selectedMastery=i;CancelMobileScroll();BlockUITransition();}
+                if(GUI.Button(select,GUIContent.none,invisibleButton)){selectedMastery=i;CancelMobileScroll();}
                 if(select.Contains(Mouse))tooltip=BuildCatalog.MasteryDescription(mastery)+(string.IsNullOrEmpty(reason)?"":"\n"+reason);
                 string state=cap==0?"未解锁":rank>=cap?"已满":learnable?"1 点":p.Profile.skillPoints<=0?"缺点数":"未解锁";
                 if(InventoryPictogramAction(new Rect(node.x,node.y+72*u,node.width,44*u),state,UIIconAtlas.Utility(cap>0&&rank>=cap?"confirm":learnable?"upgrade":"lock"),learnable,false,true))

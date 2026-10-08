@@ -48,18 +48,15 @@ namespace Emberfall
                 GameAudio.Play(reward == null || !reward.Rarity.HasValue || reward.Duplicate ? SoundCue.UI : reward.Rarity.Value == Rarity.Legendary ? SoundCue.Victory : reward.Rarity.Value == Rarity.Epic ? SoundCue.LevelUp : reward.Rarity.Value == Rarity.Rare ? SoundCue.Loot : SoundCue.Cast);
             }
             var layout = MobilePanelGeometry();
-            string title = chestDetails ? "奖励规则" : revealed ? complete ? "宝箱奖励" : "开启宝箱" : "遗迹馈赠";
-            string subtitle = chestDetails ? (session.Progression.Profile.pendingChestReveal && session.Progression.LastChestReward != null && session.Progression.LastChestReward.rulesRevision == 0 ? "旧版奖励 · 新开箱规则见下" : "单宝箱 · 金币 / 碎片 / 星纹") : revealed ? complete ? ChestRevealPresentation.Outcome(reward) : "正在揭晓已保存的奖励" : "直接开启 · 奖励先保存";
-            if (DrawMobilePanelChrome(layout, title, subtitle, true, true)) return;
-            if (chestDetails) DrawMobileChestDetails(layout);
-            else if (revealed) DrawMobileChestResult(layout, reward, accent, complete);
+            string title = revealed ? complete ? "宝箱奖励" : "开启宝箱" : "遗迹馈赠";
+            string subtitle = revealed ? complete ? ChestRevealPresentation.Outcome(reward) : "正在揭晓已保存的奖励" : "直接开启 · 奖励先保存";
+            if (DrawMobilePanelChrome(layout, title, subtitle, showClose:false)) return;
+            if (revealed) DrawMobileChestResult(layout, reward, accent, complete);
             else if (DrawMobileChestChoices(layout)) return;
 
-            bool firstTrial=complete&&!chestDetails&&CanTrialChestReward(reward);int footerCount=firstTrial?3:2;
-            if(firstTrial&&PrimaryButton(MobilePanelRect(layout.FooterButton(1,3)), "收下并查看时装", jade)){AcceptChestForTrial();return;}
-            if (NavigationButton(MobilePanelRect(layout.FooterButton(0, footerCount)), chestDetails ? "返回宝箱" : "概率 / 规则", jade))
-            { chestDetails = !chestDetails; mobileChestScroll = Vector2.zero; BlockUITransition(); return; }
-            if (DrawButton(MobilePanelRect(layout.FooterButton(footerCount-1, footerCount)), revealed ? complete ? "收下" : "跳过动画" : "返回", revealed ? ButtonRole.Primary : ButtonRole.Navigation, !chestDetails))
+            bool firstTrial=complete&&CanTrialChestReward(reward);int footerCount=firstTrial?2:1;
+            if(firstTrial&&Button(MobilePanelRect(layout.FooterButton(0,2)),"收下并查看时装",jade)){AcceptChestForTrial();return;}
+            if (Button(MobilePanelRect(layout.FooterButton(footerCount-1,footerCount)),revealed?complete?"收下":"跳过动画":"返回",gold))
             {
                 if(!revealed){ClosePanel();BlockUITransition();return;}
                 if (!complete) chestRevealedAt = Time.unscaledTime - ChestDuration;
@@ -114,16 +111,12 @@ namespace Emberfall
                 DrawRewardRadiance(new Rect(0, 0, clip.width, clip.height), accent, progress);
                 GUI.EndGroup();
             }
-            string result = ChestRevealPresentation.ResultWithCollection(reward,session.Progression.Profile);
-            var viewport = layout.BodyRight;
-            float width = viewport.Width - 34;
-            string error = string.IsNullOrEmpty(mobileChestError) ? session.Progression.LastError : mobileChestError;
-            float total = ChestSectionsHeight(reward,width*TouchRatio,TouchRatio)/TouchRatio + MeasureMobileParagraph(error, width, 14)+24;
-            mobileChestScroll = BeginTouchScroll("mobile-chest-result", MobilePanelRect(viewport), mobileChestScroll,
-                new Rect(0, 0, (width + 16) * TouchRatio, Mathf.Max(viewport.Height, total) * TouchRatio));
-            float y = 8;
-            if (!string.IsNullOrEmpty(error)) y += DrawMobileParagraph(8, y, width, error, 14, new Color(1, .55f, .45f)) + 8;
-            DrawChestSections(TouchRect(8,y,width,total-y),reward,accent,TouchRatio);
+            var viewport=layout.BodyRight;float contentWidth=viewport.Width-24;
+            string error=string.IsNullOrEmpty(mobileChestError)?session.Progression.LastError:mobileChestError;
+            float total=DrawChestRewardContents(contentWidth,TouchRatio,reward,error,false);
+            mobileChestScroll=BeginTouchScroll("mobile-chest-result",MobilePanelRect(viewport),mobileChestScroll,
+                new Rect(0,0,(viewport.Width-16)*TouchRatio,Mathf.Max(viewport.Height,total)*TouchRatio));
+            DrawChestRewardContents(contentWidth,TouchRatio,reward,error,true);
             EndTouchScroll();
         }
 

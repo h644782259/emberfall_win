@@ -30,7 +30,8 @@ namespace Emberfall
             Scale=Math.Max(.25f,Math.Min(density,Math.Min(pixelHeight/320f,pixelWidth/568f)));
             Width=pixelWidth/Scale;Height=pixelHeight/Scale;
             Joystick=Centered(90,Height-86,128);
-            MoveZone=new Area(12,Height-172,175,160);
+            float moveTop=Math.Max(164,Height-172);
+            MoveZone=new Area(12,moveTop,175,Height-12-moveTop);
             Attack=Centered(Width-98,Height-55,76);
             Dodge=Centered(Width-30,Height-30,48);
             Jump=Centered(Width-30,Height-99,48);Cancel=Jump;
@@ -64,8 +65,8 @@ namespace Emberfall
             FocusCommand=new Area(204,Height-170-commandLift,48,48);RecallCommand=new Area(204,Height-120-commandLift,48,48);
             PlayerStatus=new Area(Width*.5f-80,Height-35,160,18);
             PlayerHealth=new Area(PlayerStatus.X,PlayerStatus.Y,160,12);
-            PlayerEnergy=new Area(PlayerStatus.X,PlayerStatus.Y+15,160,3);Map=new Area(12,12,72,56);
-            AdventureStatus=new Area(12,70,188,76);
+            PlayerEnergy=new Area(PlayerStatus.X,PlayerStatus.Y+15,160,3);Map=new Area(12,12,88,68);
+            AdventureStatus=new Area(12,86,188,76);
             // Transient notices replace this left-side information slot, never the battlefield.
             Notice=AdventureStatus;
             EncounterText=new Area(Width-172,60,164,18);BossHealth=new Area(Width-172,81,164,5);

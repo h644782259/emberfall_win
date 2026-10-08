@@ -94,6 +94,7 @@ namespace Emberfall
     public static class EffectPreferences{public static bool ReducedEffects;public static float EffectsScale=1;}
     public enum CombatSightKind { Area }
     public static class CombatFx{public static Vector3 Flat(Vector3 value){value.y=0;return value;}public static Material NewGlow()=>new Material(new Shader());}
+    public static class WorldTraversal {public static int Revision;}
     public static class CombatSight
     {
         public static float Wall=float.PositiveInfinity;public static int FootprintCalls;

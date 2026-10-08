@@ -71,12 +71,14 @@ namespace Emberfall {
    ui.session.SelectedChapterDifficulty=ChapterDifficulty.Heroic;check(!ui.ConfirmSelectedChapter()&&ui.session.ConfirmCalls==0,"stale locked difficulty cannot reach host");
    ui.session.SelectedChapterDifficulty=ChapterDifficulty.Normal;
    p.Profile.chapterCompletedMask=1;p.Profile.chapterHighestDifficulties[0]=1;
+   int selectionBlocks=ui.blocks;
    int tier=ui.session.SelectedChapterTier;check(ui.SelectChapterDifficulty(ChapterDifficulty.Hard)&&ui.session.SelectedChapterTier==tier,"difficulty selection never changes tier");
    int locksBeforeTier=ui.blocks;ui.chapterScroll=new Vector2(0,47);
    ui.ChangeChapterTier(1);check(ui.session.SelectedChapterDifficulty==ChapterDifficulty.Hard&&ui.session.SelectedChapterTier==tier+1,"tier adjustment never changes difficulty");
    ui.ChangeChapterTier(-1);ui.ChangeChapterTier(1);
    check(ui.blocks==locksBeforeTier&&ui.chapterScroll.y==47,"tier stepper preserves scroll and never disables the page through a transition latch");
    check(ui.SelectChapterNode(ChapterNode.Redrock)&&ui.session.SelectedChapterDifficulty==ChapterDifficulty.Normal,"node change resets only difficulty to valid normal");
+   check(ui.blocks==selectionBlocks,"same-page node, difficulty and tier changes do not trigger the global grey input lock");
    ui.session.AllowConfirm=false;check(!ui.ConfirmSelectedChapter()&&ui.panel==Panel.Chapter&&ui.session.Blocked&&!string.IsNullOrEmpty(ui.chapterEntryError),"host rejection retains selection and retry surface");
    foreach(int interruption in new[]{0,1,2}){
     ui.session.BackgroundPaused=interruption==0;ui.session.Paused=interruption==1;ui.session.IsDead=interruption==2;int calls=ui.session.ConfirmCalls;

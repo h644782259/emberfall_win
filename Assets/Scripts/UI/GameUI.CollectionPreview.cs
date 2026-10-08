@@ -45,7 +45,7 @@ namespace Emberfall
         {return new Rect((area.X-origin.x)*scale,(area.Y-origin.y)*scale,area.Width*scale,area.Height*scale);}
         private void DrawCollectionControls(CollectionPreviewLayout layout,Vector2 origin,float scale)
         {
-            for(int i=0;i<3;i++)if(TabButton(PreviewControlRect(layout.Button(0,i),origin,scale), i==0?"全身":i==1?"武器":"后背", (int)collectionViewing.Mode==i)){collectionViewing.View((CollectionPreviewComposition)i);BlockUITransition();}
+            for(int i=0;i<3;i++)if(TabButton(PreviewControlRect(layout.Button(0,i),origin,scale), i==0?"全身":i==1?"武器":"后背", (int)collectionViewing.Mode==i)){collectionViewing.View((CollectionPreviewComposition)i);}
             for(int i=0;i<3;i++)if(TabButton(PreviewControlRect(layout.Button(1,i),origin,scale), i==0?"待机":i==1?"攻击":"施法", (int)collectionModel.PreviewAction==i))collectionModel.Play((CollectionPreviewAction)i);
             if(Button(PreviewControlRect(layout.Button(2,0),origin,scale),"左转",jade))collectionViewing.Rotate(-45);
             if(Button(PreviewControlRect(layout.Button(2,1),origin,scale),"右转",jade))collectionViewing.Rotate(45);
@@ -58,7 +58,6 @@ namespace Emberfall
             var p=session.Progression;bool saved=p.ExchangeThreadsForMaterial(p.QuoteThreadMaterialExchange(),session.IsInCamp);
             collectionNotice=saved?"星纹 −6 · 星烬碎片 +1":p.LastError;
             if(MobileControls.Active)MobileFashionResult(saved,collectionNotice);else Feedback(saved,collectionNotice);
-            BlockUITransition();
         }
 
         private bool DrawChestRewardModel(Rect area,ChestReward reward)
