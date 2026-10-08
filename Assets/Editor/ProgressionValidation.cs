@@ -67,7 +67,12 @@ namespace Emberfall.Editor
         [Serializable] private sealed class SaveEnvelopeView { public GameProfile profile; }
 
         [MenuItem("Emberfall/Validate Progression and Skills")]
-        public static void Validate()
+        public static void Validate() { RunValidation(false); }
+
+        [MenuItem("Emberfall/Validate Full Progression and Skills")]
+        public static void ValidateFull() { RunValidation(true); }
+
+        private static void RunValidation(bool fullLegacySuite)
         {
             string workspace = Path.GetFullPath(Path.GetDirectoryName(Application.dataPath));
             string output = Path.GetFullPath(Path.Combine(workspace, "Tests", "TestResults", "unity-progression-" + Guid.NewGuid().ToString("N")));
@@ -82,7 +87,7 @@ namespace Emberfall.Editor
             };
             try
             {
-                if (Application.version == "0.4.0")
+                if (!fullLegacySuite && Application.version == "0.4.0")
                 {
                     ValidateCurrentRelease();
                     report.status = "PASS";
@@ -91,6 +96,7 @@ namespace Emberfall.Editor
                 }
                 for (int hero = 0; hero < Enum.GetValues(typeof(HeroClass)).Length; hero++)
                 {
+                    ValidateSkillBudgetBoundaries((HeroClass)hero);
                     ValidateClass((HeroClass)hero);
                     ValidateSkillTreeGates((HeroClass)hero);
                     ValidateSkillTreeBranches((HeroClass)hero);
@@ -256,7 +262,7 @@ namespace Emberfall.Editor
             // Explicit ordinary sale fixture; randomized mechanic locks have separate coverage.
             loot.mechanic = EquipmentMechanic.None;
             loot.locked = false;
-            ItemData boss = service.RollLoot(int.MaxValue, true);
+            ItemData boss = service.RollLoot(int.MaxValue, true, 1);
             Check(loot.id != boss.id && loot.level == 1 && boss.level == 100 && boss.rarity >= Rarity.Rare, "world loot: unique IDs, level caps and boss rarity");
             Check(loot.upgradeBaseInitialized && boss.upgradeBaseInitialized && loot.upgradeLevel == 0, "world loot: initialized permanent upgrade metadata");
             Check(JsonUtility.ToJson(service.Profile, true) == before && changed == 0, "world loot: rolling does not insert gear, award gold or emit events");
@@ -285,18 +291,16 @@ namespace Emberfall.Editor
             saved = File.ReadAllText(service.SaveFilePath);
             written = File.GetLastWriteTimeUtc(service.SaveFilePath);
             ItemData overflow = service.RollLoot(8, true);
-            Check(service.Profile.inventory.Count == 72 && service.Profile.gold == gold && changed == 0 && File.ReadAllText(service.SaveFilePath) == saved && File.GetLastWriteTimeUtc(service.SaveFilePath) == written, "world loot: full bag does not convert an uncollected drop");
-            bool protectedOverflow = ProgressionService.IsProtectedLoot(overflow);
-            int value = protectedOverflow ? 0 : service.SellValue(overflow);
-            Check(service.CollectLoot(overflow) && service.Profile.inventory.Count == 72 && service.Profile.gold == gold + value && changed == 1 && service.LastError.Contains(protectedOverflow ? "待领取" : "自动出售"), "world loot: full-bag pickup protects valuable drops or sells ordinary ones exactly once");
-            Check(!service.Profile.inventory.Exists(item => item.id == overflow.id) && (!protectedOverflow || service.Profile.pendingLoot.Exists(item => item.id == overflow.id)), "world loot: overflow preserves existing equipment and protected rewards");
+            Check(service.Profile.inventory.Count == ProgressionService.InventoryCapacity && service.Profile.gold == gold && changed == 0 && File.ReadAllText(service.SaveFilePath) == saved && File.GetLastWriteTimeUtc(service.SaveFilePath) == written, "world loot: full bag does not convert an uncollected drop");
+            Check(service.CollectLoot(overflow) && service.Profile.inventory.Count == ProgressionService.InventoryCapacity + 1 && service.Profile.gold == gold && changed == 1, "world loot: full-bag pickup remains owned without automatic sale");
+            Check(service.Profile.inventory.Exists(item => item.id == overflow.id) && service.Profile.pendingLoot.Count == 0 && service.Profile.recoveryLoot.Count == 0, "world loot: overflow is directly visible without a pending claim");
             saved = File.ReadAllText(service.SaveFilePath);
             written = File.GetLastWriteTimeUtc(service.SaveFilePath);
             Check(!service.CollectLoot(overflow) && !service.CollectLoot(JsonUtility.FromJson<ItemData>(JsonUtility.ToJson(overflow, true))), "world loot: overflow receipt rejects object and copied-ID duplicates");
-            Check(service.Profile.gold == gold + value && changed == 1 && File.ReadAllText(service.SaveFilePath) == saved && File.GetLastWriteTimeUtc(service.SaveFilePath) == written, "world loot: duplicate overflow cannot grant more gold or write saves");
+            Check(service.Profile.gold == gold && changed == 1 && File.ReadAllText(service.SaveFilePath) == saved && File.GetLastWriteTimeUtc(service.SaveFilePath) == written, "world loot: duplicate overflow cannot grant more gold or write saves");
             restored = new ProgressionService(service.SaveDirectory);
-            Check(restored.Load() && restored.Profile.inventory.Count == 72 && restored.Profile.gold == gold + value && (!protectedOverflow || restored.Profile.pendingLoot.Exists(item => item.id == overflow.id)), "world loot: full bag and pending reward or ordinary sale persist");
-            report.passedStages.Add("world loot: delayed collection, identity deduplication, protected overflow and real JSON persistence");
+            Check(restored.Load() && restored.Profile.inventory.Count == ProgressionService.InventoryCapacity + 1 && restored.Profile.gold == gold && restored.Profile.inventory.Exists(item => item.id == overflow.id), "world loot: full bag and directly owned overflow persist");
+            report.passedStages.Add("world loot: delayed collection, identity deduplication, visible overflow without sale and real JSON persistence");
         }
 
         private static void ValidateMultipleSaveSlots()
@@ -386,9 +390,9 @@ namespace Emberfall.Editor
                 string saved = File.ReadAllText(service.SaveFilePath);
                 int changes = 0;
                 service.Changed += () => changes++;
-                Check(!service.MoveHotbarSkill(0, 1) && !service.MoveHotbarSkill(-1, 1) && !service.MoveHotbarSkill(0, 10) && changes == 0 && File.ReadAllText(service.SaveFilePath) == saved, hero + ": unlearned and invalid drags do not save");
+                Check(!service.MoveHotbarSkill(1, 2) && !service.MoveHotbarSkill(-1, 1) && !service.MoveHotbarSkill(0, 10) && changes == 0 && File.ReadAllText(service.SaveFilePath) == saved, hero + ": unlearned and invalid drags do not save");
                 ReachLevel(service, 4);
-                Check(service.LearnSkill(0), hero + ": drag fixture learns root through actual progression");
+                Check(service.Profile.skillRanks[0] == 1, hero + ": drag fixture uses the starting root rank");
                 int[] pages = (int[])service.Profile.equippedSkills.Clone();
                 changes = 0;
                 Check(service.MoveHotbarSkill(0, 1) && service.Profile.equippedSkills[0] == -1 && service.Profile.equippedSkills[1] == 0 && changes == 1, hero + ": drag onto unlearned preset treats it as empty");
@@ -429,12 +433,12 @@ namespace Emberfall.Editor
                     hero + ": invalid/no-op assignment rejected");
                 Check(changes == 1 && File.ReadAllText(service.SaveFilePath) == saved && File.GetLastWriteTimeUtc(service.SaveFilePath) == written,
                     hero + ": rejected assignment does not change save or event count");
-                Check(service.MoveHotbarSkill(8, 0) && service.Profile.equippedSkills[0] == GameBalance.HotbarPotion && service.Profile.equippedSkills[8] == -1,
+                Check(service.MoveHotbarSkill(8, 1) && service.Profile.equippedSkills[1] == GameBalance.HotbarPotion && service.Profile.equippedSkills[8] == -1,
                     hero + ": unlearned target behaves as empty for consumable drag");
-                Check(service.AssignConsumable(9) && service.Profile.equippedSkills[0] == -1,
+                Check(service.AssignConsumable(9) && service.Profile.equippedSkills[1] == -1,
                     hero + ": assigning same consumable elsewhere moves existing shortcut");
                 ReachLevel(service, 2);
-                Check(service.LearnSkill(0) && service.AssignSkill(0, 0), hero + ": learns and assigns real skill");
+                Check(service.Profile.skillRanks[0] == 1 && service.Profile.equippedSkills[0] == 0 && service.AssignSkill(0, 0), hero + ": assigns the actual starting root rank");
                 changes = 0;
                 Check(service.MoveHotbarSkill(9, 0) && service.Profile.equippedSkills[0] == GameBalance.HotbarPotion && service.Profile.equippedSkills[9] == 0 && changes == 1,
                     hero + ": skill-potion drag swap commits exactly once");
@@ -523,6 +527,29 @@ namespace Emberfall.Editor
             return service;
         }
 
+        // Budget B(L)=max(1,L-1); a new character spends its initial point on root rank 1.
+        // Level 2 grants B(2)-B(1)=0; levels 3..100 grant one each (98 in total).
+        private static void ValidateSkillBudgetBoundaries(HeroClass hero)
+        {
+            var service = Fresh("budget-boundaries-" + hero, hero);
+            int cumulative = 0;
+            for (int level = 1; level <= ProgressionService.MaximumLevel; level++)
+            {
+                int expectedBudget = Math.Max(1, level - 1);
+                int expectedGain = level <= 2 ? 0 : 1;
+                cumulative += GameBalance.SkillPointsGainedAtLevel(level);
+                Check(GameBalance.SkillPointBudget(level) == expectedBudget && GameBalance.SkillPointsGainedAtLevel(level) == expectedGain && cumulative == expectedBudget - 1, hero + ": independent cumulative skill budget formula at level " + level);
+                if (level != 1 && level != 2 && level != 3 && level != 99 && level != 100) continue;
+                ReachLevel(service, level);
+                Check(service.Profile.level == level && service.Profile.skillRanks[0] == 1 && SpentPoints(service) == 1 && service.Profile.skillPoints == expectedBudget - 1, hero + ": actual XP boundary preserves starting rank and unspent budget at level " + level);
+                service.Save(); var restored = new ProgressionService(CaseDirectory("budget-boundaries-" + hero));
+                Check(restored.Load() && restored.Profile.skillPoints == expectedBudget - 1 && SpentPoints(restored) == 1, hero + ": budget boundary survives JSON reload at level " + level);
+            }
+            service.GrantExperience(int.MaxValue); service.GrantExperience(int.MaxValue);
+            Check(service.Profile.level == 100 && service.Profile.xp == 0 && service.Profile.skillPoints == 98 && SpentPoints(service) == 1, hero + ": capped repeated XP cannot mint points");
+            report.passedStages.Add(hero + ": independent budget formula, XP boundaries and JSON reload");
+        }
+
         private static void ValidateClass(HeroClass hero)
         {
             string name = "class-" + hero;
@@ -530,18 +557,18 @@ namespace Emberfall.Editor
             Check(service.Profile.inventory.Count == 3 && service.Equipped(ItemSlot.Weapon) != null, name + ": starter equipment exists");
             Check(!service.LearnSkill(0), name + ": level-one skill learning is gated");
             service.GrantExperience(int.MaxValue);
-            Check(service.Profile.level == 100 && service.Profile.skillPoints == 99, name + ": bulk XP reaches level cap safely");
+            Check(service.Profile.level == 100 && service.Profile.skillPoints == 98 && SpentPoints(service) == 1 && service.Profile.skillPoints + SpentPoints(service) == 99, name + ": bulk XP conserves 99 lifetime points including the starting root rank");
             StatBlock baseline = service.GetStats();
             int changed = 0;
             service.Changed += () => changed++;
             for (int skill = 0; skill < GameBalance.SkillCount; skill++)
             {
                 Check(!string.IsNullOrWhiteSpace(GameBalance.SkillName(hero, skill)), name + ": skill catalog entry " + skill);
-                for (int rank = 1; rank <= 3; rank++)
+                for (int rank = service.Profile.skillRanks[skill] + 1; rank <= 3; rank++)
                     Check(service.LearnSkill(skill) && service.Profile.skillRanks[skill] == rank, name + ": learn skill " + skill + " rank " + rank);
                 Check(!service.LearnSkill(skill), name + ": fourth rank rejected for skill " + skill);
             }
-            Check(changed == 30 && service.Profile.skillPoints == 69, name + ": every rank emits an update and consumes exactly one point");
+            Check(changed == 29 && service.Profile.skillPoints == 69 && SpentPoints(service) == 30, name + ": every rank emits an update and consumes exactly one point");
             Check(!service.AssignSkill(8, 3) && !service.AssignSkill(8, 8), name + ": learned passives cannot enter active bar");
             StatBlock stats = service.GetStats();
             if (hero == HeroClass.Vanguard)
@@ -607,16 +634,17 @@ namespace Emberfall.Editor
 
         private static void ValidateSkillTreeGates(HeroClass hero)
         {
-            int[] expectedLevels = { 2, 4, 6, 4, 10, 6, 13, 20, 13, 30 };
+            int[] expectedLevels = { 1, 4, 6, 4, 10, 6, 13, 20, 13, 30 };
             for (int skill = 0; skill < GameBalance.SkillCount; skill++)
             {
                 string name = "tree-gates-" + hero + "-" + skill;
                 var service = Fresh(name, hero);
                 Check(GameBalance.SkillRequiredLevels[skill] == expectedLevels[skill], name + ": first-rank tree level matches design");
-                int prerequisiteRanks = 0;
-                for (int rank = 1; rank <= 3; rank++)
+                int startingRank = service.Profile.skillRanks[skill];
+                int prerequisiteRanks = SpentPoints(service) - startingRank;
+                for (int rank = startingRank + 1; rank <= 3; rank++)
                 {
-                    int level = expectedLevels[skill] + (rank == 1 ? 0 : rank == 2 ? 8 : 18);
+                    int level = rank == 1 ? expectedLevels[skill] : Math.Max(2, expectedLevels[skill]) + (rank == 2 ? 8 : 18);
                     ReachLevel(service, level - 1);
                     if (rank == 1)
                     {
@@ -641,6 +669,9 @@ namespace Emberfall.Editor
         {
             var locked = Fresh("tree-locked-" + hero, hero);
             ReachLevel(locked, 100);
+            // Explicit missing-root fixture: ordinary fresh characters already own root rank 1.
+            locked.Profile.skillRanks[0] = 0; locked.Save();
+            Check(locked.Profile.skillPoints == 99 && SpentPoints(locked) == 0, hero + ": missing-root fixture preserves the full budget");
             int changes = 0;
             locked.Changed += () => changes++;
             for (int skill = 1; skill < GameBalance.SkillCount; skill++)
@@ -751,11 +782,14 @@ namespace Emberfall.Editor
             Check(service.SetHotbarPage(1) && service.AssignSkill(5, 9) && service.SetHotbarKey(5, 101), "runtime: same skill can be mapped and rebound on second page");
             int mapped = service.Profile.equippedSkills[service.Profile.hotbarPage * 10 + 5];
             Check(!runtime.TryConsume(mapped, service.Profile.skillRanks[mapped]) && Near(runtime.Remaining(9), ultimateCooldown), "runtime: changing pages and bindings cannot bypass cooldown");
-            Check(!runtime.TryConsume(7, 1) && Near(runtime.Remaining(7), 0) && Near(runtime.Energy, remainingEnergy), "runtime: insufficient energy changes no resources");
+            float secondaryCost = GameBalance.SkillEnergyCost(service.Profile.heroClass, 7);
+            bool affordable = remainingEnergy >= secondaryCost;
+            Check(runtime.TryConsume(7, 1) == affordable && Near(runtime.Energy, remainingEnergy - (affordable ? secondaryCost : 0)) && (affordable ? runtime.Remaining(7) > 0 : Near(runtime.Remaining(7), 0)), "runtime: secondary skill affordability follows platform costs without an assumed ultimate cost");
+            if (affordable) remainingEnergy -= secondaryCost;
             remainingEnergy -= GameBalance.SkillEnergyCost(service.Profile.heroClass, 0);
             Check(runtime.TryConsume(0, 1) && Near(runtime.Energy, remainingEnergy), "runtime: a low-cost skill remains usable after ultimate");
             runtime.Advance(5);
-            Check(Near(runtime.Remaining(0), 0) && Near(runtime.Remaining(9), ultimateCooldown - 5) && Near(runtime.Energy, remainingEnergy + 20), "runtime: energy regeneration and cooldown passage are independent");
+            Check(Near(runtime.Remaining(0), 0) && Near(runtime.Remaining(9), ultimateCooldown - 5) && Near(runtime.Energy, Math.Min(SkillRuntime.MaximumEnergy, remainingEnergy + 20)), "runtime: energy regeneration and cooldown passage are independent");
             runtime.FillEnergy();
             Check(Near(runtime.Energy, 100) && Near(runtime.Remaining(9), ultimateCooldown - 5), "runtime: resource refill cannot reset cooldown");
             Check(!runtime.TryConsume(3, 3) && !runtime.TryConsume(8, 3), "runtime: both learned passive IDs cannot cast");
@@ -780,7 +814,7 @@ namespace Emberfall.Editor
             source.GrantExperience(experience);
             source.AddGold(987);
             for (int skill = 0; skill < GameBalance.SkillCount; skill++)
-                for (int rank = 1; rank <= 3; rank++) Check(source.LearnSkill(skill), "portable: source learns skill " + skill + " rank " + rank);
+                for (int rank = source.Profile.skillRanks[skill] + 1; rank <= 3; rank++) Check(source.LearnSkill(skill), "portable: source learns skill " + skill + " rank " + rank);
             ItemData item = source.CreateLoot(1, true);
             Check(source.Equip(item.id) && source.Upgrade(item.id), "portable: source equips upgraded loot");
             source.CreateLoot(40, true);
@@ -823,7 +857,7 @@ namespace Emberfall.Editor
             {
                 string name = "slot-upgrade-" + slot;
                 var service = Fresh(name); ReachLevel(service, 50); service.AddGold(1000000);
-                ItemData source = service.Equipped(slot), target = TransferItem(service, slot);
+                ItemData target = TransferItem(service, slot), source = service.Equipped(slot);
                 UpgradeTo(service, source, 5);
                 ItemData sourceFive = service.PreviewEquippedItem(source), targetFive = service.PreviewEquippedItem(target);
                 string before = JsonUtility.ToJson(service.Profile, true), saved = File.ReadAllText(service.SaveFilePath);
@@ -931,7 +965,8 @@ namespace Emberfall.Editor
                 defense = slot == ItemSlot.Armor ? 26 : 0, health = slot == ItemSlot.Armor ? 180 : slot == ItemSlot.Relic ? 90 : 0 };
             service.Profile.inventory.Add(item);
             service.Save();
-            Check(item.upgradeBaseInitialized, "equipment fixture receives persistent metadata through production validation");
+            item = service.Profile.inventory.Find(entry => entry.id == item.id);
+            Check(item != null && item.upgradeBaseInitialized, "equipment fixture receives persistent metadata through production validation");
             return item;
         }
 
