@@ -59,7 +59,7 @@ namespace Emberfall {
   check(shown[0].rect.y>=68*ratio&&shown[0].rect.yMax<=ui.scrollViewport.y,"preview ends before reduced list viewport begins");
   check(ui.scrollViewport.height>=48*ratio&&ui.scrollViewport.yMax<=ui.height-56*ratio,"list remains usable without overlapping fixed footer");
   string notice=ui.session.Notification;if(notice.Length>0)check(ui.drawn.Exists(x=>x.text==notice&&x.scroll&&x.wrap),"full notification/error remains separately measured in list");
-  check(ui.footer.Count==2&&ui.footer.TrueForAll(r=>r.height==48*ratio&&r.y>=ui.scrollViewport.yMax),"pause and confirmation keep fixed 48-unit hit areas");
+  check(ui.footer.Count==1&&ui.footer.TrueForAll(r=>r.height==48*ratio&&r.y>=ui.scrollViewport.yMax),"mandatory confirmation is the sole fixed 48-unit footer action");
   check(ui.selectedBlessing==1,"card tap selects intended offer while preview and notification coexist");
   GUI.Click=-1;GUI.Index=0;ui.click="确认祝福并继续";ui.DrawMobileBlessingChoice();
   check(ui.session.Confirmed==1&&ui.selectedBlessing==-1,"subsequent confirmation survives defensive offer copies");

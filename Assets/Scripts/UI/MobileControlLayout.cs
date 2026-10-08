@@ -12,14 +12,14 @@ namespace Emberfall
             public bool Contains(float x,float y) { return x>=X&&x<X+Width&&y>=Y&&y<Y+Height; }
             public bool Overlaps(Area r) { return X<r.X+r.Width&&X+Width>r.X&&Y<r.Y+r.Height&&Y+Height>r.Y; }
         }
-        public readonly float Scale, Width, Height;
+        public readonly float Scale, Width, Height, UiZoom;
         public readonly bool Tablet;
         public readonly Area Joystick, MoveZone, Attack, Dodge, Potion, Jump, Cancel, Menu, Inventory, SkillsMenu, Catalog, Interact, SkillPage, DungeonEntrance, Shop, Smith;
         public readonly Area EncounterText, BossHealth, Notice, AdventureStatus, FocusCommand, RecallCommand, CombatView, PlayerStatus, PlayerHealth, PlayerEnergy, Map;
         public readonly Area[] Skills = new Area[5];
         public readonly Area[] SkillOpportunities = new Area[10];
         public readonly Area CounterOpportunity, ComboOpportunity;
-        public MobileControlLayout(float pixelWidth,float pixelHeight,float dpi,int positionPreset=0)
+        public MobileControlLayout(float pixelWidth,float pixelHeight,float dpi,int positionPreset=0, bool ipad=false)
         {
             pixelWidth=Math.Max(1,pixelWidth);pixelHeight=Math.Max(1,pixelHeight);
             Tablet=pixelWidth/pixelHeight<1.65f;
@@ -27,7 +27,11 @@ namespace Emberfall
             // Screen.dpi is advisory; reject missing/implausible values and constrain
             // density so 320-point compact phones still fit the full combat cluster.
             float density=dpi>=120&&dpi<=700?dpi/163f:fallback;
-            Scale=Math.Max(.25f,Math.Min(density,Math.Min(pixelHeight/320f,pixelWidth/568f)));
+            float nativeScale=Math.Max(.25f,Math.Min(density,Math.Min(pixelHeight/320f,pixelWidth/568f)));
+            // One device factor for rendering, fonts and input. Preserve the minimum
+            // landscape viewport instead of enlarging controls beyond its edges.
+            UiZoom=ipad?Math.Max(1f,Math.Min(1.4f,Math.Min(pixelWidth/(568f*nativeScale),pixelHeight/(320f*nativeScale)))):1f;
+            Scale=nativeScale*UiZoom;
             Width=pixelWidth/Scale;Height=pixelHeight/Scale;
             Joystick=Centered(90,Height-86,128);
             float moveTop=Math.Max(164,Height-172);

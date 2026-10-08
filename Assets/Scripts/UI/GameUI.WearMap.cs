@@ -47,7 +47,7 @@ namespace Emberfall
                 Rect r=new Rect(area.x+i*(cell+8*u),area.yMax-76*u,cell,76*u);
                 Color tint=item==null?muted:GameBalance.RarityColor(item.rarity);
                 Fill(r,card);Border(r,tint,item==null?1:2);
-                DrawIcon(new Rect(r.center.x-18*u,r.y+4*u,36*u,36*u),UIIconAtlas.FashionCardIcon(slot),tint);
+                DrawIcon(new Rect(r.center.x-18*u,r.y+4*u,36*u,36*u),UIIconAtlas.FashionCardIcon(slot,item==null?3:(int)item.AppearanceRarity,session.Progression.Profile.heroClass),tint);
                 string label=item==null?(slot==FashionSlot.Weapon?"兵装":"羽翼")+"\n未穿戴":ProgressionService.FashionName(item.slot,item.AppearanceRarity,session.Progression.Profile.heroClass);
                 Text(new Rect(r.x+3*u,r.y+42*u,r.width-6*u,32*u),label,Mathf.RoundToInt(10*u),item==null?muted:pale,item!=null,true,TextAnchor.MiddleCenter);
                 if(item!=null)
@@ -72,9 +72,7 @@ namespace Emberfall
                 var f=owned[i];var cell=grid.Tile(i);Rect tile=new Rect(cell.X*u,cell.Y*u,44*u,44*u);
                 if(tile.yMax<mobileFashionScroll.y||tile.y>mobileFashionScroll.y+bounds.height)continue;
                 Color rarity=GameBalance.RarityColor(f.rarity);Fill(tile,card);Border(tile,rarity);
-                if(f.slot==FashionSlot.Weapon)DrawIcon(new Rect(tile.x+5*u,tile.y+5*u,34*u,32*u),UIIconAtlas.EquipmentCardIcon(ItemSlot.Weapon),rarity);
-                else for(int feather=0;feather<4;feather++)
-                {float span=(17-feather*3)*u;Fill(new Rect(tile.center.x-span,tile.y+(10+feather*5)*u,span-2*u,3*u),rarity);Fill(new Rect(tile.center.x+2*u,tile.y+(10+feather*5)*u,span-2*u,3*u),rarity);}
+                DrawIcon(new Rect(tile.x+5*u,tile.y+5*u,34*u,32*u),UIIconAtlas.FashionCardIcon(f.slot,(int)f.AppearanceRarity,session.Progression.Profile.heroClass),rarity);
                 for(int pip=0;pip<=(int)f.rarity;pip++)Fill(new Rect(tile.x+(3+pip*5)*u,tile.y+3*u,3*u,3*u),pale);
                 var worn=session.Progression.EquippedFashion(f.slot);bool equipped=worn!=null&&worn.id==f.id;
                 Text(new Rect(tile.x+2*u,tile.yMax-14*u,tile.width-4*u,14*u),(equipped?"✓ ":"")+(f.slot==FashionSlot.Wings?"翼":"刃"),Mathf.RoundToInt(9*u),pale,true,false,TextAnchor.MiddleRight);

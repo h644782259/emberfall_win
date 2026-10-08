@@ -44,6 +44,8 @@ namespace Emberfall
                 CostumeMesh("Inclined inner astrolabe",style,orbit,Vector3.zero,Vector3.one*.24f,new Color(.3f,.9f,1),VisualSurface.Crystal).localRotation=Quaternion.Euler(28,15,0);
                 orbit.gameObject.AddComponent<FashionOrbit>();
             }
+            if(wings.rarity==Rarity.Legendary)for(int side=-1;side<=1;side+=2)
+                CostumeMesh("Legendary flight rim",WingSilhouette.Crystal,fashionWings,new Vector3(side*.34f,.28f,-.055f),new Vector3(.28f,.38f,.24f),Color.Lerp(primary,Color.white,.55f),VisualSurface.Crystal).localRotation=Quaternion.Euler(0,0,-side*(32+(int)wings.AppearanceRarity*8));
             Part("Wing clasp",PrimitiveType.Sphere,Vector3.zero,new Vector3(.16f,.18f,.1f),Color.white,fashionWings,VisualSurface.Crystal);
         }
         private void BuildClassCostume()

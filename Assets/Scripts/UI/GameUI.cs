@@ -147,7 +147,7 @@ namespace Emberfall
         {
             Rect safe = MobileControls.SafeArea;
             ObserveTouchViewport(safe);
-            scale = HudLogicalScale.For(safe.width, safe.height);
+            scale = HudLogicalScale.For(safe.width, safe.height) * (MobileControls.Active ? MobileControls.Layout.UiZoom : 1f);
             width = safe.width / scale;
             height = safe.height / scale;
             guiOffset = new Vector2(safe.x, Screen.height - safe.yMax);
@@ -171,6 +171,7 @@ namespace Emberfall
         private void Update()
         {
             RefreshLayout();
+            ReconcileTitleBackdrop();
             ReconcileMobileScroll();
             ReconcileCollectionPreview();
             if (session == null || session.BackgroundPaused) return;
@@ -249,6 +250,7 @@ namespace Emberfall
             if(session!=null&&session.Progression!=null)session.Progression.Changed-=InvalidateAttention;
             if(attentionDot!=null)Destroy(attentionDot);
             ClearRewardMoment();
+            ReleaseTitleBackdrop();
             ReleaseChestTextures();
             ReleaseCollectionPreview();
             if(terrainMap!=null)Destroy(terrainMap);
@@ -263,6 +265,7 @@ namespace Emberfall
         {
             if (session == null || session.Progression == null) return;
             RefreshLayout();
+            if (!session.HasStarted) DrawTitleBackdrop();
             if (font == null) font = GameFont.Shared;
             if (invisibleButton == null) BuildStyles();
             Matrix4x4 oldMatrix = GUI.matrix;
@@ -302,6 +305,8 @@ namespace Emberfall
                 if (session.Paused) DrawPause();
                 else if(PauseUtilityVisible)
                 {if(panel==Panel.Controls)DrawControls();else if(panel==Panel.Bindings)DrawBindings();else if(panel==Panel.SaveLocation)DrawSaveLocation();else DrawTravelMap();}
+                else if (panel == Panel.Chests) DrawChests();
+                else if (chestRecoveryService && panel == Panel.Inventory) DrawInventory();
                 else if (session.IsDead) {if(session.ChapterFinished)DrawChapterResult();else DrawDeath();}
                 else if (session.DungeonSelectionOpen) DrawDungeonSelection();
                 else if (session.RoomBranchChoiceOpen) DrawRoomBranchChoice();
@@ -316,7 +321,6 @@ namespace Emberfall
                 else if (panel == Panel.Controls) DrawControls();
                 else if (panel == Panel.PotionAssignment) DrawPotionAssignment();
                 else if (panel == Panel.Fashion) DrawFashion();
-                else if (panel == Panel.Chests) DrawChests();
                 else if (panel == Panel.Camp) DrawCampWorkshop();
                 else if (panel == Panel.Summary) DrawRunSummary();
                 else if (panel == Panel.TravelMap) DrawTravelMap();
@@ -502,7 +506,7 @@ namespace Emberfall
             float x=(availableWidth-528*zoom)*.5f,y=(availableHeight-324*zoom)*.5f;
             Rect HomeRect(float rx,float ry,float rw,float rh) => mobile?TouchRect(x+rx*zoom,y+ry*zoom,rw*zoom,rh*zoom):new Rect(x+rx*zoom,y+ry*zoom,rw*zoom,rh*zoom);
             int HomeFont(float size) => mobile?TouchFont(size*zoom):Mathf.RoundToInt(size*zoom);
-            Fill(new Rect(0,0,width,height),new Color(.018f,.029f,.048f,1));
+            // The viewport backdrop is drawn before the safe-area transform.
             Text(HomeRect(0,4,528,42),"星烬纪元",HomeFont(32),pale,true,false,TextAnchor.MiddleCenter);
             SaveSlotInfo recent=RecentAdventureSlot();
             if(recent!=null)
@@ -536,11 +540,11 @@ namespace Emberfall
             if (saveSlotsDirty) RefreshSaveSlots();
             if(!titleCreatingHero){DrawAdventureHome();return;}
             // The title is a static, opaque composition; world geometry cannot leak through it.
-            Fill(new Rect(0, 0, width, height), new Color(.018f, .029f, .048f, 1f));
+            // Full-screen backdrop remains visible behind character cards.
             float x = (width - 1040) * .5f;
             float y = (height - 438) * .5f;
-            Fill(new Rect(x + 7, y + 9, 1040, 438), new Color(.006f, .012f, .021f, 1f));
-            Fill(new Rect(x, y, 1040, 438), new Color(.048f, .074f, .112f, 1f));
+
+            Fill(new Rect(x, y, 1040, 438), new Color(.048f, .074f, .112f, .72f));
             Border(new Rect(x, y, 1040, 438), new Color(.22f, .33f, .43f, 1f));
             Text(new Rect(x + 32, y + 24, 976, 43), "选择职业", 32, Color.white, true);
             Text(new Rect(x+280,y+36,720,24),"初选职业可在安全营地自由切换 · 同一角色共享成长",14,muted);

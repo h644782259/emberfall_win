@@ -127,6 +127,23 @@ namespace Emberfall
             var ink=new Icon(Color.white,64);ink.Ring(32,32,30,glow?4f:1.1f);
             texture=ink.Finish(glow?"Soft control halo":"Continuous control rim");cache[key]=texture;return texture;
         }
+        public static Texture2D CompanionCommand(bool recall,bool recalled=false)
+        {
+            int key=recall?(recalled?2000012:2000011):2000010;
+            Texture2D texture;if(cache.TryGetValue(key,out texture))return texture;
+            var ink=new Icon(Color.white,64);
+            if(!recall)
+            {ink.Ring(32,32,17,3);ink.Disc(32,32,4);ink.Line(32,5,32,20,3);ink.Line(32,44,32,59,3);ink.Line(5,32,20,32,3);ink.Line(44,32,59,32,3);}
+            else
+            {
+                // Spirit silhouette and a return/resume arrow, independent of font glyphs.
+                ink.Polygon(new[]{V(22,27),V(31,19),V(40,28),V(43,47),V(31,43),V(19,47)});
+                ink.Disc(27,30,2);ink.Disc(35,30,2);
+                ink.Arc(32,31,25,190,350,3);
+                if(recalled)ink.Arrow(39,9,56,23);else ink.Arrow(19,9,7,24);
+            }
+            texture=ink.Finish(recall?(recalled?"Companions resume":"Companions recall"):"Companions focus",true);cache[key]=texture;return texture;
+        }
         public static Texture2D SkillPageArrow()
         {
             const int key=2000003;Texture2D texture;if(cache.TryGetValue(key,out texture))return texture;
@@ -216,12 +233,24 @@ namespace Emberfall
             ink.Arc(locked?32:42,29,13,180,360,5);ink.color=new Color(.09f,.15f,.19f);ink.Line(32,39,32,48,4);
             texture=ink.Finish(locked?"Locked equipment":"Unlocked equipment");cache[key]=texture;return texture;
         }
-        public static Texture2D EquipmentCardIcon(ItemSlot slot,int level=1)
+        public static Texture2D EquipmentCardIcon(ItemSlot slot,int level=1,Rarity rarity=Rarity.Common,HeroClass hero=HeroClass.Vanguard)
         {
-            int tier=Mathf.Clamp(level/10,0,10),key=-30000-(int)slot*100-tier;
+            int tier=Mathf.Clamp(level/10,0,10),rank=Mathf.Clamp((int)rarity,0,3),key=-3000000-(int)slot*10000-tier*100-rank*10-(int)hero;
             Texture2D texture;if(cache.TryGetValue(key,out texture))return texture;
             var ink=new Icon(Color.white);
-            if(slot==ItemSlot.Weapon)
+            IconQualityHalo(ink,rank);
+            if(slot==ItemSlot.Weapon&&hero==HeroClass.Ranger)
+            {
+                ink.color=Color.white;ink.Arc(15,32,22+tier*.3f,-75,75,4+tier*.15f);ink.Line(21,10,21,54,2);ink.Arrow(12,32,54,32);
+                for(int side=-1;side<=1;side+=2)ink.Line(23,32+side*12,30+rank*3,32+side*(17+tier*.4f),3);
+            }
+            else if(slot==ItemSlot.Weapon&&hero!=HeroClass.Vanguard)
+            {
+                ink.color=Color.white;ink.Line(28,56,33,23,5+tier*.18f);
+                if(hero==HeroClass.Arcanist){ink.Polygon(new[]{V(33,6),V(43+tier*.3f,17),V(33,29),V(22-tier*.3f,17)});ink.Ring(33,17,14+rank,2);}
+                else{ink.Arc(33,19,14,195,345,4);ink.Line(21,17,16,8,3);ink.Line(44,17,49,8,3);ink.Polygon(new[]{V(33,11),V(41,19),V(33,27),V(25,19)});}
+            }
+            else if(slot==ItemSlot.Weapon)
             {
                 float breadth=3+tier*.65f;
                 ink.Polygon(new[]{V(32,4),V(32+breadth,15),V(32+breadth,39),V(32-breadth,39),V(32-breadth,15)});
@@ -247,16 +276,61 @@ namespace Emberfall
             // Small engraved marks distinguish adjacent ten-level sets without relying on rarity tint.
             ink.color=new Color(.75f,.85f,1f);
             for(int mark=0;mark<tier;mark++)ink.Line(5+(mark%5)*3,53+(mark/5)*5,6+(mark%5)*3,53+(mark/5)*5,2);
-            texture=ink.Finish("Equipment "+slot+" tier "+tier);cache[key]=texture;return texture;
+            if(slot!=ItemSlot.Weapon)
+            {
+                ink.color=new Color(.2f,.36f,.48f);
+                if(hero==HeroClass.Vanguard)ink.Polygon(new[]{V(32,23),V(37,28),V(32,33),V(27,28)});
+                else if(hero==HeroClass.Arcanist){ink.Ring(32,28,6,2);ink.Line(32,20,32,36,2);}
+                else if(hero==HeroClass.Ranger)ink.Arrow(25,35,39,21);
+                else{ink.Line(32,23,32,35,2);ink.Line(32,28,25,23,2);ink.Line(32,28,39,23,2);}
+            }
+            IconQualityDetails(ink,rank);
+            texture=ink.Finish("Equipment "+hero+" "+slot+" tier "+tier+" quality "+rank);cache[key]=texture;return texture;
         }
-        public static Texture2D FashionCardIcon(FashionSlot slot)
+        private static void IconQualityHalo(Icon ink,int rank)
         {
-            if(slot==FashionSlot.Weapon)return Utility("attack");
-            const int key=-2000;Texture2D texture;if(cache.TryGetValue(key,out texture))return texture;
-            var ink=new Icon(Color.white);
-            for(int side=-1;side<=1;side+=2)for(int feather=0;feather<4;feather++)
-                ink.Line(32+side*3,40-feather*3,32+side*(12+feather*5),10+feather*9,5);
-            texture=ink.Finish("Wing collection card");cache[key]=texture;return texture;
+            ink.Layered=true;
+            if(rank<2)return;
+            ink.color=new Color(.75f,.85f,1f,.16f+rank*.05f);ink.Ring(32,32,26,rank==3?8:5);
+            ink.color=Color.white;
+        }
+        private static void IconQualityDetails(Icon ink,int rank)
+        {
+            ink.color=Color.white;
+            if(rank>=1){ink.Line(8,24,8,40,2);ink.Line(56,24,56,40,2);ink.Polygon(new[]{V(32,34-rank),V(35+rank,39),V(32,44+rank),V(29-rank,39)});}
+            if(rank>=2){ink.Line(9,18,15,12,2);ink.Line(49,12,55,18,2);}
+            if(rank==3)
+            {
+                ink.Arc(32,32,26,210,330,2);ink.Arc(32,32,26,30,150,2);
+                for(int side=-1;side<=1;side+=2){ink.Line(32+side*25,42,32+side*25,54,2);ink.Line(32+side*21,48,32+side*29,48,2);}
+            }
+        }
+        public static Texture2D FashionCardIcon(FashionSlot slot,int appearanceTier=3,HeroClass hero=HeroClass.Vanguard)
+        {
+            int tier=Mathf.Clamp(appearanceTier,0,3),key=-4000000-(int)slot*100-tier*10-(int)hero;
+            Texture2D texture;if(cache.TryGetValue(key,out texture))return texture;
+            var ink=new Icon(Color.white);IconQualityHalo(ink,3);
+            if(slot==FashionSlot.Weapon)
+            {
+                if(hero==HeroClass.Ranger){ink.Arc(15,32,24,-80,80,5);ink.Line(19,7,19,57,2);ink.Arrow(13,32,55,32);}
+                else if(hero==HeroClass.Vanguard){ink.Sword(32,32);}
+                else{ink.Line(30,57,32,24,5);ink.Ring(32,17,12+tier,3);ink.Polygon(new[]{V(32,7),V(40,17),V(32,27),V(24,17)});}
+                for(int side=-1;side<=1;side+=2)for(int layer=0;layer<=tier;layer++)
+                    ink.Line(32+side*5,29+layer*5,32+side*(12+layer*3),22+layer*6,3);
+            }
+            else
+            {
+                for(int side=-1;side<=1;side+=2)for(int feather=0;feather<3+tier;feather++)
+                {
+                    float tip=11+feather*4;
+                    if(tier>=2)ink.Polygon(new[]{V(32+side*4,39),V(32+side*tip,8+feather*7),V(32+side*(tip-4),34+feather*3)});
+                    else ink.Line(32+side*3,40-feather*3,32+side*tip,10+feather*9,5);
+                }
+                if(tier==3){ink.Ring(32,26,12,2);ink.Disc(32,26,4);}
+            }
+            IconQualityDetails(ink,3);ink.color=Color.white;
+            for(int mark=0;mark<=tier;mark++)ink.Disc(25+mark*5,58,1.6f);
+            texture=ink.Finish("Legendary fashion "+hero+" "+slot+" design "+tier);cache[key]=texture;return texture;
         }
         public static Texture2D Reward(int kind)
         {
@@ -275,14 +349,17 @@ namespace Emberfall
             private const int Size = 64;
             private readonly Color[] pixels = new Color[Size * Size];
             public Color color;
+            public bool Layered;
             private readonly int outputSize;
             public Icon(Color tint, int size = 64) { color = tint; outputSize = size; }
             private void Plot(int x, int y, float alpha)
             {
                 if (alpha <= 0 || x < 0 || y < 0 || x >= Size || y >= Size) return;
-                Color c = color; c.a = Mathf.Clamp01(alpha);
+                Color c = color; c.a = Mathf.Clamp01(alpha)*color.a;
                 int index = (Size - y - 1) * Size + x;
-                if (c.a > pixels[index].a) pixels[index] = c;
+                if(!Layered){if(c.a>pixels[index].a)pixels[index]=c;return;}
+                Color previous=pixels[index];float combined=c.a+previous.a*(1-c.a);
+                Color blended=(c*c.a+previous*(previous.a*(1-c.a)))/combined;blended.a=combined;pixels[index]=blended;
             }
             public void Line(float ax, float ay, float bx, float by, float thickness)
             {

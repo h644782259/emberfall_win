@@ -39,7 +39,7 @@ namespace Emberfall
         {
             var p=session.Progression;float u=MobileControls.Active?TouchRatio:1;
             bool prior=GUI.enabled;GUI.enabled=prior&&smithPreviewMechanic==EquipmentMechanic.None;
-            var l=new SmithServiceLayout(width/u,height/u);
+            var l=new SmithServiceLayout(width/u,height/u,MobileControls.IsIPad);
             Fill(new Rect(0,0,width,height),new Color(.018f,.031f,.048f,.985f));blockedRects.Add(new Rect(0,0,width,height));
             Text(BuildPlanRect(l.Header,u),"铁匠",Mathf.RoundToInt(22*u),gold,true);
             DrawServiceBalances(BuildPlanRect(l.Balance,u),u);
@@ -54,7 +54,7 @@ namespace Emberfall
                 var slot=(ItemSlot)i;var gear=p.Equipped(slot);Rect row=BuildPlanRect(l.Equipment(i),u);
                 if(QuietAction(row,"",gear!=null,null,smithSelectedSlot==i)&&smithSelectedSlot!=i){smithSelectedSlot=i;smithDetailScroll=Vector2.zero;}
                 Text(new Rect(row.x+46*u,row.y+6*u,row.width-52*u,row.height-12*u),GameBalance.SlotName(slot)+"\n+"+p.SlotUpgradeRank(slot),Mathf.RoundToInt(12*u),pale,true,true);
-                DrawIcon(new Rect(row.x+8*u,row.y+8*u,30*u,30*u),UIIconAtlas.EquipmentCardIcon(slot,gear==null?1:gear.level),gear==null?muted:GameBalance.RarityColor(gear.rarity));
+                DrawIcon(new Rect(row.x+8*u,row.y+8*u,30*u,30*u),UIIconAtlas.EquipmentCardIcon(slot,gear==null?1:gear.level,gear==null?Rarity.Common:gear.rarity,session.Progression.Profile.heroClass),gear==null?muted:GameBalance.RarityColor(gear.rarity));
             }
             var item=p.Equipped((ItemSlot)smithSelectedSlot);
             if(item==null){Text(BuildPlanRect(l.Detail,u),"先在行囊中穿戴这个部位的装备。",Mathf.RoundToInt(16*u),muted,false,true);GUI.enabled=prior;DrawGemPreview(u);return;}
@@ -105,7 +105,7 @@ namespace Emberfall
         private float DrawSmithDetail(ItemData item,float width,float u,bool draw)
         {
             var p=session.Progression;float y=8;
-            if(smithCategory==0){if(draw)DrawIcon(new Rect((width-64)*.5f*u,y*u,64*u,64*u),UIIconAtlas.EquipmentCardIcon(item.slot,item.level),GameBalance.RarityColor(item.rarity));y+=72;}
+            if(smithCategory==0){if(draw)DrawIcon(new Rect((width-64)*.5f*u,y*u,64*u,64*u),UIIconAtlas.EquipmentCardIcon(item.slot,item.level,item.rarity,session.Progression.Profile.heroClass),GameBalance.RarityColor(item.rarity));y+=72;}
             GoalParagraph(ref y,width,u,item.name+" · Lv"+item.level+" · "+GameBalance.RarityName(item.rarity),17,gold,true,draw);
             if(smithCategory==0)
             {

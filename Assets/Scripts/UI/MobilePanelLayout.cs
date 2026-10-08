@@ -13,11 +13,11 @@ namespace Emberfall
         }
         public readonly float Width,Height;
         public readonly Area Header,Close,Body,Tabs,TabbedBody,Left,Right,BodyLeft,BodyRight,Footer;
-        public MobilePanelLayout(float width,float height)
+        public MobilePanelLayout(float width,float height,bool reserveFooter=true)
         {
             Width=Finite(width)?Math.Max(568,width):568;Height=Finite(height)?Math.Max(320,height):320;
             Header=new Area(16,8,Width-88,48);Close=new Area(Width-64,8,48,48);
-            Body=new Area(16,68,Width-32,Height-132);
+            Body=new Area(16,68,Width-32,Height-(reserveFooter?132:80));
             Tabs=new Area(16,66,Width-32,44);TabbedBody=new Area(16,120,Width-32,Height-184);
             Footer=new Area(16,Height-56,Width-32,48);
             float left=Math.Max(216,Math.Min(320,Body.Width*.4f));

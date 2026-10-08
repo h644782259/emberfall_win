@@ -47,3 +47,34 @@ namespace Emberfall
         {Validate(mode);string slot=mode==0?"护甲":mode==1?"饰品":mode==3?"护甲 + 饰品":"武器";return "保底 "+(mode==2?"史诗":"稀有")+" "+slot+" · "+(mode==2?UpgradeChance(mode,tier)+LegendaryChance(tier):LegendaryChance(tier))+"% 传说"+(mode==2?"":" · "+UpgradeChance(mode,tier)+"% 史诗");}
     }
 }
+
+namespace Emberfall
+{
+    // Reachability is enumerated from the same integer rolls used by actual loot.
+    public static class DropPreviewRules
+    {
+        public static Rarity[] ClearRarities(int mode,int tier)
+        {
+            var found=new System.Collections.Generic.SortedSet<Rarity>();
+            for(int roll=0;roll<100;roll++)found.Add(AdventureRewardRules.EquipmentRarity(mode,tier,roll));
+            return new System.Collections.Generic.List<Rarity>(found).ToArray();
+        }
+        public static Rarity[] EnemyRarities(int tier,bool hasBoss,bool mechanic)
+        {
+            var found=new System.Collections.Generic.SortedSet<Rarity>();
+            for(int roll=0;roll<100;roll++)
+            {
+                var ordinary=TierRewardRules.DropRarity(false,tier,roll);
+                if(!mechanic||ordinary>=Rarity.Epic)found.Add(ordinary);
+                if(hasBoss)found.Add(TierRewardRules.DropRarity(true,tier,roll));
+            }
+            return new System.Collections.Generic.List<Rarity>(found).ToArray();
+        }
+        public static int SlotCount(int mode,int tier,ItemSlot slot)
+        {
+            int count=0;for(int i=0;i<AdventureRewardRules.EquipmentCount(mode,tier);i++)
+                if(AdventureRewardRules.EquipmentSlot(mode,i)==slot)count++;
+            return count;
+        }
+    }
+}

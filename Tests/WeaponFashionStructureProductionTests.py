@@ -16,7 +16,7 @@ with tempfile.TemporaryDirectory(prefix='class-tier-') as directory:
  subprocess.run([dotnet,'restore',str(project),'--configfile',str(p/'NuGet.Config'),'-v:q'],env=env,check=True)
  subprocess.run(cmd,env=env,check=True)
  source=p/'CombatModel.CostumeLayers.cs';original=source.read_text()
- for before,after,expected in [('if(fashion.rarity==Rarity.Rare)BuildRareWeaponFashion(accent);','if(false)BuildRareWeaponFashion(accent);','rare weapon fashion has distinct actual structural pieces beyond common palette')]:
+ for before,after,expected in [('if(fashion.AppearanceRarity==Rarity.Rare)BuildRareWeaponFashion(accent);','if(false)BuildRareWeaponFashion(accent);','rare weapon fashion has distinct actual structural pieces beyond common palette')]:
   assert original.count(before)==1;source.write_text(original.replace(before,after));subprocess.run([dotnet,'build',str(project),'--no-restore','-v:q'],env=env,check=True,stdout=subprocess.DEVNULL)
   result=subprocess.run(cmd+['--no-build'],env=env,capture_output=True,text=True);assert result.returncode and 'System.Exception: '+expected in result.stdout+result.stderr,result.stdout+result.stderr
  source.write_text(original)

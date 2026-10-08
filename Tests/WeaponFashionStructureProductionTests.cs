@@ -16,7 +16,7 @@ public static class WeaponFashionStructureProductionTests
     var vertices=parts.SelectMany(p=>p.sharedMesh.vertices.Select(v=>root.InverseTransformPoint(p.transform.TransformPoint(v)))).ToArray();
     if(hero==HeroClass.Arcanist||hero==HeroClass.Summoner)Check(vertices.All(v=>v.y>.7f),"caster fashion stays above grip and safe lower shaft");
     else if(hero==HeroClass.Vanguard)Check(vertices.All(v=>!(Math.Abs(v.x)<.09f&&v.y<.08f)),"sword fashion preserves grip opening");
-    else Check(vertices.All(v=>Math.Abs(v.y)>.25f),"bow fashion preserves grip string hand and arrow-rest opening");
+    else Check(vertices.All(v=>Math.Abs(v.y)>.25f),"bow fashion preserves grip string hand and arrow-rest opening: "+tier+"/"+rarity);
    }
    UnityEngine.Object.Destroy(host);UnityEngine.Object.Flush();Check(!UnityEngine.Object.All.OfType<Material>().Any(v=>!v.destroyed),"fashion swap disposes owned palette");
   }

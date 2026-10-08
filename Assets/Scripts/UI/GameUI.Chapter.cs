@@ -100,7 +100,10 @@ namespace Emberfall
             float encounterH=ChapterCopyHeight(encounter,infoWidth-32,u,13);
             float rewardH=ChapterCopyHeight(reward,infoWidth-32,u,12);
             float nextH=ChapterCopyHeight(next,infoWidth-32,u,12);
-            float infoH=480+goalH+nextH;
+            int chestMode=node==ChapterNode.ForestCourt?0:node==ChapterNode.Redrock?1:2;
+            int chestTier=Mathf.Min(100,session.SelectedChapterTier+(int)difficulty*5);
+            float rewardsHeight=DrawEntryRewardPreviews(infoWidth-16,u,chestMode,chestTier,true,false);
+            float infoH=90+rewardsHeight+goalH+nextH;
             float mainH=columns?Mathf.Max(settingsH,infoH):settingsH+16+infoH;
             bool tactics=RunChoices.ChapterTacticsAvailable(profile,node);
             float tacticHeight=0;
@@ -142,8 +145,8 @@ namespace Emberfall
             float at=infoY+14;
             Text(new Rect((infoX+16)*u,at*u,(infoWidth-32)*u,24*u),"本次挑战 · "+ChapterDefinition.Get(node).Name,Mathf.RoundToInt(18*u),pale,true);at+=36;
             Text(new Rect((infoX+16)*u,at*u,(infoWidth-32)*u,goalH*u),ChapterDefinition.Get(node).Mechanic,Mathf.RoundToInt(15*u),jade,true,true);at+=goalH+10;
-            GUI.BeginGroup(new Rect((infoX+8)*u,at*u,(infoWidth-16)*u,390*u));
-            DrawAdventureRewards((int)node,Mathf.Min(100,session.SelectedChapterTier+(int)difficulty*5),infoWidth-16,u,false);GUI.EndGroup();at+=390;
+            GUI.BeginGroup(new Rect((infoX+8)*u,at*u,(infoWidth-16)*u,rewardsHeight*u));
+            DrawEntryRewardPreviews(infoWidth-16,u,chestMode,chestTier,true,true);GUI.EndGroup();at+=rewardsHeight;
             DrawRewardToken(new Rect((infoX+16)*u,at*u,(infoWidth-32)*u,36*u),1,ChapterEntryPresentation.RewardMaterials(profile,node,difficulty,session.SelectedChapterTier),u);at+=42;
             Text(new Rect((infoX+16)*u,at*u,(infoWidth-32)*u,nextH*u),next,Mathf.RoundToInt(12*u),pale,false,true);
             y+=mainH+16;

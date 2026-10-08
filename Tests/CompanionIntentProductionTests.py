@@ -7,7 +7,7 @@ def member(signature):
  s=(root/'Assets/Scripts/Combat/SummonedCompanion.cs').read_text();start=s.index(signature);end=s.index('{',start)+1;depth=1
  while depth:depth+=(s[end]=='{')-(s[end]=='}');end+=1
  return s[start:end]
-methods='\n'.join(member(x) for x in ['private sealed class BondState','private static BondState State(', 'public static SummonedCompanion[] Snapshot(', 'public static bool SetFreeFocus(', 'public static bool FreeRecall(', 'public static EnemyController ExplicitFocus(', 'public static SummonedCompanion CastContract(', 'private bool ValidTarget(', 'private void Command(', 'private EnemyController AcquireTarget()', 'private void AdvanceCommand(', 'private bool LegalPackTarget(', 'private bool PackCanReach(', 'private struct PackPathProbe', 'private EnemyController AcquirePackTarget()', 'public static bool IsFreeRecalled(', 'public static bool FreeAttack(', 'public void OnConfirmedHit(', 'public bool EmpoweredAttackActive', 'public void RecordEmpoweredHit(', 'public static bool EmpoweredHitFeedback(', 'private float AttackPreparation('])
+methods='\n'.join(member(x) for x in ['private sealed class BondState','private static BondState State(', 'public static SummonedCompanion[] Snapshot(', 'public static void DescribeRoster(', 'public static bool SetFreeFocus(', 'public static bool FreeRecall(', 'public static EnemyController ExplicitFocus(', 'public static SummonedCompanion CastContract(', 'private bool ValidTarget(', 'private void Command(', 'private EnemyController AcquireTarget()', 'private void AdvanceCommand(', 'private bool LegalPackTarget(', 'private bool PackCanReach(', 'private struct PackPathProbe', 'private EnemyController AcquirePackTarget()', 'public static bool IsFreeRecalled(', 'public static bool FreeAttack(', 'public void OnConfirmedHit(', 'public bool EmpoweredAttackActive', 'public void RecordEmpoweredHit(', 'public static bool EmpoweredHitFeedback(', 'private float AttackPreparation('])
 if '--legacy-clear' in sys.argv:methods=methods.replace('BondState state = State(owner);','BondState state = State(owner); state.Directive.Clear();')
 shell=r'''
 using System;using System.Collections.Generic;using UnityEngine;
@@ -144,19 +144,33 @@ namespace Emberfall {
    wolf.commandTime=0;wolf.RecordEmpoweredHit(a,1,true);check(EmpoweredHitFeedback(owner,out sequence,out hits,out age)&&sequence==firstSequence+1,"inflight empowered release snapshot survives command expiry");
    Time.time+=2.1f;check(!EmpoweredHitFeedback(owner,out sequence,out hits,out age),"feedback expires without renewing opportunity");
    wolf.RecordEmpoweredHit(a,1,true);owner.CombatEpoch++;check(!EmpoweredHitFeedback(owner,out sequence,out hits,out age),"epoch cancels old feedback");
+   active.Clear();bonds.Clear();var live=new PlayerController();var actualGame=new GameSession{Player=live};GameSession.Instance=actualGame;var aim=new EnemyController();aim.transform.position=new Vector3(5,0,0);actualGame.Enemies.Add(aim);live.AimTarget=aim;var hud=new GameUI(actualGame);
+   check(!hud.Observe().FocusEnabled&&!hud.Observe().RecallEnabled,"HUD disables both free orders without a live roster");
+   Summon(live,actualGame,Kind.Wolf,1,Vector3.zero,10,true);check(hud.Observe().FocusEnabled&&hud.Observe().RecallEnabled&&!hud.Observe().FocusActive,"new roster advertises legal free orders without invented cooldown");
+   for(int i=0;i<1000;i++)check(SetFreeFocus(live,aim)&&hud.Observe().FocusActive&&!hud.Observe().RecallActive,"repeated focus keeps actual live order active");
+   aim.IsDead=true;check(!hud.Observe().FocusEnabled&&!hud.Observe().FocusActive,"dead aim and resolved team target clear focus HUD");aim.IsDead=false;
+   check(FreeRecall(live)&&hud.Observe().RecallActive&&hud.Observe().RecallName=="出击","real recall advertises active protection intent and resume action");
+   check(FreeAttack(live)&&!hud.Observe().RecallActive,"resume immediately removes actual recall marker");live.AimTarget=null;check(!hud.Observe().FocusEnabled&&hud.Observe().FocusReason=="无目标"&&hud.Observe().RecallEnabled,"missing aim only disables focus");live.AimTarget=aim;aim.transform.position=new Vector3(15,0,0);check(!hud.Observe().FocusEnabled&&hud.Observe().FocusReason=="目标太远","range reason matches real14 metre command gate");aim.transform.position=new Vector3(5,0,0);
+   SetFreeFocus(live,aim);actualGame.Enemies.Remove(aim);check(!hud.Observe().FocusEnabled&&!hud.Observe().FocusActive,"removed encounter target cannot leave focus active");actualGame.Enemies.Add(aim);FreeRecall(live);active.Clear();check(!hud.Observe().RecallEnabled&&!hud.Observe().RecallActive,"lost roster removes active marker despite retained buffered order");
+   Summon(live,actualGame,Kind.Wolf,1,Vector3.zero,10,true);live.CombatEpoch++;check(!hud.Observe().RecallActive&&!hud.Observe().FocusActive,"new world epoch clears old directive state");
+   actualGame.InputBlocked=true;check(!hud.Observe().FocusEnabled&&!hud.Observe().RecallEnabled,"blocked combat never advertises actionable commands");actualGame.InputBlocked=false;live.IsDead=true;check(!hud.Observe().FocusEnabled&&!hud.Observe().RecallEnabled,"owner death disables actual command adapter");
    return n;
   }
  }
 }
 class Program{static void Main(){Console.WriteLine("PASS: "+Emberfall.SummonedCompanion.Verify()+" production companion intent assertions");}}
 '''.replace('METHODS',methods)
+ui_source=(root/'Assets/Scripts/UI/GameUI.CombatOpportunities.cs').read_text();start=ui_source.index('private CompanionCommandPresentation CompanionCommandState()');end=ui_source.index('{',start)+1;depth=1
+while depth:depth+=(ui_source[end]=='{')-(ui_source[end]=='}');end+=1
+adapter='namespace Emberfall {public sealed class GameUI{GameSession session;enum Panel{None,Menu}Panel panel;public GameUI(GameSession owner){session=owner;}public CompanionCommandPresentation Observe()=>CompanionCommandState();'+ui_source[start:end]+'}}'
+shell=shell.replace('class Program{',adapter+'class Program{',1)
 shell=shell.replace('public class ProgressionStub{','public class ProgressionStub{public float MechanicPowerMultiplier(EquipmentMechanic m)=>1;')
 shell=shell.replace('public static class GameBalance {','public static class GameBalance {public const float ArcanistFinaleRadius=9.5f,ArcanistPulseRadius=8f;')
 
 if __name__ == '__main__':
  spec=importlib.util.spec_from_file_location('cv',root/'Tools/cloud-validation.py');cv=importlib.util.module_from_spec(spec);spec.loader.exec_module(cv)
  with tempfile.TemporaryDirectory(prefix='companion-intent-') as folder:
-  out=Path(folder);(out/'Replay.cs').write_text(shell);p=cv.write_project(out/'project',[out/'Replay.cs',root/'Assets/Scripts/Combat/CompanionDirective.cs',root/'Assets/Scripts/Combat/CompanionRules.cs'],program='')
+  out=Path(folder);(out/'Replay.cs').write_text(shell);p=cv.write_project(out/'project',[out/'Replay.cs',root/'Assets/Scripts/Combat/CompanionDirective.cs',root/'Assets/Scripts/Combat/CompanionRules.cs',root/'Assets/Scripts/UI/CompanionCommandPresentation.cs'],program='')
   p.write_text(p.read_text().replace('<OutputType>Library</OutputType>','<OutputType>Exe</OutputType>'))
   config=out/'NuGet.Config';config.write_text('<configuration><packageSources><clear /></packageSources></configuration>');env=os.environ.copy();env.update(DOTNET_CLI_HOME=str(out/'cli'),DOTNET_NOLOGO='1',DOTNET_CLI_TELEMETRY_OPTOUT='1')
   dotnet=sys.argv[1] if len(sys.argv)>1 else 'dotnet';subprocess.run([dotnet,'build',str(p),'--configfile',str(config),'-v:q'],env=env,check=True);subprocess.run([dotnet,str(p.parent/'bin/Debug/net8.0/Validation.dll')],env=env,check=True)

@@ -71,6 +71,12 @@ namespace Emberfall
             else if(bowRig!=null)
                 for(int side=-1;side<=1;side+=2)
                     CostumeMesh("Fashion bow limb crest",style,fashionWeapon,new Vector3(.025f,side*weaponStructure.BowReach*.84f,.10f),new Vector3(.5f,.26f,.5f),accent,style==WingSilhouette.Crystal?VisualSurface.Crystal:VisualSurface.Wood).localRotation=Quaternion.Euler(0,0,side<0?180:0);
+            if(fashion.rarity==Rarity.Legendary)
+            {
+                Vector3 at=swordRig!=null?WeaponAnchorLocal(WeaponVisualAnchor.SwordGuard):staffRig!=null?WeaponAnchorLocal(WeaponVisualAnchor.StaffCore):new Vector3(0,0,.2f);
+                for(int side=-1;side<=1;side+=2)
+                    CostumeMesh("Legendary weapon suncrest",WingSilhouette.Crystal,fashionWeapon,bowRig!=null?new Vector3(.03f,side*weaponStructure.BowReach*.78f,.20f):at+new Vector3(side*.12f,.035f,.025f),new Vector3(.24f,.23f,.20f),Color.Lerp(accent,Color.white,.4f),VisualSurface.Crystal).localRotation=Quaternion.Euler(0,0,-side*(18+(int)fashion.AppearanceRarity*7));
+            }
             int rank=(int)fashion.AppearanceRarity;
             if(staffRig!=null&&heroClass==HeroClass.Summoner)
             {
@@ -94,8 +100,8 @@ namespace Emberfall
                     }
                     else if(bowRig!=null)
                     {
-                        Vector3 at=new Vector3(.035f,side*weaponStructure.BowReach*(.55f+layer*.13f),.17f);
-                        CostumeMesh("Rainbow bow flight crest",WingSilhouette.Crystal,fashionWeapon,at,new Vector3(.5f,.3f,.5f),layer%2==0?accent:new Color(.2f,.85f,.9f),VisualSurface.Crystal).localRotation=Quaternion.Euler(0,0,side<0?245:65);
+                        Vector3 at=new Vector3(.035f,side*weaponStructure.BowReach*(.74f+layer*.10f),.17f);
+                        CostumeMesh("Rainbow bow flight crest",WingSilhouette.Crystal,fashionWeapon,at,new Vector3(.38f,.24f,.36f),layer%2==0?accent:new Color(.2f,.85f,.9f),VisualSurface.Crystal).localRotation=Quaternion.Euler(0,0,side<0?245:65);
                     }
                     else if(staffRig!=null&&heroClass==HeroClass.Arcanist)
                     {
@@ -109,6 +115,18 @@ namespace Emberfall
                     }
                 }
             }
+        }
+        private void BuildGearSignature(EquipmentAppearance look,Transform parent,Vector3 centre)
+        {
+            // At most five solid inlays, two quality facets and two crown prongs; no particles, lights or transparent shell.
+            int layers=(look.LevelBand+1)/2;
+            for(int i=0;i<layers;i++)
+                Part("Ten-level inlay "+look.LevelBand,PrimitiveType.Cube,centre+new Vector3((i-2)*.034f,0,.045f),
+                    new Vector3(.025f,.035f+look.LevelBand*.0012f,.018f),i%2==0?look.Metal:look.Accent,parent,VisualSurface.Metal);
+            if(look.RarityRank>=1)for(int side=-1;side<=1;side+=2)
+                Part("Quality-set facet",PrimitiveType.Cube,centre+new Vector3(side*.072f,-.035f,.042f),new Vector3(.024f,.024f+look.RarityRank*.012f,.020f),look.Accent,parent,VisualSurface.Crystal).localRotation=Quaternion.Euler(0,0,side*35);
+            if(look.RarityRank==3)for(int side=-1;side<=1;side+=2)
+                GlowingPart("Legendary crown edge",PrimitiveType.Cube,centre+new Vector3(side*.10f,.035f,.025f),new Vector3(.022f,.10f,.022f),look.Glow,parent).localRotation=Quaternion.Euler(0,0,side*25);
         }
         private void BuildRareWeaponFashion(Color accent)
         {

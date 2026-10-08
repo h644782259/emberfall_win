@@ -97,6 +97,7 @@ namespace Emberfall
 
         public bool ConfirmBlessing(int index)
         {
+            if(Progression.Profile.pendingFashionChest||Progression.Profile.pendingChestReveal)return false;
             if(ChapterActive)return false;
             if(RoomChainRun!=null)return ConfirmRoomInterlude(index);
             if(ModeRun!=null)return ConfirmArenaBlessing(index);

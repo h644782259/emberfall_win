@@ -16,11 +16,23 @@ namespace Emberfall
         private bool rewardSoundPlayed;
         private string chestReceiptId;
         private string chestQualificationId;
+        private bool chestRecoveryService;
+        private void OpenChestRecoveryService()
+        {
+            if(!session.Progression.Profile.pendingFashionChest||string.IsNullOrEmpty(session.Progression.LastError))return;
+            // Only an explicit failure-recovery action may visit the merchant; eligibility stays persisted.
+            if(session.InDungeon)session.ReturnToCamp();
+            if(!HubServicesAvailable)return;
+            chestRecoveryService=true;merchantShopOpen=true;smithShopOpen=false;inventoryHubNpc=HubNpcKind.Merchant;
+            SelectMerchantMode(2,true);panel=Panel.Inventory;session.SetUIBlocking(true);BlockUITransition();
+        }
         private void EnsurePendingChestPanel()
         {
             if(session==null||!session.HasStarted||session.Paused||session.IsDead)return;
             var profile=session.Progression.Profile;
-            if(!profile.pendingFashionChest&&!profile.pendingChestReveal)return;
+            if(!profile.pendingFashionChest&&!profile.pendingChestReveal){chestRecoveryService=false;return;}
+            if(chestRecoveryService&&panel==Panel.Inventory&&merchantShopOpen)return;
+            chestRecoveryService=false;
             if(panel!=Panel.None&&panel!=Panel.Chests&&panel!=Panel.Summary)return;
             if(panel!=Panel.Chests||chestQualificationId!=profile.pendingChestQualificationId)
             {
@@ -76,7 +88,7 @@ namespace Emberfall
             Text(new Rect(w.x+28,w.y+20,w.width-56,18),"F A L L E N   S T A R",10,gold,true);
             Text(new Rect(w.x+28,w.y+45,w.width-248,42),revealed?(complete?"宝箱奖励":"开启宝箱"):"通关馈赠",28,pale,true);
             Text(new Rect(w.x+28,w.y+92,w.width-56,24),revealed?(complete?ChestRevealPresentation.Outcome(reward):"已保存奖励 · 可以跳过揭晓动画"):ChestRevealPresentation.ChoiceDisclosure,14,muted);
-            Rect body=new Rect(w.x+28,w.y+132,w.width-56,w.height-208);
+            Rect body=new Rect(w.x+28,w.y+132,w.width-56,w.height-(!revealed&&string.IsNullOrEmpty(progression.LastError)?168:208));
             if(complete)DrawDesktopChestResult(body,reward,accent);
             else if(revealed)DrawChestRevealTransition(body,reward,new Rect(body.x,body.y,ChestRevealPresentation.DesktopArtSize(body.height),ChestRevealPresentation.DesktopArtSize(body.height)));
             else
@@ -100,7 +112,12 @@ namespace Emberfall
                 if(PrimaryButton(new Rect(w.xMax-208,w.yMax-58,180,42), complete?"收下":"跳过动画", jade, !chestDetails, null, true))
                 {if(!complete)chestRevealedAt=Time.unscaledTime-ChestDuration;else FinishChestReveal();BlockUITransition();}
             }
-            else Text(new Rect(w.x+28,w.yMax-50,w.width-56,36),string.IsNullOrEmpty(progression.LastError)?"开启后奖励先保存，再展示结果":progression.LastError,13,muted,false,true);
+            else
+            {
+                bool failed=!string.IsNullOrEmpty(progression.LastError);
+                Text(new Rect(w.x+28,w.yMax-50,w.width-(failed?300:56),36),failed?progression.LastError:"开启后奖励先保存，再展示结果",13,muted,false,true);
+                if(failed&&Button(new Rect(w.xMax-260,w.yMax-58,232,42),"商人 · 整理容量",jade))OpenChestRecoveryService();
+            }
         }
         private void DrawDesktopChestRules(Rect r)
         {

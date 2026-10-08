@@ -104,7 +104,7 @@ namespace Emberfall
             Application.wantsToQuit += CanQuitSafely;
             Progression.Changed += OnProgressChanged;
             Progression.LeveledUp += OnLevelUp;
-            world = WorldBuilder.Build(ZoneKind.Wilderness);
+            // The title owns an independent backdrop; no camp is built or simulated here.
             ConfigureCamera();
             ui = gameObject.AddComponent<GameUI>();
             ui.Initialize(this);
@@ -617,7 +617,8 @@ namespace Emberfall
             InDungeon = false;
             ResetExpedition(false);
             DungeonCleared = false;
-            world = WorldBuilder.Build(ZoneKind.Wilderness);
+            // BeginAdventure builds the camp only after a successful resume/create.
+            world = null;
             Camera.main.GetComponent<AdventureCamera>().Snap();
             UpdateTimeScale();
             return true;

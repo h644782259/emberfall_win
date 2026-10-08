@@ -111,7 +111,7 @@ namespace Emberfall
         {
             Color rarity=GameBalance.RarityColor(item.rarity);
             Fill(tile,card);Border(tile,rarity);
-            DrawIcon(new Rect(tile.x+6*u,tile.y+5*u,tile.width-12*u,tile.height-17*u),UIIconAtlas.EquipmentCardIcon(item.slot,item.level),rarity);
+            DrawIcon(new Rect(tile.x+6*u,tile.y+5*u,tile.width-12*u,tile.height-17*u),UIIconAtlas.EquipmentCardIcon(item.slot,item.level,item.rarity,session.Progression.Profile.heroClass),rarity);
             // Counted pips encode rarity without relying on color alone.
             for(int pip=0;pip<=(int)item.rarity;pip++)Fill(new Rect(tile.x+3*u+pip*5*u,tile.y+3*u,3*u,3*u),pale);
             Text(new Rect(tile.x+2*u,tile.yMax-15*u,tile.width-4*u,14*u),"Lv"+item.level,Mathf.RoundToInt(9*u),pale,true,false,TextAnchor.MiddleRight);
@@ -194,13 +194,13 @@ namespace Emberfall
             else if(fashion)
             {
                 var current=session.Progression.EquippedFashion(appearance.slot);bool worn=current!=null&&current.id==appearance.id;
-                if(InventoryPictogramAction(new Rect(r.x+8*u,r.y+68*u,r.width-16*u,44*u),worn?"卸下":"穿戴",UIIconAtlas.FashionCardIcon(appearance.slot),true,worn,true))
+                if(InventoryPictogramAction(new Rect(r.x+8*u,r.y+68*u,r.width-16*u,44*u),worn?"卸下":"穿戴",UIIconAtlas.FashionCardIcon(appearance.slot,(int)appearance.AppearanceRarity,session.Progression.Profile.heroClass),true,worn,true))
                 {MobileFashionResult(worn?session.Progression.UnequipFashion(appearance.slot):session.Progression.EquipFashion(appearance.id),worn?"已卸下外观":"外观已穿戴");inventoryPopupOpened=Time.frameCount;}
             }
             else
             {
                 bool worn=IsEquipped(item);
-                if(InventoryPictogramAction(new Rect(r.x+6*u,r.y+68*u,actionWidth,44*u),worn?"脱下":"穿戴",UIIconAtlas.EquipmentCardIcon(item.slot,item.level),worn||item.level<=session.Progression.Profile.level,worn,true))
+                if(InventoryPictogramAction(new Rect(r.x+6*u,r.y+68*u,actionWidth,44*u),worn?"脱下":"穿戴",UIIconAtlas.EquipmentCardIcon(item.slot,item.level,item.rarity,session.Progression.Profile.heroClass),worn||item.level<=session.Progression.Profile.level,worn,true))
                 {
                     bool saved=worn?session.Progression.Unequip(item.slot):session.Progression.Equip(item.id);
                     MobileInventoryResult(saved,worn?"装备已脱下":"装备已穿戴");

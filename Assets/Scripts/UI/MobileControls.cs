@@ -57,10 +57,12 @@ namespace Emberfall
         private static MobileControlLayout cachedLayout;
         private static Vector3 cachedLayoutInputs;
         private static int cachedPosition;
+        private static bool cachedIPad;
+        public static bool IsIPad { get { return Active && MobileTitleLayout.IsIPad(SystemInfo.deviceModel); } }
         public static MobileControlLayout Layout
         {
             get { Rect safe=SafeArea;Vector3 input=new Vector3(safe.width,safe.height,Screen.dpi);
-                if(cachedLayout==null||input!=cachedLayoutInputs||cachedPosition!=EffectPreferences.TouchPosition){cachedLayout=new MobileControlLayout(input.x,input.y,input.z,EffectPreferences.TouchPosition);cachedLayoutInputs=input;cachedPosition=EffectPreferences.TouchPosition;}
+                if(cachedLayout==null||input!=cachedLayoutInputs||cachedPosition!=EffectPreferences.TouchPosition||cachedIPad!=IsIPad){cachedLayout=new MobileControlLayout(input.x,input.y,input.z,EffectPreferences.TouchPosition,IsIPad);cachedLayoutInputs=input;cachedPosition=EffectPreferences.TouchPosition;cachedIPad=IsIPad;}
                 return cachedLayout; }
         }
         private float Scale { get { return Layout.Scale; } }

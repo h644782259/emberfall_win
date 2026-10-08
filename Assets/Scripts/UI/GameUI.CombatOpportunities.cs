@@ -10,9 +10,21 @@ namespace Emberfall
         private float commandStatusUntil;
         private int commandEpoch;
         public bool CompanionCommandsVisible {get{return session!=null&&session.Player!=null&&session.Player.HeroClass==HeroClass.Summoner&&session.HasStarted&&!session.IsDead;}}
+        private CompanionCommandPresentation CompanionCommandState()
+        {
+            var hero=session.Player;int count;float lifetime;
+            SummonedCompanion.DescribeRoster(hero,out count,out lifetime);
+            var target=hero.AimTarget;
+            bool valid=target!=null&&!target.IsDead&&target.gameObject.activeInHierarchy&&session.Enemies.Contains(target);
+            return new CompanionCommandPresentation(count,session.InputBlocked||session.CombatEnded||!session.HasStarted||hero.IsDead||hero.HeroClass!=HeroClass.Summoner||panel!=Panel.None,
+                valid,valid&&CombatFx.Flat(target.transform.position-hero.transform.position).sqrMagnitude<=196f,
+                SummonedCompanion.ExplicitFocus(hero)!=null,SummonedCompanion.IsFreeRecalled(hero));
+        }
         public void ActivateFreeCommand(bool recall)
         {
             if(!CompanionCommandsVisible||session.InputBlocked||panel!=Panel.None)return;
+            var state=CompanionCommandState();
+            if(recall?!state.RecallEnabled:!state.FocusEnabled)return;
             var hero=session.Player;var target=hero.AimTarget;
             bool attack=recall&&SummonedCompanion.IsFreeRecalled(hero);
             bool success=recall?(attack?SummonedCompanion.FreeAttack(hero):SummonedCompanion.FreeRecall(hero)):SummonedCompanion.SetFreeFocus(hero,target);
@@ -22,20 +34,29 @@ namespace Emberfall
         private void DrawCompanionCommands()
         {
             if(!CompanionCommandsVisible)return;
+            var state=CompanionCommandState();
             float previousOpacity=controlOpacity;if(MobileControls.Active)controlOpacity=EffectPreferences.TouchOpacity;
+            float u=MobileControls.Active?TouchRatio:1f;
             for(int i=0;i<2;i++)
             {
-                bool recall=i==1;
-                Rect r=MobileControls.Active?TouchRect(recall?MobileControls.Layout.RecallCommand:MobileControls.Layout.FocusCommand):new Rect(hotbarBounds.x-76,hotbarBounds.y+27+i*50,66,46);
-                blockedRects.Add(r);if(MobileControls.Active)r=MobileVisualRect(r);
-                string caption=recall?(SummonedCompanion.IsFreeRecalled(session.Player)?"出击":"召回"):"集火";
-                if(!session.InputBlocked&&commandEpoch==session.Player.CombatEpoch&&Time.unscaledTime<commandStatusUntil&&commandRecall==recall)caption=commandStatus;
-                Box(r,jade,false);
-                Text(new Rect(r.x,r.y+4*(MobileControls.Active?TouchRatio:1),r.width,r.height*.5f),caption,MobileControls.Active?TouchFont(11):12,pale,true,false,TextAnchor.MiddleCenter);
-                Text(new Rect(r.x,r.y+r.height*.55f,r.width,r.height*.35f),"免费",MobileControls.Active?TouchFont(9):10,jade,false,false,TextAnchor.MiddleCenter);
-                // MobileControls owns all physical pointers; the IMGUI surface is
-                // presentation-only on touch devices, preventing duplicate orders.
-                if(!MobileControls.Active&&GUI.Button(r,GUIContent.none,invisibleButton))ActivateFreeCommand(recall);
+                bool recall=i==1,enabled=recall?state.RecallEnabled:state.FocusEnabled,active=recall?state.RecallActive:state.FocusActive;
+                Rect hit=MobileControls.Active?TouchRect(recall?MobileControls.Layout.RecallCommand:MobileControls.Layout.FocusCommand):new Rect(hotbarBounds.x-76,hotbarBounds.y+27+i*50,66,46);
+                blockedRects.Add(hit);Rect r=MobileControls.Active?MobileVisualRect(hit):hit;
+                string name=recall?state.RecallName:"集火",reason=recall?state.RecallReason:state.FocusReason;
+                string caption=reason.Length>0?reason:active?(recall?"守护":"集火中"):recall?"随行":"集火";
+                if(!session.InputBlocked&&commandEpoch==session.Player.CombatEpoch&&Time.unscaledTime<commandStatusUntil&&commandRecall==recall&&reason.Length==0&&!active)caption=commandStatus;
+                Color ink=enabled?(active?gold:jade):muted;
+                DrawMobileControlSurface(r,enabled,active);
+                float size=Mathf.Min(r.width,r.height)*.52f;
+                DrawIcon(new Rect(r.center.x-size*.5f,r.y+4*u,size,size),UIIconAtlas.CompanionCommand(recall,state.RecallActive),ink);
+                if(active)DrawIcon(new Rect(r.xMax-14*u,r.y+2*u,12*u,12*u),UIIconAtlas.Utility("confirm"),pale);
+                if(!enabled)Fill(new Rect(r.center.x-7*u,r.center.y,14*u,2*u),pale);
+                Text(new Rect(r.x,r.yMax-17*u,r.width,16*u),caption,Mathf.RoundToInt(10*u),ink,true,false,TextAnchor.MiddleCenter);
+                if(hit.Contains(Mouse))tooltip=name+(reason.Length>0?" · "+reason:active?" · 指令生效":" · 免费指令");
+                bool prior=GUI.enabled;GUI.enabled=prior&&enabled;
+                // Touch ownership remains with MobileControls; there is no second command dispatch.
+                if(!MobileControls.Active&&GUI.Button(hit,new GUIContent("",name),invisibleButton))ActivateFreeCommand(recall);
+                GUI.enabled=prior;
             }
             controlOpacity=previousOpacity;
         }

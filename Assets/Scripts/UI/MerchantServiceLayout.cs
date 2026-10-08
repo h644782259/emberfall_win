@@ -7,9 +7,9 @@ namespace Emberfall
         private readonly float x,y,w,h,tileWidth;
         public readonly int Columns;
         public static bool StablePanelEvent(bool blocked,bool active,bool paint) {return !blocked||active&&paint;}
-        public MerchantServiceLayout(float width,float height)
+        public MerchantServiceLayout(float width,float height,bool ipad=false)
         {
-            width=Math.Max(568,width);height=Math.Max(320,height);w=Math.Min(780,width-24);h=Math.Min(600,height-16);x=(width-w)/2;y=(height-h)/2;
+            width=Math.Max(568,width);height=Math.Max(320,height);w=Math.Min(ipad?1040:780,width-24);h=Math.Min(ipad?780:600,height-16);x=(width-w)/2;y=(height-h)/2;
             Header=new MobilePanelLayout.Area(x+12,y+10,w-320,36);Balance=new MobilePanelLayout.Area(x+w-292,y+12,224,28);Close=new MobilePanelLayout.Area(x+w-52,y+10,40,36);
             Body=new MobilePanelLayout.Area(x+12,y+110,w-24,h-178);
             Columns=Math.Max(3,(int)((Body.Width-16+8)/140));

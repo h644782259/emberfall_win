@@ -52,7 +52,7 @@ namespace Emberfall
             else DrawRecapCards(layout,data,unit,statusHeight);
             EndTouchScroll();
             Rect primary=RecapRect(layout.Primary,unit);
-            if(death||snapshot==null||!snapshot.Won||session.ModeRewardPending||!string.IsNullOrEmpty(recapError))
+            if(death)
             {
                 float menuWidth=Mathf.Min(152*unit,primary.width*.35f);
                 if(NavigationButton(new Rect(primary.x,primary.y,menuWidth,primary.height), "菜单 / 存档", jade))session.SetPaused(true);

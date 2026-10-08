@@ -346,11 +346,12 @@ namespace Emberfall
                     GlowingPart("Weapon aura shard", PrimitiveType.Sphere,
                         new Vector3(side * .32f, swordRig != null ? .76f : staffRig != null ? weaponStructure.StaffCore + .15f : 0, .08f),
                         Vector3.one * (look.HasCrown ? .16f : .11f), look.Glow, equipmentWeapon);
+            BuildGearSignature(look,equipmentWeapon,swordRig!=null?WeaponAnchorLocal(WeaponVisualAnchor.SwordGuard):staffRig!=null?WeaponAnchorLocal(WeaponVisualAnchor.StaffCollar):new Vector3(0,0,.27f));
         }
 
         private void BuildEquipmentArmor(EquipmentAppearance look)
         {
-            if(heroClass!=HeroClass.Vanguard){BuildClassEquipmentArmor(look);return;}
+            if(heroClass!=HeroClass.Vanguard){BuildClassEquipmentArmor(look);BuildGearSignature(look,equipmentArmor,new Vector3(0,1.33f,.40f));return;}
             equipmentArmor = GearRoot("Equipped Armor", spine);
             equipmentArmor.localPosition = Vector3.down * 1.12f;
             float width = .68f + look.Tier * .065f;
@@ -388,6 +389,7 @@ namespace Emberfall
             if (look.HasAura)
                 GlowingPart("Armor heart", PrimitiveType.Sphere, new Vector3(0, 1.39f, .46f),
                     Vector3.one * (look.HasCrown ? .2f : .13f), look.Glow, equipmentArmor);
+            BuildGearSignature(look,equipmentArmor,new Vector3(0,1.33f,.40f));
         }
 
         private void BuildEquipmentRelic(EquipmentAppearance look)
@@ -404,6 +406,7 @@ namespace Emberfall
                     Part("Relic "+piece.Kind,shape,at,scale,color,equipmentRelic,piece.Kind==RelicPartKind.Gem?VisualSurface.Crystal:VisualSurface.Metal);
                 part.localRotation=Quaternion.Euler(piece.Shape==AttachmentShape.Disc?90:0,0,piece.Roll);
             }
+            BuildGearSignature(look,equipmentRelic,new Vector3(0,.88f,.43f));
         }
 
         public static CombatModel Enemy(Transform parent, EnemyKind kind, bool boss)

@@ -67,7 +67,7 @@ namespace Emberfall
                 {
                     Text(new Rect(4*u,y*u,(width-8)*u,24*u),"外观物品",Mathf.RoundToInt(15*u),pale,true);
                     Rect icon=new Rect(4*u,(y+30)*u,56*u,56*u);Color tint=GameBalance.RarityColor(reward.Rarity.Value);
-                    Fill(icon,card);Border(icon,tint);DrawIcon(new Rect(icon.x+8*u,icon.y+8*u,40*u,40*u),UIIconAtlas.FashionCardIcon(reward.Slot.Value),tint);
+                    Fill(icon,card);Border(icon,tint);DrawIcon(new Rect(icon.x+8*u,icon.y+8*u,40*u,40*u),UIIconAtlas.FashionCardIcon(reward.Slot.Value,reward.appearanceTier>=0?reward.appearanceTier:(int)reward.Rarity.Value,session.Progression.Profile.heroClass),tint);
                     Text(new Rect(72*u,(y+30)*u,(width-80)*u,h*u),name,Mathf.RoundToInt(14*u),pale,false,true);
                 }
                 y+=30+h+12;

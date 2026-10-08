@@ -47,7 +47,7 @@ namespace Emberfall
                 rewardSoundPlayed = true;
                 GameAudio.Play(reward == null || !reward.Rarity.HasValue || reward.Duplicate ? SoundCue.UI : reward.Rarity.Value == Rarity.Legendary ? SoundCue.Victory : reward.Rarity.Value == Rarity.Epic ? SoundCue.LevelUp : reward.Rarity.Value == Rarity.Rare ? SoundCue.Loot : SoundCue.Cast);
             }
-            var layout = MobilePanelGeometry();
+            var layout = revealed||!string.IsNullOrEmpty(progression.LastError)?MobilePanelGeometry():new MobilePanelLayout(MobileControls.Layout.Width,MobileControls.Layout.Height,false);
             string title = revealed ? complete ? "宝箱奖励" : "开启宝箱" : "遗迹馈赠";
             string subtitle = revealed ? complete ? ChestRevealPresentation.Outcome(reward) : "正在揭晓已保存的奖励" : "直接开启 · 奖励先保存";
             if (DrawMobilePanelChrome(layout, title, subtitle, showClose:false)) return;
@@ -56,9 +56,9 @@ namespace Emberfall
 
             bool firstTrial=complete&&CanTrialChestReward(reward);int footerCount=firstTrial?2:1;
             if(firstTrial&&Button(MobilePanelRect(layout.FooterButton(0,2)),"收下并查看时装",jade)){AcceptChestForTrial();return;}
-            if (Button(MobilePanelRect(layout.FooterButton(footerCount-1,footerCount)),revealed?complete?"收下":"跳过动画":"返回",gold))
+            if(!revealed&&!string.IsNullOrEmpty(progression.LastError)&&Button(MobilePanelRect(layout.FooterButton(0,1)),"商人 · 整理容量 / 资源",jade)){OpenChestRecoveryService();return;}
+            if (revealed && Button(MobilePanelRect(layout.FooterButton(footerCount-1,footerCount)),complete?"收下":"跳过动画",gold))
             {
-                if(!revealed){ClosePanel();BlockUITransition();return;}
                 if (!complete) chestRevealedAt = Time.unscaledTime - ChestDuration;
                 else
                 {
