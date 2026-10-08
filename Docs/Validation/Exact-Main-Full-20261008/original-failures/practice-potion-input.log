@@ -1,0 +1,19 @@
+/tmp/practice-potion-ylx3iap0/Fixture.cs(94,374): warning CS0219: The variable 'role' is assigned but its value is never used [/tmp/practice-potion-ylx3iap0/project/Validation.csproj]
+/tmp/practice-potion-ylx3iap0/Actual.cs(61,13): error CS0103: The name 'EndHubNpcConversation' does not exist in the current context [/tmp/practice-potion-ylx3iap0/project/Validation.csproj]
+/tmp/practice-potion-ylx3iap0/Fixture.cs(73,125): warning CS0169: The field 'AdvancedSkillSequence.step' is never used [/tmp/practice-potion-ylx3iap0/project/Validation.csproj]
+/tmp/practice-potion-ylx3iap0/Fixture.cs(39,182): warning CS0067: The event 'ProgressionService.Changed' is never used [/tmp/practice-potion-ylx3iap0/project/Validation.csproj]
+/tmp/practice-potion-ylx3iap0/Fixture.cs(39,215): warning CS0067: The event 'ProgressionService.LeveledUp' is never used [/tmp/practice-potion-ylx3iap0/project/Validation.csproj]
+/tmp/practice-potion-ylx3iap0/CompanionBond.cs(4,24): warning CS0649: Field 'SummonedCompanion.BondState.EmpoweredHitSequence' is never assigned to, and will always have its default value 0 [/tmp/practice-potion-ylx3iap0/project/Validation.csproj]
+/tmp/practice-potion-ylx3iap0/Fixture.cs(21,136): warning CS0067: The event 'Application.wantsToQuit' is never used [/tmp/practice-potion-ylx3iap0/project/Validation.csproj]
+/tmp/practice-potion-ylx3iap0/Fixture.cs(73,130): warning CS0414: The field 'AdvancedSkillSequence.steps' is assigned but its value is never used [/tmp/practice-potion-ylx3iap0/project/Validation.csproj]
+
+The build failed. Fix the build errors and run again.
+
+Traceback (most recent call last):
+  File "/workspace/final-main-regression-win/Tests/PracticePotionInputProductionTests.py", line 49, in <module>
+    production.write_text(original.replace(member(original,'private void TickPractice()'),legacy_tick));run('live mobile input reaches actual practice potion once');print('PASS baseline pre-fix TickPractice reproduces lost mobile potion');production.write_text(original)
+                                                                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/final-main-regression-win/Tests/PracticePotionInputProductionTests.py", line 39, in run
+    if expected:assert q.returncode and expected in q.stdout+q.stderr
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError

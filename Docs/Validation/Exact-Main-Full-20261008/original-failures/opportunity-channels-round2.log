@@ -1,0 +1,17 @@
+current BUILD /tmp/opportunity-channels-crl5maxk/Player.cs(30,18): error CS0103: The name 'CanUseMovementSkillAt' does not exist in the current context [/tmp/opportunity-channels-crl5maxk/Test.csproj]
+/tmp/opportunity-channels-crl5maxk/Player.cs(32,18): error CS0103: The name 'SkillBudgetReady' does not exist in the current context [/tmp/opportunity-channels-crl5maxk/Test.csproj]
+
+Build FAILED.
+
+/tmp/opportunity-channels-crl5maxk/Player.cs(30,18): error CS0103: The name 'CanUseMovementSkillAt' does not exist in the current context [/tmp/opportunity-channels-crl5maxk/Test.csproj]
+/tmp/opportunity-channels-crl5maxk/Player.cs(32,18): error CS0103: The name 'SkillBudgetReady' does not exist in the current context [/tmp/opportunity-channels-crl5maxk/Test.csproj]
+    0 Warning(s)
+    2 Error(s)
+
+Time Elapsed 00:00:02.66
+ 
+Traceback (most recent call last):
+  File "/workspace/final-main-regression-win/Tests/OpportunityChannelsRound2Tests.py", line 37, in <module>
+    q=subprocess.run([dotnet,'build',str(proj),'--configfile',str(p/'NuGet.Config'),'-v:q'],env=env,capture_output=True,text=True);print(mode,'BUILD',q.stdout,q.stderr);assert q.returncode==0
+                                                                                                                                                                                ^^^^^^^^^^^^^^^
+AssertionError

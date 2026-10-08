@@ -1,0 +1,16 @@
+/tmp/mobile-pin-production-fwni1ad3/MobileControls.OpportunityInput.cs(14,63): error CS1061: 'GameUI' does not contain a definition for 'MobileOpportunityArea' and no accessible extension method 'MobileOpportunityArea' accepting a first argument of type 'GameUI' could be found (are you missing a using directive or an assembly reference?) [/tmp/mobile-pin-production-fwni1ad3/Test.csproj]
+
+Build FAILED.
+
+/tmp/mobile-pin-production-fwni1ad3/MobileControls.OpportunityInput.cs(14,63): error CS1061: 'GameUI' does not contain a definition for 'MobileOpportunityArea' and no accessible extension method 'MobileOpportunityArea' accepting a first argument of type 'GameUI' could be found (are you missing a using directive or an assembly reference?) [/tmp/mobile-pin-production-fwni1ad3/Test.csproj]
+    0 Warning(s)
+    1 Error(s)
+
+Time Elapsed 00:00:03.04
+Traceback (most recent call last):
+  File "/workspace/final-main-regression-win/Tests/MobileFloatingJoystickTests.py", line 27, in <module>
+    subprocess.run(build,env=env,check=True);subprocess.run(run,env=env,check=True)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/workspace/toolchain/dotnet/dotnet', 'build', '/tmp/mobile-pin-production-fwni1ad3/Test.csproj', '--configfile', '/tmp/mobile-pin-production-fwni1ad3/NuGet.Config', '-v:q']' returned non-zero exit status 1.

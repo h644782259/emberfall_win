@@ -1,0 +1,47 @@
+/tmp/mobile-opportunity-h05-u1qoil1o/GameUI.MobileFeedback.cs(23,59): error CS0103: The name 'MobileOpportunityArea' does not exist in the current context [/tmp/mobile-opportunity-h05-u1qoil1o/Test.csproj]
+/tmp/mobile-opportunity-h05-u1qoil1o/MobileControls.Feedback.cs(55,22): error CS0117: 'GUIStyle' does not contain a definition for 'wordWrap' [/tmp/mobile-opportunity-h05-u1qoil1o/Test.csproj]
+/tmp/mobile-opportunity-h05-u1qoil1o/MobileControls.Feedback.cs(55,36): error CS0117: 'GUIStyle' does not contain a definition for 'clipping' [/tmp/mobile-opportunity-h05-u1qoil1o/Test.csproj]
+/tmp/mobile-opportunity-h05-u1qoil1o/MobileControls.Feedback.cs(55,45): error CS0103: The name 'TextClipping' does not exist in the current context [/tmp/mobile-opportunity-h05-u1qoil1o/Test.csproj]
+/tmp/mobile-opportunity-h05-u1qoil1o/MobileControls.Feedback.cs(55,67): error CS0117: 'GUIStyle' does not contain a definition for 'padding' [/tmp/mobile-opportunity-h05-u1qoil1o/Test.csproj]
+/tmp/mobile-opportunity-h05-u1qoil1o/MobileControls.Feedback.cs(55,79): error CS0246: The type or namespace name 'RectOffset' could not be found (are you missing a using directive or an assembly reference?) [/tmp/mobile-opportunity-h05-u1qoil1o/Test.csproj]
+/tmp/mobile-opportunity-h05-u1qoil1o/MobileControls.Feedback.cs(59,37): error CS0246: The type or namespace name 'GUIContent' could not be found (are you missing a using directive or an assembly reference?) [/tmp/mobile-opportunity-h05-u1qoil1o/Test.csproj]
+/tmp/mobile-opportunity-h05-u1qoil1o/MobileControls.Feedback.cs(60,44): error CS0117: 'Mathf' does not contain a definition for 'Min' [/tmp/mobile-opportunity-h05-u1qoil1o/Test.csproj]
+/tmp/mobile-opportunity-h05-u1qoil1o/MobileControls.Feedback.cs(60,70): error CS0117: 'Mathf' does not contain a definition for 'Max' [/tmp/mobile-opportunity-h05-u1qoil1o/Test.csproj]
+/tmp/mobile-opportunity-h05-u1qoil1o/MobileControls.Feedback.cs(60,84): error CS0117: 'Mathf' does not contain a definition for 'Min' [/tmp/mobile-opportunity-h05-u1qoil1o/Test.csproj]
+/tmp/mobile-opportunity-h05-u1qoil1o/MobileControls.Feedback.cs(60,110): error CS1061: 'GUIStyle' does not contain a definition for 'CalcSize' and no accessible extension method 'CalcSize' accepting a first argument of type 'GUIStyle' could be found (are you missing a using directive or an assembly reference?) [/tmp/mobile-opportunity-h05-u1qoil1o/Test.csproj]
+/tmp/mobile-opportunity-h05-u1qoil1o/MobileControls.Feedback.cs(61,57): error CS1061: 'GUIStyle' does not contain a definition for 'CalcHeight' and no accessible extension method 'CalcHeight' accepting a first argument of type 'GUIStyle' could be found (are you missing a using directive or an assembly reference?) [/tmp/mobile-opportunity-h05-u1qoil1o/Test.csproj]
+
+Build FAILED.
+
+/tmp/mobile-opportunity-h05-u1qoil1o/GameUI.MobileFeedback.cs(23,59): error CS0103: The name 'MobileOpportunityArea' does not exist in the current context [/tmp/mobile-opportunity-h05-u1qoil1o/Test.csproj]
+/tmp/mobile-opportunity-h05-u1qoil1o/MobileControls.Feedback.cs(55,22): error CS0117: 'GUIStyle' does not contain a definition for 'wordWrap' [/tmp/mobile-opportunity-h05-u1qoil1o/Test.csproj]
+/tmp/mobile-opportunity-h05-u1qoil1o/MobileControls.Feedback.cs(55,36): error CS0117: 'GUIStyle' does not contain a definition for 'clipping' [/tmp/mobile-opportunity-h05-u1qoil1o/Test.csproj]
+/tmp/mobile-opportunity-h05-u1qoil1o/MobileControls.Feedback.cs(55,45): error CS0103: The name 'TextClipping' does not exist in the current context [/tmp/mobile-opportunity-h05-u1qoil1o/Test.csproj]
+/tmp/mobile-opportunity-h05-u1qoil1o/MobileControls.Feedback.cs(55,67): error CS0117: 'GUIStyle' does not contain a definition for 'padding' [/tmp/mobile-opportunity-h05-u1qoil1o/Test.csproj]
+/tmp/mobile-opportunity-h05-u1qoil1o/MobileControls.Feedback.cs(55,79): error CS0246: The type or namespace name 'RectOffset' could not be found (are you missing a using directive or an assembly reference?) [/tmp/mobile-opportunity-h05-u1qoil1o/Test.csproj]
+/tmp/mobile-opportunity-h05-u1qoil1o/MobileControls.Feedback.cs(59,37): error CS0246: The type or namespace name 'GUIContent' could not be found (are you missing a using directive or an assembly reference?) [/tmp/mobile-opportunity-h05-u1qoil1o/Test.csproj]
+/tmp/mobile-opportunity-h05-u1qoil1o/MobileControls.Feedback.cs(60,44): error CS0117: 'Mathf' does not contain a definition for 'Min' [/tmp/mobile-opportunity-h05-u1qoil1o/Test.csproj]
+/tmp/mobile-opportunity-h05-u1qoil1o/MobileControls.Feedback.cs(60,70): error CS0117: 'Mathf' does not contain a definition for 'Max' [/tmp/mobile-opportunity-h05-u1qoil1o/Test.csproj]
+/tmp/mobile-opportunity-h05-u1qoil1o/MobileControls.Feedback.cs(60,84): error CS0117: 'Mathf' does not contain a definition for 'Min' [/tmp/mobile-opportunity-h05-u1qoil1o/Test.csproj]
+/tmp/mobile-opportunity-h05-u1qoil1o/MobileControls.Feedback.cs(60,110): error CS1061: 'GUIStyle' does not contain a definition for 'CalcSize' and no accessible extension method 'CalcSize' accepting a first argument of type 'GUIStyle' could be found (are you missing a using directive or an assembly reference?) [/tmp/mobile-opportunity-h05-u1qoil1o/Test.csproj]
+/tmp/mobile-opportunity-h05-u1qoil1o/MobileControls.Feedback.cs(61,57): error CS1061: 'GUIStyle' does not contain a definition for 'CalcHeight' and no accessible extension method 'CalcHeight' accepting a first argument of type 'GUIStyle' could be found (are you missing a using directive or an assembly reference?) [/tmp/mobile-opportunity-h05-u1qoil1o/Test.csproj]
+    0 Warning(s)
+    12 Error(s)
+
+Time Elapsed 00:00:02.40
+
+Traceback (most recent call last):
+  File "/workspace/final-main-regression-win/Tests/MobileOpportunityPresentationTests.py", line 19, in <module>
+    run()
+  File "/workspace/final-main-regression-win/Tests/MobileOpportunityPresentationTests.py", line 15, in run
+    q=subprocess.run([dotnet,'build',str(proj),'--configfile',str(p/'NuGet.Config'),'-v:q'],env=env,capture_output=True,text=True);print(q.stdout+q.stderr);q.check_returncode()
+                                                                                                                                                            ^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 502, in check_returncode
+    raise CalledProcessError(self.returncode, self.args, self.stdout,
+subprocess.CalledProcessError: Command '['/workspace/toolchain/dotnet/dotnet', 'build', '/tmp/mobile-opportunity-h05-u1qoil1o/Test.csproj', '--configfile', '/tmp/mobile-opportunity-h05-u1qoil1o/NuGet.Config', '-v:q']' returned non-zero exit status 1.
+Traceback (most recent call last):
+  File "/workspace/final-main-regression-win/Tests/CombatOpportunitySlotProductionTests.py", line 6, in <module>
+    subprocess.run([sys.executable,str(root/'Tests/MobileOpportunityPresentationTests.py'),*sys.argv[1:]],check=True)
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3', '/workspace/final-main-regression-win/Tests/MobileOpportunityPresentationTests.py', '/workspace/toolchain/dotnet/dotnet']' returned non-zero exit status 1.

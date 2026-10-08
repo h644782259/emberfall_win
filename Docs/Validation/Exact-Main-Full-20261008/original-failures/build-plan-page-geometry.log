@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/workspace/final-main-regression-win/Tests/BuildPlanPageGeometryTests.py", line 35, in <module>
+    assert 'MobileControls.Active && rect.height>=44*TouchRatio ? TouchFont(15) : 15' in member(ui,'private bool Button('),'button font policy changed; update explicit boundary'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: button font policy changed; update explicit boundary

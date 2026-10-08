@@ -1,0 +1,16 @@
+/tmp/opportunity-input-x8zx3nzq/MobileControls.OpportunityInput.cs(14,63): error CS1061: 'GameUI' does not contain a definition for 'MobileOpportunityArea' and no accessible extension method 'MobileOpportunityArea' accepting a first argument of type 'GameUI' could be found (are you missing a using directive or an assembly reference?) [/tmp/opportunity-input-x8zx3nzq/Test.csproj]
+
+Build FAILED.
+
+/tmp/opportunity-input-x8zx3nzq/MobileControls.OpportunityInput.cs(14,63): error CS1061: 'GameUI' does not contain a definition for 'MobileOpportunityArea' and no accessible extension method 'MobileOpportunityArea' accepting a first argument of type 'GameUI' could be found (are you missing a using directive or an assembly reference?) [/tmp/opportunity-input-x8zx3nzq/Test.csproj]
+    0 Warning(s)
+    1 Error(s)
+
+Time Elapsed 00:00:03.46
+Traceback (most recent call last):
+  File "/workspace/final-main-regression-win/Tests/MobileOpportunityInputProductionTests.py", line 28, in <module>
+    subprocess.run(build,env=env,check=True);subprocess.run(run,env=env,check=True)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/workspace/toolchain/dotnet/dotnet', 'build', '/tmp/opportunity-input-x8zx3nzq/Test.csproj', '--configfile', '/tmp/opportunity-input-x8zx3nzq/NuGet.Config', '-v:q']' returned non-zero exit status 1.

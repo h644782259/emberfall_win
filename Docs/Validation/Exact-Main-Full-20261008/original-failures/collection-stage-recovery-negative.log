@@ -1,0 +1,15 @@
+/tmp/collection-stage-recovery-negative-6z74soqg/CollectionModelPreview.cs(201,37): error CS1061: 'Bounds' does not contain a definition for 'size' and no accessible extension method 'size' accepting a first argument of type 'Bounds' could be found (are you missing a using directive or an assembly reference?) [/tmp/collection-stage-recovery-negative-6z74soqg/Validation.csproj]
+
+Build FAILED.
+
+/tmp/collection-stage-recovery-negative-6z74soqg/CollectionModelPreview.cs(201,37): error CS1061: 'Bounds' does not contain a definition for 'size' and no accessible extension method 'size' accepting a first argument of type 'Bounds' could be found (are you missing a using directive or an assembly reference?) [/tmp/collection-stage-recovery-negative-6z74soqg/Validation.csproj]
+    0 Warning(s)
+    1 Error(s)
+
+Time Elapsed 00:00:01.87
+Traceback (most recent call last):
+  File "/workspace/final-main-regression-win/Tests/CollectionStageRecoveryNegativeTests.py", line 33, in <module>
+    subprocess.run([dotnet, 'build', str(project), '--no-restore', '-c', 'Release', '--verbosity', 'quiet'], env=env, check=True)
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/workspace/toolchain/dotnet/dotnet', 'build', '/tmp/collection-stage-recovery-negative-6z74soqg/Validation.csproj', '--no-restore', '-c', 'Release', '--verbosity', 'quiet']' returned non-zero exit status 1.

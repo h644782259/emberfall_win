@@ -1,0 +1,12 @@
+/tmp/mobile-pin-production-jxit_k58/MobileControls.OpportunityInput.cs(14,63): error CS1061: 'GameUI' does not contain a definition for 'MobileOpportunityArea' and no accessible extension method 'MobileOpportunityArea' accepting a first argument of type 'GameUI' could be found (are you missing a using directive or an assembly reference?) [/tmp/mobile-pin-production-jxit_k58/Test.csproj]
+
+The build failed. Fix the build errors and run again.
+Traceback (most recent call last):
+  File "/workspace/final-main-regression-win/Tests/RestrictedHealingProductionTests.py", line 64, in <module>
+    exec(compile(harness,__file__,'exec'))
+  File "/workspace/final-main-regression-win/Tests/RestrictedHealingProductionTests.py", line 28, in <module>
+    # Real SummonerSpell dispatch uses this same Spawn call for slot six. All other spells remain boundary recorders.
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/workspace/toolchain/dotnet/dotnet', 'run', '--project', '/tmp/mobile-pin-production-jxit_k58/Test.csproj']' returned non-zero exit status 1.
