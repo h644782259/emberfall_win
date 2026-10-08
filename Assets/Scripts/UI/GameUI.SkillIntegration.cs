@@ -27,7 +27,7 @@ namespace Emberfall
                 skillDevelopmentScroll=BeginTouchScroll("skill-development",MobilePanelRect(body),skillDevelopmentScroll,new Rect(0,0,mobileWidth*TouchRatio,Mathf.Max(body.Height,h)*TouchRatio));
                 h=8;DrawMobileWorkshopAbilities(ref h,mobileWidth,true);EndTouchScroll();return;
             }
-            Rect w=Modal(980,660,"技能 · 职业与精通","");
+            Rect w=Modal(980,660,"技能 · 职业与精通","可用技能点 "+p.Profile.skillPoints);
             if(NavigationButton(new Rect(w.xMax-69,w.y+20,44,32),"×",jade))ClosePanel();
             DrawSkillTabs(new Rect(w.x+26,w.y+82,440,36));
             if(skillSection==0)return;
@@ -35,6 +35,15 @@ namespace Emberfall
             float desktopHeight=DrawSkillDevelopmentContent(available,1,false);
             skillDevelopmentScroll=BeginTouchScroll("skill-development",desktopBody,skillDevelopmentScroll,new Rect(0,0,available,Mathf.Max(desktopBody.height,desktopHeight)));
             DrawSkillDevelopmentContent(available,1,true);EndTouchScroll();
+        }
+        private string SkillMasterySummary()
+        {var p=session.Progression;return "可用点数 "+p.Profile.skillPoints+" · "+MasteryProgressionRules.TierSummary+" · "+MasteryProgressionRules.CoreSummary;}
+        private string MasteryNodeDescription(MasteryType mastery)
+        {
+            string description=BuildCatalog.MasteryDescription(mastery);
+            int tier=description.IndexOf(MasteryProgressionRules.TierSummary,System.StringComparison.Ordinal);
+            if(tier>=0)description=description.Substring(0,tier);
+            return description+"\n"+SkillMasterySummary();
         }
         private int selectedMastery;
         private float DrawSkillDevelopmentContent(float width,float u,bool draw)
@@ -45,7 +54,7 @@ namespace Emberfall
                 var m=(MasteryType)Mathf.Clamp(selectedMastery,0,3);
                 string measuredHint=BuildCatalog.MasteryName(m)+" · "+(string.IsNullOrEmpty(p.MasteryLockReason(m))?"投入消耗 1 技能点":p.MasteryLockReason(m))+"\n核心需 "+MasteryCoreRules.InitialInvestment+" 点投入，"+MasteryCoreRules.EnhancedInvestment+" 点增强；唯一核心。";
                 float hintHeight=Style(Mathf.RoundToInt(13*u),false,true).CalcHeight(new GUIContent(measuredHint),(width-12)*u)/u;
-                float descriptionHeight=Style(Mathf.RoundToInt(12*u),false,true).CalcHeight(new GUIContent(BuildCatalog.MasteryDescription(m)),(width-12)*u)/u;
+                float descriptionHeight=Style(Mathf.RoundToInt(12*u),false,true).CalcHeight(new GUIContent(MasteryNodeDescription(m)),(width-12)*u)/u;
                 return 244+hintHeight+8+descriptionHeight+12+60;
             }
             Rect tools=new Rect(0,y*u,width*u,48*u);
@@ -70,15 +79,16 @@ namespace Emberfall
                 var area=layout.MasteryNode(i);Rect node=new Rect(area.X*u,area.Y*u,area.Width*u,area.Height*u);
                 bool active=selectedMastery==i,learnable=string.IsNullOrEmpty(reason);Color ink=active?gold:learnable?jade:muted;
                 Rect icon=new Rect(node.center.x-15*u,node.y,30*u,30*u);DrawIcon(icon,UIIconAtlas.Mastery(mastery),rank>0||learnable?Color.white:muted);Border(icon,ink);
+                if(active)DrawIcon(new Rect(icon.x-6*u,icon.y-2*u,12*u,12*u),UIIconAtlas.Utility("confirm"),gold);
                 if(p.HasMasteryCore(mastery))DrawIcon(new Rect(icon.xMax-8*u,icon.y-2*u,14*u,14*u),UIIconAtlas.Utility("core"),gold);
                 Text(new Rect(node.x,node.y+31*u,node.width,22*u),BuildCatalog.MasteryName(mastery).Replace("精通",""),Mathf.RoundToInt(13*u),active?gold:pale,true,false,TextAnchor.MiddleCenter);
-                Text(new Rect(node.x,node.y+53*u,node.width,17*u),rank+" / "+cap,Mathf.RoundToInt(11*u),muted,false,false,TextAnchor.MiddleCenter);
+                Text(new Rect(node.x,node.y+53*u,node.width,17*u),cap==0?"Lv."+MasteryProgressionRules.FirstUnlockLevel+" 解锁":rank+" / "+cap,Mathf.RoundToInt(11*u),muted,false,false,TextAnchor.MiddleCenter);
                 Fill(new Rect(node.x+8*u,node.y+70*u,node.width-16*u,u),muted*.25f);Fill(new Rect(node.x+8*u,node.y+70*u,(node.width-16*u)*Mathf.Min(1,rank/(float)Mathf.Max(1,cap)),u),jade);
                 Rect select=new Rect(node.x,node.y,node.width,72*u);
                 if(GUI.Button(select,GUIContent.none,invisibleButton)){selectedMastery=i;CancelMobileScroll();BlockUITransition();}
                 if(select.Contains(Mouse))tooltip=BuildCatalog.MasteryDescription(mastery)+(string.IsNullOrEmpty(reason)?"":"\n"+reason);
-                string state=rank>=cap?"已满":learnable?"1 点":p.Profile.skillPoints<=0?"缺点数":"未解锁";
-                if(InventoryPictogramAction(new Rect(node.x,node.y+72*u,node.width,44*u),state,UIIconAtlas.Utility(rank>=cap?"confirm":learnable?"upgrade":"lock"),learnable,false,true))
+                string state=cap==0?"未解锁":rank>=cap?"已满":learnable?"1 点":p.Profile.skillPoints<=0?"缺点数":"未解锁";
+                if(InventoryPictogramAction(new Rect(node.x,node.y+72*u,node.width,44*u),state,UIIconAtlas.Utility(cap>0&&rank>=cap?"confirm":learnable?"upgrade":"lock"),learnable,false,true))
                 {selectedMastery=i;MobileWorkshopResult(p.LearnMastery(mastery),"精通已提高");}
             }
             y=188;selectedMastery=Mathf.Clamp(selectedMastery,0,3);var selected=(MasteryType)selectedMastery;
@@ -93,7 +103,7 @@ namespace Emberfall
             string hint=BuildCatalog.MasteryName(selected)+" · "+(string.IsNullOrEmpty(p.MasteryLockReason(selected))?"投入消耗 1 技能点":p.MasteryLockReason(selected))+"\n核心需 "+MasteryCoreRules.InitialInvestment+" 点投入，"+MasteryCoreRules.EnhancedInvestment+" 点增强；唯一核心。";
             float h=Style(Mathf.RoundToInt(13*u),false,true).CalcHeight(new GUIContent(hint),(width-12)*u)/u;
             Text(new Rect(4*u,y*u,(width-12)*u,h*u),hint,Mathf.RoundToInt(13*u),pale,false,true);y+=h+8;
-            string description=BuildCatalog.MasteryDescription(selected);float dh=Style(Mathf.RoundToInt(12*u),false,true).CalcHeight(new GUIContent(description),(width-12)*u)/u;
+            string description=MasteryNodeDescription(selected);float dh=Style(Mathf.RoundToInt(12*u),false,true).CalcHeight(new GUIContent(description),(width-12)*u)/u;
             Text(new Rect(4*u,y*u,(width-12)*u,dh*u),description,Mathf.RoundToInt(12*u),muted,false,true);y+=dh+12;
             int routes=p.Profile.heroClass==HeroClass.Arcanist?3:2;float routeWidth=(width-(routes-1)*8)/routes;
             for(int i=0;i<2;i++)

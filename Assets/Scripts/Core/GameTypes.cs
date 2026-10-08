@@ -18,6 +18,8 @@ namespace Emberfall
         public const int MaximumRank=35,InitialInvestment=10,EnhancedInvestment=20;
         public static int Cap(int level)
         {return level<30?0:level<35?5:level<50?10:level<65?15:level<80?20:level<95?30:MaximumRank;}
+        public static readonly int FirstUnlockLevel=FindFirstUnlockLevel();
+        private static int FindFirstUnlockLevel(){for(int level=1;level<=100;level++)if(Cap(level)>0)return level;return 100;}
         public static readonly string TierSummary=BuildTierSummary();
         public static readonly string CoreSummary=InitialInvestment+"点初阶 / "+EnhancedInvestment+"点增强 · 仅启用一个核心";
         private static string BuildTierSummary()

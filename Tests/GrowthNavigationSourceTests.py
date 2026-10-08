@@ -9,7 +9,7 @@ def fixed(source):
 assert fixed(goal),'current progress and action must be outside candidate scroll'
 assert not fixed(goal.replace('"progression-goal-current"','"progression-goals"')),'old single-scroll header mutation rejected'
 assert 'case CampRouteAction.Skill:OpenRouteSkill(route.NextSkill);break;' in route
-assert 'RouteSkillReturnAvailable?"返回职业路线"' in skills
+assert 'if(RouteSkillReturnAvailable&&NavigationButton' in skills and '"返回职业路线"' in skills
 grid=(r/'GameUI.InventoryGrid.cs').read_text()
 assert 'EquipmentComparisonPresentation.Description(candidate' in grid and 'EquipmentComparisonPresentation.Changes(current,candidate' in grid,'inline comparison must retain mechanic benefits and costs'
 assert all(t in comparison for t in ['将失去','收益：','代价：','MechanicBadgePresentation.Benefit','MechanicBadgePresentation.Cost'])
