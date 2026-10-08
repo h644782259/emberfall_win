@@ -180,7 +180,7 @@ namespace Emberfall
                     BlockUITransition();
                 }
             }
-            if (travelReturnPause && NavigationButton(new Rect(r.x + 16*u, r.y + 250*u, 488*u, 48*u), "返回暂停菜单", jade)) CloseTravelMap();
+            if (travelReturnPause && NavigationButton(new Rect(r.x + 16*u, r.y + 250*u, 488*u, 48*u), "返回设置", jade)) CloseTravelMap();
         }
     }
 }

@@ -60,7 +60,7 @@ namespace Emberfall
             Text(new Rect(r.x+half+22,r.y+25,half-80,31),next.ToString("0.#"),25,pale,true);
             string delta=Mathf.Approximately(diff,0)?"±0":(diff>0?"+":"")+diff.ToString("0.#");
             Text(new Rect(r.xMax-83,r.y+28,73,27),delta,18,diff<0?new Color(1,.48f,.42f):diff>0?jade:muted,true,false,TextAnchor.MiddleRight);
-            if(r.Contains(Mouse))tooltip="同部位：攻击 ×5 + 防御 ×3 + 生命 ×0.2\n当前："+(equipped==null?"空槽":ItemTitle(equipped))+"\n换装后："+ItemTitle(preview)+"\n自动继承部位强化 +"+session.Progression.SlotUpgradeRank(candidate.slot)+"，加成按该装备自身基础属性计算。机制效果不计入分数。";
+            if(r.Contains(Mouse))tooltip="同部位：攻击 ×5 + 防御 ×3 + 生命 ×0.2\n当前："+(equipped==null?"空槽":ItemTitle(equipped))+"\n换装后："+ItemTitle(preview)+"\n自动继承部位强化 +"+session.Progression.SlotUpgradeRank(candidate.slot)+"，加成按该装备自身基础属性计算。有效部位机制额外计入属性分的20%，为统一估值，并非实际伤害增幅。";
         }
     }
 }

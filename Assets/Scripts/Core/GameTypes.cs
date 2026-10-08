@@ -147,7 +147,7 @@ namespace Emberfall
         {
             if (specialization == ElementalistSpecialization.Shatter) return "普攻积霜，新星冻结，陨星首个满足条件的命中碎冰；陨星直伤 -15%、碎冰 +100%。护盾延长霜痕，终极法术先积霜后引爆。";
             if (specialization == ElementalistSpecialization.Burn) return "普攻余烬、新星减速留人、陨星直伤 -20%并灼烧90%。护盾减伤降至30%但机动留火区；终极法术降低直伤换持续灼烧。";
-            return "保留原有冰霜控制；陨星消耗冰霜印记，碎冰追加50%基础伤害。专精仅改变元素师，营地免费切换。";
+            return "保留原有冰霜控制；陨星消耗冰霜印记，碎冰追加50%基础伤害。专精仅改变元素师，可免费切换。";
         }
 
         public static string ClassSignatureDescription(HeroClass hero)
@@ -155,7 +155,7 @@ namespace Emberfall
             if (hero == HeroClass.Vanguard) return "完美闪避真正避开攻击时回复12能量；2秒内下一次普攻造成175%伤害。";
             if (hero == HeroClass.Arcanist) return "对同一目标3次普攻触发霜触；学新星后转为3秒霜痕，灼燃转为余烬。完美闪避强化下次命中的霜痕或余烬，3秒不叠加。";
             if (hero == HeroClass.Ranger) return "普攻叠加最多3层毒素；扇形箭消耗3层引爆，每个目标每次施法仅触发一次。";
-            return "基础灵狼永久陪伴；契约升级伙伴，存活时按键发出指令，死亡后可重召。营地选择双契常驻或群契限时路线；完美闪避召回并强化下次指令。";
+            return "基础灵狼永久陪伴；契约升级伙伴，存活时按键发出指令，死亡后可重召。选择双契常驻或群契限时模式；完美闪避召回并强化下次指令。";
         }
 
         public static string MasteryName(MasteryType mastery)

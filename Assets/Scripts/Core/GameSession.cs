@@ -287,7 +287,8 @@ namespace Emberfall
             if(ChapterActive)TickChapterRun();
             if (!InputBlocked)
             {
-                if (Input.GetKeyDown(KeyCode.F) || MobileControls.ConsumePotion()) DrinkPotion();
+                bool touchPotionRequested = MobileControls.ConsumePotion();
+                if (Input.GetKeyDown(KeyCode.F) || touchPotionRequested) DrinkPotion();
                 if (Input.GetKeyDown(KeyCode.T)) { if(NearChapterExit)EnterNextChapterRoom();else if(NearRoomExit)EnterNextRoom();else if (InDungeon) { if (DungeonCleared) ReturnToCamp(); else Notify("先击败本轮敌人；按 H 可放弃副本返回营地。"); } else EnterDungeon(); }
                 if (Input.GetKeyDown(KeyCode.H)) ReturnToCamp();
             }

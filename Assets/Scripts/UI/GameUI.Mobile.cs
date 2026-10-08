@@ -55,7 +55,17 @@ namespace Emberfall
                 {if(string.IsNullOrEmpty(session.ControlFailure("skill"+skill)))session.ReportControlFailure("skill"+skill,"暂不可用");}}
         }
         public bool MobileDungeonEntranceVisible {get{return session!=null&&!session.PracticeActive&&!session.InDungeon&&!session.InputBlocked&&!session.DungeonSelectionOpen&&!session.NearChapterExit&&!session.NearRoomExit&&!session.SideEventAvailable&&session.NearbyHubNpc==HubNpcKind.None&&session.IsNearDungeonEntrance&&session.Progression.CanEnterDungeon;}}
-        public MobileControlLayout.Area MobileInteractionArea {get{return MobileDungeonEntranceVisible?MobileControls.Layout.DungeonEntrance:MobileControls.Layout.Interact;}}
+        public MobileControlLayout.Area MobileInteractionArea
+        {
+            get
+            {
+                var layout=MobileControls.Layout;
+                if(MobileDungeonEntranceVisible)return layout.DungeonEntrance;
+                if(session!=null&&session.NearbyHubNpc!=HubNpcKind.None&&!session.NearChapterExit&&!session.NearRoomExit&&!session.SideEventAvailable)
+                    return new MobileControlLayout.Area(Mathf.Max(layout.Width*.5f-48,254),layout.Height*.62f-22,96,44);
+                return layout.Interact;
+            }
+        }
         public bool MobileInteractionVisible {get{return session!=null&&!session.PracticeActive&&(session.NearChapterExit||session.NearRoomExit||session.SideEventAvailable||session.NearbyHubNpc!=HubNpcKind.None||MobileDungeonEntranceVisible);}}
         private bool CanMobileInteract {get{return session!=null&&!session.PracticeActive&&!session.InputBlocked&&!session.DungeonSelectionOpen&&(session.NearChapterExit||session.NearRoomExit||session.SideEventAvailable||session.NearbyHubNpc!=HubNpcKind.None||session.IsInCamp||session.InDungeon||session.IsNearDungeonEntrance);}}
         public void ActivateMobileInteraction(int triggeringFinger=TouchReleaseLatch.AnyPointer)
@@ -103,7 +113,7 @@ namespace Emberfall
             DrawMobileVitals(l);
             if(MobileIcon(l.Inventory,"inventory",jade))TogglePanel(Panel.Inventory);
             if(MobileIcon(l.SkillsMenu,"skills",p.skillPoints>0?gold:jade))TogglePanel(Panel.Skills);
-            if(MobileIcon(l.Menu,"pause",muted))session.SetPaused(true);
+            if(MobileIcon(l.Menu,"settings",pale))session.SetPaused(true);
             if(MobileIcon(l.Catalog,"confirm",gold))OpenProgressionGoals();
             Badge(TouchRect(l.Catalog),Attention.Rewards);
             Rect map=TouchRect(l.Map);blockedRects.Add(map);Box(map,jade,false);DrawMinimapTerrain(map);
@@ -135,7 +145,12 @@ namespace Emberfall
             // One pointer owner handles real touches and simulated/attached mice.
             // This is presentation only: a second IMGUI Button here would dispatch
             // again after a room transition changed the context on pointer release.
-            Box(interact,CanMobileInteract?gold:muted,false);
+            if(session.NearbyHubNpc!=HubNpcKind.None&&!session.NearChapterExit&&!session.NearRoomExit&&!session.SideEventAvailable)
+            {
+                DrawIcon(interact,UIIconAtlas.NpcDialogCapsule(),new Color(.025f,.075f,.085f,.92f));
+                DrawIcon(interact,UIIconAtlas.NpcDialogCapsule(true),CanMobileInteract?gold:muted);
+            }
+            else Box(interact,CanMobileInteract?gold:muted,false);
             Text(interact,interaction,TouchFont(11),CanMobileInteract?gold:muted,true,true,TextAnchor.MiddleCenter);
 
             }
@@ -159,17 +174,14 @@ namespace Emberfall
                 float iconSize=Mathf.Min(r.width,r.height)*.76f;
                 Rect icon=new Rect(r.center.x-iconSize*.5f,r.center.y-iconSize*.5f,iconSize,iconSize);
                 // Floating transparent glyph: the entire identity carries availability.
-                Color tint=pressed&&ready?gold:ready?Color.white:new Color(.38f,.42f,.46f,.58f);
+                Color skillColor=UIIconAtlas.SkillColor(p.heroClass,skill);
+                Color tint=ready?(pressed?Color.Lerp(skillColor,Color.white,.25f):skillColor):new Color(.38f,.42f,.46f,.58f);
                 DrawIcon(icon,UIIconAtlas.SkillGlyph(p.heroClass,skill,48),tint);
                 if(skill==9)Text(new Rect(r.x,r.yMax-13*TouchRatio,r.width,12*TouchRatio),"终极",TouchFont(9),ready?new Color(.3f,1f,.72f):muted,true,false,TextAnchor.MiddleCenter);
                 DrawMobileSkillAvailability(r,skill);
             }
             Rect pageHit=TouchRect(l.SkillPage);blockedRects.Add(pageHit);
-            Rect pageVisual=MobileVisualRect(pageHit);
-            Rect pageTab=new Rect(pageVisual.x,pageVisual.center.y-14*TouchRatio,pageVisual.width,28*TouchRatio);
-            Fill(pageTab,new Color(.025f,.055f,.075f,.72f));
-            Fill(new Rect(pageTab.x,pageTab.yMax-2*TouchRatio,pageTab.width,2*TouchRatio),jade);
-            DrawIcon(new Rect(pageTab.center.x-10*TouchRatio,pageTab.center.y-10*TouchRatio,20*TouchRatio,20*TouchRatio),UIIconAtlas.SkillPageArrow(),pale);
+            DrawIcon(new Rect(pageHit.center.x-12*TouchRatio,pageHit.center.y-12*TouchRatio,24*TouchRatio,24*TouchRatio),UIIconAtlas.SkillPageArrow(),Color.white);
             controlOpacity=priorOpacity;
         }
         private void DrawMobileControlSurface(Rect r,bool ready,bool pressed)
@@ -182,7 +194,7 @@ namespace Emberfall
         {
             float hp=session.Player==null?0:session.Player.Health,max=session.Player==null?1:session.Player.MaxHealth;
             blockedRects.Add(TouchRect(layout.PlayerStatus));
-            Bar(TouchRect(layout.PlayerHealth),hp/Mathf.Max(1,max),jade);
+            Bar(TouchRect(layout.PlayerHealth),hp/Mathf.Max(1,max),new Color(.86f,.16f,.19f));
             Text(TouchRect(layout.PlayerHealth),Mathf.CeilToInt(hp)+" / "+Mathf.CeilToInt(max),TouchFont(9),pale,true,false,TextAnchor.MiddleCenter);
             Bar(TouchRect(layout.PlayerEnergy),session.Player==null?0:session.Player.Energy/Mathf.Max(1,session.Player.MaxEnergy),new Color(.35f,.63f,1));
         }
@@ -279,7 +291,7 @@ namespace Emberfall
             Text(TouchRect(x,y,510,30),"触屏操作",TouchFont(22),pale,true);
             string[] tips={"左侧拖动移动 · 右下按住普攻，可同时操作", "主动技能分两页，每页最多4个；大招固定，被动自动生效", "轻点技能自动瞄准并施放，无须圈选或二次确认", "点敌人固定目标；点战场空白取消，恢复自动瞄准", "蓄力自动完成；点取消或闪避可中断", "灰色技能尚未学会；到技能学习后直接可用"};
             for(int i=0;i<tips.Length;i++)Text(TouchRect(x,y+43+i*32,510,28),tips[i],TouchFont(14),i==2?jade:pale);
-            if(controlsReturnPause&&NavigationButton(TouchRect(x,y+250,510,48), "返回暂停菜单", jade))ClosePanel();
+            if(controlsReturnPause&&NavigationButton(TouchRect(x,y+250,510,48), "返回设置", jade))ClosePanel();
         }
         private bool PauseSidebarTab(Rect hit,string caption,bool selected,float u)
         {
@@ -294,70 +306,67 @@ namespace Emberfall
             return clicked;
         }
         private int mobilePausePage;
-        private readonly Vector2[] mobilePauseScroll = new Vector2[3];
+        private readonly Vector2[] mobilePauseScroll = new Vector2[4];
         private void DrawMobilePause()
         {
             if(mobileBindingEditor){DrawMobileBindingEditor();return;}
             var layout = MobileControls.Layout;
             float panelWidth=Mathf.Min(720,layout.Width-24),x=(layout.Width-panelWidth)*.5f,y=12;
             float titleWidth=panelWidth-52;
-            float headerHeight=Mathf.Max(44,Style(TouchFont(23),true).CalcHeight(new GUIContent("冒险暂停"),titleWidth*TouchRatio)/TouchRatio+8);
+            float headerHeight=Mathf.Max(44,Style(TouchFont(23),true).CalcHeight(new GUIContent("设置"),titleWidth*TouchRatio)/TouchRatio+8);
             Fill(new Rect(0, 0, width, height), new Color(.012f, .025f, .04f, .94f));
-            Text(TouchRect(x,y,titleWidth,headerHeight), "冒险暂停", TouchFont(23), pale, true);
+            Text(TouchRect(x,y,titleWidth,headerHeight), "设置", TouchFont(23), pale, true);
             Rect close=TouchRect(x+panelWidth-44,y,44,44);
             DrawIcon(new Rect(close.center.x-9*TouchRatio,close.center.y-9*TouchRatio,18*TouchRatio,18*TouchRatio),UIIconAtlas.Utility("cancel"),jade);
-            if(QuietAction(close,"",true,"关闭暂停菜单")){session.SetPaused(false);BlockUITransition();return;}
-            string[] tabs = { "冒险", "声音与画面", "按键设置" };
+            if(QuietAction(close,"",true,"关闭设置")){session.SetPaused(false);BlockUITransition();return;}
+            string[] tabs = { "冒险", "声音与画面", "按键设置", "存档" };
+            int[] tabOrder={0,3,1,2};
             float sidebarWidth=120,bodyY=y+headerHeight+8;
             float bodyHeight=Mathf.Max(48,layout.Height-bodyY-12);
             Fill(TouchRect(x,bodyY,sidebarWidth,bodyHeight),new Color(.025f,.05f,.065f,.65f));
             for (int i=0;i<tabs.Length;i++)
-                if (PauseSidebarTab(TouchRect(x,bodyY+i*52,sidebarWidth,48),tabs[i],mobilePausePage==i,TouchRatio) && mobilePausePage!=i)
-                { mobilePausePage=i; BlockUITransition(); }
+                if (PauseSidebarTab(TouchRect(x,bodyY+i*52,sidebarWidth,48),tabs[tabOrder[i]],mobilePausePage==tabOrder[i],TouchRatio) && mobilePausePage!=tabOrder[i])
+                { mobilePausePage=tabOrder[i]; BlockUITransition(); }
             float contentX=x+sidebarWidth+16,bodyWidth=panelWidth-sidebarWidth-16,contentWidth=bodyWidth-18;
             string notice=string.IsNullOrEmpty(session.Notification)?"":PlatformText(session.Notification);
             float noticeHeight=string.IsNullOrEmpty(notice)?0:Mathf.Max(32,Style(TouchFont(11),false,true).CalcHeight(new GUIContent(notice),contentWidth*TouchRatio)/TouchRatio+8);
-            float contentHeight=mobilePausePage==0?(contentWidth<420?174:116)+noticeHeight:mobilePausePage==1?232:mobileBindingEditor?438:116;
+            float contentHeight=mobilePausePage==0?174+noticeHeight:mobilePausePage==3?174+noticeHeight:mobilePausePage==2?174:116;
             mobilePauseScroll[mobilePausePage]=BeginTouchScroll("mobile-pause-"+mobilePausePage,TouchRect(contentX,bodyY,bodyWidth,bodyHeight),mobilePauseScroll[mobilePausePage],new Rect(0,0,contentWidth*TouchRatio,Mathf.Max(bodyHeight,contentHeight)*TouchRatio));
             try { DrawMobilePauseBody(contentWidth,notice,noticeHeight); }
             finally { EndTouchScroll(); }
         }
         private void DrawMobilePauseBody(float contentWidth,string notice,float noticeHeight)
         {
-            if(mobilePausePage==2){DrawMobileControlPreferences(0,0,contentWidth);return;}
+            if(mobilePausePage==2){DrawMobileControlPreferences(0,0,contentWidth);if(NavigationButton(TouchRect(0,116,contentWidth,48),"操作指南",jade))OpenControls();return;}
+            if(mobilePausePage==3)
+            {
+                if(PrimaryButton(TouchRect(0,0,contentWidth,48),"保存",gold))RequestManualSave();
+                if(NavigationButton(TouchRect(0,58,contentWidth,48),"读取存档",jade))OpenSaveSelection();
+                if(NavigationButton(TouchRect(0,116,contentWidth,48),"存档位置 / 迁移",jade))
+                {saveReturnPause=true;panel=Panel.SaveLocation;session.SetUIBlocking(true);session.SetPaused(false);}
+            if (!string.IsNullOrEmpty(notice))
+                Text(TouchRect(0,174,contentWidth,noticeHeight),notice,TouchFont(11),gold,false,true,TextAnchor.MiddleCenter);
+                return;
+            }
             if (mobilePausePage == 1)
             {
                 float column=(contentWidth-12)*.5f;
-                string[] extra = { "存档位置", "声音：" + (GameAudio.Muted ? "关" : "开"), "飘字：" + (EffectPreferences.CombatTextScale > 1.5f ? "大" : "标准"),
+                string[] extra = { "声音：" + (GameAudio.Muted ? "关" : "开"), "飘字：" + (EffectPreferences.CombatTextScale > 1.5f ? "大" : "标准"),
                     "镜头反馈：" + (EffectPreferences.CameraShake ? "开" : "关"), "特效：" + (EffectPreferences.ReducedEffects ? "精简" : "完整") };
                 for (int i = 0; i < extra.Length; i++)
                     if (Button(TouchRect((i%2)*(column+12),(i/2)*58,column,48),extra[i],jade))
                     {
-                        if (i == 0) { saveReturnPause = true; panel = Panel.SaveLocation; session.SetUIBlocking(true); session.SetPaused(false); }
-                        else if (i == 1) GameAudio.Muted = !GameAudio.Muted;
-                        else if (i == 2) EffectPreferences.CombatTextScale = EffectPreferences.CombatTextScale > 1.5f ? 1.25f : 1.8f;
-                        else if (i == 3) EffectPreferences.CameraShake = !EffectPreferences.CameraShake;
-                        else if (i == 4) EffectPreferences.EffectsScale = EffectPreferences.ReducedEffects ? 1f : .35f;
+                        if (i == 0) GameAudio.Muted = !GameAudio.Muted;
+                        else if (i == 1) EffectPreferences.CombatTextScale = EffectPreferences.CombatTextScale > 1.5f ? 1.25f : 1.8f;
+                        else if (i == 2) EffectPreferences.CameraShake = !EffectPreferences.CameraShake;
+                        else if (i == 3) EffectPreferences.EffectsScale = EffectPreferences.ReducedEffects ? 1f : .35f;
                     }
                 return;
             }
-            string[] labels = { "保存", "读取存档", "返回主菜单", "营地 / 撤离", "操作指南" };
-            int columns=contentWidth<420?2:3;
-            float buttonWidth=(contentWidth-(columns-1)*8)/columns;
-            for (int i = 0; i < labels.Length; i++)
-            {
-                if (!DrawButton(TouchRect((i%columns)*(buttonWidth+8),(i/columns)*58,buttonWidth,48),labels[i],i==0?ButtonRole.Primary:i==2?ButtonRole.Danger:ButtonRole.Navigation)) continue;
-                switch (i)
-                {
-                    case 0: RequestManualSave(); break;
-                    case 1: OpenSaveSelection(); break;
-                    case 2: RequestExit(true); break;
-                    case 3: LeaveMobilePauseForCamp(); break;
-                    case 4: OpenControls(); break;
-                }
-            }
+            if(NavigationButton(TouchRect(0,0,contentWidth,48),"营地 / 撤离",jade))LeaveMobilePauseForCamp();
+            if(DangerButton(TouchRect(0,58,contentWidth,48),"返回主菜单",muted))RequestExit(true);
             if (!string.IsNullOrEmpty(notice))
-                Text(TouchRect(0,columns==2?174:116,contentWidth,noticeHeight),notice,TouchFont(11),gold,false,true,TextAnchor.MiddleCenter);
+                Text(TouchRect(0,174,contentWidth,noticeHeight),notice,TouchFont(11),gold,false,true,TextAnchor.MiddleCenter);
         }
     }
 }

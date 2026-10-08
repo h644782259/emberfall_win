@@ -14,7 +14,7 @@ public static class UpgradeProgressionTests
     {
         root = testDirectory;
         scenarios = assertions = 0;
-        SpecializationIsExclusiveAndCampOnly();
+        SpecializationIsExclusiveAndUnrestricted();
         EveryMechanicIsEquippedAndClassScoped();
         ProtectedOverflowSurvivesReloadAndRefusal();
         AutoSellAndBulkNeverConsumeProtectedGear();
@@ -68,12 +68,12 @@ public static class UpgradeProgressionTests
         return restored;
     }
 
-    private static void SpecializationIsExclusiveAndCampOnly()
+    private static void SpecializationIsExclusiveAndUnrestricted()
     {
         var service = Fresh();
         int gold = service.Profile.gold;
-        Check(!service.SetSpecialization(ElementalistSpecialization.Shatter, false), "field switching refused");
-        Check(service.Profile.specialization == ElementalistSpecialization.None, "refused switch preserves original");
+        Check(service.SetSpecialization(ElementalistSpecialization.Shatter, false), "field switching succeeds without prerequisites");
+        Check(service.Profile.specialization == ElementalistSpecialization.Shatter, "selected mode applies directly");
         Check(service.SetSpecialization(ElementalistSpecialization.Shatter, true), "camp shatter switch succeeds");
         Check(service.SetSpecialization(ElementalistSpecialization.Burn, true), "camp burn replaces shatter");
         Check(service.Profile.specialization == ElementalistSpecialization.Burn && service.Profile.gold == gold, "specialization is exclusive and free");

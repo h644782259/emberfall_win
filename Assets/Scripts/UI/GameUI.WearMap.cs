@@ -27,6 +27,9 @@ namespace Emberfall
                     DrawIcon(new Rect(r.x+9*u,r.y+6*u,26*u,26*u),UIIconAtlas.EquipmentCardIcon((ItemSlot)slot),muted);
                     Text(new Rect(r.x,r.yMax-14*u,r.width,14*u),GameBalance.SlotName((ItemSlot)slot),Mathf.RoundToInt(9*u),muted,false,false,TextAnchor.MiddleCenter);
                 }
+                bool slotUpgrade=false;
+                foreach(var candidate in p.Profile.inventory)if(candidate.slot==(ItemSlot)slot&&UnreviewedEquipmentUpgrade(candidate)){slotUpgrade=true;break;}
+                if(slotUpgrade)DrawIcon(new Rect(r.xMax-18*u,r.yMax-31*u,18*u,18*u),UIIconAtlas.EquipmentUpgradeArrow(),new Color(.25f,1f,.4f));
                 if(QuietAction(r,"",item!=null&&!inventoryComparisonOpen))
                 {mobileInventoryTab=0;OpenInventoryPopup(item.id,r);}
                 if(r.Contains(Mouse)&&item!=null)tooltip=item.name+" · 已穿戴";

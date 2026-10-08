@@ -24,6 +24,17 @@ namespace Emberfall
             EnsureMobileBindings();int index=MobileSkillPolicy.BindingIndex(button,page);
             return index<0?-1:mobileBindings[index];
         }
+        public int MobileKeyboardSkill(int key)
+        {
+            int page,button;
+            if(key>=(int)KeyCode.Alpha1&&key<=(int)KeyCode.Alpha5){page=0;button=key-(int)KeyCode.Alpha1;}
+            else
+            {
+                page=1;button=key==(int)KeyCode.Z?0:key==(int)KeyCode.X?1:key==(int)KeyCode.C?2:key==(int)KeyCode.V?3:key==(int)KeyCode.B?4:-1;
+            }
+            if(button<0)return -1;
+            mobileSkillPage=page;return BoundMobileSkill(button,page);
+        }
         public MobileControlLayout.Area MobileOpportunityArea(int skill)
         {
             var layout=MobileControls.Layout;
@@ -53,6 +64,8 @@ namespace Emberfall
                 return;
             }
         }
+        private Rect BindingPreviewRect(MobileControlLayout.Area area,float minX,float minY,float x,float y,float zoom)
+        {return TouchRect(x+(area.X-minX)*zoom,y+(area.Y-minY)*zoom,area.Width*zoom,area.Height*zoom);}
         private void DrawMobileBindingEditor()
         {
             EnsureMobileBindings();var layout=MobileControls.Layout;float u=TouchRatio;
@@ -61,34 +74,47 @@ namespace Emberfall
             Text(TouchRect(x,8,panelWidth-100,34),"技能按键配置",TouchFont(21),pale,true);
             if(QuietAction(TouchRect(x+panelWidth-96,8,96,40),"返回设置"))
             {mobileBindingEditor=false;bindingDragSource=-1;bindingDragFinger=-1000;BlockUITransition();return;}
-            Text(TouchRect(x,46,panelWidth,28),"拖动技能交换位置，可跨页拖动；下方固定按键不可更改。",TouchFont(12),muted);
+            Text(TouchRect(x,46,panelWidth,28),"拖动技能交换位置，可跨页拖动；大招、普攻等固定按键不可更改。",TouchFont(12),muted);
             Rect[] slots=new Rect[8];float pageWidth=(panelWidth-16)*.5f;
             for(int page=0;page<2;page++)
             {
                 float left=x+page*(pageWidth+16),top=80;
                 Fill(TouchRect(left,top,pageWidth,layout.Height-top-12),new Color(.025f,.055f,.075f,.9f));
                 Text(TouchRect(left+12,top+4,pageWidth-24,26),page==0?"第一页":"第二页",TouchFont(14),jade,true);
-                float cell=(pageWidth-32)*.5f;
+                // Reuse the live combat geometry so preview positions cannot drift from gameplay.
+                float minX=layout.Skills[4].X,minY=layout.SkillPage.Y,maxX=layout.Dodge.X+layout.Dodge.Width,maxY=layout.Dodge.Y+layout.Dodge.Height;
+                foreach(var skillArea in layout.Skills){minX=Mathf.Min(minX,skillArea.X);minY=Mathf.Min(minY,skillArea.Y);maxY=Mathf.Max(maxY,skillArea.Y+skillArea.Height);}
+                float previewScale=Mathf.Min((pageWidth-24)/(maxX-minX),(layout.Height-top-60)/(maxY-minY));
+                float originX=left+(pageWidth-(maxX-minX)*previewScale)*.5f;
+                float originY=top+42+(layout.Height-top-60-(maxY-minY)*previewScale)*.5f;
                 for(int button=0;button<4;button++)
                 {
                     int index=page*4+button,skill=mobileBindings[index];
-                    float sx=left+12+(button%2)*(cell+8),sy=top+36+(button/2)*66;
-                    Rect hit=slots[index]=TouchRect(sx,sy,cell,60);
+                    Rect hit=slots[index]=BindingPreviewRect(layout.Skills[button],minX,minY,originX,originY,previewScale);
                     bool target=bindingDragSource>=0&&hit.Contains(bindingDragPoint);
-                    Fill(hit,target?new Color(.12f,.28f,.28f):new Color(.055f,.09f,.115f));
-                    if(target)Border(hit,jade);
-                    if(skill>=0)DrawIcon(TouchRect(sx+4,sy+8,36,36),UIIconAtlas.SkillGlyph(session.Progression.Profile.heroClass,skill,48),index==bindingDragSource?muted:pale);
-                    Text(TouchRect(sx+44,sy+4,cell-48,19),"按键 "+(button+1),TouchFont(10),muted);
-                    Text(TouchRect(sx+44,sy+23,cell-48,32),skill<0?"空位":GameBalance.SkillName(session.Progression.Profile.heroClass,skill),TouchFont(11),pale,false,true);
+                    DrawMobileControlSurface(hit,true,target);
+                    if(skill>=0)
+                    {
+                        float size=hit.width*.76f;
+                        DrawIcon(new Rect(hit.center.x-size*.5f,hit.center.y-size*.5f,size,size),UIIconAtlas.SkillGlyph(session.Progression.Profile.heroClass,skill,48),index==bindingDragSource?muted:UIIconAtlas.SkillColor(session.Progression.Profile.heroClass,skill));
+                        if(hit.Contains(Mouse))tooltip=GameBalance.SkillName(session.Progression.Profile.heroClass,skill);
+                    }
+                    else Text(hit,"空位",TouchFont(11),muted,false,false,TextAnchor.MiddleCenter);
                 }
-                string[] captions={"大招","普攻","闪现","跳跃","药剂"};string[] icons={"","attack","blink","jump","potion"};
-                float fixedWidth=(pageWidth-24)/5;
-                for(int i=0;i<5;i++)
+                var fixedAreas=new[]{layout.Skills[4],layout.Attack,layout.Dodge,layout.Jump};
+                string[] captions={"大招","普攻","闪现","跳跃"};string[] icons={"","attack","blink","jump"};
+                for(int i=0;i<fixedAreas.Length;i++)
                 {
-                    float fx=left+12+i*fixedWidth,fy=top+174;
-                    DrawIcon(TouchRect(fx+(fixedWidth-28)*.5f,fy,28,28),i==0?UIIconAtlas.SkillGlyph(session.Progression.Profile.heroClass,9,48):UIIconAtlas.Utility(icons[i]),muted);
-                    Text(TouchRect(fx,fy+30,fixedWidth,18),captions[i],TouchFont(10),muted,false,false,TextAnchor.MiddleCenter);
+                    Rect hit=BindingPreviewRect(fixedAreas[i],minX,minY,originX,originY,previewScale);
+                    DrawMobileControlSurface(hit,false,false);float size=hit.width*.64f;
+                    DrawIcon(new Rect(hit.center.x-size*.5f,hit.center.y-size*.5f,size,size),i==0?UIIconAtlas.SkillGlyph(session.Progression.Profile.heroClass,9,48):UIIconAtlas.Utility(icons[i]),i==0?UIIconAtlas.SkillColor(session.Progression.Profile.heroClass,9):muted);
+                    if(hit.Contains(Mouse))tooltip=captions[i]+" · 固定按键";
+                    DrawIcon(new Rect(hit.xMax-10*u,hit.y,10*u,10*u),UIIconAtlas.EquipmentLock(true),muted);
                 }
+                Rect pageArrow=BindingPreviewRect(layout.SkillPage,minX,minY,originX,originY,previewScale);
+                float arrowSize=24*u*previewScale;
+                DrawIcon(new Rect(pageArrow.center.x-arrowSize*.5f,pageArrow.center.y-arrowSize*.5f,arrowSize,arrowSize),UIIconAtlas.SkillPageArrow(),Color.white);
+
             }
             if(Input.touchCount>0)
             {
@@ -120,7 +146,7 @@ namespace Emberfall
                 if(bindingDragSource>=0&&e.type==EventType.MouseUp){FinishBindingDrag(slots,Mouse,false);e.Use();}
             }
             if(bindingDragSource>=0)
-                DrawIcon(new Rect(bindingDragPoint.x-22*u,bindingDragPoint.y-22*u,44*u,44*u),UIIconAtlas.SkillGlyph(session.Progression.Profile.heroClass,mobileBindings[bindingDragSource],48),gold);
+                DrawIcon(new Rect(bindingDragPoint.x-22*u,bindingDragPoint.y-22*u,44*u,44*u),UIIconAtlas.SkillGlyph(session.Progression.Profile.heroClass,mobileBindings[bindingDragSource],48),UIIconAtlas.SkillColor(session.Progression.Profile.heroClass,mobileBindings[bindingDragSource]));
         }
     }
 }

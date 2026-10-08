@@ -139,7 +139,7 @@ namespace Emberfall
             if (name == "inventory") name = "bag";
             if (name == "camp") name = "home";
             if (name == "blink") name = "dodge";
-            string[] names = { "bag", "skills", "home", "portal", "attack", "dodge", "potion", "pause", "help", "confirm", "cancel", "jump", "codex", "coin", "shard", "compare", "save", "apply", "reset", "upgrade", "core", "lock" };
+            string[] names = { "bag", "skills", "home", "portal", "attack", "dodge", "potion", "pause", "help", "confirm", "cancel", "jump", "codex", "coin", "shard", "compare", "save", "apply", "reset", "upgrade", "core", "lock", "settings" };
             int id = System.Array.IndexOf(names, name);
             if (id < 0) id = 1;
             int key = 100 + id;
@@ -165,6 +165,7 @@ namespace Emberfall
             else if(id==19){ink.Line(32,10,32,54,6);ink.Line(10,32,54,32,6);}
             else if(id==20){ink.Ring(32,32,23,3);ink.Polygon(new[]{V(32,13),V(47,32),V(32,51),V(17,32)});}
             else if(id==21){ink.Line(20,27,20,15,4);ink.Arc(32,16,12,180,360,4);ink.Line(44,15,44,27,4);ink.Polygon(new[]{V(14,28),V(50,28),V(50,55),V(14,55)});}
+            else if(id==22){ink.Ring(32,32,18,6);ink.Ring(32,32,7,3);for(int tooth=0;tooth<8;tooth++)ink.Radial(tooth*45,19,27,7);}
             else if(id==15){ink.Line(12,12,12,52,4);ink.Line(26,22,26,52,4);ink.Line(40,12,40,52,4);ink.Line(54,22,54,52,4);ink.Arrow(19,10,47,10);}
             else if(id==14){ink.color=new Color(.68f,.63f,1f);ink.Polygon(new[]{V(32,6),V(51,28),V(39,56),V(18,48),V(13,23)});ink.color=Color.white;ink.Line(32,9,27,44,3);}
             else { ink.Arrow(32, 46, 32, 10); ink.Line(15, 55, 49, 55, 4); }
@@ -180,6 +181,29 @@ namespace Emberfall
             else if(mastery==MasteryType.Guard){ink.Shield();ink.color=new Color(.12f,.2f,.26f);ink.Line(32,19,32,43,4);}
             else{ink.Ring(32,32,22,3);ink.Arrow(14,41,45,20);ink.Line(12,19,23,19,3);ink.Line(42,47,53,47,3);}
             texture=ink.Finish("Mastery branch "+mastery,true);cache[key]=texture;return texture;
+        }
+        public static Texture2D NpcDialogCapsule(bool outline=false)
+        {
+            int key=outline?2000006:2000005;Texture2D texture;if(cache.TryGetValue(key,out texture))return texture;
+            const int w=192,h=88;var pixels=new Color[w*h];
+            for(int y=0;y<h;y++)for(int x=0;x<w;x++)
+            {
+                float cx=Mathf.Clamp(x+.5f,44,w-44),dx=x+.5f-cx,dy=y+.5f-44;
+                float distance=Mathf.Sqrt(dx*dx+dy*dy);
+                float alpha=outline?Mathf.Clamp01(1.5f-Mathf.Abs(distance-42)):Mathf.Clamp01(43-distance);
+                pixels[y*w+x]=new Color(1,1,1,alpha);
+            }
+            texture=new Texture2D(w,h,TextureFormat.RGBA32,false){name="NPC dialogue capsule",filterMode=FilterMode.Bilinear,wrapMode=TextureWrapMode.Clamp,hideFlags=HideFlags.HideAndDontSave};
+            texture.SetPixels(pixels);texture.Apply(false,true);cache[key]=texture;return texture;
+        }
+        public static Texture2D EquipmentUpgradeArrow()
+        {
+            const int key=2000004;Texture2D texture;if(cache.TryGetValue(key,out texture))return texture;
+            var ink=new Icon(Color.white);float px=8,py=54;
+            for(int step=1;step<=24;step++)
+            {float t=step/24f,x=8+44*t,y=54-44*t*t*t;ink.Line(px,py,x,y,6);px=x;py=y;}
+            ink.Line(39,19,52,10,6);ink.Line(52,10,57,25,6);
+            texture=ink.Finish("Curved equipment upgrade arrow");cache[key]=texture;return texture;
         }
         public static Texture2D EquipmentLock(bool locked)
         {

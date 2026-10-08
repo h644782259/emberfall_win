@@ -34,6 +34,15 @@ namespace Emberfall
         public static Vector2 Move { get; private set; }
         public static bool AttackHeld { get; private set; }
         private static bool dodge, potion, jump;
+        private static readonly HashSet<KeyCode> keyboardDodgeHeld = new HashSet<KeyCode>();
+        // Simulator legacy modifier polling can disagree with the actual key event.
+        // Only an explicit Shift key-down may request a keyboard dodge.
+        private static void CaptureKeyboardDodge(EventType type, KeyCode key, bool blocked)
+        {
+            if(key!=KeyCode.LeftShift&&key!=KeyCode.RightShift)return;
+            if(type==EventType.KeyUp)keyboardDodgeHeld.Remove(key);
+            else if(type==EventType.KeyDown&&keyboardDodgeHeld.Add(key)&&!blocked)dodge=true;
+        }
         private int moveFinger = -1000;
         private GameSession session;
         private GameUI ui;
@@ -76,6 +85,7 @@ namespace Emberfall
         public static void ResetInput()
         {
             Move = Vector2.zero; AttackHeld = dodge = potion = jump = false;
+            keyboardDodgeHeld.Clear();
             if (instance != null) { instance.fingers.Clear(); instance.cameraGesture.Cancel(); instance.worldPointerOwner=null; instance.worldPointerTarget=null; instance.moveFinger = -1000; instance.hasJoystickOrigin=false; if(instance.ui!=null)instance.ui.CancelMobileCast(); }
         }
         private Vector2 ToUI(Vector2 screen) { return (new Vector2(screen.x, Screen.height - screen.y) - Offset) / Scale; }
@@ -214,7 +224,9 @@ namespace Emberfall
         }
         private void OnGUI()
         {
-            if (!Active || session == null || session.InputBlocked) return;
+            if (!Active || session == null) return;
+            if(Event.current!=null)CaptureKeyboardDodge(Event.current.type,Event.current.keyCode,session.InputBlocked||!session.HasStarted);
+            if(session.InputBlocked) return;
             if (disc == null)
             {
                 disc = new Texture2D(96, 96, TextureFormat.RGBA32, false) { hideFlags = HideFlags.HideAndDontSave,filterMode=FilterMode.Bilinear,wrapMode=TextureWrapMode.Clamp };

@@ -7,9 +7,47 @@ namespace Emberfall
         private Vector2 skillDevelopmentScroll;
         private void DrawSkillTabs(Rect rect)
         {
-            float u=MobileControls.Active?TouchRatio:1,gap=8*u,w=Mathf.Min(160*u,(rect.width-gap)/2);
-            if(InventoryPictogramAction(new Rect(rect.x,rect.y,w,rect.height),"战技",UIIconAtlas.Utility("skills"),true,skillSection==0)&&skillSection!=0){skillSection=0;CancelMobileScroll();BlockUITransition();}
-            if(InventoryPictogramAction(new Rect(rect.x+w+gap,rect.y,w,rect.height),"职业精通",UIIconAtlas.Mastery(MasteryType.Offense),true,skillSection==1)&&skillSection!=1){skillSection=1;CancelMobileScroll();BlockUITransition();}
+            float u=MobileControls.Active?TouchRatio:1,gap=8*u,w=(rect.width-gap)/2;
+            for(int i=0;i<2;i++)
+            {
+                Rect hit=new Rect(rect.x+i*(w+gap),rect.y,w,rect.height);
+                bool selected=skillSection==i;
+                Text(hit,i==0?"战技":"职业精通",Mathf.RoundToInt(14*u),selected?gold:muted,selected,false,TextAnchor.MiddleCenter);
+                if(selected)Fill(new Rect(hit.x+8*u,hit.yMax-5*u,hit.width-16*u,2*u),gold);
+                if(GUI.Button(hit,GUIContent.none,invisibleButton)&&!selected){skillSection=i;CancelMobileScroll();BlockUITransition();}
+            }
+        }
+        private float DrawSpecializationChoices(float width,float u,float y,bool draw)
+        {
+            var p=session.Progression;
+            bool elemental=p.Profile.heroClass==HeroClass.Arcanist;
+            if(!elemental&&p.Profile.heroClass!=HeroClass.Summoner)return y;
+            string[] names=elemental?new[]{"均衡","碎冰","灼燃"}:new[]{"双契","群契"};
+            string[] descriptions=elemental?new[]{
+                "均衡：保留冰霜控制与陨星直接伤害；消耗霜痕时追加 50% 基础伤害。",
+                "碎冰：陨星直接伤害降低 15%，碎冰追加 100% 基础伤害；护盾延长霜痕，大招积霜后引爆。",
+                "灼燃：普攻与陨星附加灼烧，新星改为减速；护盾提供机动火区，大招偏持续灼烧。"
+            }:new[]{"双契：伙伴常驻协战，偏持续配合与指令输出。","群契：伙伴以限时增援围攻，偏集中爆发。"};
+            int selected=elemental?(int)p.Profile.specialization:(int)p.Profile.summonerRoute;
+            float descriptionHeight=0;
+            foreach(string text in descriptions)descriptionHeight=Mathf.Max(descriptionHeight,Style(Mathf.RoundToInt(13*u),false,true).CalcHeight(new GUIContent(text),(width-8)*u)/u);
+            if(draw)
+            {
+                Text(new Rect(4*u,y*u,(width-8)*u,26*u),elemental?"专精":"契约模式",Mathf.RoundToInt(16*u),pale,true);
+                float optionWidth=(width-(names.Length-1)*8)/names.Length;
+                for(int i=0;i<names.Length;i++)
+                {
+                    Rect hit=new Rect(i*(optionWidth+8)*u,(y+30)*u,optionWidth*u,44*u);
+                    if(TabButton(hit,names[i],selected==i)&&selected!=i)
+                    {
+                        bool saved=elemental?p.SetSpecialization((ElementalistSpecialization)i,session.IsInCamp):p.SetSummonerRoute((SummonerRoute)i,session.IsInCamp);
+                        MobileWorkshopResult(saved,names[i]+"已选择");
+                        if(saved)selected=i;
+                    }
+                }
+                Text(new Rect(4*u,(y+82)*u,(width-8)*u,descriptionHeight*u),descriptions[Mathf.Clamp(selected,0,names.Length-1)],Mathf.RoundToInt(13*u),pale,false,true);
+            }
+            return y+82+descriptionHeight+12;
         }
         private bool DrawSkillSubsurface()
         {return DrawClassSwitchSurface()||DrawBuildPlanSurface();}
@@ -19,19 +57,19 @@ namespace Emberfall
             if(MobileControls.Active)
             {
                 var l=MobilePanelGeometry();
-                if(DrawMobilePanelChrome(l,"技能 · 职业与精通","技能点 "+p.Profile.skillPoints+" · 共用配点"))return;
-                DrawSkillTabs(MobilePanelRect(l.Tabs));
+                if(DrawMobilePanelChrome(l,"技能 · 职业与精通","技能点 "+p.Profile.skillPoints+" · 共用配点",headerRightReserve:188))return;
+                DrawSkillTabs(TouchRect(l.Close.X-188,8,176,44));
                 if(skillSection==0)return;
-                var body=new MobilePanelLayout.Area(l.TabbedBody.X,l.TabbedBody.Y,l.TabbedBody.Width,l.Height-l.TabbedBody.Y-12);
+                var body=new MobilePanelLayout.Area(l.Body.X,l.Body.Y,l.Body.Width,l.Height-l.Body.Y-12);
                 float mobileWidth=body.Width-16,h=8;DrawMobileWorkshopAbilities(ref h,mobileWidth,false);
                 skillDevelopmentScroll=BeginTouchScroll("skill-development",MobilePanelRect(body),skillDevelopmentScroll,new Rect(0,0,mobileWidth*TouchRatio,Mathf.Max(body.Height,h)*TouchRatio));
                 h=8;DrawMobileWorkshopAbilities(ref h,mobileWidth,true);EndTouchScroll();return;
             }
             Rect w=Modal(980,660,"技能 · 职业与精通","可用技能点 "+p.Profile.skillPoints);
             if(NavigationButton(new Rect(w.xMax-69,w.y+20,44,32),"×",jade))ClosePanel();
-            DrawSkillTabs(new Rect(w.x+26,w.y+82,440,36));
+            DrawSkillTabs(new Rect(w.xMax-269,w.y+20,176,36));
             if(skillSection==0)return;
-            Rect desktopBody=new Rect(w.x+26,w.y+126,w.width-52,w.height-140);float available=desktopBody.width-18;
+            Rect desktopBody=new Rect(w.x+26,w.y+82,w.width-52,w.height-96);float available=desktopBody.width-18;
             float desktopHeight=DrawSkillDevelopmentContent(available,1,false);
             skillDevelopmentScroll=BeginTouchScroll("skill-development",desktopBody,skillDevelopmentScroll,new Rect(0,0,available,Mathf.Max(desktopBody.height,desktopHeight)));
             DrawSkillDevelopmentContent(available,1,true);EndTouchScroll();
@@ -55,7 +93,7 @@ namespace Emberfall
                 string measuredHint=BuildCatalog.MasteryName(m)+" · "+(string.IsNullOrEmpty(p.MasteryLockReason(m))?"投入消耗 1 技能点":p.MasteryLockReason(m))+"\n核心需 "+MasteryCoreRules.InitialInvestment+" 点投入，"+MasteryCoreRules.EnhancedInvestment+" 点增强；唯一核心。";
                 float hintHeight=Style(Mathf.RoundToInt(13*u),false,true).CalcHeight(new GUIContent(measuredHint),(width-12)*u)/u;
                 float descriptionHeight=Style(Mathf.RoundToInt(12*u),false,true).CalcHeight(new GUIContent(MasteryNodeDescription(m)),(width-12)*u)/u;
-                return 244+hintHeight+8+descriptionHeight+12+60;
+                return DrawSpecializationChoices(width,u,244+hintHeight+8+descriptionHeight+12,false);
             }
             Rect tools=new Rect(0,y*u,width*u,48*u);
             Rect role=new Rect(0,tools.y,layout.ClassWidth*u,48*u);
@@ -105,15 +143,7 @@ namespace Emberfall
             Text(new Rect(4*u,y*u,(width-12)*u,h*u),hint,Mathf.RoundToInt(13*u),pale,false,true);y+=h+8;
             string description=MasteryNodeDescription(selected);float dh=Style(Mathf.RoundToInt(12*u),false,true).CalcHeight(new GUIContent(description),(width-12)*u)/u;
             Text(new Rect(4*u,y*u,(width-12)*u,dh*u),description,Mathf.RoundToInt(12*u),muted,false,true);y+=dh+12;
-            int routes=p.Profile.heroClass==HeroClass.Arcanist?3:2;float routeWidth=(width-(routes-1)*8)/routes;
-            for(int i=0;i<2;i++)
-            {
-                int route=i;var info=CampRouteCards.Describe(p.Profile,MobileControls.Active,i);Rect hit=new Rect(i*(routeWidth+8)*u,y*u,routeWidth*u,48*u);
-                if(InventoryPictogramAction(hit,info.Name,UIIconAtlas.SkillGlyph(p.Profile.heroClass,i==0?0:1),session.IsInCamp&&info.NextAction!=CampRouteAction.None,info.Ready))FollowCampRouteStep(info,route);
-                if(hit.Contains(Mouse))tooltip=info.Loop+"\n"+info.Requirements+"\n"+info.Enhancement+"\n"+info.NextStep;
-            }
-            if(routes==3&&InventoryPictogramAction(new Rect(2*(routeWidth+8)*u,y*u,routeWidth*u,48*u),"均衡",UIIconAtlas.Utility("skills"),session.IsInCamp&&p.Profile.specialization!=ElementalistSpecialization.None,p.Profile.specialization==ElementalistSpecialization.None))MobileWorkshopResult(p.SetSpecialization(ElementalistSpecialization.None,session.IsInCamp),"已恢复均衡专精");
-            return y+60;
+            return DrawSpecializationChoices(width,u,y,draw);
         }
     }
 }

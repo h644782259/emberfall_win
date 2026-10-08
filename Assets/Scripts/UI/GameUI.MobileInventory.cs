@@ -67,14 +67,15 @@ namespace Emberfall
             EnsureMobileBagItems();
             ItemData picked = ResolveSelectedItem();
             var layout = MobilePanelGeometry();
-            if(DrawMobilePanelChrome(layout,HubInventoryTitle,""))return;
-            if(string.IsNullOrEmpty(session.Notification))
+            if(DrawMobilePanelChrome(layout,HubInventoryTitle,"",showNotice:false))return;
             {
                 float y=layout.Header.Y+31;
                 Text(TouchRect(layout.Header.X,y,40,20),"Lv."+profile.level,TouchFont(12),pale,true);
                 DrawPrice(TouchRect(layout.Header.X+46,y,90,20),profile.gold,false,TouchRatio);
                 DrawIcon(TouchRect(layout.Header.X+144,y+1,18,18),UIIconAtlas.Utility("bag"),jade);
                 Text(TouchRect(layout.Header.X+166,y,90,20),profile.inventory.Count+"/"+ProgressionService.InventoryCapacity,TouchFont(12),pale,true);
+                if(!string.IsNullOrEmpty(session.Notification))
+                    Text(TouchRect(layout.Header.X+264,y,Mathf.Max(0,layout.Header.Width-264),20),PlatformText(session.Notification),TouchFont(12),gold,false,false,TextAnchor.MiddleLeft);
             }
             float leftWidth=Mathf.Clamp(layout.Body.Width*.28f,156,232);
             var wear=new MobilePanelLayout.Area(layout.Body.X,layout.Body.Y,leftWidth,layout.Height-layout.Body.Y-12);
@@ -153,7 +154,7 @@ namespace Emberfall
             y += MobileDetailParagraph(draw, 8, y, available, MobileAttributeLine("攻击", current == null ? 0 : current.attack, preview.attack), 16, pale, true) + 3;
             y += MobileDetailParagraph(draw, 8, y, available, MobileAttributeLine("防御", current == null ? 0 : current.defense, preview.defense), 16, pale, true) + 3;
             y += MobileDetailParagraph(draw, 8, y, available, MobileAttributeLine("生命", current == null ? 0 : current.health, preview.health), 16, pale, true) + 8;
-            y += MobileDetailParagraph(draw, 8, y, available, "评分不含机制价值 · 换装自动继承部位强化", 14, muted) + 8;
+            y += MobileDetailParagraph(draw, 8, y, available, "评分含机制估值（属性分的20%）· 换装继承部位强化", 14, muted) + 8;
             y += MobileDetailParagraph(draw, 8, y, available, EquipmentComparisonPresentation.Changes(current,item,progression.Profile.heroClass), 15, gold, true) + 8;
             if(item.mechanic!=EquipmentMechanic.None)
             {

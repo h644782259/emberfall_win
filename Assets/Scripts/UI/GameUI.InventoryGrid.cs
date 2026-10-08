@@ -107,6 +107,7 @@ namespace Emberfall
             Text(new Rect(tile.x+2*u,tile.yMax-15*u,tile.width-4*u,14*u),"L"+item.level,Mathf.RoundToInt(9*u),pale,true,false,TextAnchor.MiddleRight);
             if(item.locked)DrawIcon(new Rect(tile.xMax-14*u,tile.y+2*u,12*u,12*u),UIIconAtlas.EquipmentLock(true),Color.white);
             if(IsEquipped(item))DrawIcon(new Rect(tile.x+2*u,tile.yMax-16*u,14*u,14*u),UIIconAtlas.Utility("confirm"),jade);
+            if(UnreviewedEquipmentUpgrade(item))DrawIcon(new Rect(tile.xMax-18*u,tile.yMax-31*u,18*u,18*u),UIIconAtlas.EquipmentUpgradeArrow(),new Color(.25f,1f,.4f));
             if(tile.Contains(Mouse))tooltip=item.name+" · "+GameBalance.RarityName(item.rarity)+" · Lv."+item.level;
         }
         private void DrawEquipmentIconGrid(Rect viewport,ref Vector2 scroll,float u)
@@ -149,7 +150,7 @@ namespace Emberfall
             var appearance=fashion?session.Progression.Profile.fashions.Find(v=>v!=null&&v.id==inventoryPopupItem.Substring(9)):null;
             var item=potion||fashion?null:session.Progression.Profile.inventory.Find(v=>v!=null&&v.id==(inventoryPopupItem??selectedItem));
             if(!potion&&!fashion&&item==null||fashion&&appearance==null){inventoryComparisonOpen=false;return;}
-            var area=InventoryGridGeometry.Popup(new MobilePanelLayout.Area(bounds.x/u,bounds.y/u,bounds.width/u,bounds.height/u),new MobilePanelLayout.Area(inventoryPopupAnchor.x/u,inventoryPopupAnchor.y/u,inventoryPopupAnchor.width/u,inventoryPopupAnchor.height/u),inventoryPopupCompare);
+            var area=InventoryGridGeometry.Popup(new MobilePanelLayout.Area(bounds.x/u,bounds.y/u,bounds.width/u,bounds.height/u),new MobilePanelLayout.Area(inventoryPopupAnchor.x/u,inventoryPopupAnchor.y/u,inventoryPopupAnchor.width/u,inventoryPopupAnchor.height/u),inventoryPopupCompare||item!=null);
             Rect r=inventoryPopupRect=new Rect(area.X*u,area.Y*u,area.Width*u,area.Height*u);
             Fill(r,new Color(.025f,.055f,.075f,.99f));Border(r,jade);
             bool prior=GUI.enabled;GUI.enabled=prior&&Time.frameCount!=inventoryPopupOpened;
@@ -167,7 +168,7 @@ namespace Emberfall
                 Rect nameRect=new Rect(r.x+42*u,rowY,r.width-158*u,rowHeight);
                 Text(nameRect,item.name,Mathf.RoundToInt(14*u),pale,true,false,TextAnchor.MiddleLeft);
                 if(DrawInventoryLock(new Rect(nameRect.xMax,rowY,36*u,rowHeight),item.locked))
-                {bool locked=!item.locked;MobileInventoryResult(session.Progression.SetItemLocked(item.id,locked),locked?"已锁定":"已解锁");inventoryPopupOpened=Time.frameCount;}
+                {if(!session.Progression.SetItemLocked(item.id,!item.locked))MobileInventoryResult(false,"");inventoryPopupOpened=Time.frameCount;}
                 Text(new Rect(r.x+8*u,r.y+38*u,48*u,28*u),"评分",Mathf.RoundToInt(14*u),pale,true,false,TextAnchor.MiddleLeft);
                 Text(new Rect(r.x+60*u,r.y+38*u,r.width-70*u,28*u),EquipmentPreviewScore(item).ToString("0.#"),Mathf.RoundToInt(18*u),gold,true,false,TextAnchor.MiddleRight);
             }
@@ -192,6 +193,17 @@ namespace Emberfall
                 if(InventoryPictogramAction(new Rect(r.x+6*u,r.y+68*u,actionWidth,44*u),worn?"脱下":"穿戴",UIIconAtlas.EquipmentCardIcon(item.slot),worn||item.level<=session.Progression.Profile.level,worn,true))
                 {MobileInventoryResult(worn?session.Progression.Unequip(item.slot):session.Progression.Equip(item.id),worn?"装备已脱下":"装备已穿戴");inventoryPopupOpened=Time.frameCount;}
                 if(InventoryPictogramAction(new Rect(r.x+10*u+actionWidth,r.y+68*u,actionWidth,44*u),"对比",UIIconAtlas.Utility("compare"),true,inventoryPopupCompare)){inventoryPopupCompare=!inventoryPopupCompare;inventoryComparisonScroll=Vector2.zero;}
+            }
+            if(!inventoryPopupCompare&&!potion&&!fashion)
+            {
+                Rect detail=new Rect(r.x+8*u,r.y+116*u,r.width-16*u,Mathf.Max(24*u,r.height-120*u));
+                string copy="装备机制\n"+EquipmentComparisonPresentation.Description(item,session.Progression.Profile.heroClass)+
+                    "\n\n评分 = 攻击×5 + 防御×3 + 生命×0.2；部位匹配的机制额外加20%属性分（统一估值）。";
+                float textWidth=detail.width-18*u;
+                float textHeight=Style(Mathf.RoundToInt(12*u),false,true).CalcHeight(new GUIContent(copy),textWidth)+8*u;
+                inventoryComparisonScroll=BeginTouchScroll("inventory-popup-detail",detail,inventoryComparisonScroll,new Rect(0,0,textWidth,Mathf.Max(detail.height,textHeight)));
+                Text(new Rect(0,0,textWidth,textHeight),copy,Mathf.RoundToInt(12*u),pale,false,true);
+                EndTouchScroll();
             }
             if(inventoryPopupCompare&&!potion&&!fashion)
             {

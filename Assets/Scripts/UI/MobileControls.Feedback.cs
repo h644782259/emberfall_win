@@ -33,7 +33,7 @@ namespace Emberfall
             GUI.Label(countBadge,PotionCount.ToString(),controlLabel);
             string failure=session.ControlFailure("potion");
             string potionCaption=!string.IsNullOrEmpty(failure)?failure:potionState;
-            if(potionCaption.Length>0)GUI.Label(new Rect(Potion.x-8,Potion.y-18,Potion.width+16,16),potionCaption,controlLabel);
+            if(potionCaption.Length>0&&potionCaption!="满血")GUI.Label(new Rect(Potion.x-8,Potion.y-18,Potion.width+16,16),potionCaption,controlLabel);
             if(dodgeState.Length>0)LabelControl(Dodge,hero.DodgeCooldown>.01f?hero.DodgeCooldown.ToString("0.0"):dodgeState,true);
             var combo=hero.BasicOpportunityWindow(true);var ca=Layout.ComboOpportunity;
             comboMeter.Draw(new Rect(ca.X,ca.Y,ca.Width,ca.Height),combo,hero,hero.CombatEpoch,1,EffectPreferences.TouchOpacity);

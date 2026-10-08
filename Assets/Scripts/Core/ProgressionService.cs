@@ -808,7 +808,6 @@ namespace Emberfall
 
         public bool SetSpecialization(ElementalistSpecialization specialization, bool inCamp)
         {
-            if (!inCamp) return Fail("只能在营地免费切换专精。");
             if (Profile.heroClass != HeroClass.Arcanist) return Fail("只有元素师可切换冰火专精。");
             if (!Enum.IsDefined(typeof(ElementalistSpecialization), specialization)) return Fail("无效的专精。");
             GameProfile candidate=Snapshot();candidate.specialization=specialization;
@@ -1723,8 +1722,8 @@ namespace Emberfall
 
         public bool SetSummonerRoute(SummonerRoute route, bool inCamp)
         {
-            if (!inCamp || Profile.heroClass != HeroClass.Summoner || !Enum.IsDefined(typeof(SummonerRoute), route))
-                return Fail("在营地可选择群契或双契伙伴路线。");
+            if (Profile.heroClass != HeroClass.Summoner || !Enum.IsDefined(typeof(SummonerRoute), route))
+                return Fail("请选择有效的唤灵师契约模式。");
             GameProfile candidate = Snapshot(); candidate.summonerRoute = route; return CommitCandidate(candidate);
         }
 
@@ -2618,7 +2617,11 @@ namespace Emberfall
 
         public static float EquipmentScore(ItemData item)
         {
-            return item == null ? 0 : item.attack * 5f + item.defense * 3f + item.health * .2f;
+            if(item==null)return 0;
+            float attributes=item.attack*5f+item.defense*3f+item.health*.2f;
+            // Intrinsic item valuation, not a prediction of DPS or build synergy.
+            bool mechanic=item.mechanic!=EquipmentMechanic.None&&Enum.IsDefined(typeof(EquipmentMechanic),item.mechanic)&&BuildCatalog.MechanicSlot(item.mechanic)==item.slot;
+            return attributes+(mechanic?attributes*.2f:0);
         }
 
         public bool LearnSkill(int slot)

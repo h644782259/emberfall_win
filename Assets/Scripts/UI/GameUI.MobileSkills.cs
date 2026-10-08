@@ -29,11 +29,11 @@ namespace Emberfall
             selectedSkill = Mathf.Clamp(selectedSkill, 0, GameBalance.SkillCount - 1);
             var layout = MobilePanelGeometry();
             if (DrawMobilePanelChrome(layout, GameBalance.ClassName(profile.heroClass) + " · 技能",
-                "Lv." + profile.level + " · 可用技能点 " + profile.skillPoints + " · 上下滑动查看全部10项")) return;
+                "Lv." + profile.level + " · 可用技能点 " + profile.skillPoints,headerRightReserve:188)) return;
 
-            DrawSkillTabs(MobilePanelRect(layout.Tabs));
+            DrawSkillTabs(TouchRect(layout.Close.X-188,8,176,44));
             if(skillSection==1)return;
-            var listArea=new MobilePanelLayout.Area(layout.TabbedBody.X,layout.TabbedBody.Y,layout.TabbedBody.Width,RouteSkillReturnAvailable?layout.TabbedBody.Height:layout.Height-layout.TabbedBody.Y-12);
+            var listArea=new MobilePanelLayout.Area(layout.Body.X,layout.Body.Y,layout.Body.Width,RouteSkillReturnAvailable?layout.Body.Height:layout.Height-layout.Body.Y-12);
             float u=TouchRatio,listWidth=listArea.Width-16;
             if(mobileSkillDetail&&Event.current.type==EventType.MouseDown&&mobileSkillPopupRect.width>0&&!mobileSkillPopupRect.Contains(Mouse))
             {mobileSkillDetail=false;CancelMobileScroll();BlockUITransition();Event.current.Use();}
@@ -100,12 +100,13 @@ namespace Emberfall
                 int rank=p.skillRanks[skill];bool canLearn=Attention.LearnableSkills.Contains(skill);
                 Rect node=MobileSkillTreeNode(skill,width);Color accent=selectedSkill==skill?gold:rank>0?jade:muted;
                 // Only the icon has a compact border; text and branch lines float on the tree.
-                DrawSkillIdentity(new Rect(node.center.x-18*TouchRatio,node.y+5*TouchRatio,36*TouchRatio,36*TouchRatio),p.heroClass,skill,rank,rank>0||canLearn,48);
+                Rect icon=new Rect(node.center.x-18*TouchRatio,node.y+5*TouchRatio,36*TouchRatio,36*TouchRatio);
+                DrawSkillIdentity(icon,p.heroClass,skill,rank,rank>0||canLearn,48);
                 if(selectedSkill==skill)DrawIcon(new Rect(node.center.x+20*TouchRatio,node.y+2*TouchRatio,12*TouchRatio,12*TouchRatio),UIIconAtlas.Utility("confirm"),gold);
                 Text(new Rect(node.x+4*TouchRatio,node.y+44*TouchRatio,node.width-8*TouchRatio,18*TouchRatio),GameBalance.SkillName(p.heroClass,skill),TouchFont(12),rank>0||canLearn?pale:muted,true,false,TextAnchor.MiddleCenter);
                 string state="Lv."+GameBalance.SkillRequiredLevels[skill]+" · "+(canLearn?rank>0?"可进阶":"可学习":rank>0?GameBalance.SkillRankName(rank):GameBalance.IsPassive(skill)?"被动 · 未学":"未解锁");
                 Text(new Rect(node.x+4*TouchRatio,node.y+64*TouchRatio,node.width-8*TouchRatio,16*TouchRatio),state,TouchFont(10),canLearn?gold:accent,false,false,TextAnchor.MiddleCenter);
-                Badge(node,canLearn);
+                Badge(icon,canLearn);
                 if(MobileSkillRowClicked(node)&&(selectedSkill!=skill||!mobileSkillDetail))
                 {selectedSkill=skill;mobileSkillDetail=true;mobileSkillDetailScroll=Vector2.zero;mobileSkillStatus=null;CancelMobileScroll();BlockUITransition();}
             }

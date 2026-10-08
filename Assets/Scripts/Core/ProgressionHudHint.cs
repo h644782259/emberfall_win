@@ -12,6 +12,14 @@ namespace Emberfall
         }
         private static bool ActiveSkill(GameProfile profile,bool mobile,int skill)
         {return profile.skillRanks!=null&&profile.skillRanks.Length>skill&&profile.skillRanks[skill]>0&&(mobile||profile.equippedSkills!=null&&System.Array.IndexOf(profile.equippedSkills,skill)>=0);}
+        private static string CompactStep(string text)
+        {
+            if(string.IsNullOrEmpty(text))return text;
+            var parts=new System.Collections.Generic.List<string>();
+            foreach(string part in text.Split(new[]{" · "},System.StringSplitOptions.None))
+                if(part!="营地已到达"&&!part.StartsWith("仍缺")&&!part.StartsWith("仍需"))parts.Add(part);
+            return string.Join(" · ",parts);
+        }
         // A room win blocker always owns the HUD. Explicit goals suppress fallback tutorials.
         public static bool TryGet(ProgressionService p,ProgressionAttention attention,bool roomPriority,bool inCamp,bool tutorialUsable,out string title,out string step)
         {
@@ -31,7 +39,7 @@ namespace Emberfall
             if(selected)
             {
                 title=goal.Title+(goal.Done?" · 已完成":"");
-                step=p.Profile.progressionGoal==ProgressionGoalKind.ClassTutorial&&!tutorialUsable&&!goal.Done?"先学习并装入职业循环所需技能":goal.Step;
+                step=p.Profile.progressionGoal==ProgressionGoalKind.ClassTutorial&&!tutorialUsable&&!goal.Done?"先学习并装入职业循环所需技能":CompactStep(goal.Step);
                 return true;
             }
             if(tutorialUsable&&!p.Profile.classTutorialCompleted)

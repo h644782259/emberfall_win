@@ -51,7 +51,7 @@ namespace Emberfall
                 Skills[i]=Centered(Width-78-radius*(float)Math.Cos(angle),Height-30-radius*(float)Math.Sin(angle)+shift-bottomLift,diameter);
             }
             Skills[4]=Centered(Width-78-radius-chord,Height-30+shift-bottomLift,diameter);
-            SkillPage=Centered(Width-30,Height-146,44);
+            SkillPage=Centered(Width-24,Height-158,44);
             int[] opportunityIdentities={0,1,2,4,5,6,7,9};
             for(int index=0;index<opportunityIdentities.Length;index++)
             {

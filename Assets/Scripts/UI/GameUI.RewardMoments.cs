@@ -13,10 +13,23 @@ namespace Emberfall
         private void ClearRewardMoment()
         {rewardMoment=null;if(rewardMomentModel!=null)rewardMomentModel.Dispose();rewardMomentModel=null;}
         private bool RewardMomentSafe {get{return session.IsInCamp&&!session.Paused&&!session.IsDead&&(panel==Panel.Camp||panel==Panel.Fashion||panel==Panel.Inventory);}}
+        private ItemData RewardUpgradeItem()
+        {
+            if(rewardMoment==null||rewardMoment.Item==null)return null;
+            var item=session.Progression.Profile.inventory.Find(v=>v!=null&&v.id==rewardMoment.Item.id);
+            return IsEquipmentUpgrade(item)?item:null;
+        }
+        private Rect RewardEquipRect(Rect area)
+        {float u=MobileControls.Active?TouchRatio:1;return new Rect(area.x+8*u,area.yMax-48*u,area.width-16*u,44*u);}
+        private void DrawRewardEquip(Rect area)
+        {
+            Rect action=RewardEquipRect(area);Fill(action,new Color(.08f,.3f,.18f));Border(action,jade);
+            Text(action,"穿戴",MobileControls.Active?TouchFont(14):14,pale,true,false,TextAnchor.MiddleCenter);
+        }
         private Rect RewardMomentRect()
         {
             float u=MobileControls.Active?TouchRatio:1;
-            float w=Mathf.Min((RewardMomentSafe?330:196)*u,width-24*u),h=Mathf.Min((RewardMomentSafe?252:52)*u,height-84*u);
+            float w=Mathf.Min((RewardMomentSafe?330:196)*u,width-24*u),h=Mathf.Min((RewardMomentSafe?252:RewardUpgradeItem()!=null?104:52)*u,height-84*u);
             return new Rect(width-w-12*u,64*u,w,h);
         }
         // Runs before panel input, so skip cannot click through to a transaction below.
@@ -36,10 +49,21 @@ namespace Emberfall
                 GameAudio.Play(RewardMomentSafe?cue:SoundCue.UI);
             }
             if(rewardMoment==null)return;
-            if(panel!=rewardMomentPanel||session.Paused||session.IsDead||session.PracticeActive||Time.unscaledTime-rewardMomentStarted>(EffectPreferences.ReducedEffects?1.5f:3.2f))
+            if(panel!=rewardMomentPanel||session.Paused||session.IsDead||session.PracticeActive||Time.unscaledTime-rewardMomentStarted>(RewardUpgradeItem()!=null?8f:EffectPreferences.ReducedEffects?1.5f:3.2f))
             {ClearRewardMoment();return;}
-            if(RewardMomentSafe&&RewardMomentRect().Contains(Mouse)&&(Event.current.type==EventType.MouseDown||Event.current.type==EventType.MouseUp||Event.current.type==EventType.MouseDrag||Event.current.type==EventType.ScrollWheel))
-            {if(Event.current.type==EventType.MouseDown&&RewardMomentSkipRect(RewardMomentRect()).Contains(Mouse))ClearRewardMoment();BlockUITransition();Event.current.Use();}
+            bool interactive=RewardMomentSafe||RewardUpgradeItem()!=null;
+            if(interactive)blockedRects.Add(RewardMomentRect());
+            if(interactive&&RewardMomentRect().Contains(Mouse)&&(Event.current.type==EventType.MouseDown||Event.current.type==EventType.MouseUp||Event.current.type==EventType.MouseDrag||Event.current.type==EventType.ScrollWheel))
+            {
+                if(Event.current.type==EventType.MouseDown)
+                {
+                    var item=RewardUpgradeItem();
+                    if(item!=null&&RewardEquipRect(RewardMomentRect()).Contains(Mouse))
+                    {bool saved=session.Progression.Equip(item.id);Feedback(saved,saved?"装备已穿戴":session.Progression.LastError);if(saved)ClearRewardMoment();}
+                    else if(RewardMomentSafe&&RewardMomentSkipRect(RewardMomentRect()).Contains(Mouse))ClearRewardMoment();
+                }
+                BlockUITransition();Event.current.Use();
+            }
         }
         private Rect RewardMomentSkipRect(Rect area)
         {float u=MobileControls.Active?TouchRatio:1;return new Rect(area.xMax-52*u,area.y+2*u,48*u,48*u);}
@@ -47,18 +71,19 @@ namespace Emberfall
         {
             if(rewardMoment==null)return;
             Rect area=RewardMomentRect();float u=MobileControls.Active?TouchRatio:1;
+            bool canEquip=RewardUpgradeItem()!=null;
             Color accent=rewardMoment.Item!=null?GameBalance.RarityColor(rewardMoment.Item.rarity):rewardMoment.Fashion!=null?GameBalance.RarityColor(rewardMoment.Fashion.rarity):jade;
             Fill(area,new Color(.025f,.045f,.065f,.98f));Border(area,accent);
             if(!RewardMomentSafe)
             {
                 DrawIcon(new Rect(area.x+6*u,area.y+6*u,38*u,38*u),UIIconAtlas.Utility(rewardMoment.Item!=null&&rewardMoment.Item.slot==ItemSlot.Weapon?"attack":"bag"),accent);
-                Text(new Rect(area.x+50*u,area.y+5*u,area.width-56*u,area.height-10*u),rewardMoment.Item==null?"星烬碎片":rewardMoment.Item.name,Mathf.RoundToInt(12*u),pale,false,true);return;
+                Text(new Rect(area.x+50*u,area.y+5*u,area.width-56*u,42*u),rewardMoment.Item==null?"星烬碎片":rewardMoment.Item.name,Mathf.RoundToInt(12*u),pale,false,true);if(canEquip)DrawRewardEquip(area);return;
             }
             DrawIcon(RewardMomentSkipRect(area),UIIconAtlas.Utility("cancel"),muted);
             string title=rewardMoment.Attachment!=null?BuildCatalog.MechanicName(rewardMoment.Attachment.mechanic)+" · 挂件":rewardMoment.Item!=null?GameBalance.SlotName(rewardMoment.Item.slot)+" · "+rewardMoment.Item.name:rewardMoment.Fashion!=null?rewardMoment.Fashion.name:"星烬碎片";
             Text(new Rect(area.x+10*u,area.y+6*u,area.width-66*u,38*u),title,Mathf.RoundToInt(14*u),accent,true,true);
             int rows=(rewardMoment.MaterialsDelta!=0?1:0)+(rewardMoment.ThreadsDelta!=0?1:0)+(rewardMoment.GoldDelta!=0?1:0);
-            Rect body=new Rect(area.x+8*u,area.y+52*u,area.width-16*u,area.height-60*u);
+            Rect body=new Rect(area.x+8*u,area.y+52*u,area.width-16*u,area.height-60*u-(canEquip?48*u:0));
             float resources=rows*32*u;
             if(rewardMoment.Attachment!=null)
             {
@@ -85,6 +110,7 @@ namespace Emberfall
             if(rewardMoment.GoldDelta!=0){DrawRewardToken(new Rect(body.x,y,body.width,32*u),0,rewardMoment.GoldDelta,u);y+=32*u;}
             if(rewardMoment.MaterialsDelta!=0){DrawRewardToken(new Rect(body.x,y,body.width,32*u),1,rewardMoment.MaterialsDelta,u);y+=32*u;}
             if(rewardMoment.ThreadsDelta!=0)DrawRewardToken(new Rect(body.x,y,body.width,32*u),2,rewardMoment.ThreadsDelta,u);
+            if(canEquip)DrawRewardEquip(area);
         }
     }
 }

@@ -381,11 +381,13 @@ namespace Emberfall
             Vector3 walkingDisplacement = Vector3.zero;
             MaintainStarterCompanion(dt);
             bool mobile = MobileControls.Active;
-            Vector2 moveInput = mobile ? MobileControls.Move : new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
-            Vector3 movement = mobile ? new Vector3(moveInput.x, 0, moveInput.y) :
-                AdventureCamera.CameraRelativeMovement(moveInput, Camera.main == null ? null : Camera.main.transform);
+            // Hardware keyboard uses the same axes and camera-relative movement on every platform.
+            // Touch movement has already been projected by MobileControls.
+            Vector2 keyboardMove = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
+            Vector3 movement = AdventureCamera.CameraRelativeMovement(keyboardMove, Camera.main == null ? null : Camera.main.transform);
+            if(mobile)movement+=new Vector3(MobileControls.Move.x,0,MobileControls.Move.y);
             movement = Vector3.ClampMagnitude(movement,1);
-            bool wantsJump = mobile ? MobileControls.ConsumeJump() : Input.GetKeyDown(KeyCode.Space);
+            bool wantsJump = (mobile && MobileControls.ConsumeJump()) || Input.GetKeyDown(KeyCode.Space);
             if (wantsJump) { jumpInput=movement; TryJump(); jumpInput=Vector3.zero; }
             bool wantsBlink = mobile ? MobileControls.ConsumeDodge() : Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.RightShift);
             if (wantsBlink) TryBlink(movement);
@@ -423,15 +425,26 @@ namespace Emberfall
             // the model; it never overwrites the independent mouse aim point.
             if ((charge == null || !charge.IsCharging) && (mobile || !session.PointerOverUI))
                 aimPoint = mobile ? ResolveMobileAim(movement) : ResolveAim(Camera.main,Input.mousePosition);
-            bool attackHeld = mobile ? MobileControls.AttackHeld : Input.GetMouseButton(0) || Input.GetKey(KeyCode.J);
+            bool attackHeld = (mobile ? MobileControls.AttackHeld : Input.GetMouseButton(0)) || Input.GetKey(KeyCode.J);
             if (!attackHeld) suppressBasicUntilReleased = false;
             bool wantsBasic = !suppressBasicUntilReleased && attackHeld && (mobile || !session.PointerOverUI);
             if (movement.sqrMagnitude > .01f && !wantsBasic && (charge == null || !charge.IsCharging))
                 transform.rotation = Quaternion.RotateTowards(transform.rotation,Quaternion.LookRotation(movement),720f*dt);
-            if (!TraversalStartedThisFrame && !mobile && !session.PointerOverUI)
+            if (!TraversalStartedThisFrame && (mobile || !session.PointerOverUI))
             {
                 GameProfile profile = session.Progression.Profile;
-                for (int slot=0;slot<GameBalance.HotbarSize;slot++)
+                if(mobile)
+                {
+                    var ui=session.GetComponent<GameUI>();
+                    for(int keyIndex=0;keyIndex<GameBalance.DefaultHotbarKeys.Length;keyIndex++)
+                    {
+                        int key=GameBalance.DefaultHotbarKeys[keyIndex];
+                        if(!Input.GetKeyDown((KeyCode)key))continue;
+                        int skill=ui==null?-1:ui.MobileKeyboardSkill(key);
+                        if(skill>=0&&targeting!=null)targeting.Begin(skill);
+                    }
+                }
+                else for (int slot=0;slot<GameBalance.HotbarSize;slot++)
                     if (profile.hotbarKeys != null && slot < profile.hotbarKeys.Length && Input.GetKeyDown((KeyCode)profile.hotbarKeys[slot]))
                     {
                         int skill = HotbarSkill(slot);

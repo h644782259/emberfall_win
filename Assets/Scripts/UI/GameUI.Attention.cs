@@ -6,7 +6,7 @@ namespace Emberfall
         private ProgressionAttention attention;
         private GameProfile attentionProfile;
         private bool attentionDirty=true,attentionCamp;
-        private string attentionGearSignature;
+        private string reviewedEquipmentOwner;
         private Texture2D attentionDot;
         private readonly System.Collections.Generic.HashSet<string> reviewedEquipment=new System.Collections.Generic.HashSet<string>();
         private ProgressionAttention Attention
@@ -15,14 +15,13 @@ namespace Emberfall
             {
                 if(attentionDirty||attention==null||attentionProfile!=session.Progression.Profile||attentionCamp!=session.IsInCamp)
                 {attention=ProgressionAttention.Evaluate(session.Progression,session.IsInCamp);
-                    var p=session.Progression.Profile;string signature=p.weaponId+"|"+p.armorId+"|"+p.relicId+"|"+p.level+"|"+ProgressionService.EquipmentScore(session.Progression.Equipped(ItemSlot.Weapon))+"|"+ProgressionService.EquipmentScore(session.Progression.Equipped(ItemSlot.Armor))+"|"+ProgressionService.EquipmentScore(session.Progression.Equipped(ItemSlot.Relic));
-                    if(signature!=attentionGearSignature){reviewedEquipment.Clear();attentionGearSignature=signature;}
-                    attentionProfile=session.Progression.Profile;attentionCamp=session.IsInCamp;attentionDirty=false;reviewedEquipment.RemoveWhere(id=>!attention.HigherScoreItems.Contains(id));}
+                    attentionProfile=session.Progression.Profile;attentionCamp=session.IsInCamp;attentionDirty=false;}
+                EnsureReviewedEquipment();
                 return attention;
             }
         }
         public void RebindProgressionNotifications(ProgressionService oldService,ProgressionService newService)
-        {if(oldService!=null)oldService.Changed-=InvalidateAttention;if(newService!=null)newService.Changed+=InvalidateAttention;attentionProfile=null;attention=null;attentionDirty=true;reviewedEquipment.Clear();attentionGearSignature=null;ResetBuildPlanSurface();}
+        {if(oldService!=null)oldService.Changed-=InvalidateAttention;if(newService!=null)newService.Changed+=InvalidateAttention;attentionProfile=null;attention=null;attentionDirty=true;reviewedEquipment.Clear();reviewedEquipmentOwner=null;ResetBuildPlanSurface();}
         private void InvalidateAttention(){attentionDirty=true;}
         private bool NewEquipmentAttention
         {get{foreach(string id in Attention.HigherScoreItems)if(!reviewedEquipment.Contains(id))return true;return false;}}
@@ -38,6 +37,20 @@ namespace Emberfall
             float sizeUI=MobileControls.Active?10*TouchRatio:10;Color prior=GUI.color;GUI.color=Color.white;
             GUI.DrawTexture(new Rect(r.xMax-sizeUI*.8f,r.y-sizeUI*.2f,sizeUI,sizeUI),attentionDot);GUI.color=prior;
         }
-        private void ReviewEquipment(ItemData item){if(item!=null)reviewedEquipment.Add(item.id);}
+        private void EnsureReviewedEquipment()
+        {
+            string key="Emberfall.ReviewedEquipment."+session.Progression.CurrentSlotId;
+            if(reviewedEquipmentOwner==key)return;
+            reviewedEquipmentOwner=key;reviewedEquipment.Clear();
+            foreach(string id in PlayerPrefs.GetString(key,"").Split(','))if(!string.IsNullOrEmpty(id))reviewedEquipment.Add(id);
+        }
+        private bool UnreviewedEquipmentUpgrade(ItemData item)
+        {return IsEquipmentUpgrade(item)&&!reviewedEquipment.Contains(item.id);}
+        private void ReviewEquipment(ItemData item)
+        {
+            if(item==null)return;EnsureReviewedEquipment();
+            if(reviewedEquipment.Add(item.id))
+            {PlayerPrefs.SetString(reviewedEquipmentOwner,string.Join(",",reviewedEquipment));PlayerPrefs.Save();}
+        }
     }
 }
