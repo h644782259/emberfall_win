@@ -1,0 +1,30 @@
+/tmp/reforge-selection-umpdp05h/MilestoneGoalSurfaceTests.cs(22,65): warning CS0649: Field 'GameUI.jade' is never assigned to, and will always have its default value [/tmp/reforge-selection-umpdp05h/p/Validation.csproj]
+/tmp/reforge-selection-umpdp05h/MilestoneGoalSurfaceTests.cs(22,70): warning CS0649: Field 'GameUI.pale' is never assigned to, and will always have its default value [/tmp/reforge-selection-umpdp05h/p/Validation.csproj]
+/tmp/reforge-selection-umpdp05h/MilestoneGoalSurfaceTests.cs(22,75): warning CS0649: Field 'GameUI.gold' is never assigned to, and will always have its default value [/tmp/reforge-selection-umpdp05h/p/Validation.csproj]
+/tmp/reforge-selection-umpdp05h/MilestoneGoalSurfaceTests.cs(22,80): warning CS0649: Field 'GameUI.muted' is never assigned to, and will always have its default value [/tmp/reforge-selection-umpdp05h/p/Validation.csproj]
+/tmp/reforge-selection-umpdp05h/MilestoneGoalSurfaceTests.cs(30,7): warning CS0414: The field 'GameUI.buildPlanDetails' is assigned but its value is never used [/tmp/reforge-selection-umpdp05h/p/Validation.csproj]
+/tmp/reforge-selection-umpdp05h/MilestoneGoalSurfaceTests.cs(30,24): warning CS0414: The field 'GameUI.skillSection' is assigned but its value is never used [/tmp/reforge-selection-umpdp05h/p/Validation.csproj]
+
+Build succeeded.
+
+/tmp/reforge-selection-umpdp05h/MilestoneGoalSurfaceTests.cs(22,65): warning CS0649: Field 'GameUI.jade' is never assigned to, and will always have its default value [/tmp/reforge-selection-umpdp05h/p/Validation.csproj]
+/tmp/reforge-selection-umpdp05h/MilestoneGoalSurfaceTests.cs(22,70): warning CS0649: Field 'GameUI.pale' is never assigned to, and will always have its default value [/tmp/reforge-selection-umpdp05h/p/Validation.csproj]
+/tmp/reforge-selection-umpdp05h/MilestoneGoalSurfaceTests.cs(22,75): warning CS0649: Field 'GameUI.gold' is never assigned to, and will always have its default value [/tmp/reforge-selection-umpdp05h/p/Validation.csproj]
+/tmp/reforge-selection-umpdp05h/MilestoneGoalSurfaceTests.cs(22,80): warning CS0649: Field 'GameUI.muted' is never assigned to, and will always have its default value [/tmp/reforge-selection-umpdp05h/p/Validation.csproj]
+/tmp/reforge-selection-umpdp05h/MilestoneGoalSurfaceTests.cs(30,7): warning CS0414: The field 'GameUI.buildPlanDetails' is assigned but its value is never used [/tmp/reforge-selection-umpdp05h/p/Validation.csproj]
+/tmp/reforge-selection-umpdp05h/MilestoneGoalSurfaceTests.cs(30,24): warning CS0414: The field 'GameUI.skillSection' is assigned but its value is never used [/tmp/reforge-selection-umpdp05h/p/Validation.csproj]
+    6 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:03.31
+Unhandled exception. System.Exception: three distinct actual choices
+   at Emberfall.GameUI.<>c__DisplayClass76_0.<VerifyReforgeSelection>b__0(Boolean ok, String why) in /tmp/reforge-selection-umpdp05h/ReforgeSelectionTests.cs:line 8
+   at Emberfall.GameUI.VerifyReforgeSelection(String root) in /tmp/reforge-selection-umpdp05h/ReforgeSelectionTests.cs:line 12
+   at Program.Main(String[] args) in /tmp/reforge-selection-umpdp05h/p/Program.cs:line 1
+Traceback (most recent call last):
+  File "/workspace/final-fixture-main-win/Tests/ReforgeSelectionTests.py", line 14, in <module>
+    subprocess.run(build,env=env,check=True);subprocess.run(run+[str(o/'save')],env=env,check=True)
+                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/workspace/toolchain/dotnet/dotnet', '/tmp/reforge-selection-umpdp05h/p/bin/Debug/net8.0/Validation.dll', '/tmp/reforge-selection-umpdp05h/save']' died with <Signals.SIGABRT: 6>.

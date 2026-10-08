@@ -1,0 +1,15 @@
+
+/tmp/practice-session-8s0x_p6a/Shutdown.cs(51,13): error CS0103: The name 'EndHubNpcConversation' does not exist in the current context [/tmp/practice-session-8s0x_p6a/project/Validation.csproj]
+/workspace/final-fixture-main-win/Tests/CampPracticeSessionBoundary.cs(21,136): warning CS0067: The event 'Application.wantsToQuit' is never used [/tmp/practice-session-8s0x_p6a/project/Validation.csproj]
+/workspace/final-fixture-main-win/Tests/CampPracticeSessionBoundary.cs(68,125): warning CS0649: Field 'AdvancedSkillSequence.step' is never assigned to, and will always have its default value 0 [/tmp/practice-session-8s0x_p6a/project/Validation.csproj]
+/workspace/final-fixture-main-win/Tests/CampPracticeSessionBoundary.cs(34,174): warning CS0067: The event 'ProgressionService.Changed' is never used [/tmp/practice-session-8s0x_p6a/project/Validation.csproj]
+/tmp/practice-session-8s0x_p6a/CompanionBond.cs(4,24): warning CS0649: Field 'SummonedCompanion.BondState.EmpoweredHitSequence' is never assigned to, and will always have its default value 0 [/tmp/practice-session-8s0x_p6a/project/Validation.csproj]
+/workspace/final-fixture-main-win/Tests/CampPracticeSessionBoundary.cs(34,207): warning CS0067: The event 'ProgressionService.LeveledUp' is never used [/tmp/practice-session-8s0x_p6a/project/Validation.csproj]
+
+The build failed. Fix the build errors and run again.
+
+Traceback (most recent call last):
+  File "/workspace/final-fixture-main-win/Tests/CampPracticeSessionProductionTests.py", line 33, in <module>
+    assert run(['run','--project',str(project),'--no-restore']).returncode==0
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
