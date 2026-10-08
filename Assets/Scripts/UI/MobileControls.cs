@@ -81,7 +81,7 @@ namespace Emberfall
         private Vector2 ToUI(Vector2 screen) { return (new Vector2(screen.x, Screen.height - screen.y) - Offset) / Scale; }
         public Vector2 ControlScreenPoint(string name)
         {
-            Rect control = name == "move" ? Joystick : name == "dodge" ? Dodge : name == "potion" ? Potion : name == "jump" ? Jump : name == "cancel" ? Cancel : name == "interact" ? Area(Layout.Interact) : Attack;
+            Rect control = name == "move" ? Joystick : name == "dodge" ? Dodge : name == "potion" ? Potion : name == "jump" ? Jump : name == "cancel" ? Cancel : name == "interact" ? Area(ui==null?Layout.Interact:ui.MobileInteractionArea) : Attack;
             Vector2 point = control.center * Scale + Offset;
             return new Vector2(point.x, Screen.height - point.y);
         }
@@ -89,7 +89,7 @@ namespace Emberfall
         {
             if (!Active || instance == null || instance.session == null || instance.session.InputBlocked) return false;
             Vector2 point = instance.ToUI(screen);
-            return instance.IsOpportunityPoint(point) || (instance.ui!=null&&instance.ui.CompanionCommandsVisible&&(Area(Layout.FocusCommand).Contains(point)||Area(Layout.RecallCommand).Contains(point))) || instance.IsMovementStart(screen) || instance.Attack.Contains(point) || instance.Dodge.Contains(point) || instance.Potion.Contains(point) || (instance.ui!=null&&instance.ui.MobileInteractionVisible&&Area(Layout.Interact).Contains(point)) || instance.Jump.Contains(point) || instance.Cancel.Contains(point);
+            return instance.IsOpportunityPoint(point) || (instance.ui!=null&&instance.ui.CompanionCommandsVisible&&(Area(Layout.FocusCommand).Contains(point)||Area(Layout.RecallCommand).Contains(point))) || instance.IsMovementStart(screen) || instance.Attack.Contains(point) || instance.Dodge.Contains(point) || instance.Potion.Contains(point) || (instance.ui!=null&&instance.ui.MobileInteractionVisible&&Area(instance.ui.MobileInteractionArea).Contains(point)) || instance.Jump.Contains(point) || instance.Cancel.Contains(point);
         }
         // Screen-space third, intersected with the safe area; all visible HUD wins.
         private bool IsMovementStart(Vector2 screen)
@@ -152,7 +152,7 @@ namespace Emberfall
                 }
                 else if (ui!=null&&ui.CompanionCommandsVisible&&(Area(Layout.FocusCommand).Contains(point)||Area(Layout.RecallCommand).Contains(point)))
                 {ui.ActivateFreeCommand(Area(Layout.RecallCommand).Contains(point));role=Role.Consumed;}
-                else if (ui!=null&&ui.MobileInteractionVisible&&Area(Layout.Interact).Contains(point)) { if(ui!=null)ui.ActivateMobileInteraction(finger);role=Role.Consumed; }
+                else if (ui!=null&&ui.MobileInteractionVisible&&Area(ui.MobileInteractionArea).Contains(point)) { if(ui!=null)ui.ActivateMobileInteraction(finger);role=Role.Consumed; }
                 else if (Dodge.Contains(point)) { CheckDodgeFeedback(); dodge = true; role = Role.Consumed; }
                 else if (Potion.Contains(point)) { CheckPotionFeedback(); potion = true; role = Role.Consumed; }
                 else if (Cancel.Contains(point) && CanCancel)
@@ -234,13 +234,25 @@ namespace Emberfall
             }
             SkillTargetingController targeting = session.Player.GetComponent<SkillTargetingController>();
             SkillChargeController charge = session.Player.GetComponent<SkillChargeController>();
-            Circle(Attack, AttackHeld ? new Color(.76f, .54f, .20f, .95f) : new Color(.43f, .31f, .15f, .9f), targeting != null && targeting.IsTargeting ? "confirm" : "attack");
-            Circle(Dodge, new Color(.13f, .32f, .38f, .9f), "blink");
-            Circle(PotionVisualRect(), new Color(.18f, .38f, .27f, .9f*EffectPreferences.TouchOpacity), "potion",false);
-            if (CanCancel) Circle(Cancel, new Color(.48f, .17f, .20f, .94f), "cancel");
-            else Circle(Jump, new Color(.22f, .27f, .40f, .9f), "jump");
+            var hero=session.Player;
+            ActionCircle(VisualRect(Attack),targeting!=null&&targeting.IsTargeting?"confirm":"attack",hero!=null&&hero.BasicActionReady);
+            ActionCircle(VisualRect(Dodge),"blink",hero!=null&&!hero.IsJumping&&hero.DodgeCooldown<=0);
+            ActionCircle(PotionVisualRect(),"potion",hero!=null&&PotionCount>0&&hero.Health<hero.MaxHealth-.5f);
+            if(CanCancel)ActionCircle(VisualRect(Cancel),"cancel",true);
+            else ActionCircle(VisualRect(Jump),"jump",hero!=null&&!hero.IsJumping);
             DrawAvailability();
             GUI.matrix = oldMatrix; GUI.color = oldColor;
+        }
+        private void ActionCircle(Rect rect,string icon,bool ready)
+        {
+            float opacity=EffectPreferences.TouchOpacity;
+            if(ready)
+            {
+                GUI.color=new Color(.35f,1f,.76f,.85f*opacity);float radius=rect.width*.47f;
+                for(int i=0;i<40;i++){float angle=i*9*Mathf.Deg2Rad;GUI.DrawTexture(new Rect(rect.center.x+Mathf.Cos(angle)*radius-1,rect.center.y+Mathf.Sin(angle)*radius-1,2,2),Texture2D.whiteTexture);}
+            }
+            GUI.color=ready?new Color(1,1,1,opacity):new Color(.38f,.42f,.46f,.58f*opacity);
+            float size=rect.width*.66f;GUI.DrawTexture(new Rect(rect.center.x-size*.5f,rect.center.y-size*.5f,size,size),UIIconAtlas.Utility(icon),ScaleMode.ScaleToFit,true);GUI.color=Color.white;
         }
         private Rect PotionVisualRect()
         { Rect hit=Potion;float size=36*EffectPreferences.TouchVisualScale;return new Rect(hit.center.x-size*.5f,hit.center.y-size*.5f,size,size); }

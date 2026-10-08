@@ -20,15 +20,21 @@ namespace Emberfall
             return GUI.Button(r,GUIContent.none,invisibleButton);
         }
 
+        private int mobileSkillPage, mobileSkillPageFrame=-1;
+        public bool MobileSkillVisible(int skill)
+        {for(int button=0;button<MobileSkillPolicy.ButtonCount;button++)if(MobileSkillPolicy.SkillAtButton(button,mobileSkillPage)==skill)return true;return false;}
         public void CancelMobileCast(){mobileTap.Cancel();}
         private bool BeginMobileCast(int finger,Vector2 screen)
         {
-            if(mobileTap.Active||session.InputBlocked||panel!=Panel.None||session.Player==null)return false;
+            if(session.InputBlocked||panel!=Panel.None||session.Player==null)return false;
             Vector2 p=ScreenToUI(screen);
+            if(TouchRect(MobileControls.Layout.SkillPage).Contains(p)){if(mobileSkillPageFrame!=Time.frameCount){CancelMobileCast();mobileSkillPage=(mobileSkillPage+1)%MobileSkillPolicy.PageCount;mobileSkillPageFrame=Time.frameCount;}return true;}
+            if(mobileTap.Active)return false;
             for(int i=0;i<MobileSkillPolicy.ButtonCount;i++)
             {
                 if(!hotbarSlots[i].Contains(p))continue;
-                int skill=MobileSkillPolicy.SkillAtButton(i);
+                int skill=MobileSkillPolicy.SkillAtButton(i,mobileSkillPage);
+                if(skill<0)return false;
                 if(session.Progression.Profile.skillRanks[skill]<=0||!MobileSkillPolicy.IsActiveSkill(skill))return true;
                 mobileTap.Begin(finger,skill);return true;
             }
@@ -41,21 +47,24 @@ namespace Emberfall
             {CancelMobileCast();return;}
             if(!ended)return;
             bool inside=false;Vector2 point=ScreenToUI(screen);
-            for(int i=0;i<MobileSkillPolicy.ButtonCount;i++)if(hotbarSlots[i].Contains(point)&&MobileSkillPolicy.SkillAtButton(i)==mobileTap.Skill)inside=true;
+            for(int i=0;i<MobileSkillPolicy.ButtonCount;i++)if(hotbarSlots[i].Contains(point)&&MobileSkillPolicy.SkillAtButton(i,mobileSkillPage)==mobileTap.Skill)inside=true;
             int skill;
             if(mobileTap.Release(finger,inside,false,out skill))
             {var targeting=session.Player.GetComponent<SkillTargetingController>();
                 if(targeting!=null&&!targeting.Begin(skill))
                 {if(string.IsNullOrEmpty(session.ControlFailure("skill"+skill)))session.ReportControlFailure("skill"+skill,"暂不可用");}}
         }
-        public bool MobileInteractionVisible {get{return session!=null&&!session.PracticeActive&&(session.NearChapterExit||session.NearRoomExit||session.SideEventAvailable||session.NearbyHubNpc!=HubNpcKind.None||session.IsNearDungeonEntrance);}}
+        public bool MobileDungeonEntranceVisible {get{return session!=null&&!session.PracticeActive&&!session.InDungeon&&!session.InputBlocked&&!session.DungeonSelectionOpen&&!session.NearChapterExit&&!session.NearRoomExit&&!session.SideEventAvailable&&session.NearbyHubNpc==HubNpcKind.None&&session.IsNearDungeonEntrance&&session.Progression.CanEnterDungeon;}}
+        public MobileControlLayout.Area MobileInteractionArea {get{return MobileDungeonEntranceVisible?MobileControls.Layout.DungeonEntrance:MobileControls.Layout.Interact;}}
+        public bool MobileInteractionVisible {get{return session!=null&&!session.PracticeActive&&(session.NearChapterExit||session.NearRoomExit||session.SideEventAvailable||session.NearbyHubNpc!=HubNpcKind.None||MobileDungeonEntranceVisible);}}
         private bool CanMobileInteract {get{return session!=null&&!session.PracticeActive&&!session.InputBlocked&&!session.DungeonSelectionOpen&&(session.NearChapterExit||session.NearRoomExit||session.SideEventAvailable||session.NearbyHubNpc!=HubNpcKind.None||session.IsInCamp||session.InDungeon||session.IsNearDungeonEntrance);}}
         public void ActivateMobileInteraction(int triggeringFinger=TouchReleaseLatch.AnyPointer)
         {
             if(!CanMobileInteract||UITransitionBlocked)return;
             try
             {
-                if(session.NearChapterExit)session.EnterNextChapterRoom();
+                if(MobileDungeonEntranceVisible)session.EnterDungeon();
+                else if(session.NearChapterExit)session.EnterNextChapterRoom();
                 else if(session.NearRoomExit)session.EnterNextRoom();
                 else if(session.SideEventAvailable)session.StartSideEvent();
                 else if(session.NearbyHubNpc!=HubNpcKind.None)OpenNearbyHubNpc();
@@ -107,7 +116,7 @@ namespace Emberfall
             if(string.IsNullOrEmpty(session.Notification))
             {
                 if(session.ChapterActive||session.SpecialAdventure)DrawMobileModeStatus(TouchRect(l.AdventureStatus));
-                else if(TryGrowthHudHint(out growthTitle,out growthStep))
+                else if(!session.IsNearDungeonEntrance&&TryGrowthHudHint(out growthTitle,out growthStep))
                 {
                     Rect goal=TouchRect(l.AdventureStatus);float y=goal.y;
                     DrawMobileObjectiveText(goal,ref y,growthTitle,11,gold,true,true);
@@ -119,10 +128,10 @@ namespace Emberfall
             DrawMobileHotbar();
             DrawCompanionCommands();
 
-            string interaction=session.NearChapterExit?"沿星路前进":session.NearRoomExit?"进入下一间":session.SideEventAvailable?"晶核挑战":session.NearbyHubNpc!=HubNpcKind.None?HubNpcMobileLabel(session.NearbyHubNpc):session.IsInCamp?"营地工坊":session.InDungeon?"返回营地":session.IsNearDungeonEntrance?"进入副本":"靠近入口";
+            string interaction=MobileDungeonEntranceVisible?"进入副本":session.NearChapterExit?"沿星路前进":session.NearRoomExit?"进入下一间":session.SideEventAvailable?"晶核挑战":session.NearbyHubNpc!=HubNpcKind.None?HubNpcMobileLabel(session.NearbyHubNpc):session.IsInCamp?"营地工坊":session.InDungeon?"返回营地":session.IsNearDungeonEntrance?"进入副本":"靠近入口";
             if(MobileInteractionVisible)
             {
-            Rect interact=TouchRect(l.Interact);blockedRects.Add(interact);
+            Rect interact=TouchRect(MobileInteractionArea);blockedRects.Add(interact);
             // One pointer owner handles real touches and simulated/attached mice.
             // This is presentation only: a second IMGUI Button here would dispatch
             // again after a room transition changed the context on pointer release.
@@ -142,16 +151,13 @@ namespace Emberfall
             var l=MobileControls.Layout;GameProfile p=session.Progression.Profile;
             for(int i=0;i<MobileSkillPolicy.ButtonCount;i++)
             {
-                Rect hit=hotbarSlots[i];blockedRects.Add(hit);Rect r=MobileVisualRect(hit);int skill=MobileSkillPolicy.SkillAtButton(i);
+                int skill=MobileSkillPolicy.SkillAtButton(i,mobileSkillPage);if(skill<0)continue;
+                Rect hit=hotbarSlots[i];blockedRects.Add(hit);Rect r=MobileVisualRect(hit);
                 bool ready=session.Player!=null&&session.Player.IsSkillAvailable(skill);
                 bool pressed=mobileTap.Skill==skill&&mobileTap.Active;
-                DrawIcon(r,UIIconAtlas.ControlDisc(),ready?UIIconAtlas.SkillColor(p.heroClass,skill)*.55f:new Color(.025f,.045f,.06f,.34f));
-                if(skill==9)
-                {
-                    float pulse=ready?.72f+.18f*Mathf.Sin(Time.unscaledTime*4f):.28f;
-                    DrawIcon(r,UIIconAtlas.ControlDisc(),new Color(.2f,1f,.65f,pulse));
-                    DrawIcon(new Rect(r.x+3*TouchRatio,r.y+3*TouchRatio,r.width-6*TouchRatio,r.height-6*TouchRatio),UIIconAtlas.ControlDisc(),new Color(.015f,.08f,.06f,.94f));
-                }
+                // Transparent center; only a thin segmented rim indicates actual readiness.
+                if(ready)for(int segment=0;segment<40;segment++)
+                {float angle=segment*9*Mathf.Deg2Rad,radius=r.width*.47f;Fill(new Rect(r.center.x+Mathf.Cos(angle)*radius-TouchRatio,r.center.y+Mathf.Sin(angle)*radius-TouchRatio,2*TouchRatio,2*TouchRatio),new Color(.35f,1f,.76f,.85f));}
                 float iconSize=Mathf.Min(r.width,r.height)*.76f;
                 Rect icon=new Rect(r.center.x-iconSize*.5f,r.center.y-iconSize*.5f,iconSize,iconSize);
                 // Floating transparent glyph: the entire identity carries availability.
@@ -160,6 +166,8 @@ namespace Emberfall
                 if(skill==9)Text(new Rect(r.x,r.yMax-13*TouchRatio,r.width,12*TouchRatio),"终极",TouchFont(9),ready?new Color(.3f,1f,.72f):muted,true,false,TextAnchor.MiddleCenter);
                 DrawMobileSkillAvailability(r,skill);
             }
+            Rect pageHit=TouchRect(l.SkillPage);blockedRects.Add(pageHit);
+            Text(pageHit,"↻\n"+(mobileSkillPage+1)+"/2",TouchFont(12),jade,true,false,TextAnchor.MiddleCenter);
             controlOpacity=priorOpacity;
         }
         private void DrawMobileVitals(MobileControlLayout layout)
@@ -263,7 +271,7 @@ namespace Emberfall
             var l=MobileControls.Layout;float x=(l.Width-510)/2,y=(l.Height-300)/2;
             Fill(new Rect(0,0,width,height),new Color(.018f,.029f,.048f,1));
             Text(TouchRect(x,y,510,30),"触屏操作",TouchFont(22),pale,true);
-            string[] tips={"左侧拖动移动 · 右下按住普攻，可同时操作", "右侧固定10个位置；被动自动生效，无须翻页", "轻点技能自动瞄准并施放，无须圈选或二次确认", "点敌人固定目标；点战场空白取消，恢复自动瞄准", "蓄力自动完成；点取消或闪避可中断", "灰色技能尚未学会；到技能树学习后直接可用"};
+            string[] tips={"左侧拖动移动 · 右下按住普攻，可同时操作", "主动技能分两页，每页最多4个；大招固定，被动自动生效", "轻点技能自动瞄准并施放，无须圈选或二次确认", "点敌人固定目标；点战场空白取消，恢复自动瞄准", "蓄力自动完成；点取消或闪避可中断", "灰色技能尚未学会；到技能树学习后直接可用"};
             for(int i=0;i<tips.Length;i++)Text(TouchRect(x,y+43+i*32,510,28),tips[i],TouchFont(14),i==2?jade:pale);
             if(NavigationButton(TouchRect(x,y+250,510,48), controlsReturnPause?"返回暂停菜单":"返回冒险", jade))ClosePanel();
         }

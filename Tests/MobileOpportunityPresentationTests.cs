@@ -79,8 +79,8 @@ class Program {
  state=new Emberfall.CombatOpportunityState(Emberfall.CombatOpportunityKind.EmpoweredContract,8,duration:16);GUI.Fills.Clear();meter.Draw(box,state,owner,1,1,1);C(GUI.Fills.Skip(1).Take(24).Count(x=>x.Color.g>.7f)==12,"different sixteen second window uses own denominator");C(state.Blocked("缺能").Duration==16,"blocking preserves grant duration");
  Time.unscaledTime=2;meter.Draw(box,default,owner,1,1,1);GUI.Fills.Clear();meter.Draw(box,state,owner,1,1,1);C(GUI.Fills.Count==26,"new window after expiry emphasizes once");
  GUI.Draws.Clear();meter.Draw(box,state,owner,1,1,.5f);C(GUI.Draws.All(x=>Math.Abs(x.EffectiveAlpha-.5f)<.0001f),"outer clock opacity applied once");
- foreach(var dims in new[]{new[]{568f,320f,163f},new[]{844f,390f,163f},new[]{1024f,768f,163f},new[]{2272f,1280f,326f}})foreach(int preset in new[]{-1,0,1}) {
- var l=new Emberfall.MobileControlLayout(dims[0],dims[1],dims[2],preset);var hints=l.SkillOpportunities.Concat(new[]{l.CounterOpportunity,l.ComboOpportunity}).ToArray();
+ foreach(var dims in new[]{new[]{568f,320f,163f},new[]{844f,390f,163f},new[]{1024f,768f,163f},new[]{2272f,1280f,326f}})foreach(int preset in new[]{-1,0,1}) foreach(int page in new[]{0,1}) {
+ var l=new Emberfall.MobileControlLayout(dims[0],dims[1],dims[2],preset);var visible=page==0?new[]{0,1,2,4,9}:new[]{5,6,7,9};var hints=visible.Select(skill=>l.SkillOpportunities[skill]).Concat(new[]{l.CounterOpportunity,l.ComboOpportunity}).ToArray();
  foreach(var h in hints){C(h.X>=0&&h.Y>=0&&h.X+h.Width<=l.Width&&h.Y+h.Height<=l.Height,"all outer hints stay in safe-area coordinates");foreach(var slot in l.Skills)C(!h.Overlaps(slot),"all ten slots unobstructed");foreach(var control in new[]{l.Attack,l.Dodge,l.Jump,l.Potion,l.Interact,l.Menu,l.Inventory,l.SkillsMenu})C(!h.Overlaps(control),"outer hints never cover action controls: "+dims[0]+"/"+dims[1]+" preset "+preset+" hint "+h.X+","+h.Y+" control "+control.X+","+control.Y);}
  for(int i=0;i<hints.Length;i++)for(int j=i+1;j<hints.Length;j++)C(!hints[i].Overlaps(hints[j]),"simultaneous outer windows never overlap: "+i+"/"+j+" dims "+dims[0]+"x"+dims[1]+" preset "+preset);
  }

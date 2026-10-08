@@ -9,6 +9,7 @@ namespace Emberfall
         public float MaxHealth { get; private set; }
         public bool IsDead { get { return Health <= 0; } }
         public HeroClass HeroClass { get; private set; }
+        public bool BasicActionReady {get{return session!=null&&session.Player==this&&!IsDead&&!session.InputBlocked&&!jumping&&attackCooldown<=0&&!skillBasicRecovery.Blocked&&(charge==null||!charge.IsCharging)&&MobilePinnedActionReason(-1).Length==0;}}
         public float DodgeCooldown { get { return dodgeCooldown; } }
         public float BlinkCooldown { get { return dodgeCooldown; } }
         public bool IsJumping { get { return jumping; } }

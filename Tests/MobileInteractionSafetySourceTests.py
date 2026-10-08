@@ -47,7 +47,7 @@ check('availableRarity=levelLocked?' in row and '需 ' in row and 'ReviewEquipme
 actions=method(inventory,'private void DrawMobileEquipmentActions(')
 check('ProgressionAttention.LevelEligible' in actions and 'canEquip' in actions,'dimmed appearance never replaces actual equip eligibility gate')
 cast=method(mobile,'private bool BeginMobileCast(')
-check('MobileSkillPolicy.ButtonCount' in cast and 'MobileSkillPolicy.SkillAtButton(i)' in cast and 'hotbarPage' not in cast,'all ten fixed identities are independent from desktop paging')
+check('MobileSkillPolicy.ButtonCount' in cast and 'MobileSkillPolicy.SkillAtButton(i,mobileSkillPage)' in cast and 'hotbarPage' not in cast,'mobile skill pages are independent from desktop paging')
 release=method(mobile,'private void ContinueMobileCast(')
 check('mobileTap.Release' in release and 'targeting.Begin(skill)' in release,'single committed touch release dispatches the real targeting/cast path')
 pointer=method(controls,'public bool ProcessPointer(')

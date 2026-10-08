@@ -15,7 +15,7 @@ assert 'if(!SaveBeforeLeaving())return false;' in r and r.index('if(!SaveBeforeL
 assert 'TrySettleRoomReward' in r and 'roomEnemies.TryGetValue' in r
 assert 'EnterNextRoom' in ui and 'IsNearDungeonEntrance' in ui
 control=read('Assets/Scripts/UI/MobileControls.cs')
-assert 'Area(Layout.Interact).Contains(point)' in control and 'ui.ActivateMobileInteraction(finger)' in control
+assert 'Area(ui.MobileInteractionArea).Contains(point)' in control and 'ui.ActivateMobileInteraction(finger)' in control
 assert 'Role.Camera' in control and '!ui.IsScreenPointOverUI(screen)' in control
 player=read('Assets/Scripts/Combat/PlayerController.cs')
 assert player.count('session.CombatEnded')>=2

@@ -27,7 +27,6 @@ namespace Emberfall
             string potionState=MobileCombatPresentation.Potion(PotionCount,LimitedHealing,hero.Health>=hero.MaxHealth-.5f);
             string dodgeState=MobileCombatPresentation.Dodge(hero.DodgeCooldown,hero.IsJumping);
             // The bottle remains visible even at full health; state is outside its icon.
-            if(dodgeState.Length>0)Circle(Dodge,new Color(.015f,.035f,.04f,.67f),"");
             Rect potionVisual=PotionVisualRect();
             Rect countBadge=new Rect(potionVisual.xMax-20,potionVisual.yMax-16,20,16);
             GUI.color=new Color(.015f,.025f,.04f,EffectPreferences.TouchOpacity);GUI.DrawTexture(countBadge,Texture2D.whiteTexture);GUI.color=Color.white;

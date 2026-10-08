@@ -19,6 +19,7 @@ ui_methods='\n'.join(member(file,sig) for file,sig in [
  ('UI/GameUI.Exit.cs','private bool UITransitionBlocked'),
  ('UI/GameUI.Exit.cs','private void BlockUITransition()'),
  ('UI/GameUI.Exit.cs','private void BlockUITransitionForFinger('),
+ ('UI/GameUI.Mobile.cs','public bool MobileDungeonEntranceVisible'),
  ('UI/GameUI.Mobile.cs','private bool CanMobileInteract'),
  ('UI/GameUI.Mobile.cs','public void ActivateMobileInteraction(')])
 session_method=member('Core/GameSession.cs','private void SuspendInputs()')
@@ -47,14 +48,15 @@ namespace Emberfall {
  public class SkillTargetingController {public void Cancel(){}}
  public class SkillChargeController {public void Cancel(){}}
  public class PlayerStub {public T GetComponent<T>() where T:class=>null;}
- public sealed class GameSession {
+ public class ProgressionStub{public bool CanEnterDungeon=true;}
+ public sealed class GameSession {public ProgressionStub Progression=new ProgressionStub();
   // This replay exercises ordinary adventure touch lifecycle, never practice.
   public bool PracticeActive=>false;
   public GameUI ui;public bool BackgroundPaused;public PlayerStub Player;
   public bool InputBlocked,DungeonSelectionOpen,IsNearDungeonEntrance;public bool NearChapterExit;public bool NearRoomExit=true,SideEventAvailable,IsInCamp,InDungeon;public HubNpcKind NearbyHubNpc;
   public void EnterNextRoom(){SuspendInputs();}
   public bool EnterNextChapterRoom(){SuspendInputs();return true;}
-  public void StartSideEvent(){}public void ReturnToCamp(){}public void EnterDungeon(){}public void SetUIBlocking(bool b){}
+  public void StartSideEvent(){}public void ReturnToCamp(){}public int DungeonEntries;public void EnterDungeon(){DungeonEntries++;}public void SetUIBlocking(bool b){}
   public void SuspendForTest(){SuspendInputs();}
   SESSION_METHOD
  }
@@ -112,6 +114,8 @@ class Program {
    session.BackgroundPaused=true;session.SuspendForTest();session.BackgroundPaused=false;
    Time.unscaledTime=elapsed;Check(!ui.LifecycleTouchBlocked,"desktop no-touch resume cannot remain latched");
   }
+  Input.Fingers=new int[0];Time.unscaledTime=200;var entrance=Emberfall.GameUI.Create(out var entrySession);entrySession.NearRoomExit=false;entrySession.IsNearDungeonEntrance=true;
+  Check(entrance.MobileDungeonEntranceVisible,"near eligible dungeon entrance becomes visible");entrySession.Progression.CanEnterDungeon=false;Check(!entrance.MobileDungeonEntranceVisible,"locked entrance has no hidden top action");entrySession.Progression.CanEnterDungeon=true;entrySession.InputBlocked=true;Check(!entrance.MobileDungeonEntranceVisible,"blocked UI hides entrance");entrySession.InputBlocked=false;entrySession.IsNearDungeonEntrance=false;Check(!entrance.MobileDungeonEntranceVisible,"moving away hides entrance");entrySession.IsNearDungeonEntrance=true;entrance.ActivateMobileInteraction(8);Check(entrySession.DungeonEntries==1,"top entrance dispatches existing dungeon entry exactly once");
   Console.WriteLine("PASS: "+count+" production multi-pointer lifecycle assertions (11/12/13 at 1s and 110s)");
  }
 }

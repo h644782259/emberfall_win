@@ -2,13 +2,14 @@ using System;
 using System.Collections.Generic;
 namespace Emberfall
 {
-    /// <summary>All eight active skill identities are directly reachable, independent of desktop pages.</summary>
+    /// <summary>Seven normal active skills use two mobile pages; ultimate keeps its fixed slot.</summary>
     public static class MobileSkillPolicy
     {
-        public const int ButtonCount=8;
+        public const int ButtonCount=5;
+        public const int PageCount=2;
         private static readonly int[] activeSkills={0,1,2,4,5,6,7,9};
-        public static int SkillAtButton(int button)
-        { return button<0||button>=ButtonCount?-1:activeSkills[button]; }
+        public static int SkillAtButton(int button,int page=0)
+        {if(button<0||button>=ButtonCount||page<0||page>=PageCount)return -1;if(button==4)return 9;int index=page*4+button;return index<7?activeSkills[index]:-1;}
         public static bool IsActiveSkill(int skill){return skill>=0&&skill<10&&skill!=3&&skill!=8;}
         public struct Candidate
         {

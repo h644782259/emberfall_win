@@ -67,3 +67,5 @@ print(f'PASS: {checks} mobile skills/workshop source contracts (not Unity execut
 
 reforge=(root / "Assets/Scripts/UI/GameUI.Reforge.cs").read_text()
 check("()=>OpenReforgeSurface(id)" in camp and "reforgeOwner.ReforgeMechanic(reforgeSelected,session.IsInCamp)" in reforge,"mechanic operation retains mobile entry -> captured quote -> existing camp service")
+
+check('if(!showDetail&&!RouteSkillReturnAvailable)listArea=new MobilePanelLayout.Area' in skills and '"返回冒险"' not in skills,'root skill tree returns footer space to tree and retains header close')

@@ -301,7 +301,7 @@ namespace Emberfall
                     respawnTimer = 4f;
                 }
                 portalHintTimer -= Time.deltaTime;
-                if (NearPortal() && portalHintTimer <= 0) { Notify("沉星遗迹传送门 · 按 T 开始副本挑战"); portalHintTimer = 16f; }
+                if (!MobileControls.Active && NearPortal() && portalHintTimer <= 0) { Notify("沉星遗迹传送门 · 按 T 开始副本挑战"); portalHintTimer = 16f; }
             }
             autosaveTimer += Time.deltaTime;
             if (autosaveTimer > 25) { autosaveTimer = 0; if(!DungeonRewardPending||TrySettleDungeonReward())Progression.Save(); }

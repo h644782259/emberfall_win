@@ -5,7 +5,9 @@ public static class MobileSkillPolicyTests
  static int n;static void Check(bool b,string m){n++;if(!b)throw new Exception(m);}
  public static string Run()
  {
-  n=0;int[] active={0,1,2,4,5,6,7,9};for(int i=0;i<active.Length;i++)Check(MobileSkillPolicy.SkillAtButton(i)==active[i],"only active skill IDs directly visible");
+  n=0;int[][] pages={new[]{0,1,2,4,9},new[]{5,6,7,-1,9}};var seen=new System.Collections.Generic.HashSet<int>();
+  for(int page=0;page<2;page++)for(int button=0;button<5;button++){int mapped=MobileSkillPolicy.SkillAtButton(button,page);Check(mapped==pages[page][button],"exact four-plus-three pages with fixed ultimate");if(mapped>=0)seen.Add(mapped);}
+  Check(seen.Count==8&&MobileSkillPolicy.SkillAtButton(4,0)==9&&MobileSkillPolicy.SkillAtButton(4,1)==9,"every real active appears and ultimate never moves");
   Check(!MobileSkillPolicy.IsActiveSkill(3)&&!MobileSkillPolicy.IsActiveSkill(8)&&MobileSkillPolicy.IsActiveSkill(9),"passives noninteractive and ultimate reachable");
   Check(MobileSkillPolicy.SkillAtButton(-1)==-1&&MobileSkillPolicy.SkillAtButton(8)==-1,"bounds");
   var targets=new[]{new MobileSkillPolicy.Candidate(4,true,false),new MobileSkillPolicy.Candidate(25,true,true),new MobileSkillPolicy.Candidate(1,false,false)};

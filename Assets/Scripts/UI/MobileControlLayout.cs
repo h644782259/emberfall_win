@@ -14,9 +14,9 @@ namespace Emberfall
         }
         public readonly float Scale, Width, Height;
         public readonly bool Tablet;
-        public readonly Area Joystick, MoveZone, Attack, Dodge, Potion, Jump, Cancel, Menu, Inventory, SkillsMenu, Catalog, Interact;
+        public readonly Area Joystick, MoveZone, Attack, Dodge, Potion, Jump, Cancel, Menu, Inventory, SkillsMenu, Catalog, Interact, SkillPage, DungeonEntrance;
         public readonly Area EncounterText, BossHealth, Notice, AdventureStatus, FocusCommand, RecallCommand, CombatView, PlayerStatus, PlayerHealth, PlayerEnergy, Map;
-        public readonly Area[] Skills = new Area[8];
+        public readonly Area[] Skills = new Area[5];
         public readonly Area[] SkillOpportunities = new Area[10];
         public readonly Area CounterOpportunity, ComboOpportunity;
         public MobileControlLayout(float pixelWidth,float pixelHeight,float dpi,int positionPreset=0)
@@ -40,17 +40,17 @@ namespace Emberfall
             Menu=Centered(Width-30,32,48);Inventory=Centered(Width-84,32,48);
             SkillsMenu=Centered(Width-138,32,48);Catalog=Centered(Width-192,32,48);
             Interact=new Area(Width-68,92,60,48);
+            DungeonEntrance=new Area(Width*.5f-58,8,116,44);
             float shift=positionPreset<0?-Math.Min(8,Math.Max(0,Height-320)):positionPreset>0?0:0;
-            float[] dx={180,180,98,234,234,180,288,240};
-            float[] dy={30,97,163,97,163,163,97,30};
-            int[] identities={0,1,2,4,5,6,7,9};
-            for(int i=0;i<Skills.Length;i++)
+            float[] dx={180,180,132,78,240};
+            float[] dy={30,92,140,118,30};
+            for(int i=0;i<Skills.Length;i++)Skills[i]=Centered(Width-dx[i],Height-dy[i]+shift-bottomLift,i==4?54:48);
+            SkillPage=Centered(Width-30,Height-146,44);
+            int[] opportunityIdentities={0,1,2,4,5,6,7,9};
+            for(int index=0;index<opportunityIdentities.Length;index++)
             {
-                float size=i==7?54:48;
-                Skills[i]=Centered(Width-dx[i],Height-dy[i]+shift-bottomLift,size);
-                Area key=Skills[i];
-                SkillOpportunities[identities[i]]=i==7?new Area(key.X-52,key.Y+17,48,14):
-                    new Area(key.X,(i==0||i==1||i==5)?key.Y-15:key.Y+key.Height+1,key.Width,14);
+                int skill=opportunityIdentities[index],button=index==7?4:index%4;
+                Area key=Skills[button];SkillOpportunities[skill]=button==4?new Area(key.X-52,key.Y+17,48,14):new Area(key.X,button==0?key.Y-14:button==3&&key.Y-15<140?key.Y+key.Height+1:key.Y-15,key.Width,14);
             }
             CounterOpportunity=new Area(Attack.X,Attack.Y+Attack.Height+1,Attack.Width/2,13);
             ComboOpportunity=new Area(Attack.X+Attack.Width/2,Attack.Y+Attack.Height+1,Attack.Width/2,13);
@@ -82,7 +82,7 @@ namespace Emberfall
         private bool ClearView(Area area)
         {
             if(area.X<0||area.Y<56||area.X+area.Width>Width||area.Y+area.Height>Height)return false;
-            foreach(var control in new[]{MoveZone,Attack,Dodge,Potion,Jump,Menu,Inventory,SkillsMenu,Catalog,Interact,FocusCommand,RecallCommand,Notice,BossHealth,EncounterText,AdventureStatus,PlayerStatus,Map})
+            foreach(var control in new[]{MoveZone,Attack,Dodge,Potion,Jump,Menu,Inventory,SkillsMenu,Catalog,Interact,FocusCommand,RecallCommand,Notice,BossHealth,EncounterText,AdventureStatus,PlayerStatus,Map,SkillPage,DungeonEntrance})
                 if(area.Overlaps(control))return false;
             foreach(var skill in Skills)if(area.Overlaps(skill))return false;
             foreach(var hint in SkillOpportunities)if(area.Overlaps(hint))return false;
