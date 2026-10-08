@@ -10,7 +10,19 @@ assert 'RecordRoomDefeat(enemy)' in s and 'RecordArenaDefeat(enemy)' in s
 assert 'if(ModeRewardPending&&!TrySettleArenaReward())return false;' in s
 assert 'ModeRun.Advance(Time.deltaTime,!InputBlocked' in m
 assert 'TryGrantModeReward' in m and 'finally {rewardRun.CompleteReward(ticket,saved);}' in m
-assert 'TotalEarnedExperience(Progression.Profile)-beforeXp' in m
+# Presentation comes from the durable receipt, including retries and callbacks
+# that replace the active character; live before/after deltas cannot recover it.
+service=read('Assets/Scripts/Core/ProgressionService.cs')
+assert 'Progression.GetRewardPresentation(receipt)' in m
+assert 'modeXpReward=detail==null?0:detail.Experience' in m
+assert 'modeRewardDetailsUnavailable=detail==null' in m
+assert 'if(saved){ApplyRewardPresentation(receipt);' in m
+assert 'ModeRun!=rewardRun||Progression!=progression||progression.CurrentSlotId!=rewardSlot' in m
+assert 'candidate.lastModeRewardDetails=CaptureRewardPresentation(receipt,Profile,candidate);' in service
+assert 'RewardExperienceTotal(after)-RewardExperienceTotal(before)' in service
+settlement=service[service.index('public bool TryGrantModeReward('):service.index('public void GrantEnemyKillReward(')]
+assert settlement.index('candidate.lastModeRewardDetails=') < settlement.index('CommitCandidate(candidate)') < settlement.index('RaiseLeveledUp(level)')
+assert m.index('ModeRun!=rewardRun||Progression!=progression||progression.CurrentSlotId!=rewardSlot') < m.index('if(saved){ApplyRewardPresentation(receipt);')
 assert 'if(!SaveBeforeLeaving())return false;' in r and r.index('if(!SaveBeforeLeaving())return false;')<r.index('RoomChainRun.Next(true,false)')
 assert 'TrySettleRoomReward' in r and 'roomEnemies.TryGetValue' in r
 assert 'EnterNextRoom' in ui and 'IsNearDungeonEntrance' in ui
