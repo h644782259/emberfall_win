@@ -162,13 +162,7 @@ namespace Emberfall
             var p = session.Progression;
             MobileWorkshopParagraph(ref y, width, "背包 " + p.Profile.inventory.Count + "/" + ProgressionService.InventoryCapacity + " · 待领取 " + p.Profile.pendingLoot.Count +
                 " · 恢复栏 " + p.RecoveryLootCount, pale, draw, true, 16);
-            MobileWorkshopParagraph(ref y, width, "自动出售只处理之后拾取的对应低品质装备；穿戴、锁定、机制及已强化装备受保护。领取装备绕过自动出售。", muted, draw);
-            MobileWorkshopAction(ref y, width, "普通自动出售：" + (p.Profile.autoSellCommon ? "开" : "关"), jade, true, draw, () => MobileWorkshopResult(p.SetAutoSell(Rarity.Common, !p.Profile.autoSellCommon), "普通装备自动出售设置已更新"), p.Profile.autoSellCommon?ButtonRole.ActiveToggle:ButtonRole.Toggle);
-            MobileWorkshopAction(ref y, width, "稀有自动出售：" + (p.Profile.autoSellRare ? "开" : "关"), jade, true, draw, () => MobileWorkshopResult(p.SetAutoSell(Rarity.Rare, !p.Profile.autoSellRare), "稀有装备自动出售设置已更新"), p.Profile.autoSellRare?ButtonRole.ActiveToggle:ButtonRole.Toggle);
-            MobileWorkshopAction(ref y, width, "批量出售背包低品质装备", gold, true, draw, () =>
-            {
-                RequestPresetSale(null,true);
-            }, ButtonRole.Danger);
+            MobileWorkshopParagraph(ref y, width, "领取保管装备；出售与自动出售设置请前往商人。", muted, draw);
             var mailbox = new List<ItemData>(p.Profile.pendingLoot);
             mailbox.AddRange(p.Profile.recoveryLoot);
             MobileWorkshopAction(ref y, width, "领取所有可放入背包的装备", gold, mailbox.Count > 0 && p.Profile.inventory.Count < ProgressionService.InventoryCapacity, draw, ClaimMobileWorkshopLoot, ButtonRole.Primary);

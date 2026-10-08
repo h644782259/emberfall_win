@@ -11,3 +11,16 @@ assert 'BuyPotion(' not in wear and '.Upgrade(' not in wear and 'SellInventoryIt
 assert 'session.DrinkPotion(' in wear
 assert 'EquipmentComparisonPresentation.Changes' in grid and 'EquipmentComparisonPresentation.Description' in grid
 print('PASS inventory source wiring: current wear, inline actions, attributes/mechanics comparison, supplies and drag suppression (not visual QA)')
+
+# Audit every UI entry, including desktop expedition and mobile reward mailbox.
+for name in ['GameUI.MobileWorkshop.cs','GameUI.Expedition.cs','GameUI.InventoryGrid.cs','GameUI.MobileInventory.cs','GameUI.WearMap.cs','GameUI.CollectionPreview.cs']:
+    source=(r/name).read_text()
+    for call in ['RequestPresetSale(', 'SellInventoryItem(', '.Sell(', '.BulkSellLowQuality(', '.SetAutoSell(']:
+        assert call not in source,(name,call)
+hub=(r/'GameUI.HubServices.cs').read_text()
+assert 'if(bulkSale)RequestPresetSale(null,true);' in hub
+assert 'bool bulkSale=DangerButton' in hub
+assert 'Rarity.Common,!p.Profile.autoSellCommon' in hub and 'Rarity.Rare,!p.Profile.autoSellRare' in hub
+assert 'ClaimMobileWorkshopLoot' in (r/'GameUI.MobileWorkshop.cs').read_text()
+assert 'ClaimPendingLoot(item.id)' in (r/'GameUI.Expedition.cs').read_text()
+print('PASS merchant-only sale/settings entry audit, pending/recovery claims retained (source contract, not Unity execution)')

@@ -148,9 +148,7 @@ namespace Emberfall
             }
             else if(campTab==2)
             {
-                if(ToggleButton(new Rect(w.x+32,w.y+165,278,38), "普通自动卖："+(p.Profile.autoSellCommon?"开":"关"), p.Profile.autoSellCommon))p.SetAutoSell(Rarity.Common,!p.Profile.autoSellCommon);
-                if(ToggleButton(new Rect(w.x+322,w.y+165,278,38), "稀有自动卖："+(p.Profile.autoSellRare?"开":"关"), p.Profile.autoSellRare))p.SetAutoSell(Rarity.Rare,!p.Profile.autoSellRare);
-                if(DangerButton(new Rect(w.x+612,w.y+165,304,38), "批量出售低品质", gold, true, "穿戴、锁定及机制装备受保护")){RequestPresetSale(null,true);}
+                Text(new Rect(w.x+32,w.y+165,884,38),"领取保管装备；出售与自动出售设置请前往商人。",14,muted);
                 Text(new Rect(w.x+32,w.y+216,884,24),"待领取 "+p.Profile.pendingLoot.Count+"/24 · 恢复栏 "+p.RecoveryLootCount+" · 锁定、穿戴和机制装备受保护",14,muted);
                 var mailbox=new System.Collections.Generic.List<ItemData>(p.Profile.pendingLoot); mailbox.AddRange(p.Profile.recoveryLoot);
                 Rect viewport=new Rect(w.x+32,w.y+254,884,280);
