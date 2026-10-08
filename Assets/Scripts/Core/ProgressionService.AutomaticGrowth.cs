@@ -9,7 +9,7 @@ namespace Emberfall
             string prefix="growth/"+(int)p.heroClass+"/";
             var g=new ProgressionGoalState();
             if(!p.growthRewardReceipts.Contains(prefix+"practice"))
-            {g.Identity=prefix+"practice";g.Title="掌握职业能力";g.Step="在原野完成职业连招；点击查看职业练习";g.Done=p.classTutorialCompleted;return g;}
+            {g.Identity=prefix+"practice";g.Title="实战试炼 · 职业能力";g.Step="右上目标查看实战指引 · 职业能力："+CombatTrialProgress(p)+"/4";g.Done=p.classTutorialCompleted;return g;}
             foreach(var mechanic in BuildCatalog.MechanicsFor(p.heroClass))
             {
                 var a=p.attachments.Find(x=>x.mechanic==mechanic);

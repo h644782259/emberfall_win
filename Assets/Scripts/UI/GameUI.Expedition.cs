@@ -14,7 +14,6 @@ namespace Emberfall
             if(twice&&session.ConfirmBlessing(index))
             {selectedBlessing=-1;lastBlessingClick=-10;CancelMobileScroll();BlockUITransition();}
         }
-        private Vector2 pendingScroll;
         private bool systemHistory;
         public void CancelForegroundInput()
         {
@@ -80,104 +79,13 @@ namespace Emberfall
 
         private void DrawCampWorkshop()
         {
-            if(DrawClassSwitchSurface())return;
-            if(DrawReforgeSurface())return;
-            if(DrawProgressionGoalSurface())return;
-            if(DrawBuildPlanSurface())return;
-            if(campTab==4&&!MobileControls.Active){DrawTownActivitySurface();return;}
-            if(campTab==1&&!MobileControls.Active){DrawAttachmentWorkshop();return;}
-            if(MobileControls.Active){DrawMobileCampWorkshop();return;}
-            Rect w=Modal(980,620,"营地工坊",HubNpcServiceSubtitle(CurrentProgressionGoalStatus()));
-            if(NavigationButton(new Rect(w.xMax-445,w.y+20,170,36), "切换职业", jade))OpenClassSwitch();
-            if(NavigationButton(new Rect(w.xMax-255,w.y+20,170,36), "成长目标", jade))OpenProgressionGoals();
-            if(NavigationButton(new Rect(w.xMax-69,w.y+20,44,32), "×", jade))ClosePanel();
-            string[] tabs={"战技","机制挂件","待领取","实战试炼"};
-            for(int i=0;i<tabs.Length;i++){Rect tabRect=new Rect(w.x+26+i*233,w.y+110,220,36);if(TabButton(tabRect, tabs[i], campTab==i))campTab=i;Badge(tabRect,i==1?Attention.FirstClearClaimable:i==2?Attention.LootPending:false);}
-            ProgressionService p=session.Progression;
-            if(campTab==0)
-            {
-                Text(new Rect(w.x+32,w.y+167,880,30),GameBalance.ClassName(p.Profile.heroClass)+" · 职业能力",23,gold,true);
-                string[] signatures={"真正躲过攻击后，2秒内下一次普攻反击。","冰霜新星 → 陨星，消耗霜印碎冰。","普攻积累三层毒，以扇形箭引爆。","幼狼从开场协战；普攻让伙伴短时集火。"};
-                Text(new Rect(w.x+32,w.y+208,880,38),signatures[(int)p.Profile.heroClass],18,pale,false,true);
-                if(new Rect(w.x+32,w.y+167,880,81).Contains(Mouse))tooltip=BuildCatalog.ClassSignatureDescription(p.Profile.heroClass);
-                for(int i=0;i<2;i++)
-                {
-                    int route=i;var info=CampRouteCards.Describe(p.Profile,false,i);
-                    Rect c=new Rect(w.x+32+i*458,w.y+254,430,174);Fill(c,card);
-                    Text(new Rect(c.x+14,c.y+10,402,25),info.Name,19,gold,true);
-                    Text(new Rect(c.x+14,c.y+39,402,36),info.Loop,14,pale,false,true);
-                    Text(new Rect(c.x+14,c.y+79,402,50),info.Requirements+(info.Ready?"\n"+info.Enhancement:""),12,info.Ready?jade:muted,false,true);
-                    if(info.NextAction==CampRouteAction.None)Text(new Rect(c.x+14,c.y+137,402,25),info.NextStep,12,muted);
-                    else if(DrawButton(new Rect(c.x+14,c.y+137,402,28),info.NextStep,CampRouteButtonRole(info),session.IsInCamp))FollowCampRouteStep(info,route);
-                }
-                for(int i=0;i<4;i++)
-                {
-                    MasteryType mastery=(MasteryType)i;Rect c=new Rect(w.x+32+i*229,w.y+435,214,134);
-                    Text(new Rect(c.x,c.y,c.width,25),BuildCatalog.MasteryName(mastery)+"  "+p.Profile.masteryRanks[i]+"/"+ProgressionService.MasteryCap(p.Profile.level),17,pale,true);
-                    string reason=p.MasteryLockReason(mastery);
-                    if(Button(new Rect(c.x,c.y+39,c.width,35),"投入 1 点",jade,string.IsNullOrEmpty(reason),string.IsNullOrEmpty(reason)?BuildCatalog.MasteryDescription(mastery):reason))Feedback(p.LearnMastery(mastery),"精通已提高");
-                    if(PrimaryButton(new Rect(c.x,c.y+82,c.width,32), p.HasMasteryCore(mastery)?(p.MasteryCoreTier(mastery)==2?"增强核心 ✓":"初阶核心 ✓"):"启用核心 · "+MasteryCoreRules.InitialInvestment+"点", gold, session.IsInCamp&&p.Profile.masteryRanks[i]>=MasteryCoreRules.InitialInvestment&&!p.HasMasteryCore(mastery), BuildCatalog.MasteryDescription(mastery)))Feedback(p.SelectMasteryCore(mastery,session.IsInCamp),"已切换唯一精通核心");
-                }
-                Text(new Rect(w.x+32,w.y+552,884,22),"可用点数 "+p.Profile.skillPoints+" · "+MasteryProgressionRules.TierSummary+" · "+MasteryProgressionRules.CoreSummary,12,muted);
-                if(DangerButton(new Rect(w.x+32,w.y+580,435,30), "免费重置配点 · "+p.RefundableBuildPoints+"点", muted, session.IsInCamp&&(p.RefundableBuildPoints>0||p.Profile.masteryCore>=0), "先核对技能进阶与精通返还点数；保留已学1阶、快捷栏和装备。"))RequestBuildPlanAction(BuildPlanAction.Reset);
-                if(NavigationButton(new Rect(w.x+485,w.y+580,461,30), "配装方案 A / B · 记录 / 应用", jade))OpenBuildPlans();
-            }
-            else if(campTab==1)
-            {
-                Text(new Rect(w.x+32,w.y+168,880,28),"星烬碎片  "+p.Profile.mechanicMaterials+" / 12",22,gold,true);
-                EquipmentMechanic[] all=BuildCatalog.MechanicsFor(p.Profile.heroClass);
-                for(int i=0;i<all.Length;i++)
-                {
-                    EquipmentMechanic mechanic=all[i];Rect c=new Rect(w.x+32,w.y+217+i*162,884,147);Fill(c,card);
-                    Text(new Rect(c.x+18,c.y+13,620,29),BuildCatalog.MechanicName(mechanic),21,pale,true);
-                    Text(new Rect(c.x+18,c.y+53,610,78),BuildCatalog.MechanicDescription(mechanic),15,muted,false,true);
-                    bool first=p.Profile.pendingFirstClearReward;
-                    if(Button(new Rect(c.x+660,c.y+9,205,36),first?"首通选取":"兑换 · 12 碎片",gold,session.IsInCamp&&(first||p.Profile.mechanicMaterials>=12),BuildCatalog.MechanicSource(mechanic),true))
-                        Feedback(first?p.ClaimFirstClearReward(mechanic):p.ExchangeMechanic(mechanic),"机制装备已领取");
-                    ItemData equipped=p.Equipped(BuildCatalog.MechanicSlot(mechanic));
-                    if(equipped!=null&&equipped.mechanic==mechanic)
-                    {
-                        if(NavigationButton(new Rect(c.x+660,c.y+55,99,36), "重铸档位", jade, session.IsInCamp&&p.QuoteReforge(equipped.id)!=null, "选择提升下一档（10级）、金币可达或追平等级"))OpenReforgeSurface(equipped.id);
-                        if(BuildCatalog.HasMechanicVariant(mechanic)&&Button(new Rect(c.x+766,c.y+55,99,36),p.HasVariant(equipped)?(equipped.mechanicVariant==0?"变体 A":"变体 B"):"变体 · 4",jade,string.IsNullOrEmpty(p.VariantLockReason(equipped.id,session.IsInCamp)),"本角色首次学习4碎片，同机制装备免费选已学变体"))Feedback(p.ToggleMechanicVariant(equipped.id,session.IsInCamp),"装备变体已切换");
-                        string ascension = p.AscensionLockReason(equipped.id,session.IsInCamp);
-                        if(Button(new Rect(c.x+660,c.y+101,205,36),equipped.rarity==Rarity.Legendary?"已是传说品质":"传说升华 · 24碎片",gold,string.IsNullOrEmpty(ascension),string.IsNullOrEmpty(ascension)?"保留物品编号、等级、机制变体和部位强化；基础属性按25/18提升，无随机重抽。":ascension))Feedback(p.AscendMechanic(equipped.id,session.IsInCamp),"机制装备已升华为传说；身份、变体与部位强化保留");
-                    }
-                    if(c.Contains(Mouse)&&Mouse.x<c.x+648)tooltip=BuildCatalog.MechanicSource(mechanic);
-                }
-                Text(new Rect(w.x+32,w.y+566,884,30),"穿戴已知机制装备：金币按成长等级报价重铸 · 机制变体首次4碎片 · 通关第5阶后24碎片史诗升华传说",14,jade);
-            }
-            else if(campTab==2)
-            {
-                Text(new Rect(w.x+32,w.y+165,884,38),"领取保管装备；出售与自动出售设置请前往商人。",14,muted);
-                Text(new Rect(w.x+32,w.y+216,884,24),"待领取 "+p.Profile.pendingLoot.Count+"/24 · 恢复栏 "+p.RecoveryLootCount+" · 锁定、穿戴和机制装备受保护",14,muted);
-                var mailbox=new System.Collections.Generic.List<ItemData>(p.Profile.pendingLoot); mailbox.AddRange(p.Profile.recoveryLoot);
-                Rect viewport=new Rect(w.x+32,w.y+254,884,280);
-                pendingScroll=BeginTouchScroll("rewards",viewport,pendingScroll,new Rect(0,0,865,Mathf.Max(280,mailbox.Count*58)));
-                for(int i=0;i<mailbox.Count;i++)
-                { ItemData item=mailbox[i];Text(new Rect(12,i*58+8,660,28),item.name,18,GameBalance.RarityColor(item.rarity),true);
-                  if(Button(new Rect(702,i*58+4,145,38),"领取",jade,p.Profile.inventory.Count<ProgressionService.InventoryCapacity)) { Feedback(p.Profile.recoveryLoot.Exists(x=>x.id==item.id)?p.ClaimRecoveryLoot(item.id):p.ClaimPendingLoot(item.id),"已领取 "+item.name);break; } }
-                EndTouchScroll();
-                if(PrimaryButton(new Rect(w.x+32,w.y+554,884,39), "领取可放入背包的装备", gold))Feedback(true,"领取 "+(p.ClaimAllPendingLoot()+p.ClaimAllRecoveryLoot())+" 件");
-            }
-            else
-            {
-                string[] actions={"普攻命中，回复能量","躲过一次即将命中的预警攻击",p.ClassTutorialText,"在行囊换上一件装备"};
-                float line=w.y+174;
-                for(int i=0;i<actions.Length;i++)
-                {
-                    if(i==2&&!session.ClassTutorialVisible)continue;
-                    bool done=i==2?p.Profile.classTutorialCompleted:(p.Profile.tutorialMask&(1<<i))!=0;
-                    Text(new Rect(w.x+42,line,850,38),(done?"✓ ":"○ ")+actions[i],20,done?jade:pale,true);line+=56;
-                }
-                if(p.HighestAdventureTier>0||p.Profile.clearedRuns>0)
-                {
-                    Text(new Rect(w.x+42,w.y+435,850,40),"首通整备 · 领取核心、检查路线，再保存一套配装",16,jade);
-                    if(NavigationButton(new Rect(w.x+42,w.y+493,200,48), "机制与核心", gold))campTab=1;
-                    if(NavigationButton(new Rect(w.x+256,w.y+493,200,48), "职业路线", jade))campTab=0;
-                    if(NavigationButton(new Rect(w.x+470,w.y+493,200,48), "配装方案", jade))OpenBuildPlans();
-                    if(NavigationButton(new Rect(w.x+684,w.y+493,200,48), "选择下一目标", jade))OpenProgressionGoals();
-                }
-            }
+            if(merchantExchangeOpen){DrawAttachmentWorkshop();return;}
+            if(DrawClassSwitchSurface()||DrawReforgeSurface()||DrawProgressionGoalSurface()||DrawBuildPlanSurface())return;
+            if(campTab==4){DrawTownActivitySurface();return;}
+            float u=MobileControls.Active?TouchRatio:1;
+            Rect w=Modal(Mathf.Min(width-24,780*u),Mathf.Min(height-24,300*u),"营地工坊","职业能力与精通已并入技能；兑换请与商人对话，试炼请打开右上目标。");
+            if(NavigationButton(new Rect(w.xMax-64*u,w.y+20*u,40*u,32*u),"×",jade))ClosePanel();
+            Text(new Rect(w.x+24*u,w.y+116*u,w.width-48*u,100*u),"技能：学习、职业路线、精通与配装方案。\n目标：实战试炼、进度、奖励和下一步指引。\n商人：机制兑换、药剂与交易。",Mathf.RoundToInt(16*u),pale,false,true);
         }
 
         private void DrawExpeditionHUD()

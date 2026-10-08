@@ -21,11 +21,10 @@ namespace Emberfall
             if(inCamp)
             {
                 if(goal!=null&&goal.CanAct&&(!goal.Done||goal.Action==ProgressionGoalAction.Equip))
-                {title=goal.ActionLabel;step=goal.Title+" · 营地工坊 → 成长目标";return true;}
+                {title=goal.ActionLabel;step=goal.Title+" · 右上目标";return true;}
                 if(attention!=null&&attention.FirstClearClaimable)
-                {title="领取首通核心";step="营地工坊 → 机制图鉴 · 选择本职业核心";return true;}
-                if(attention!=null&&attention.LootClaimable)
-                {title="领取待领装备";step="营地工坊 → 机制图鉴 · 背包有空位";return true;}
+                {title="领取首通核心";step="商人 → 机制兑换 · 选择本职业核心";return true;}
+
                 if(attention!=null&&attention.Skills)
                 {foreach(int skill in attention.LearnableSkills){title="学习"+GameBalance.SkillName(p.Profile.heroClass,skill);step="职业技能中有可用点数 · 本次只需完成这一步";return true;}}
             }

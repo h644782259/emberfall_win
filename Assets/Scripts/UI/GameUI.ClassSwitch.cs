@@ -19,13 +19,13 @@ namespace Emberfall
         }
         private bool CloseClassSwitchSurface()
         {
-            if(!classSwitchOpen||panel!=Panel.Camp)return false;
+            if(!classSwitchOpen||(panel!=Panel.Camp&&panel!=Panel.Skills))return false;
             classSwitchOpen=false;classSwitchPreview=null;classSwitchScroll=Vector2.zero;
             CancelMobileScroll();BlockUITransition();return true;
         }
         private void ReconcileClassSwitchSurface()
         {
-            if(classSwitchOpen&&(panel!=Panel.Camp||session.Progression!=classSwitchOwner||session.Player!=classSwitchHero))
+            if(classSwitchOpen&&((panel!=Panel.Camp&&panel!=Panel.Skills)||session.Progression!=classSwitchOwner||session.Player!=classSwitchHero))
             {classSwitchOpen=false;classSwitchPreview=null;classSwitchOwner=null;classSwitchHero=null;}
         }
         internal void OnClassSwitched()
@@ -33,7 +33,7 @@ namespace Emberfall
             classSwitchOpen=false;classSwitchPreview=null;classSwitchOwner=null;classSwitchHero=null;
             RebindProgressionNotifications(session.Progression,session.Progression);
             CancelForegroundInput();CancelMobileCast();CancelMobileScroll();ResetMobileSkillNavigation();
-            mobileWorkshopService=null;saveSlotsDirty=true;BlockUITransition();
+            skillDevelopmentScroll=Vector2.zero;saveSlotsDirty=true;BlockUITransition();
         }
         private void PreviewClassSwitch(HeroClass target)
         {
@@ -52,7 +52,7 @@ namespace Emberfall
             float bodyWidth=layout.Body.Width-18,bodyHeight=DrawClassSwitchContent(bodyWidth,unit,false);
             classSwitchScroll=BeginTouchScroll("class-switch",BuildPlanRect(layout.Body,unit),classSwitchScroll,new Rect(0,0,bodyWidth*unit,Mathf.Max(layout.Body.Height,bodyHeight)*unit));
             DrawClassSwitchContent(bodyWidth,unit,true);EndTouchScroll();
-            if(NavigationButton(BuildPlanRect(layout.FooterButton(0,2),unit), "取消 · 返回工坊", jade)){CloseClassSwitchSurface();return true;}
+            if(NavigationButton(BuildPlanRect(layout.FooterButton(0,2),unit), "取消 · 返回技能", jade)){CloseClassSwitchSurface();return true;}
             bool fresh=classSwitchPreview!=null&&classSwitchFingerprint==session.Progression.BuildStateFingerprint();
             string reason=session.ClassSwitchLockReason();
             string caption=classSwitchPreview==null?"选择另一职业":!fresh?"重新核对":"确认切换为"+GameBalance.ClassName(classSwitchPreview.Target);

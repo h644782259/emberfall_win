@@ -42,7 +42,8 @@ namespace Emberfall
         private const string DeletionSuffix = ".delete-pending";
         private const string DeletionMarker = "Emberfall confirmed character deletion v1\n";
         private static readonly object StorageGate = new object();
-        public const int InventoryCapacity = 72;
+        public const int InventoryCapacity = 256;
+        public const int MaximumRetainedEquipment = 4096; // Visible overflow; bounded by the save byte limit as well.
         public const int MaximumUpgrade = 10;
         public const int PotionPrice = 20;
         public const int PendingLootCapacity = 24;
@@ -208,6 +209,7 @@ namespace Emberfall
                 // A failed save leaves the active role and durable reward flags intact.
                 string migrationFailure;
                 bool migrationRequired=ChapterProgression.BackfillDifficultyRewards(loaded);
+                if(loaded.rewardInventoryRevision<1){loaded.rewardInventoryRevision=1;migrationRequired=true;}
                 if(loaded.skillStockVersion<1){SkillStockRules.Normalize(loaded);loaded.skillStockVersion=1;migrationRequired=true;}
                 if(loaded.variantKnowledgeRevision<1){loaded.variantKnowledgeRevision=1;migrationRequired=true;}
                 if (migrationRequired && !TryWriteProfile(loaded, candidatePath, false, out migrationFailure))
@@ -527,7 +529,7 @@ namespace Emberfall
         public void Save()
         {
             string failure;
-            var candidate=pendingChestRoll!=null&&Profile.pendingFashionChest?Snapshot():Profile;
+            var candidate=Snapshot();
             if (TryWriteAttachedProfile(candidate, out failure))
             {
                 LastError = string.Empty;
@@ -585,6 +587,7 @@ namespace Emberfall
                 RejectLinkedStoragePath(temporary);
                 RejectLinkedStoragePath(primary + DeletionSuffix);
                 if (File.Exists(primary + DeletionSuffix)) throw new IOException("该角色正在删除，已停止写入。");
+                profile.rewardInventoryRevision=1;
                 ValidateProfile(profile);
                 Directory.CreateDirectory(Path.GetDirectoryName(primary));
                 if (createOnly && (File.Exists(primary) || File.Exists(backup) || File.Exists(temporary) || File.Exists(primary + DeletionSuffix)))
@@ -596,7 +599,7 @@ namespace Emberfall
                     throw new IOException("发现可恢复的临时存档，已保留且未覆盖。请先备份整个存档目录，再处理临时存档恢复。");
                 // Older readers must reject independent attachment investments
                 // and reward receipts instead of silently erasing unknown fields.
-                var save = new SaveFile { format = SaveFormat, version = profile.attachmentRevision>0?4:profile.chestRulesRevision>=2?3:profile.classStateRevision>0?2:1, profile = profile };
+                var save = new SaveFile { format = SaveFormat, version = profile.rewardInventoryRevision>0?5:profile.attachmentRevision>0?4:profile.chestRulesRevision>=2?3:profile.classStateRevision>0?2:1, profile = profile };
                 string json = PreserveOptionalReceiptNulls(JsonUtility.ToJson(save, true), profile);
                 if (Encoding.UTF8.GetByteCount(json) > MaximumSaveBytes)
                     throw new IOException("存档超过 4 MiB 安全大小，未覆盖原文件或备份。请保留现有文件。");
@@ -917,57 +920,43 @@ namespace Emberfall
 
         public bool CanReceiveProtectedLoot
         {
-            get { return Profile.inventory.Count < InventoryCapacity || Profile.pendingLoot.Count < PendingLootCapacity; }
+            get { return Profile.inventory.Count + Profile.pendingLoot.Count + Profile.recoveryLoot.Count < MaximumRetainedEquipment; }
         }
 
-        public bool ClaimPendingLoot(string id)
+        public static int CombatTrialProgress(GameProfile profile)
         {
-            ItemData item = Profile.pendingLoot.Find(value => value != null && value.id == id);
-            if (item == null) return Fail("找不到待领取的装备。");
-            if (Profile.inventory.Count >= InventoryCapacity) return Fail("背包已满，请先腾出位置再领取。");
-            // Claims deliberately bypass pickup autosell: this is a player's explicit item claim.
-            int pendingIndex = Profile.pendingLoot.IndexOf(item);
-            Profile.pendingLoot.Remove(item);
-            Profile.inventory.Add(item);
-            string failure;
-            if (!TryWriteAttachedProfile(Profile, out failure))
-            {
-                Profile.inventory.Remove(item);
-                Profile.pendingLoot.Insert(Math.Min(pendingIndex, Profile.pendingLoot.Count), item);
-                return Fail(failure);
-            }
-            LastError = string.Empty;
-            RaiseChanged();
-            return true;
+            if(profile==null)return 0;
+            int count=profile.classTutorialCompleted?1:0;
+            foreach(int bit in new[]{1,2,8})if((profile.tutorialMask&bit)!=0)count++;
+            return count;
         }
 
-        public int ClaimAllPendingLoot()
+        public bool ClaimPendingLoot(string id) { return TransferLegacyReward(id, false); }
+        public int ClaimAllPendingLoot() { return TransferLegacyRewards(false); }
+
+        private static void MigrateOwnedRewards(GameProfile profile)
         {
-            int claimed = 0;
-            var moved = new List<ItemData>();
-            while (Profile.pendingLoot.Count > 0 && Profile.inventory.Count < InventoryCapacity)
-            {
-                ItemData item = Profile.pendingLoot[0];
-                Profile.pendingLoot.RemoveAt(0);
-                Profile.inventory.Add(item);
-                moved.Add(item);
-                claimed++;
-            }
-            if (claimed > 0)
-            {
-                string failure;
-                if (!TryWriteAttachedProfile(Profile, out failure))
-                {
-                    foreach (ItemData item in moved) Profile.inventory.Remove(item);
-                    Profile.pendingLoot.InsertRange(0, moved);
-                    Fail(failure);
-                    return 0;
-                }
-                LastError = string.Empty;
-                RaiseChanged();
-            }
-            else Fail(Profile.pendingLoot.Count == 0 ? "没有待领取装备。" : "背包已满，请先腾出位置。");
-            return claimed;
+            var known = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var item in profile.inventory) known.Add(item.id);
+            foreach (var source in new[] { profile.pendingLoot, profile.recoveryLoot })
+                if (source != null) foreach (var item in source)
+                    if (item != null && known.Add(item.id)) profile.inventory.Add(item);
+            if (profile.inventory.Count > MaximumRetainedEquipment)
+                throw new ArgumentException("装备数量超过存档安全上限；原文件与奖励保留，请先整理行囊。");
+            profile.pendingLoot.Clear(); profile.recoveryLoot.Clear();
+        }
+        private bool TransferLegacyReward(string id, bool recovery)
+        {
+            var source = recovery ? Profile.recoveryLoot : Profile.pendingLoot;
+            if (!source.Exists(item => item != null && item.id == id)) return Fail("奖励已经自动进入行囊，或原奖励不存在。");
+            return CommitCandidate(Snapshot());
+        }
+        private int TransferLegacyRewards(bool recovery)
+        {
+            var source = recovery ? Profile.recoveryLoot : Profile.pendingLoot;
+            int count = source.Count;
+            if (count == 0) return 0;
+            return CommitCandidate(Snapshot()) ? count : 0;
         }
 
         /// <summary>Emergency exit/death/quit capture. A single active expedition can
@@ -988,11 +977,12 @@ namespace Emberfall
                 if (known.Add(item.id)) incoming.Add(item);
             }
             if (incoming.Count == 0) { LastError = string.Empty; return true; }
-            if (incoming.Count > RecoveryLootCapacity - Profile.recoveryLoot.Count)
-                return Fail("临时保管栏已满，尚未删除地面装备；请领取保管装备后再离开。");
+            if (incoming.Count > MaximumRetainedEquipment - Profile.inventory.Count - Profile.pendingLoot.Count - Profile.recoveryLoot.Count)
+                return Fail("装备保全空间已满，地面物品仍保留；请到商人整理行囊后再离开。");
             GameProfile candidate = CloneProfile(Profile);
             foreach (ItemData item in incoming)
-                candidate.recoveryLoot.Add(JsonUtility.FromJson<ItemData>(JsonUtility.ToJson(item, true)));
+                candidate.inventory.Add(JsonUtility.FromJson<ItemData>(JsonUtility.ToJson(item, true)));
+            MigrateOwnedRewards(candidate);
             string failure;
             if (!TryWriteAttachedProfile(candidate, out failure)) return Fail(failure);
             Profile = candidate;
@@ -1013,40 +1003,8 @@ namespace Emberfall
             return true;
         }
 
-        public bool ClaimRecoveryLoot(string id)
-        {
-            if (!Profile.recoveryLoot.Exists(item => item.id == id)) return Fail("找不到临时保管的装备。");
-            if (Profile.inventory.Count >= InventoryCapacity) return Fail("背包已满，请先腾出位置再领取保管装备。");
-            GameProfile candidate = CloneProfile(Profile);
-            ItemData item = candidate.recoveryLoot.Find(value => value.id == id);
-            candidate.recoveryLoot.Remove(item);
-            candidate.inventory.Add(item);
-            string failure;
-            if (!TryWriteAttachedProfile(candidate, out failure)) return Fail(failure);
-            Profile = candidate;
-            LastError = string.Empty;
-            RaiseChanged();
-            return true;
-        }
-
-        public int ClaimAllRecoveryLoot()
-        {
-            int count = Math.Min(Profile.recoveryLoot.Count, Math.Max(0, InventoryCapacity - Profile.inventory.Count));
-            if (count == 0)
-            {
-                Fail(Profile.recoveryLoot.Count == 0 ? "没有临时保管的装备。" : "背包已满，请先腾出位置。");
-                return 0;
-            }
-            GameProfile candidate = CloneProfile(Profile);
-            candidate.inventory.AddRange(candidate.recoveryLoot.GetRange(0, count));
-            candidate.recoveryLoot.RemoveRange(0, count);
-            string failure;
-            if (!TryWriteAttachedProfile(candidate, out failure)) { Fail(failure); return 0; }
-            Profile = candidate;
-            LastError = string.Empty;
-            RaiseChanged();
-            return count;
-        }
+        public bool ClaimRecoveryLoot(string id) { return TransferLegacyReward(id, true); }
+        public int ClaimAllRecoveryLoot() { return TransferLegacyRewards(true); }
 
         public ItemData CreateMechanicItem(EquipmentMechanic mechanic)
         {
@@ -1727,6 +1685,7 @@ namespace Emberfall
             candidate.skillStockCounts=(int[])Profile.skillStockCounts.Clone();
             candidate.skillStockRemaining=(float[])Profile.skillStockRemaining.Clone();
             candidate.skillStockPeriods=(float[])Profile.skillStockPeriods.Clone();
+            MigrateOwnedRewards(candidate);
             string failure;
             if (!TryWriteAttachedProfile(candidate, out failure)) return Fail(failure);
             Profile = candidate; LastError = string.Empty;
@@ -2138,6 +2097,8 @@ namespace Emberfall
                     goal.Title="保存第二套配装";goal.Done=HasBuildPreset(0)&&HasBuildPreset(1);goal.Step=goal.Done?"两份方案已保存":"在营地保存方案 A 与 B";goal.Action=ProgressionGoalAction.OpenPresets;goal.CanAct=inCamp;break;
                 case ProgressionGoalKind.Tier:
                     goal.Identity+="/"+Profile.progressionGoalTier;goal.Title="通关第 "+Profile.progressionGoalTier+" 阶";goal.Done=HighestAdventureTier>=Profile.progressionGoalTier;goal.Step="任一冒险 · 最高 "+HighestAdventureTier+" 阶";break;
+                case ProgressionGoalKind.CombatTrial:
+                    goal.Identity+="/"+(int)Profile.heroClass;goal.Title="实战试炼";goal.Step="右上目标查看四项指引 · "+CombatTrialProgress(Profile)+"/4 已完成";goal.Done=CombatTrialProgress(Profile)==4;break;
                 case ProgressionGoalKind.ClassTutorial:
                     goal.Identity+="/"+(int)Profile.heroClass;goal.Title="职业练习";goal.Step=ClassTutorialText;goal.Done=Profile.classTutorialCompleted;break;
             }
@@ -2361,35 +2322,19 @@ namespace Emberfall
                 Profile.recoveryLoot.Exists(value => value != null && value.id == item.id))
                 return Fail("这件装备已经拾取。");
             bool overflow = Profile.inventory.Count >= InventoryCapacity;
-            bool protectedLoot = IsProtectedLoot(item);
-            if (overflow && protectedLoot && Profile.pendingLoot.Count >= PendingLootCapacity)
-                return Fail("背包与待领取栏均已满；珍贵装备仍在地上，请先整理再离开。");
-            bool sold = !protectedLoot && (overflow || (item.rarity == Rarity.Common && Profile.autoSellCommon) || (item.rarity == Rarity.Rare && Profile.autoSellRare));
-            var previousAttachments=JsonUtility.FromJson<GameProfile>(JsonUtility.ToJson(Profile,false)).attachments;
+            if (!CanReceiveProtectedLoot)
+                return Fail("装备保全空间已满；物品仍在地上，请到商人整理行囊。");
+            var candidate=Snapshot();
             if(item.mechanic!=EquipmentMechanic.None&&Attachment(item.mechanic)==null)
-                Profile.attachments.Add(new MechanicAttachment{id=Guid.NewGuid().ToString("N"),legacySourceId=item.id,mechanic=item.mechanic,level=item.level,rarity=item.rarity,variant=item.mechanicVariant,variantUnlocked=item.mechanicVariantUnlocked});
-            int previousGold = Profile.gold;
-            bool newlyDiscovered = item.mechanic != EquipmentMechanic.None && !Profile.discoveredMechanics.Contains(item.mechanic);
-            if (sold) Profile.gold = (int)Math.Min(MaximumGold, (long)Profile.gold + SellValue(item));
-            else if (overflow) Profile.pendingLoot.Add(item);
-            else Profile.inventory.Add(item);
-            if (newlyDiscovered) Profile.discoveredMechanics.Add(item.mechanic);
+                candidate.attachments.Add(new MechanicAttachment{id=Guid.NewGuid().ToString("N"),legacySourceId=item.id,mechanic=item.mechanic,level=item.level,rarity=item.rarity,variant=item.mechanicVariant,variantUnlocked=item.mechanicVariantUnlocked});
+            candidate.inventory.Add(JsonUtility.FromJson<ItemData>(JsonUtility.ToJson(item,true)));
+            if(item.mechanic!=EquipmentMechanic.None&&!candidate.discoveredMechanics.Contains(item.mechanic))candidate.discoveredMechanics.Add(item.mechanic);
             string failure;
-            if (!TryWriteAttachedProfile(Profile, out failure))
-            {
-                Profile.gold = previousGold;
-                Profile.inventory.Remove(item);
-                Profile.pendingLoot.Remove(item);
-                Profile.attachments=previousAttachments;
-                if (newlyDiscovered) Profile.discoveredMechanics.Remove(item.mechanic);
-                return Fail(failure); // The world still owns the item and may retry safely.
-            }
-            collectedLootIds.Add(item.id);
-            if(!sold&&IsStrictEquipmentUpgrade(item))PublishRewardMoment(RewardMomentKind.StrictUpgrade,item);
-            LastError = string.Empty;
-            RaiseChanged();
-            if (sold) LastError = (overflow ? "背包已满，" : "低品质自动出售：") + item.name + "已自动出售，获得 " + SellValue(item) + " 金币。";
-            else if (overflow) LastError = "背包已满，" + item.name + "已保护至待领取栏（" + Profile.pendingLoot.Count + "/" + PendingLootCapacity + "）。";
+            if(!TryWriteAttachedProfile(candidate,out failure))return Fail(failure);
+            Profile=candidate;collectedLootIds.Add(item.id);
+            if(IsStrictEquipmentUpgrade(item))PublishRewardMoment(RewardMomentKind.StrictUpgrade,item);
+            LastError=string.Empty;RaiseChanged();
+            if(overflow)LastError="背包超过常规容量，"+item.name+"已保全在行囊中，可直接查看、穿戴或整理。";
             return true;
         }
 
@@ -2966,9 +2911,9 @@ namespace Emberfall
                 if (frozenRecord && !emptyChestDraw && (data == null || data.profile == null || data.profile.pendingChestDraw == null))
                     throw new ArgumentException("冻结奖励内容不是有效对象；原文件保留。");
                 frozenRecord=frozenRecord||(data!=null&&data.profile!=null&&data.profile.pendingChestDraw!=null);
-                if(data!=null&&data.format==SaveFormat&&(data.version>4||data.profile!=null&&(data.profile.version>1||data.profile.attachmentRevision>1||data.profile.growthRevision>1||data.profile.classStateRevision>1||data.profile.chestRulesRevision>2||data.profile.pendingChestRulesRevision>2||data.profile.pendingChestDraw!=null&&data.profile.pendingChestDraw.rulesRevision>2)))
+                if(data!=null&&data.format==SaveFormat&&(data.version>5||data.profile!=null&&(data.profile.version>1||data.profile.rewardInventoryRevision>1||data.profile.attachmentRevision>1||data.profile.growthRevision>1||data.profile.classStateRevision>1||data.profile.chestRulesRevision>2||data.profile.pendingChestRulesRevision>2||data.profile.pendingChestDraw!=null&&data.profile.pendingChestDraw.rulesRevision>2)))
                 {error="future format";return false;}
-                if (data == null || data.format != SaveFormat || (data.version != 1 && data.version != 2 && data.version != 3 && data.version != 4) || data.profile == null || data.profile.version != 1)
+                if (data == null || data.format != SaveFormat || (data.version != 1 && data.version != 2 && data.version != 3 && data.version != 4 && data.version != 5) || data.profile == null || data.profile.version != 1)
                 { error = frozenRecord?FrozenRewardReadFailure+" unsupported format":"unsupported format"; return false; }
                 bool balanceChanged = HasLegacyEnhancement(data.profile.inventory) || HasLegacyEnhancement(data.profile.pendingLoot) || HasLegacyEnhancement(data.profile.recoveryLoot);
                 bool masteryMigrated = data.profile.masteryRevision < 1 && data.profile.masteryRanks != null && Array.Exists(data.profile.masteryRanks, rank => rank > 0);
@@ -3129,11 +3074,11 @@ namespace Emberfall
             foreach (ItemData item in profile.inventory)
             {
                 if (item == null || !Enum.IsDefined(typeof(ItemSlot), item.slot) || !Enum.IsDefined(typeof(Rarity), item.rarity)) continue;
-                if (string.IsNullOrWhiteSpace(item.id) || item.id.Length > 80 || !ids.Add(item.id))
+                if (string.IsNullOrWhiteSpace(item.id) || item.id.Length > 80)
                 {
                     item.id = Guid.NewGuid().ToString("N");
-                    ids.Add(item.id);
                 }
+                if (!ids.Add(item.id)) continue;
                 RepairItem(item, profile.heroClass);
                 items.Add(item);
             }
@@ -3150,7 +3095,7 @@ namespace Emberfall
                     pending.Add(item);
                 }
             }
-            if (pending.Count > PendingLootCapacity) throw new ArgumentException("待领取栏超过安全容量；保留原存档，请从备份恢复。");
+            if (pending.Count > MaximumRetainedEquipment) throw new ArgumentException("待领取栏超过安全容量；保留原存档，请从备份恢复。");
             profile.pendingLoot = pending;
             var recovery = new List<ItemData>();
             if (profile.recoveryLoot != null)
@@ -3164,7 +3109,7 @@ namespace Emberfall
                     recovery.Add(item);
                 }
             }
-            if (recovery.Count > RecoveryLootCapacity) throw new ArgumentException("临时保管栏超过安全容量；保留原存档，请从备份恢复。");
+            if (recovery.Count > MaximumRetainedEquipment) throw new ArgumentException("临时保管栏超过安全容量；保留原存档，请从备份恢复。");
             profile.recoveryLoot = recovery;
             NormalizeVariantKnowledge(profile);
             var discovered = new List<EquipmentMechanic>();
@@ -3211,21 +3156,7 @@ namespace Emberfall
                 else SetEquipped(profile, equipped);
             }
             InitializeSlotUpgrades(profile);
-            // Repair malformed over-capacity inventories by removing ordinary overflow
-            // first. Never silently truncate locked, enhanced, epic or mechanic gear.
-            for (int index = items.Count - 1; items.Count > InventoryCapacity && index >= 0; index--)
-            {
-                if (IsEquipped(profile, items[index].id) || IsProtectedLoot(items[index])) continue;
-                items.RemoveAt(index);
-            }
-            for (int index = items.Count - 1; items.Count > InventoryCapacity && index >= 0; index--)
-            {
-                if (IsEquipped(profile, items[index].id)) continue;
-                if (pending.Count < PendingLootCapacity) pending.Add(items[index]);
-                else if (recovery.Count < RecoveryLootCapacity) recovery.Add(items[index]);
-                else throw new ArgumentException("珍贵装备超过安全容量；保留原存档，请从备份恢复。");
-                items.RemoveAt(index);
-            }
+            MigrateOwnedRewards(profile);
             NormalizeAttachments(profile);
             NormalizeClassStates(profile);
             return refundedRanks;

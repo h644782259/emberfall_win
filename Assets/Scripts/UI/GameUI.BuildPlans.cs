@@ -43,7 +43,7 @@ namespace Emberfall
         }
         private bool CloseBuildPlanSurface()
         {
-            if(!buildPlansOpen||panel!=Panel.Camp)return false;
+            if(!buildPlansOpen||(panel!=Panel.Camp&&panel!=Panel.Skills))return false;
             if(allocationDraft!=null)CancelAllocationDraft();
             else if(buildPlanChoosing){buildPlanChoosing=false;}
             else if(buildPlanAction!=BuildPlanAction.None)buildPlanAction=BuildPlanAction.None;
@@ -61,7 +61,7 @@ namespace Emberfall
         private void ReconcileBuildPlanSurface()
         {
             if(session.PracticeActive)return;
-            if(buildPlansOpen&&(panel!=Panel.Camp||buildPlanOwner!=session.Progression||
+            if(buildPlansOpen&&((panel!=Panel.Camp&&panel!=Panel.Skills)||buildPlanOwner!=session.Progression||
                 buildPlanHero!=session.Player||buildPlanCharacterId!=session.Progression.CurrentSlotId))ResetBuildPlanSurface();
         }
         private bool DrawBuildPlanSurface()
@@ -86,7 +86,7 @@ namespace Emberfall
                 new Rect(0,0,contentWidth*unit,Mathf.Max(layout.Body.Height,contentHeight)*unit));
             DrawBuildPlanContent(contentWidth,unit,true);
             EndTouchScroll();
-            if(NavigationButton(BuildPlanRect(layout.FooterButton(0,2),unit), confirm?"取消":buildPlanChoosing?"返回方案":"返回营地工坊", jade))
+            if(NavigationButton(BuildPlanRect(layout.FooterButton(0,2),unit), confirm?"取消":buildPlanChoosing?"返回方案":"返回技能", jade))
             {CloseBuildPlanSurface();return true;}
             if(confirm)
             {
@@ -212,7 +212,7 @@ namespace Emberfall
         private void ConfirmPresetSale()
         {
             var p=session.Progression;
-            if(!presetSaleOpen||presetSaleOwner!=p||presetSaleState!=p.BuildStateFingerprint()||session.IsDead||session.PracticeActive||panel!=Panel.Inventory&&panel!=Panel.Camp)return;
+            if(!presetSaleOpen||presetSaleOwner!=p||presetSaleState!=p.BuildStateFingerprint()||session.IsDead||session.PracticeActive||panel!=Panel.Inventory&&(panel!=Panel.Camp&&panel!=Panel.Skills))return;
             bool ok;if(presetSaleBulk){int count=p.BulkSellLowQuality(true);ok=count>0;}else ok=p.Sell(presetSaleId,true);
             if(ok){presetSaleOpen=false;RebuildBagItems();ResolveSelectedItem();session.Notify("已确认出售；相关方案引用需手动修复");}else presetSaleError=p.LastError;
             BlockUITransition();
@@ -220,7 +220,7 @@ namespace Emberfall
         private bool DrawPresetSaleConfirmation()
         {
             if(!presetSaleOpen)return false;
-            var p=session.Progression;if(presetSaleOwner!=p||session.IsDead||session.PracticeActive||panel!=Panel.Inventory&&panel!=Panel.Camp){presetSaleOpen=false;return false;}
+            var p=session.Progression;if(presetSaleOwner!=p||session.IsDead||session.PracticeActive||panel!=Panel.Inventory&&(panel!=Panel.Camp&&panel!=Panel.Skills)){presetSaleOpen=false;return false;}
             float unit=MobileControls.Active?TouchRatio:1;var layout=new MobileDialogLayout(width/unit,height/unit);
             Fill(new Rect(0,0,width,height),new Color(.008f,.018f,.03f,1));blockedRects.Add(new Rect(0,0,width,height));Box(BuildPlanRect(layout.Frame,unit),gold,false);
             Text(BuildPlanRect(layout.Header,unit),"出售会影响已存方案",Mathf.RoundToInt(21*unit),gold,true);

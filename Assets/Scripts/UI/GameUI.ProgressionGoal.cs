@@ -9,6 +9,7 @@ namespace Emberfall
         private string progressionGoalCharacter;
         private void OpenProgressionGoals()
         {
+            panel=Panel.Camp;session.SetUIBlocking(true);
             progressionGoalsOpen=true;progressionGoalOwner=session.Progression;
             progressionGoalCharacter=session.Progression.CurrentSlotId;progressionGoalScroll=progressionGoalHeaderScroll=Vector2.zero;
             CancelMobileScroll();BlockUITransition();
@@ -23,19 +24,19 @@ namespace Emberfall
         {
             if(CloseReforgeSurface())return true;
             if(!progressionGoalsOpen)return false;
-            progressionGoalsOpen=false;CancelMobileScroll();BlockUITransition();return true;
+            progressionGoalsOpen=false;panel=Panel.None;session.SetUIBlocking(false);CancelMobileScroll();BlockUITransition();return true;
         }
         private string CurrentProgressionGoalStatus(int runMaterials=0)
         {return session.Progression.ProgressionGoalStatus(runMaterials,session.IsInCamp);}
         private bool DrawProgressionGoalSurface()
         {
             ReconcileProgressionGoalSurface();if(!progressionGoalsOpen)return false;
-            if(session.Progression.Profile.automaticGrowth&&!MobileControls.Active)return DrawAutomaticGrowthSurface();
+
             float u=MobileControls.Active?TouchRatio:1;
             var l=new MobileDialogLayout(width/u,height/u);
             Fill(new Rect(0,0,width,height),new Color(.018f,.031f,.048f,1));blockedRects.Add(new Rect(0,0,width,height));
             Box(BuildPlanRect(l.Frame,u),jade,false);
-            Text(BuildPlanRect(l.Header,u),"成长目标 · 一次追踪一个",Mathf.RoundToInt(21*u),pale,true);
+            Text(BuildPlanRect(l.Header,u),"目标 · 实战试炼与成长",Mathf.RoundToInt(21*u),pale,true);
             var p=session.Progression;var current=p.SelectedProgressionGoal(session.IsInCamp);
             string status=CurrentProgressionGoalStatus()+(string.IsNullOrEmpty(p.LastError)?"":"\n"+p.LastError);
             float statusHeight=Mathf.Ceil(Style(Mathf.RoundToInt(13*u),false,true).CalcHeight(new GUIContent(status),(l.Body.Width-26)*u)/u)+12;
@@ -43,11 +44,11 @@ namespace Emberfall
             progressionGoalHeaderScroll=BeginTouchScroll("progression-goal-current",BuildPlanRect(sections.Status,u),progressionGoalHeaderScroll,new Rect(0,0,(l.Body.Width-16)*u,statusHeight*u));
             Text(new Rect(4*u,4*u,(l.Body.Width-26)*u,(statusHeight-8)*u),status,Mathf.RoundToInt(13*u),jade,false,true);EndTouchScroll();
             if(current.Action!=ProgressionGoalAction.None&&PrimaryButton(BuildPlanRect(sections.Action,u), current.ActionLabel, gold, current.CanAct, current.Step))
-            {if(current.Action==ProgressionGoalAction.OpenPresets){progressionGoalsOpen=false;OpenBuildPlans();buildPlanDetails=1;}else Feedback(p.ExecuteProgressionGoal(current.ActionIdentity,session.IsInCamp),"目标操作已保存");progressionGoalHeaderScroll=Vector2.zero;BlockUITransition();return true;}
+            {PerformGoalAction(current);progressionGoalHeaderScroll=Vector2.zero;BlockUITransition();return true;}
             float h=DrawProgressionGoalOptions(sections.Candidates.Width-18,u,false);
             progressionGoalScroll=BeginTouchScroll("progression-goals",BuildPlanRect(sections.Candidates,u),progressionGoalScroll,new Rect(0,0,(sections.Candidates.Width-18)*u,Mathf.Max(sections.Candidates.Height,h)*u));
             DrawProgressionGoalOptions(sections.Candidates.Width-18,u,true);EndTouchScroll();
-            if(NavigationButton(BuildPlanRect(l.FooterButton(0,1),u), "返回工坊", jade))CloseProgressionGoalSurface();
+            if(NavigationButton(new Rect((l.Frame.X+l.Frame.Width-52)*u,(l.Frame.Y+12)*u,40*u,32*u), "×", jade))CloseProgressionGoalSurface();
             return true;
         }
         private float DrawProgressionGoalOptions(float w,float u,bool draw)
@@ -56,6 +57,8 @@ namespace Emberfall
             if(draw&&PrimaryButton(new Rect(8*u,y*u,(w-16)*u,48*u),"启用自动成长 · 自动奖励并推进",gold))
             {Feedback(p.ResumeAutomaticGrowth(),"已启用自动成长");BlockUITransition();}
             y+=60;
+            DrawCombatTrialGoal(ref y,w,u,draw);
+            GoalOption(ref y,w,u,"实战试炼 · 四项实战指引",ProgressionGoalKind.CombatTrial,null,0,draw);
             GoalNode(ref y,w,u,"10阶节点 · 首套方向（自主选择）","先选具体核心，集中材料建立一条路线；也可先做职业练习，不消耗机制材料。达到10阶不代表装备已成型。",draw);
             foreach(var mechanic in BuildCatalog.MechanicsFor(p.Profile.heroClass))GoalCoreOption(ref y,w,u,mechanic,Rarity.Common,draw);
             GoalOption(ref y,w,u,"职业练习 · "+p.ClassTutorialText,ProgressionGoalKind.ClassTutorial,null,0,draw);

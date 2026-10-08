@@ -301,7 +301,7 @@ namespace Emberfall
         public Rarity progressionGoalMinimumRarity;
     }
 
-    public enum ProgressionGoalKind { None, Core, Variant, Ascension, SecondPreset, Tier, Reforge, ClassTutorial }
+    public enum ProgressionGoalKind { None, Core, Variant, Ascension, SecondPreset, Tier, Reforge, ClassTutorial, CombatTrial }
 
     [Serializable]
     public sealed class MechanicAttachment
@@ -338,6 +338,7 @@ namespace Emberfall
     [Serializable]
     public class GameProfile
     {
+        public int rewardInventoryRevision;
         public int skillStockVersion;
         public int[] skillStockCounts;
         public float[] skillStockRemaining,skillStockPeriods;

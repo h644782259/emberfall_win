@@ -401,7 +401,7 @@ namespace Emberfall
             if (!MobileControls.Active || string.IsNullOrEmpty(value)) return value;
             return value.Replace("WASD 移动，鼠标瞄准", "拖动左侧摇杆移动，点击技能或按住攻击")
                 .Replace("按 Shift 闪现", "点击闪现按钮")
-                .Replace("按 K ", "打开技能树").Replace("按 I ", "打开行囊")
+                .Replace("按 K ", "打开技能").Replace("按 I ", "打开行囊")
                 .Replace("按 T ", "点击传送按钮").Replace("按 H ", "点击回营按钮")
                 .Replace("按 F ", "点击药剂按钮")
                 .Replace(" · I", "").Replace(" · K", "").Replace(" · H", "").Replace(" · T", "");
@@ -1132,11 +1132,11 @@ namespace Emberfall
             float y = height - 54;
             DrawHubActions(x, y - 50);
             Rect catalog=new Rect(x-46,y,38,38);
-            if(IconButton(catalog,"codex","","图鉴 / 待领",gold)){panel=Panel.Camp;campTab=1;session.SetUIBlocking(true);}
-            Badge(catalog,Attention.Rewards);
+            if(IconButton(new Rect(width-64,18,38,38),"confirm","","目标 · 实战试炼与成长进度",gold))OpenProgressionGoals();
+
             if (IconButton(new Rect(x, y, 38, 38), "inventory", "I", "行囊 · I\n查看属性、穿戴装备与时装，使用已有补给。交易请找商人，强化请找铁匠。", jade))
                 TogglePanel(Panel.Inventory);
-            if (IconButton(new Rect(x + 46, y, 38, 38), "skills", "K", "技能树 · K\n按分支学习或进阶技能，配置十格快捷栏。\n可用技能点：" + p.skillPoints, gold, p.skillPoints > 0 ? "+" + p.skillPoints : null))
+            if (IconButton(new Rect(x + 46, y, 38, 38), "skills", "K", "技能 · K\n按分支学习或进阶技能，配置十格快捷栏。\n可用技能点：" + p.skillPoints, gold, p.skillPoints > 0 ? "+" + p.skillPoints : null))
                 TogglePanel(Panel.Skills);
             if (IconButton(new Rect(x + 92, y, 38, 38), "camp", "H", "返回营地 · H\n附近没有敌人时可以返回营地整备。", jade))
                 session.ReturnToCamp();
@@ -1426,12 +1426,15 @@ namespace Emberfall
 
         private void DrawSkills()
         {
+            if(DrawSkillSubsurface())return;
+            if(skillSection==1){DrawSkillDevelopment();return;}
             if(MobileControls.Active){DrawMobileSkills();return;}
             GameProfile p = session.Progression.Profile;
             selectedSkill = Mathf.Clamp(selectedSkill, 0, GameBalance.SkillCount - 1);
-            Rect w = Modal(1160, 660, GameBalance.ClassName(p.heroClass) + " · 技能树", "");
+            Rect w = Modal(1160, 660, GameBalance.ClassName(p.heroClass) + " · 技能", "");
             if (NavigationButton(new Rect(w.xMax - 69, w.y + 20, 44, 32), "×", jade)) ClosePanel();
             Text(new Rect(w.x + 763, w.y + 28, 296, 32), "技能点 " + p.skillPoints + "   /   角色 Lv." + p.level, 18, gold, true, false, TextAnchor.MiddleRight);
+            DrawSkillTabs(new Rect(w.x+24,w.y+72,506,30));
             Rect branchHeading = new Rect(w.x + 24, w.y + 112, 267, 24);
             Text(branchHeading, "职业分支", 15, jade, true);
             if (branchHeading.Contains(Mouse)) tooltip = "沿分支从上到下学习，需先掌握前置技能。\n滚动查看高阶技能；每升一级获得 1 技能点。";
@@ -1617,7 +1620,7 @@ namespace Emberfall
             float right = w.x + 698;
             Text(new Rect(right, w.y + 114, 332, 23), "界面与冒险", 16, jade, true);
             string[] keys = { "I", "K", "G", "H", "T", "Esc" };
-            string[] actions = { "行囊、装备与补给", "技能树、学习与配置", "靠近营地人物后对话", "远离敌人后返回营地", "进入传送门 / 房间北门", "取消选点或蓄力 / 返回" };
+            string[] actions = { "行囊、装备与补给", "技能、学习与配置", "靠近营地人物后对话", "远离敌人后返回营地", "进入传送门 / 房间北门", "取消选点或蓄力 / 返回" };
             for (int i = 0; i < keys.Length; i++)
             {
                 float rowY = w.y + 153 + i * 43;
@@ -1629,7 +1632,7 @@ namespace Emberfall
             }
             Text(new Rect(right, w.y + 472, 330, 71), "按住右键：左右环绕，上下调整俯仰。\n右键单击：取消选点或蓄力；滚轮缩放。\n空格跳跃，无冷却；移动时跳跃可跨窄河，Shift 闪现。\n背包与技能界面会暂停战斗。", 12, muted, false, true);
             if (NavigationButton(new Rect(w.x + 24, w.y + 575, 650, 39), "自定义技能按键", gold)) OpenBindings();
-            if (NavigationButton(new Rect(right, w.y + 575, 338, 39), controlsReturnPause ? "返回暂停菜单" : "返回冒险", jade)) ClosePanel();
+            if (controlsReturnPause && NavigationButton(new Rect(right, w.y + 575, 338, 39), "返回暂停菜单", jade)) ClosePanel();
         }
 
         private void DrawKeyCap(Rect r, string key, string action, Color accent)

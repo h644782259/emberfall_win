@@ -4,6 +4,7 @@ namespace Emberfall
     public sealed partial class GameUI
     {
         private Vector2 hubServiceScroll;
+        private bool merchantExchangeOpen;
         private void DrawHubEquipmentService()
         {
             bool smith=session.ActiveHubNpc==HubNpcKind.Blacksmith;
@@ -14,13 +15,14 @@ namespace Emberfall
             Fill(new Rect(0,0,width,height),new Color(.012f,.025f,.04f,.9f));blockedRects.Add(frame);Box(frame,smith?gold:jade);
             Text(new Rect(x+20*u,y+16*u,(w-100)*u,32*u),smith?"铁匠 · 装备锻造":"商人 · 补给与交易",Mathf.RoundToInt(24*u),smith?gold:jade,true);
             if(NavigationButton(new Rect(frame.xMax-62*u,y+16*u,42*u,32*u),"×",muted)){ClosePanel();return;}
-            Text(new Rect(x+20*u,y+54*u,(w-40)*u,44*u),smith?"强化永久提升装备部位，换上新装备会自动继承。":"购买生命药剂，出售闲置装备。穿戴中与锁定装备受保护。",Mathf.RoundToInt(13*u),muted,false,true);
+            if(!smith&&NavigationButton(new Rect(x+20*u,y+53*u,(w-40)*u,38*u),"机制兑换 · 星烬碎片",gold)){merchantExchangeOpen=true;panel=Panel.Camp;BlockUITransition();return;}
+            Text(new Rect(x+20*u,y+54*u,(w-40)*u,44*u),smith?"强化永久提升装备部位，换上新装备会自动继承。":"",Mathf.RoundToInt(13*u),muted,false,true);
             var progression=session.Progression;
             Text(new Rect(x+20*u,y+99*u,(w-40)*u,24*u),"金币 "+progression.Profile.gold+"  ·  "+(smith?"部位强化上限 +"+ProgressionService.MaximumUpgrade:"生命药剂 ×"+progression.Profile.potions),Mathf.RoundToInt(15*u),gold,true);
             Rect viewport=new Rect(x+16*u,y+135*u,(w-32)*u,(h-153)*u);
             float bodyWidth=viewport.width-20*u;
             RebuildBagItems();
-            float contentHeight=smith?3*164*u:(274+bagItems.Count*88)*u;
+            float contentHeight=smith?3*164*u:(170+bagItems.Count*88)*u;
             hubServiceScroll=BeginTouchScroll("hub-equipment-service",viewport,hubServiceScroll,new Rect(0,0,bodyWidth,Mathf.Max(viewport.height,contentHeight)));
             if(smith)DrawSmithServiceCards(bodyWidth,u);else DrawMerchantServiceCards(bodyWidth,u);
             EndTouchScroll();
@@ -51,13 +53,11 @@ namespace Emberfall
             Text(new Rect(14*u,10*u,width-28*u,25*u),"生命药剂 · "+ProgressionService.PotionPrice+" 金币 / 瓶",Mathf.RoundToInt(18*u),jade,true);
             if(PrimaryButton(new Rect(14*u,49*u,width-28*u,38*u),"购买生命药剂",jade,p.Profile.gold>=ProgressionService.PotionPrice))
             {Feedback(p.BuyPotion(),"已购买生命药剂");BlockUITransition();}
-            if(ToggleButton(new Rect(14*u,112*u,width-28*u,48*u),"普通自动出售："+(p.Profile.autoSellCommon?"开":"关"),p.Profile.autoSellCommon))p.SetAutoSell(Rarity.Common,!p.Profile.autoSellCommon);
-            if(ToggleButton(new Rect(14*u,166*u,width-28*u,48*u),"稀有自动出售："+(p.Profile.autoSellRare?"开":"关"),p.Profile.autoSellRare))p.SetAutoSell(Rarity.Rare,!p.Profile.autoSellRare);
-            bool bulkSale=DangerButton(new Rect(14*u,220*u,width-28*u,48*u),"批量出售背包低品质装备",gold,true,"穿戴、锁定及机制装备受保护");
+            bool bulkSale=DangerButton(new Rect(14*u,112*u,width-28*u,48*u),"批量出售背包低品质装备",gold,true,"穿戴、锁定及机制装备受保护");
             string sell=null,unlock=null;
             for(int i=0;i<bagItems.Count;i++)
             {
-                var item=bagItems[i];float y=(274+i*88)*u;
+                var item=bagItems[i];float y=(170+i*88)*u;
                 Rect row=new Rect(0,y,width,80*u);Fill(row,card);Fill(new Rect(0,y,3*u,row.height),GameBalance.RarityColor(item.rarity));
                 float actionWidth=Mathf.Min(160*u,width*.42f);
                 Text(new Rect(12*u,y+8*u,width-actionWidth-30*u,26*u),item.name,Mathf.RoundToInt(16*u),GameBalance.RarityColor(item.rarity),true);
@@ -70,7 +70,7 @@ namespace Emberfall
                 }
                 else if(DangerButton(action,"出售 "+p.SellValue(item)+" 金",gold,true,"出售闲置装备；预设引用的装备会先要求确认。"))sell=item.id;
             }
-            if(bagItems.Count==0)Text(new Rect(12*u,282*u,width-24*u,40*u),"没有可交易的闲置装备。",Mathf.RoundToInt(15*u),muted);
+            if(bagItems.Count==0)Text(new Rect(12*u,178*u,width-24*u,40*u),"没有可交易的闲置装备。",Mathf.RoundToInt(15*u),muted);
             if(unlock!=null){Feedback(p.SetItemLocked(unlock,false),"装备已解锁，可出售");BlockUITransition();}
             if(bulkSale)RequestPresetSale(null,true);
             else if(sell!=null){SellInventoryItem(sell);BlockUITransition();}

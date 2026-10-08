@@ -10,7 +10,7 @@ namespace Emberfall
 
         private static string HubNpcLabel(HubNpcKind kind)
         {
-            return kind == HubNpcKind.Merchant ? "商人 · 药剂 / 出售" :
+            return kind == HubNpcKind.Merchant ? "商人 · 兑换 / 药剂 / 出售" :
                 kind == HubNpcKind.Blacksmith ? "铁匠 · 部位强化" :
                 kind == HubNpcKind.Exchange ? "观星员 · 星路 / 兑换" : "营地工坊";
         }
@@ -63,7 +63,7 @@ namespace Emberfall
             if(session.ActiveHubNpc==HubNpcKind.None)
             {if(panel==Panel.HubDialogue)ClosePanel();return;}
             bool service=session.ActiveHubNpc==HubNpcKind.Exchange?
-                panel==Panel.Chapter||panel==Panel.Camp:panel==Panel.Inventory;
+                panel==Panel.Chapter||panel==Panel.Camp:panel==Panel.Inventory||panel==Panel.Camp&&merchantExchangeOpen;
             if(panel!=Panel.HubDialogue&&!service)session.EndHubNpcConversation();
         }
 
@@ -182,7 +182,7 @@ namespace Emberfall
                     BlockUITransition();
                 }
             }
-            if (NavigationButton(new Rect(r.x + 16*u, r.y + 250*u, 488*u, 48*u), travelReturnPause ? "返回暂停菜单" : "返回冒险", jade)) CloseTravelMap();
+            if (travelReturnPause && NavigationButton(new Rect(r.x + 16*u, r.y + 250*u, 488*u, 48*u), "返回暂停菜单", jade)) CloseTravelMap();
         }
     }
 }

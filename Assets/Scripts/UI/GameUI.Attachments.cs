@@ -6,9 +6,10 @@ namespace Emberfall
         private Vector2 attachmentScroll;
         private void DrawAttachmentWorkshop()
         {
+            if(session.ActiveHubNpc!=HubNpcKind.Merchant){merchantExchangeOpen=false;ClosePanel();return;}
             var p=session.Progression;
-            Rect w=Modal(Mathf.Min(width-24,980),Mathf.Min(height-24,660),"机制挂件","独立挂载 · 换装沿用 · 同机制仅一件 · 星烬碎片可升级");
-            if(NavigationButton(new Rect(w.xMax-190,w.y+20,160,34),"返回工坊",jade)){campTab=0;return;}
+            Rect w=Modal(Mathf.Min(width-24,980),Mathf.Min(height-24,660),"商人 · 机制兑换","独立挂载 · 换装沿用 · 同机制仅一件 · 星烬碎片可升级");
+            if(NavigationButton(new Rect(w.xMax-190,w.y+20,160,34),"返回商人",jade)){merchantExchangeOpen=false;panel=Panel.Inventory;return;}
             Rect view=new Rect(w.x+24,w.y+110,w.width-48,w.height-174);
             var all=BuildCatalog.MechanicsFor(p.Profile.heroClass);
             attachmentScroll=BeginTouchScroll("attachments",view,attachmentScroll,new Rect(0,0,view.width-16,all.Length*236));
@@ -29,12 +30,7 @@ namespace Emberfall
                 }
                 else
                 {
-                    if(Button(new Rect(16,y+168,bw,36),a.mounted?"卸下":"挂载",jade,session.IsInCamp))Feedback(p.SetAttachmentMounted(mechanic,!a.mounted,session.IsInCamp),"挂载状态已保存");
-                    string upgrade=p.AttachmentUpgradeLock(mechanic,session.IsInCamp);
-                    if(Button(new Rect(24+bw,y+168,bw,36),"升级 · 6碎片",gold,upgrade.Length==0,upgrade))Feedback(p.UpgradeAttachment(mechanic,session.IsInCamp),"挂件等级与核心效果已提升");
-                    bool variant=BuildCatalog.HasMechanicVariant(mechanic);
-                    if(Button(new Rect(32+bw*2,y+168,bw,36),a.variantUnlocked?"切换变体":"变体 · 4碎片",jade,variant&&session.IsInCamp&&(a.variantUnlocked||p.Profile.mechanicMaterials>=4)))Feedback(p.ToggleAttachmentVariant(mechanic,session.IsInCamp),"挂件变体已切换");
-                    if(Button(new Rect(40+bw*3,y+168,bw,36),a.rarity==Rarity.Legendary?"已升华":"升华 · 24碎片",gold,session.IsInCamp&&a.rarity==Rarity.Epic&&p.HighestAdventureTier>=5&&p.Profile.mechanicMaterials>=24))Feedback(p.AscendAttachment(mechanic,session.IsInCamp),"挂件已升华");
+                    Text(new Rect(16,y+168,cw-32,36),"已拥有 · 镶嵌、更换与升级请到铁匠",14,jade,true);
                 }
             }
             EndTouchScroll();
@@ -65,24 +61,9 @@ namespace Emberfall
                 ClosePanel();session.Player.Teleport(WorldTraversal.NearestWalkable(new Vector3(0,0,11),.45f));
                 session.EnterDungeon();session.SelectedDungeonTier=Mathf.Min(Mathf.Max(1,goal.RequiredAdventureTier),session.MaximumDungeonTier);
             }
-            else if(goal.Identity.Contains("practice")||session.Progression.Profile.progressionGoal==ProgressionGoalKind.ClassTutorial)campTab=3;
-            else campTab=1;
+            else if(goal.Identity.Contains("practice")||session.Progression.Profile.progressionGoal==ProgressionGoalKind.ClassTutorial||session.Progression.Profile.progressionGoal==ProgressionGoalKind.CombatTrial)OpenProgressionGoals();
+            else NavigateMerchantExchange();
             BlockUITransition();
-        }
-        private bool DrawAutomaticGrowthSurface()
-        {
-            var p=session.Progression;var g=p.SelectedProgressionGoal(session.IsInCamp);
-            Rect w=Modal(Mathf.Min(width-24,780),Mathf.Min(height-24,420),"自动成长", "每个目标只奖励一次 · 达成后自动推进 · 切职业保留各自回执");
-            Text(new Rect(w.x+28,w.y+113,w.width-56,40),g.Title,24,gold,true);
-            Text(new Rect(w.x+28,w.y+163,w.width-56,86),g.Step+"\n目标奖励：50金币 + 1星烬碎片",16,pale,false,true);
-            if(g.Action!=ProgressionGoalAction.None&&Button(new Rect(w.x+28,w.y+267,(w.width-68)*.5f,42),g.ActionLabel,jade,g.CanAct,g.Step))
-            {if(g.Action==ProgressionGoalAction.OpenPresets){NavigateProgressionGoal(g);return true;}Feedback(p.ExecuteProgressionGoal(g.ActionIdentity,session.IsInCamp),"成长操作已保存");}
-            if(NavigationButton(new Rect(w.center.x+6,w.y+267,(w.width-68)*.5f,42),g.RequiredAdventureTier>0?"定位副本传送门":"定位营地服务",gold))
-            {
-                progressionGoalsOpen=false;NavigateProgressionGoal(g);return true;
-            }
-            if(NavigationButton(new Rect(w.x+28,w.yMax-64,w.width-56,40),"返回冒险",jade)){progressionGoalsOpen=false;ClosePanel();}
-            return true;
         }
     }
 }

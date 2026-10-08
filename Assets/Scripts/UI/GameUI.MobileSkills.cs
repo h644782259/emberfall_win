@@ -31,10 +31,12 @@ namespace Emberfall
             if (DrawMobilePanelChrome(layout, GameBalance.ClassName(profile.heroClass) + " · 技能",
                 "Lv." + profile.level + " · 可用技能点 " + profile.skillPoints + " · 上下滑动查看全部10项")) return;
 
+            DrawSkillTabs(MobilePanelRect(layout.Tabs));
+            if(skillSection==1)return;
             bool split = SkillIconPresentation.SideBySide(layout.Width) && mobileSkillDetail;
             bool showList = split || !mobileSkillDetail, showDetail = split || mobileSkillDetail;
-            var listArea = split ? layout.BodyLeft : layout.Body;
-            var detailArea = split ? layout.BodyRight : layout.Body;
+            var listArea = split ? layout.BodyLeft : layout.TabbedBody;
+            var detailArea = split ? layout.BodyRight : layout.TabbedBody;
             if(!showDetail&&!RouteSkillReturnAvailable)listArea=new MobilePanelLayout.Area(listArea.X,listArea.Y,listArea.Width,layout.Height-listArea.Y-12);
             float u = TouchRatio, listWidth = listArea.Width - 16, detailWidth = detailArea.Width - 16;
             if (showList)
@@ -53,7 +55,7 @@ namespace Emberfall
                 DrawMobileSkillDescription(detailWidth, true);
                 EndTouchScroll();
             }
-            if (NavigationButton(MobilePanelRect(layout.FooterButton(0, showDetail ? 2 : 1)), RouteSkillReturnAvailable?"返回职业路线":!split && mobileSkillDetail ? "返回技能树" : "关闭详情", jade))
+            if ((RouteSkillReturnAvailable||showDetail) && NavigationButton(MobilePanelRect(layout.FooterButton(0, showDetail ? 2 : 1)), RouteSkillReturnAvailable?"返回职业路线":!split && mobileSkillDetail ? "返回技能列表" : "关闭详情", jade))
             { ClosePanel(); BlockUITransition(); return; }
             if (!showDetail) return;
             int rank = progression.Profile.skillRanks[selectedSkill];
