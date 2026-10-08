@@ -20,7 +20,7 @@ namespace Emberfall
         private EnemyController lockedTarget;
         private FilledSkillVfx.ArrowBatchHandle arrowBatch;
         private bool restrictedHealing;
-        private AdvancedSkillVfx healingAura;
+        private AdvancedSkillVfx healingAura,ultimateField;
 
         public static void Spawn(PlayerController hero, GameSession game, int index, int skillRank, Vector3 aim, Vector3 direction, CombatDamage strength, Color tint, int castId = 0)
         {
@@ -47,7 +47,7 @@ namespace Emberfall
                 return;
             }
             if(heroClass==HeroClass.Ranger&&skill==9)
-            {arrowBatch=FilledSkillVfx.BeginArrowBatch(owner,target,6f*range,color,priority:CombatVisualPriority.ActionBody,castId:castId);return;}
+            {arrowBatch=FilledSkillVfx.BeginArrowBatch(owner,target,SkillDamageBudgets.RangerUltimateRadius*range,color,priority:CombatVisualPriority.ActionBody,castId:castId);ultimateField=AdvancedSkillVfx.Rune(owner,target,SkillDamageBudgets.RangerUltimateRadius*range,color,nextEvent+steps*interval+.5f,3,identity:5);return;}
             if(heroClass==HeroClass.Ranger&&skill==7)lockedTarget=Nearest(target,10f*range);
             if(heroClass==HeroClass.Arcanist&&skill==9)
             {
@@ -199,15 +199,15 @@ namespace Emberfall
                 case 9:
                     if(step<steps-1)
                     {
-                        Vector3 rainAt=target+Circle(step*2.4f,1.8f*range);
-                        if(arrowBatch.IsValid)arrowBatch.ArrowBeat(rainAt,3.4f*range,false);
-                        owner.HitArea(rainAt,3.4f*range,damage*SkillDamageBudgets.AdvancedImpact(heroClass,skill,rank,step),0,.12f,castId:castId);
+                        Vector3 rainAt=target+Circle(step*2.4f,SkillDamageBudgets.RangerUltimateOrbit*range);
+                        if(arrowBatch.IsValid)arrowBatch.ArrowBeat(rainAt,SkillDamageBudgets.RangerUltimatePulseRadius*range,false);
+                        owner.HitArea(rainAt,SkillDamageBudgets.RangerUltimatePulseRadius*range,damage*SkillDamageBudgets.AdvancedImpact(heroClass,skill,rank,step),0,.12f,castId:castId);
                     }
                     else
                     {
-                        if(!arrowBatch.IsValid)arrowBatch=FilledSkillVfx.BeginArrowBatch(owner,target,6f*range,color,true,CombatVisualPriority.Finale,castId);
-                        if(arrowBatch.IsValid)arrowBatch.ArrowBeat(target,6f*range,true);
-                        owner.HitArea(target,6f*range,damage*SkillDamageBudgets.AdvancedImpact(heroClass,skill,rank,step),1.1f,.7f,castId:castId);
+                        if(!arrowBatch.IsValid)arrowBatch=FilledSkillVfx.BeginArrowBatch(owner,target,SkillDamageBudgets.RangerUltimateRadius*range,color,true,CombatVisualPriority.Finale,castId);
+                        if(arrowBatch.IsValid)arrowBatch.ArrowBeat(target,SkillDamageBudgets.RangerUltimateRadius*range,true);
+                        owner.HitArea(target,SkillDamageBudgets.RangerUltimateRadius*range,damage*SkillDamageBudgets.AdvancedImpact(heroClass,skill,rank,step),1.1f,.7f,castId:castId);
                         if(rank==3) for(int i=0;i<SkillDamageBudgets.RadialArrowCount(heroClass,skill,rank);i++) CombatProjectile.Friendly(owner,session,target,Circle(i*Mathf.PI/6,1),damage*SkillDamageBudgets.RadialArrowCoefficient,color,true,true,false,1.5f,22f,castId:castId);
                     }
                     break;
@@ -315,7 +315,7 @@ namespace Emberfall
 
         private void OnDestroy(){OnDisable();}
         private void OnDisable()
-        {castReceipt?.Release();castReceipt=null;if(healingAura!=null){healingAura.Stop();healingAura=null;}if(step<steps&&arrowBatch.IsValid)arrowBatch.Retire();}
+        {if(ultimateField!=null){ultimateField.Stop();ultimateField=null;}castReceipt?.Release();castReceipt=null;if(healingAura!=null){healingAura.Stop();healingAura=null;}if(step<steps&&arrowBatch.IsValid)arrowBatch.Retire();}
         private Vector3 Clamp(Vector3 point) { return CombatSight.GroundPoint(origin,Vector3.ClampMagnitude(CombatFx.Flat(point),session.ArenaRadius-.7f)); }
         private static Vector3 Circle(float angle,float radius) { return new Vector3(Mathf.Cos(angle),0,Mathf.Sin(angle))*radius; }
     }

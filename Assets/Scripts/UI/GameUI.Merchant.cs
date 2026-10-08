@@ -18,7 +18,7 @@ namespace Emberfall
             Fill(new Rect(0,0,width,height),new Color(.018f,.031f,.048f,.985f));blockedRects.Add(new Rect(0,0,width,height));
             Text(BuildPlanRect(l.Header,u),"商人",Mathf.RoundToInt(22*u),pale,true);
             DrawServiceBalances(BuildPlanRect(l.Balance,u),u);
-            if(NavigationButton(BuildPlanRect(l.Close,u),"×",jade)){ClosePanel();return;}
+            if(PopupCloseButton(BuildPlanRect(l.Close,u))){ClosePanel();return;}
             string[] tabs={"购买","兑换","出售"};
             for(int mode=0;mode<tabs.Length;mode++)if(TabButton(BuildPlanRect(l.Tab(mode),u),tabs[mode],merchantMode==mode))SelectMerchantMode(mode);
             if(!MerchantServiceActive){Text(BuildPlanRect(l.Body,u),"返回营地后可使用商店。",Mathf.RoundToInt(16*u),muted);return;}

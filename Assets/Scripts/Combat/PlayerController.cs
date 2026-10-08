@@ -50,7 +50,6 @@ namespace Emberfall
         private float jumpAge, movementSkillLock;
         private Vector3 jumpOrigin;
         private Vector3 jumpDestination;
-        private Vector3 jumpInput;
         private int traversalFrame = -1;
         private float passiveCooldown, passiveTime, passiveReduction, passiveSpeed;
         private Vector3 aimPoint;
@@ -392,7 +391,7 @@ namespace Emberfall
             if(mobile)movement+=new Vector3(MobileControls.Move.x,0,MobileControls.Move.y);
             movement = Vector3.ClampMagnitude(movement,1);
             bool wantsJump = (mobile && MobileControls.ConsumeJump()) || Input.GetKeyDown(KeyCode.Space);
-            if (wantsJump) { jumpInput=movement; TryJump(); jumpInput=Vector3.zero; }
+            if (wantsJump) TryJump(movement);
             bool wantsBlink = mobile ? MobileControls.ConsumeDodge() : Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.RightShift);
             if (wantsBlink) TryBlink(movement);
             else if (blinkBufferTime > 0) TryBlinkCore(bufferedBlinkDirection, false);
@@ -417,7 +416,7 @@ namespace Emberfall
             Vector3 beforeBoundary = transform.position;
             Vector3 bounded = transform.position;
             float bound = Mathf.Max(1,session.ArenaRadius - .65f);
-            float airborneHeight = jumping ? bounded.y : WorldTraversal.SurfaceHeight(bounded,.45f);
+            float airborneHeight = bounded.y;
             bounded.y = 0;
             bounded = Vector3.ClampMagnitude(bounded,bound);
             bounded.y = airborneHeight;
@@ -1076,8 +1075,7 @@ namespace Emberfall
             if (jumping) return;
             Vector3 flat = CombatFx.Flat(direction).normalized;
             Vector3 previous = transform.position;
-            Vector3 destination = Vector3.ClampMagnitude(CombatFx.Flat(previous) + flat * distance,session.ArenaRadius-.65f);
-            if (!WorldTraversal.CanLeap(previous, destination, .45f)) { TraversalFailure(); return; }
+            Vector3 destination = WorldTraversal.ResolveSkillLanding(previous,flat,distance,.45f,session.ArenaRadius-.65f);
             transform.position = destination;
             invulnerability = Mathf.Max(invulnerability,protection);
             AdvancedSkillVfx.Beam(this,previous+Vector3.up,transform.position+Vector3.up,GameBalance.ClassColor(HeroClass),.55f,.35f);
@@ -1085,11 +1083,10 @@ namespace Emberfall
 
         private void BeginRangerVault(int rank,int castId,CombatDamage damage,float range)
         {
-            // Destination was validated before resource consumption. Reuse the real
-            // traversal arc; no teleport or damage before the landing frame.
+            // Shorten blocked travel, but retain the cast and its landing damage.
             jumpOrigin=transform.position;
-            jumpDestination=Vector3.ClampMagnitude(CombatFx.Flat(jumpOrigin)+transform.forward*5f*range,session.ArenaRadius-.65f);
-            jumpDestination.y=WorldTraversal.SurfaceHeight(jumpDestination,.45f);
+            jumpDestination=WorldTraversal.ResolveSkillLanding(jumpOrigin,transform.forward,5f*range,.45f,session.ArenaRadius-.65f);
+
             jumpAge=0;jumping=true;rangerVault=true;traversalFrame=Time.frameCount;
             rangerVaultRank=rank;rangerVaultCast=castId;rangerVaultRange=range;rangerVaultDamage=damage;
             invulnerability=Mathf.Max(invulnerability,.18f);
@@ -1103,14 +1100,18 @@ namespace Emberfall
         internal bool TryJump(Vector3 direction=default(Vector3))
         {
             if (session == null || IsDead || !session.HasStarted || session.InputBlocked || jumping || TraversalStartedThisFrame || movementSkillLock > 0 || (charge != null && charge.IsCharging)) return false;
-            Vector3 origin = transform.position;
-            if (!WorldTraversal.CanStand(origin, .45f)) return false;
-            jumpOrigin = origin;
-            jumpDestination = origin;
-            Vector3 landing;
-            if(jumpInput.sqrMagnitude>.01f&&WorldTraversal.TryResolvePlatformJump(origin,jumpInput,5.5f,.45f,out landing))jumpDestination=landing;
-            else if(jumpInput.sqrMagnitude>.01f && WorldTraversal.TryResolveBlink(origin,jumpInput,5.5f,.45f,Mathf.Max(1,session.ArenaRadius-.65f),out landing) && WorldTraversal.CanLeap(origin,landing,.45f))
-                jumpDestination=landing;
+            Vector3 origin=transform.position;
+            if(!WorldTraversal.CanStand(origin,.45f))return false;
+            jumpOrigin=origin;jumpDestination=origin;
+            Vector3 travel=Vector3.ClampMagnitude(CombatFx.Flat(direction),1);
+            if(travel.sqrMagnitude>.0001f)
+            {
+                float bonus=(passiveTime>0?passiveSpeed:0)+(mobilityTime>0?.1f+mobilityRank*.05f:0)+(pursuitTime>0?.2f:0)+(burnStrideTime>0?.2f:0);
+                float distance=stats.MoveSpeed*(1+bonus)*MovementMultiplier*.55f*travel.magnitude;
+                Vector3 landing;
+                if(WorldTraversal.TryResolvePlatformJump(origin,travel,distance,.45f,out landing))jumpDestination=landing;
+                else if(origin.y<=.05f&&WorldTraversal.TryResolveBlink(origin,travel,distance,.45f,session.ArenaRadius-.65f,out landing))jumpDestination=landing;
+            }
             jumpAge = 0;
             jumping = true;
             traversalFrame = Time.frameCount;
@@ -1178,12 +1179,6 @@ namespace Emberfall
             jumpAge += deltaTime;
             float progress = Mathf.Clamp01(jumpAge / .55f);
             Vector3 ground=Vector3.Lerp(jumpOrigin,jumpDestination,progress);
-            if(!rangerVault)
-            {
-                Vector3 current=CombatFx.Flat(transform.position);
-                ground=WorldTraversal.Move(current,ground-current,.45f);
-                if(progress>=1f)jumpDestination=ground;
-            }
             transform.position = ground + Vector3.up * (Mathf.Sin(progress * Mathf.PI) * 1.65f);
             if (progress >= 1f)
             {

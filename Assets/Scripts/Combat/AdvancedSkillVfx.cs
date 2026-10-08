@@ -24,7 +24,12 @@ namespace Emberfall
             var obj=new GameObject("Cancellable filled charge envelope");obj.transform.position=at;
             var fx=obj.AddComponent<AdvancedSkillVfx>();fx.owner=hero;fx.epoch=hero.CombatEpoch;
             fx.duration=Mathf.Clamp(lifetime,.12f,12);fx.follow=followHero;fx.registered=true;activeEffects++;
-            FilledSkillVfx.Charge(fx.transform,hero,at,size,color,fx.duration,identity,protectionEnvelope,protectionStyle);
+            if(identity==5)
+            {
+                var rim=CombatFx.Ring(at,size,color,fx.duration,.12f,false,true);
+                if(rim!=null)rim.transform.SetParent(fx.transform,true);
+            }
+            else FilledSkillVfx.Charge(fx.transform,hero,at,size,color,fx.duration,identity,protectionEnvelope,protectionStyle);
             return fx;
         }
         // This non-pooled anchor owns only its own child hierarchy, never a rented

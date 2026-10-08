@@ -18,9 +18,9 @@ ranger=source[source.index('        private void Ranger()'):];a=ranger.index('  
 fixture='''using System;using UnityEngine;namespace Emberfall{
 public enum HeroClass{Vanguard,Arcanist,Ranger,Summoner}public class EnemyController{}
 public struct CombatDamage{public float Amount;public static CombatDamage operator*(CombatDamage d,float n){d.Amount*=n;return d;}}
-public static class SkillDamageBudgets{public static int AdvancedSteps(HeroClass h,int s,int r)=>3;public static float AdvancedInterval(HeroClass h,int s)=>.1f;public static float AdvancedFirstEvent(HeroClass h,int s)=>0;public static float AdvancedImpact(HeroClass h,int s,int r,int step)=>1;public static int RadialArrowCount(HeroClass h,int s,int r)=>12;public const float RadialArrowCoefficient=1;}
+public static class SkillDamageBudgets{public const float RangerUltimateRadius=8f,RangerUltimatePulseRadius=4.6f,RangerUltimateOrbit=2.6f;public static int AdvancedSteps(HeroClass h,int s,int r)=>3;public static float AdvancedInterval(HeroClass h,int s)=>.1f;public static float AdvancedFirstEvent(HeroClass h,int s)=>0;public static float AdvancedImpact(HeroClass h,int s,int r,int step)=>1;public static int RadialArrowCount(HeroClass h,int s,int r)=>12;public const float RadialArrowCoefficient=1;}
 public static class CombatProjectile{public static void Friendly(PlayerController h,GameSession s,Vector3 a,Vector3 b,CombatDamage d,Color c,bool p,bool arrow,bool basic,float size,float speed,int castId){}}
-public class AdvancedSkillVfx{public static AdvancedSkillVfx Healing(PlayerController h,float r,Color c,float life,int detail,System.Func<bool> active)=>new AdvancedSkillVfx();public void Stop(){}public static void Rune(params object[] values){} }
+public class AdvancedSkillVfx{public static AdvancedSkillVfx Healing(PlayerController h,float r,Color c,float life,int detail,System.Func<bool> active)=>new AdvancedSkillVfx();public void Stop(){}public static AdvancedSkillVfx Rune(params object[] values)=>new AdvancedSkillVfx(); }
 internal sealed class SequenceProbe:MonoBehaviour {
 FIELDS
 public FilledSkillVfx.ArrowBatchHandle Handle=>arrowBatch;
@@ -33,7 +33,7 @@ DISABLE
 private static Vector3 Circle(float a,float r)=>new Vector3(Mathf.Cos(a)*r,0,Mathf.Sin(a)*r);
 }}'''.replace('FIELDS',fields).replace('EVENT',event).replace('CONFIGURE',member('        private void Configure()')).replace('UPDATE',member('        private void Update()')).replace('DISABLE',member('        private void OnDisable()'))
 # Optional named identity argument requires a typed stub on the unused Rune branch.
-fixture=fixture.replace('public static void Rune(params object[] values){}','public static void Rune(PlayerController h,Vector3 at,float size,Color c,float duration,int detail,bool follow=false,int identity=0){}')
+fixture=fixture.replace('public static AdvancedSkillVfx Rune(params object[] values)=>new AdvancedSkillVfx();','public static AdvancedSkillVfx Rune(PlayerController h,Vector3 at,float size,Color c,float duration,int detail,bool follow=false,int identity=0)=>new AdvancedSkillVfx();')
 with tempfile.TemporaryDirectory(prefix='arrow-batch-generation-') as d:
  p=Path(d);(p/'Stubs.cs').write_text(shell);(p/'SequenceProbe.cs').write_text(fixture)
  for f in ['Assets/Scripts/Core/CombatImpactBatch.cs','Assets/Scripts/Core/FilledVfxRecipes.cs','Assets/Scripts/Core/FilledVfxPlacement.cs','Assets/Scripts/Core/CombatVisualBudget.cs','Assets/Scripts/Combat/CombatVisualLease.cs','Assets/Scripts/Combat/AnchoredImpactMesh.cs','Assets/Scripts/Combat/FilledSkillVfx.cs','Assets/Scripts/Combat/AuthoredActorMeshes.cs','Assets/Scripts/Combat/AuthoredSpellBases.cs','Tests/ArrowBatchGenerationProductionTests.cs']:(p/Path(f).name).write_text((root/f).read_text())

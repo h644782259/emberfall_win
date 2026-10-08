@@ -80,7 +80,7 @@ namespace Emberfall
             var p=session.Progression;var current=p.Equipped(candidate.slot);var next=p.PreviewEquippedItem(candidate);
             Fill(area,card);Fill(new Rect(area.x,area.y,area.width,u),jade*.4f);
             Text(new Rect(area.x+8*u,area.y+4*u,area.width-60*u,26*u),"属性对比 · "+candidate.name,Mathf.RoundToInt(12*u),pale,true);
-            if(Button(new Rect(area.xMax-48*u,area.y,44*u,44*u),"×",jade)){inventoryComparisonOpen=false;return;}
+            if(PopupCloseButton(new Rect(area.xMax-48*u,area.y,44*u,44*u))){inventoryComparisonOpen=false;return;}
             Rect body=new Rect(area.x+6*u,area.y+46*u,area.width-12*u,Mathf.Max(20*u,area.height-50*u));
             string comparison="当前 → 候选"+(IsEquipped(candidate)?"（已穿戴）":"")+"\n攻击 "+(current==null?0:current.attack)+" → "+next.attack+"   防御 "+(current==null?0:current.defense)+" → "+next.defense+"\n生命 "+(current==null?0:current.health)+" → "+next.health+"\n"+EquipmentComparisonPresentation.Changes(current,candidate,p)+"\n"+EquipmentComparisonPresentation.Description(candidate,p);
             float h=Style(Mathf.RoundToInt(12*u),false,true).CalcHeight(new GUIContent(comparison),body.width-18*u)+12*u;
@@ -182,8 +182,8 @@ namespace Emberfall
                 Text(new Rect(r.x+8*u,r.y+38*u,48*u,28*u),"评分",Mathf.RoundToInt(14*u),pale,true,false,TextAnchor.MiddleLeft);
                 Text(new Rect(r.x+60*u,r.y+38*u,r.width-70*u,28*u),EquipmentPreviewScore(item).ToString("0.#"),Mathf.RoundToInt(18*u),gold,true,false,TextAnchor.MiddleRight);
             }
-            DrawIcon(new Rect(r.xMax-31*u,r.y+12*u,18*u,18*u),UIIconAtlas.Utility("cancel"),jade);
-            if(QuietAction(new Rect(r.xMax-44*u,r.y,44*u,44*u),"",true,"关闭物品详情")){inventoryComparisonOpen=false;BlockUITransition();}
+
+            if(PopupCloseButton(new Rect(r.xMax-44*u,r.y,44*u,44*u))){inventoryComparisonOpen=false;BlockUITransition();}
             if(potion||fashion)Text(new Rect(r.x+8*u,r.y+42*u,r.width-16*u,22*u),potion?"恢复50%生命":"时装 · "+GameBalance.RarityName(appearance.rarity),Mathf.RoundToInt(12*u),muted);
             float actionWidth=(r.width-16*u)*.5f;
             if(potion)

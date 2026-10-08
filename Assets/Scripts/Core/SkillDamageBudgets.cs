@@ -24,6 +24,7 @@ namespace Emberfall
     /// <summary>Per-skill non-critical attack coefficients, shared by live casts and deterministic schedules.</summary>
     public static class SkillDamageBudgets
     {
+        public const float RangerUltimateRadius=8f, RangerUltimatePulseRadius=4.6f, RangerUltimateOrbit=2.6f;
         private static int Rank(int rank){return Math.Max(1,Math.Min(3,rank));}
         public static int TickCount(float duration,float interval)
         {

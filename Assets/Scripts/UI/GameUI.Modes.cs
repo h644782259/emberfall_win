@@ -52,7 +52,7 @@ namespace Emberfall
     {
      Rect box=new Rect(4*u,end*u,(available-8)*u,h);Fill(box,ink);Border(box,selected.Tint);
      Text(new Rect(box.x+10*u,box.y+10*u,textWidth,h-20*u),selected.Description,Mathf.RoundToInt(12*u),pale,false,true);
-     if(NavigationButton(new Rect(box.xMax-44*u,box.y,44*u,44*u),"×",jade))entryRewardSelection=null;
+     if(PopupCloseButton(new Rect(box.xMax-44*u,box.y,44*u,44*u)))entryRewardSelection=null;
     }
     end+=h/u+8;
    }
@@ -66,6 +66,7 @@ namespace Emberfall
    float u=MobileControls.Active?TouchRatio:1f;var l=new AdventureSelectionLayout(width/u,height/u);
    Fill(new Rect(0,0,width,height),new Color(.012f,.025f,.04f,.96f));blockedRects.Add(new Rect(0,0,width,height));
    Text(new Rect(l.X*u,l.Y*u,l.Frame.Width*u,36*u),"选择冒险",Mathf.RoundToInt(20*u),pale,true);
+   if(PopupCloseButton(new Rect((l.X+l.Frame.Width-44)*u,l.Y*u,44*u,36*u))){adventureChapterSelected=false;session.CancelDungeonSelection();BlockUITransition();return;}
    string[] names={"沉星遗迹","守望林庭","烬河突围","蚀星斗场","回廊远征","星路章节"};
    adventureListScroll=BeginTouchScroll("adventure-list",AdventureRect(l.List,u),adventureListScroll,new Rect(0,0,(l.List.Width-18)*u,360*u));
    for(int i=0;i<6;i++)
@@ -85,12 +86,12 @@ namespace Emberfall
    if(!adventureChapterSelected)DrawAdventureRewards(mode,tier,contentWidth,u);
    EndTouchScroll();
    float x=l.X,y=l.FooterY;
-   if(InventoryPictogramAction(new Rect(x*u,y*u,48*u,48*u),"返回",UIIconAtlas.Utility("cancel"))){adventureChapterSelected=false;session.CancelDungeonSelection();return;}
+
    bool normal=!adventureChapterSelected;
-   if(Button(new Rect((x+56)*u,y*u,44*u,48*u),"−",jade,normal&&tier>1))session.SelectedDungeonTier--;
-   Text(new Rect((x+100)*u,y*u,80*u,48*u),"第"+tier+"阶",Mathf.RoundToInt(13*u),gold,true,false,TextAnchor.MiddleCenter);
-   if(Button(new Rect((x+180)*u,y*u,44*u,48*u),"+",jade,normal&&tier<session.MaximumDungeonTier))session.SelectedDungeonTier++;
-   if(PrimaryButton(new Rect((x+232)*u,y*u,(l.Frame.Width-232)*u,48*u),adventureChapterSelected?"选择章节":"进入挑战",gold))
+   if(Button(new Rect((x)*u,y*u,44*u,48*u),"−",jade,normal&&tier>1))session.SelectedDungeonTier--;
+   Text(new Rect((x+44)*u,y*u,80*u,48*u),"第"+tier+"阶",Mathf.RoundToInt(13*u),gold,true,false,TextAnchor.MiddleCenter);
+   if(Button(new Rect((x+124)*u,y*u,44*u,48*u),"+",jade,normal&&tier<session.MaximumDungeonTier))session.SelectedDungeonTier++;
+   if(PrimaryButton(new Rect((x+176)*u,y*u,(l.Frame.Width-176)*u,48*u),adventureChapterSelected?"选择章节":"进入挑战",gold))
    {if(adventureChapterSelected){adventureChapterSelected=false;session.CancelDungeonSelection();OpenChapterSelection();BlockUITransition();}else session.ConfirmDungeonSelection();}
   }
   private void DrawMobileModeStatus(Rect r)

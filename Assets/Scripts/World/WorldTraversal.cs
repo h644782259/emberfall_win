@@ -187,6 +187,15 @@ namespace Emberfall
             return safeDistance >= .35f;
         }
 
+        // A blocked movement skill still casts: use the last safe point, including the origin.
+        public static Vector3 ResolveSkillLanding(Vector3 from, Vector3 direction, float distance, float radius, float bound)
+        {
+            Vector3 landing;
+            TryResolveBlink(from,direction,distance,radius,bound,out landing);
+            if(from.y>.05f)return from;
+            return landing;
+        }
+
         private static bool Finite(float value) { return !float.IsNaN(value) && !float.IsInfinity(value); }
 
         private static bool ClearSegment(Vector3 from, Vector3 to, float radius, bool ignoreWater, ObstacleHandle ignored=null)

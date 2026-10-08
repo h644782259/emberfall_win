@@ -194,6 +194,7 @@ namespace Emberfall
         {
             float hp=session.Player==null?0:session.Player.Health,max=session.Player==null?1:session.Player.MaxHealth;
             blockedRects.Add(TouchRect(layout.PlayerStatus));
+            Text(TouchRect(layout.PlayerHealth.X+116,layout.PlayerHealth.Y-3,44,18),"Lv"+session.Progression.Profile.level,TouchFont(11),gold,true,false,TextAnchor.MiddleLeft);
             Bar(TouchRect(layout.PlayerHealth),hp/Mathf.Max(1,max),new Color(.86f,.16f,.19f));
             Text(TouchRect(layout.PlayerHealth),Mathf.CeilToInt(hp)+" / "+Mathf.CeilToInt(max),TouchFont(9),pale,true,false,TextAnchor.MiddleCenter);
             Bar(TouchRect(layout.PlayerEnergy),session.Player==null?0:session.Player.Energy/Mathf.Max(1,session.Player.MaxEnergy),new Color(.35f,.63f,1));
@@ -319,8 +320,8 @@ namespace Emberfall
             Fill(new Rect(0, 0, width, height), new Color(.012f, .025f, .04f, .94f));
             Text(TouchRect(x,y,titleWidth,headerHeight), "设置", TouchFont(23), pale, true);
             Rect close=TouchRect(x+panelWidth-44,y,44,44);
-            DrawIcon(new Rect(close.center.x-9*TouchRatio,close.center.y-9*TouchRatio,18*TouchRatio,18*TouchRatio),UIIconAtlas.Utility("cancel"),jade);
-            if(QuietAction(close,"",true,"关闭设置")){session.SetPaused(false);BlockUITransition();return;}
+
+            if(PopupCloseButton(close)){session.SetPaused(false);BlockUITransition();return;}
             string[] tabs = { "冒险", "声音与画面", "按键设置", "存档" };
             int[] tabOrder={0,3,1,2};
             float sidebarWidth=120,bodyY=y+headerHeight+8;

@@ -24,9 +24,11 @@ public static class MobileControlLayoutTests
                 foreach(var target in targets)Check(!service.Overlaps(target),"camp service icon clears combat/navigation targets");
                 Check(!service.Overlaps(l.Map)&&!service.Overlaps(l.DungeonEntrance),"service icons clear map and dungeon entry");
             }
+            var navigation=new[]{l.Shop,l.Smith,l.Catalog,l.SkillsMenu,l.Inventory,l.Menu};
+            for(int i=0;i<navigation.Length;i++){Check(navigation[i].Y==l.Menu.Y,"navigation is one row");if(i>0)Check(Math.Abs(navigation[i].X-navigation[i-1].X-46)<.01,"compact equal navigation spacing");}
             Check(!l.Shop.Overlaps(l.Smith),"shop and smith have independent hit targets");
             for(int i=0;i<targets.Count;i++)for(int j=i+1;j<targets.Count;j++)Check(!targets[i].Overlaps(targets[j]),"non-overlapping touch hitboxes "+i+"/"+j+" at "+d[0]);
-            Check(Math.Abs(l.PlayerStatus.X+l.PlayerStatus.Width/2-l.Width/2)<.01&&l.PlayerStatus.Width==160&&l.PlayerStatus.Height==18&&Math.Abs(l.Height-l.PlayerStatus.Y-l.PlayerStatus.Height-17)<.01,"compact centered bottom vitals");
+            Check(Math.Abs(l.PlayerStatus.X+l.PlayerStatus.Width/2-l.Width/2)<.01&&l.PlayerStatus.Width==160&&l.PlayerStatus.Height==18&&Math.Abs(l.Height-l.PlayerStatus.Y-l.PlayerStatus.Height-17)<.01,"centered health with adjacent level label");
             foreach(var target in targets)Check(!l.PlayerStatus.Overlaps(target),"vitals clear all action targets");
             foreach(var hint in l.SkillOpportunities)Check(!l.PlayerStatus.Overlaps(hint),"vitals clear opportunity captions");
             Check(!l.PlayerStatus.Overlaps(l.CounterOpportunity)&&!l.PlayerStatus.Overlaps(l.ComboOpportunity),"vitals clear attack feedback");
@@ -34,7 +36,7 @@ public static class MobileControlLayoutTests
             foreach(var target in targets)Check(!l.CombatView.Overlaps(target),"Clear window cannot cover any action hitbox");
             foreach(var overlay in new[]{l.MoveZone,l.Notice,l.AdventureStatus,l.BossHealth,l.EncounterText,l.PlayerStatus,l.Map})Check(!l.CombatView.Overlaps(overlay),"Clear window avoids HUD and joystick zone");
             Check((l.CombatView.X+48)/l.Width>=.25f&&(l.CombatView.X+48)/l.Width<=.75f&&(l.CombatView.Y+32)/l.Height>=.25f&&(l.CombatView.Y+32)/l.Height<=.75f,"Anchor remains central without blind pan");
-            Check(l.DungeonEntrance.Y==8&&l.DungeonEntrance.Height==44&&Math.Abs(l.DungeonEntrance.X+l.DungeonEntrance.Width/2-l.Width/2)<.01,"dungeon entrance is a compact top-center safe-area control");
+            Check(l.DungeonEntrance.Y==60&&l.DungeonEntrance.Height==44&&Math.Abs(l.DungeonEntrance.X+l.DungeonEntrance.Width/2-l.Width/2)<.01,"dungeon entrance is a compact top-center safe-area control");
             foreach(var target in targets)Check(!l.DungeonEntrance.Overlaps(target),"entrance does not overlap any fixed or skill control");
             int[] arcOrder={4,0,1,2,3};double spacing=-1;
             for(int i=0;i<arcOrder.Length;i++)

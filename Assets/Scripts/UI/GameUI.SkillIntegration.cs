@@ -66,7 +66,7 @@ namespace Emberfall
                 h=8;DrawMobileWorkshopAbilities(ref h,mobileWidth,true);EndTouchScroll();return;
             }
             Rect w=Modal(980,660,"技能 · 职业与精通","可用技能点 "+p.Profile.skillPoints);
-            if(NavigationButton(new Rect(w.xMax-69,w.y+20,44,32),"×",jade))ClosePanel();
+            if(PopupCloseButton(new Rect(w.xMax-69,w.y+20,44,32)))ClosePanel();
             DrawSkillTabs(new Rect(w.xMax-269,w.y+20,176,36));
             if(skillSection==0)return;
             Rect desktopBody=new Rect(w.x+26,w.y+82,w.width-52,w.height-96);float available=desktopBody.width-18;

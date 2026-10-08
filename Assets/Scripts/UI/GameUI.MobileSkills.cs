@@ -47,8 +47,8 @@ namespace Emberfall
             var anchor=new MobilePanelLayout.Area(listArea.X+treeNode.x/u,listArea.Y+treeNode.y/u-mobileSkillListScroll.y/u,treeNode.width/u,treeNode.height/u);
             var popup=SkillTreePopupLayout.Place(listArea,anchor);Rect r=mobileSkillPopupRect=MobilePanelRect(popup);
             Fill(r,new Color(.025f,.055f,.075f,.99f));Border(r,jade*.5f);
-            DrawIcon(new Rect(r.xMax-31*u,r.y+12*u,18*u,18*u),UIIconAtlas.Utility("cancel"),jade);
-            if(QuietAction(new Rect(r.xMax-44*u,r.y,44*u,44*u),"",true,"关闭技能说明")){mobileSkillDetail=false;BlockUITransition();return;}
+
+            if(PopupCloseButton(new Rect(r.xMax-44*u,r.y,44*u,44*u))){mobileSkillDetail=false;BlockUITransition();return;}
             Text(new Rect(r.x+8*u,r.y+4*u,r.width-56*u,36*u),GameBalance.SkillName(profile.heroClass,selectedSkill)+" · "+profile.skillRanks[selectedSkill]+"/3",TouchFont(14),pale,true,true);
             Rect detailArea=new Rect(r.x+6*u,r.y+44*u,r.width-12*u,Mathf.Max(32*u,r.height-100*u));float detailWidth=detailArea.width/u-16;
             float detailHeight=DrawMobileSkillDescription(detailWidth,false);

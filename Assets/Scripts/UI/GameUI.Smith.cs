@@ -4,15 +4,46 @@ namespace Emberfall
     public sealed partial class GameUI
     {
         private int smithCategory,smithSelectedSlot;
-        private Vector2 smithDetailScroll;
+        private Vector2 smithDetailScroll,smithPreviewScroll;
+        private EquipmentMechanic smithPreviewMechanic;
+        private bool smithPreviewAscend;
+        private void OpenGemPreview(EquipmentMechanic mechanic,bool ascend)
+        {smithPreviewMechanic=mechanic;smithPreviewAscend=ascend;smithPreviewScroll=Vector2.zero;}
+        private void DrawGemPreview(float u)
+        {
+            if(smithPreviewMechanic==EquipmentMechanic.None)return;
+            var p=session.Progression;var gem=p.Attachment(smithPreviewMechanic);
+            if(gem==null){smithPreviewMechanic=EquipmentMechanic.None;return;}
+            Fill(new Rect(0,0,width,height),new Color(0,0,0,.55f));blockedRects.Add(new Rect(0,0,width,height));
+            float w=Mathf.Min(420*u,width-24*u),h=Mathf.Min(410*u,height-24*u);
+            Rect box=new Rect((width-w)*.5f,(height-h)*.5f,w,h);Fill(box,card);Border(box,jade);
+            Text(new Rect(box.x+14*u,box.y+10*u,w-70*u,28*u),BuildCatalog.GemName(gem.mechanic),Mathf.RoundToInt(17*u),gold,true);
+            if(PopupCloseButton(new Rect(box.xMax-48*u,box.y+4*u,44*u,36*u))){smithPreviewMechanic=EquipmentMechanic.None;return;}
+            Rect body=new Rect(box.x+8*u,box.y+48*u,w-16*u,h-144*u);float contentWidth=body.width/u-18,y=0;
+            DrawGemUpgradeComparison(ref y,contentWidth,u,gem,smithPreviewAscend,false);
+            GoalParagraph(ref y,contentWidth,u,BuildCatalog.MechanicDescription(gem.mechanic),12,muted,false,false);
+            smithPreviewScroll=BeginTouchScroll("smith-gem-preview",body,smithPreviewScroll,new Rect(0,0,contentWidth*u,Mathf.Max(body.height,y*u)));
+            y=0;DrawGemUpgradeComparison(ref y,contentWidth,u,gem,smithPreviewAscend,true);
+            GoalParagraph(ref y,contentWidth,u,BuildCatalog.MechanicDescription(gem.mechanic),12,muted,false,true);EndTouchScroll();
+            int cost=smithPreviewAscend?ProgressionService.AscensionCost:ProgressionService.AttachmentUpgradeCost;
+            string reason=smithPreviewAscend?gem.rarity==Rarity.Legendary?"已升华":gem.rarity!=Rarity.Epic?"需先升阶至史诗品质":p.HighestAdventureTier<5?"需通关第5阶":!SmithServiceActive?"请在铁匠处操作":p.Profile.mechanicMaterials<cost?"星烬碎片不足":"":p.AttachmentUpgradeLock(gem.mechanic,SmithServiceActive);
+            bool enough=p.Profile.mechanicMaterials>=cost;
+            Text(new Rect(box.x+14*u,box.yMax-88*u,w-28*u,30*u),reason,Mathf.RoundToInt(12*u),reason.Length==0?muted:new Color(1,.35f,.3f),false,true);
+            Rect confirm=new Rect(box.x+14*u,box.yMax-52*u,w-28*u,40*u);
+            bool accepted=PrimaryButton(confirm,"",gold,reason.Length==0);
+            Text(new Rect(confirm.x+10*u,confirm.y,confirm.width-115*u,confirm.height),smithPreviewAscend?"确认升华":"确认升阶",Mathf.RoundToInt(14*u),reason.Length==0?pale:muted,true,false,TextAnchor.MiddleLeft);
+            DrawPriceTint(new Rect(confirm.xMax-100*u,confirm.y,90*u,confirm.height),cost,true,u,enough?gold:new Color(1,.25f,.2f));
+            if(accepted){bool saved=smithPreviewAscend?p.AscendAttachment(gem.mechanic,SmithServiceActive):p.UpgradeAttachment(gem.mechanic,SmithServiceActive);Feedback(saved,smithPreviewAscend?"宝石已升华":"宝石已升阶");if(saved)smithPreviewMechanic=EquipmentMechanic.None;}
+        }
         private void DrawSmithService()
         {
             var p=session.Progression;float u=MobileControls.Active?TouchRatio:1;
+            bool prior=GUI.enabled;GUI.enabled=prior&&smithPreviewMechanic==EquipmentMechanic.None;
             var l=new SmithServiceLayout(width/u,height/u);
             Fill(new Rect(0,0,width,height),new Color(.018f,.031f,.048f,.985f));blockedRects.Add(new Rect(0,0,width,height));
             Text(BuildPlanRect(l.Header,u),"铁匠",Mathf.RoundToInt(22*u),gold,true);
             DrawServiceBalances(BuildPlanRect(l.Balance,u),u);
-            if(NavigationButton(BuildPlanRect(l.Close,u),"×",jade)){ClosePanel();return;}
+            if(PopupCloseButton(BuildPlanRect(l.Close,u))){smithPreviewMechanic=EquipmentMechanic.None;GUI.enabled=prior;ClosePanel();return;}
             smithCategory=Mathf.Clamp(smithCategory,0,1);
             string[] categories={"强化","镶嵌"};
             for(int i=0;i<categories.Length;i++)
@@ -26,9 +57,10 @@ namespace Emberfall
                 DrawIcon(new Rect(row.x+8*u,row.y+8*u,30*u,30*u),UIIconAtlas.EquipmentCardIcon(slot,gear==null?1:gear.level),gear==null?muted:GameBalance.RarityColor(gear.rarity));
             }
             var item=p.Equipped((ItemSlot)smithSelectedSlot);
-            if(item==null){Text(BuildPlanRect(l.Detail,u),"先在行囊中穿戴这个部位的装备。",Mathf.RoundToInt(16*u),muted,false,true);return;}
+            if(item==null){Text(BuildPlanRect(l.Detail,u),"先在行囊中穿戴这个部位的装备。",Mathf.RoundToInt(16*u),muted,false,true);GUI.enabled=prior;DrawGemPreview(u);return;}
             float contentHeight=DrawSmithDetail(item,l.Detail.Width-18,u,false);
-            smithDetailScroll=BeginTouchScroll("smith-selected-detail",BuildPlanRect(l.Detail,u),smithDetailScroll,new Rect(0,0,(l.Detail.Width-18)*u,Mathf.Max(l.Detail.Height,contentHeight)*u));
+            Rect detailArea=BuildPlanRect(l.Detail,u);if(smithCategory==1)detailArea.height+=54*u;
+            smithDetailScroll=BeginTouchScroll("smith-selected-detail",detailArea,smithDetailScroll,new Rect(0,0,(l.Detail.Width-18)*u,Mathf.Max(detailArea.height,contentHeight*u)));
             DrawSmithDetail(item,l.Detail.Width-18,u,true);EndTouchScroll();
             if(smithCategory==0)
             {
@@ -41,7 +73,7 @@ namespace Emberfall
                 Text(new Rect(action.x+12*u,action.y,action.width-126*u,action.height),capped?"已达角色等级上限":affordable?"强化装备":"强化装备 · 金币不足",Mathf.RoundToInt(14*u),pale,true,false,TextAnchor.MiddleLeft);
                 if(!capped)DrawPriceTint(new Rect(action.xMax-108*u,action.y,96*u,action.height),cost,false,u,affordable?gold:new Color(.98f,.28f,.24f));
             }
-
+            GUI.enabled=prior;DrawGemPreview(u);
         }
         private void DrawGemUpgradeComparison(ref float y,float width,float u,MechanicAttachment gem,bool ascend,bool draw)
         {
@@ -73,7 +105,7 @@ namespace Emberfall
         private float DrawSmithDetail(ItemData item,float width,float u,bool draw)
         {
             var p=session.Progression;float y=8;
-            if(draw)DrawIcon(new Rect((width-64)*.5f*u,y*u,64*u,64*u),UIIconAtlas.EquipmentCardIcon(item.slot,item.level),GameBalance.RarityColor(item.rarity));y+=72;
+            if(smithCategory==0){if(draw)DrawIcon(new Rect((width-64)*.5f*u,y*u,64*u,64*u),UIIconAtlas.EquipmentCardIcon(item.slot,item.level),GameBalance.RarityColor(item.rarity));y+=72;}
             GoalParagraph(ref y,width,u,item.name+" · Lv"+item.level+" · "+GameBalance.RarityName(item.rarity),17,gold,true,draw);
             if(smithCategory==0)
             {
@@ -110,16 +142,18 @@ namespace Emberfall
                         Text(new Rect(owned.x,owned.yMax+3*u,70*u,22*u),"拥有的宝石",Mathf.RoundToInt(12*u),muted,false,false,TextAnchor.MiddleCenter);
                     }
                     y+=94;
-                    GoalParagraph(ref y,width,u,BuildCatalog.MechanicDescription(mechanic),13,muted,false,draw);
-                    DrawGemUpgradeComparison(ref y,width,u,a,false,draw);
-                    string reason=p.AttachmentUpgradeLock(mechanic,SmithServiceActive);
-                    if(draw&&ServiceCostAction(new Rect(8*u,y*u,(width-16)*u,40*u),"宝石升阶",6,true,u,reason.Length==0,reason))
-                    {Feedback(p.UpgradeAttachment(mechanic,SmithServiceActive),"宝石升阶已保存");}y+=48;
+                    if(draw)
+                    {
+                        float actionWidth=(width-24)*.5f;
+                        if(QuietAction(new Rect(8*u,y*u,actionWidth*u,40*u),"升阶",true))OpenGemPreview(mechanic,false);
+                        if(QuietAction(new Rect((16+actionWidth)*u,y*u,actionWidth*u,40*u),"升华",true))OpenGemPreview(mechanic,true);
+                    }
+                    y+=48;
                     if(BuildCatalog.HasMechanicVariant(mechanic))
                     {
                         if(draw)for(int variant=0;variant<2;variant++)
                         {
-                            Rect option=new Rect((8+variant*76)*u,y*u,64*u,56*u);
+                            Rect option=new Rect((width-100+variant*48)*u,(y-142)*u,44*u,44*u);
                             string optionDescription=BuildCatalog.MechanicDescription(mechanic);
                             int split=optionDescription.IndexOf("变体B：",System.StringComparison.Ordinal);
                             if(split>=0)optionDescription=variant==0?optionDescription.Substring(0,split).Replace("变体A：",""):optionDescription.Substring(split).Replace("变体B：","");
@@ -128,20 +162,13 @@ namespace Emberfall
                             bool allowed=SmithServiceActive&&!selected&&(a.variantUnlocked||p.Profile.mechanicMaterials>=ProgressionService.VariantCost);
                             if(QuietAction(option,"",allowed))Feedback(p.ToggleAttachmentVariant(mechanic,SmithServiceActive),"宝石变体已保存");
                             Border(option,selected?jade:muted,selected?2:1);
-                            DrawIcon(new Rect(option.x+12*u,option.y+6*u,36*u,36*u),UIIconAtlas.Utility(variant==0?"core":"attack"),selected?jade:pale);
+                            DrawIcon(new Rect(option.x+6*u,option.y+6*u,32*u,32*u),UIIconAtlas.Utility(variant==0?"core":"attack"),selected?jade:pale);
                             if(selected)DrawIcon(new Rect(option.xMax-18*u,option.y,18*u,18*u),UIIconAtlas.Utility("confirm"),jade);
                             else if(!a.variantUnlocked)DrawIcon(new Rect(option.xMax-18*u,option.y,18*u,18*u),UIIconAtlas.Utility("lock"),gold);
                         }
-                        y+=62;
-                        string description=BuildCatalog.MechanicDescription(mechanic);
-                        int second=description.IndexOf("变体B：",System.StringComparison.Ordinal);
-                        string effect=second<0?description:a.variant==0?description.Substring(0,second).Replace("变体A：",""):description.Substring(second).Replace("变体B：","");
-                        GoalParagraph(ref y,width,u,"当前效果 · "+effect,13,jade,false,draw);
-                        GoalParagraph(ref y,width,u,a.variantUnlocked?"点选图标切换效果":"首次选择新效果消耗4枚星烬碎片",12,muted,false,draw);
+
                     }
-                    DrawGemUpgradeComparison(ref y,width,u,a,true,draw);
-                    if(draw&&ServiceCostAction(new Rect(8*u,y*u,(width-16)*u,40*u),a.rarity==Rarity.Legendary?"已升华":"升华",24,true,u,SmithServiceActive&&a.rarity==Rarity.Epic&&p.HighestAdventureTier>=5&&p.Profile.mechanicMaterials>=24))
-                    {Feedback(p.AscendAttachment(mechanic,SmithServiceActive),"宝石升华已保存");}y+=48;
+
                 }
 
 

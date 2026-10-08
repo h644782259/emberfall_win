@@ -48,7 +48,7 @@ namespace Emberfall
             float h=DrawProgressionGoalOptions(sections.Candidates.Width-18,u,false);
             progressionGoalScroll=BeginTouchScroll("progression-goals",BuildPlanRect(sections.Candidates,u),progressionGoalScroll,new Rect(0,0,(sections.Candidates.Width-18)*u,Mathf.Max(sections.Candidates.Height,h)*u));
             DrawProgressionGoalOptions(sections.Candidates.Width-18,u,true);EndTouchScroll();
-            if(NavigationButton(new Rect((l.Frame.X+l.Frame.Width-52)*u,(l.Frame.Y+12)*u,40*u,32*u), "×", jade))CloseProgressionGoalSurface();
+            if(PopupCloseButton(new Rect((l.Frame.X+l.Frame.Width-52)*u,(l.Frame.Y+12)*u,40*u,32*u)))CloseProgressionGoalSurface();
             return true;
         }
         private float DrawProgressionGoalOptions(float w,float u,bool draw)

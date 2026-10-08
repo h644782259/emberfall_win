@@ -42,15 +42,8 @@ namespace Emberfall
         { return !(skill==6&&rank==1&&session.ChallengeRun&&session.InDungeon&&Health>=MaxHealth&&(HeroClass!=HeroClass.Summoner||!SummonedCompanion.HasHealingTarget(this))); }
         private bool CanUseMovementSkillAt(int skill,int rank,Vector3 point)
         {
-            bool forwardDash=HeroClass==HeroClass.Vanguard&&skill==5;
-            bool retreat=HeroClass==HeroClass.Ranger&&skill==4;
-            if(!forwardDash&&!retreat)return true;
-            Vector3 direction=CombatFx.Flat(point-transform.position);
-            if(direction.sqrMagnitude<.0001f)direction=transform.forward;
-            direction.Normalize(); // Ranger vault advances toward aim, matching its landing arc.
-            float distance=(forwardDash?7f:5f)*GameBalance.SkillRangeMultiplier(rank);
-            Vector3 end=Vector3.ClampMagnitude(CombatFx.Flat(transform.position)+direction*distance,session.ArenaRadius-.65f);
-            return WorldTraversal.CanLeap(transform.position,end,.45f);
+            // Obstructed travel is shortened during execution; it is not a cast prerequisite.
+            return true;
         }
     }
 }

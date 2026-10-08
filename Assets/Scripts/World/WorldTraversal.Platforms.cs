@@ -10,8 +10,18 @@ namespace Emberfall
             if(handle==null)return null;
             int last=obstacles.Count-1;var obstacle=obstacles[last];obstacle.Height=height;obstacles[last]=obstacle;return handle;
         }
+        public static void AddJumpPlatform(Vector3 center,float radius,float height)
+        {
+            obstacles.Add(new Obstacle { Center=new Vector2(center.x,center.z), Radius=radius, Height=height });
+            grids.Clear();revision++;
+        }
         private static bool ContainsTop(Obstacle o,Vector3 point,float radius)
-        {return o.Height>0&&Mathf.Abs(point.x-o.Center.x)<=o.Half.x-radius&&Mathf.Abs(point.z-o.Center.y)<=o.Half.y-radius;}
+        {
+            if(o.Height<=0)return false;
+            if(o.Radius>0)
+            {float r=Mathf.Max(0,o.Radius-.12f);return new Vector2(point.x-o.Center.x,point.z-o.Center.y).sqrMagnitude<=r*r;}
+            return Mathf.Abs(point.x-o.Center.x)<=o.Half.x-radius&&Mathf.Abs(point.z-o.Center.y)<=o.Half.y-radius;
+        }
         public static float SurfaceHeight(Vector3 point,float radius=.45f)
         {
             float height=0;
@@ -25,7 +35,7 @@ namespace Emberfall
             {
                 if(o.Height>0&&height>=o.Height-.015f)continue;
                 Vector2 d=new Vector2(point.x-o.Center.x,point.z-o.Center.y);
-                if(o.Radius>0){if(d.sqrMagnitude<(o.Radius+radius)*(o.Radius+radius))return false;}
+                if(o.Radius>0){float clearance=o.Height>0?Mathf.Min(radius,.12f):radius;if(d.sqrMagnitude<(o.Radius+clearance)*(o.Radius+clearance))return false;}
                 else {var nearest=new Vector2(Mathf.Max(0,Mathf.Abs(d.x)-o.Half.x),Mathf.Max(0,Mathf.Abs(d.y)-o.Half.y));if(nearest.sqrMagnitude<=radius*radius)return false;}
             }
             return true;
@@ -41,7 +51,7 @@ namespace Emberfall
             if(!CanStand(from,radius)||direction.sqrMagnitude<.01f)return false;
             // Try the intended distance first; shorter safe points allow landing on
             // a narrow box without requiring pixel-perfect movement input.
-            for(float d=distance;d>=.5f;d-=.15f)
+            for(float d=distance;d>=.05f;d-=.05f)
             {
                 var to=CombatFx.Flat(from)+direction*d;to.y=SurfaceHeight(to,radius);
                 if(to.y<=0&&from.y<=0)continue;

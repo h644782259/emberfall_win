@@ -173,7 +173,7 @@ namespace Emberfall
                 AuthoredFixedScenery.Crest(facilities,names[i],p+Vector3.up*.76f,stone);
                 Crystal(facilities, r, p + Vector3.up * (1.1f + Mathf.Min(progress,5)*.06f), .35f + Mathf.Min(progress,5)*.025f, glow);
                 Label(facilities, names[i], labels[i], p + Vector3.up*2.1f, .055f, colors[i], false);
-                WorldTraversal.AddCircle(p,.48f);
+                WorldTraversal.AddJumpPlatform(p,i==2?.325f:i==1?.37f:.45f,.7f);
             }
         }
 

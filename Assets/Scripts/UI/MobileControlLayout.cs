@@ -38,11 +38,11 @@ namespace Emberfall
             float bottomLift=Width<700?36:0;
             Potion=Centered(Width*.5f-108,Height-26,44);
             // Width already excludes Screen.safeArea insets. Never subtract them again.
-            Menu=Centered(Width-30,32,48);Inventory=Centered(Width-84,32,48);
-            SkillsMenu=Centered(Width-138,32,48);Catalog=Centered(Width-192,32,48);
-            Shop=Centered(Width-192,88,48);Smith=Centered(Width-138,88,48);
+            Menu=Centered(Width-28,32,44);Inventory=Centered(Width-74,32,44);
+            SkillsMenu=Centered(Width-120,32,44);Catalog=Centered(Width-166,32,44);
+            Shop=Centered(Width-258,32,44);Smith=Centered(Width-212,32,44);
             Interact=new Area(Width-54,92,48,48);
-            DungeonEntrance=new Area(Width*.5f-58,8,116,44);
+            DungeonEntrance=new Area(Width*.5f-58,60,116,44);
             float shift=positionPreset<0?-Math.Min(8,Math.Max(0,Height-320)):positionPreset>0?0:0;
             // Equal-size skills follow a 30-degree arc with one shared chord length.
             const float radius=132,diameter=48;
@@ -65,8 +65,8 @@ namespace Emberfall
             float commandLift=Width<700?22:0;
             FocusCommand=new Area(204,Height-170-commandLift,48,48);RecallCommand=new Area(204,Height-120-commandLift,48,48);
             PlayerStatus=new Area(Width*.5f-80,Height-35,160,18);
-            PlayerHealth=new Area(PlayerStatus.X,PlayerStatus.Y,160,12);
-            PlayerEnergy=new Area(PlayerStatus.X,PlayerStatus.Y+15,160,3);Map=new Area(12,12,88,68);
+            PlayerHealth=new Area(PlayerStatus.X,PlayerStatus.Y,110,12);
+            PlayerEnergy=new Area(PlayerStatus.X,PlayerStatus.Y+15,110,3);Map=new Area(12,12,88,68);
             AdventureStatus=new Area(12,86,188,76);
             // Transient notices replace this left-side information slot, never the battlefield.
             Notice=AdventureStatus;

@@ -623,7 +623,7 @@ namespace Emberfall
             Fill(new Rect(0, 0, width, height), new Color(.018f, .029f, .048f, 1f));
             Rect w = Modal(900, 570, "选择存档", "");
             Text(new Rect(w.x + 620, w.y + 29, 186, 23), saveSlots.Count + " 份存档", 13, muted, false, false, TextAnchor.MiddleRight);
-            if (NavigationButton(new Rect(w.xMax - 69, w.y + 20, 44, 32), "×", jade)) ClosePanel();
+            if (PopupCloseButton(new Rect(w.xMax - 69, w.y + 20, 44, 32))) ClosePanel();
             Rect viewport = new Rect(w.x + 24, w.y + 113, 852, 347);
             float contentHeight = Mathf.Max(viewport.height, saveSlots.Count * 84);
             saveSelectionScroll = BeginTouchScroll("save-list",viewport,saveSelectionScroll,new Rect(0,0,837,contentHeight));
@@ -952,7 +952,7 @@ namespace Emberfall
             Rect victory=new Rect((width-w)*.5f,Mathf.Min(87*u,(height-182*u)*.5f),w,182*u);
             blockedRects.Add(victory);Box(victory,gold);
             Text(new Rect(victory.x+16*u,victory.y+12*u,w-76*u,36*u),"遗迹肃清",Mathf.RoundToInt(26*u),gold,true);
-            if(NavigationButton(new Rect(victory.xMax-50*u,victory.y+6*u,44*u,44*u),"×",jade))
+            if(PopupCloseButton(new Rect(victory.xMax-50*u,victory.y+6*u,44*u,44*u)))
             {victoryDismissedOwner=session.Player;victoryDismissedEpoch=session.Player.CombatEpoch;BlockUITransition();return;}
             Text(new Rect(victory.x+16*u,victory.y+58*u,w-32*u,40*u),session.DungeonRewardPending?"奖励待保存 · 请先完成结算":"战利品已解锁 · 可继续挑战或从南侧传送点回营",Mathf.RoundToInt(12*u),pale,false,true);
             float bw=(w-48*u)/3,y= victory.y+120*u;
@@ -1304,7 +1304,7 @@ namespace Emberfall
             Rect w = Modal(1160, 638, HubInventoryTitle, "");
             Text(new Rect(w.x + 24, w.y + 59, 238, 31), HubInventoryHint, 11, muted, false, true);
             Text(new Rect(w.x + 530, w.y + 55, 600, 31), HubNpcServiceSubtitle(""), 13, pale, false, true);
-            if (NavigationButton(new Rect(w.xMax - 69, w.y + 20, 44, 32), "×", jade)) ClosePanel();
+            if (PopupCloseButton(new Rect(w.xMax - 69, w.y + 20, 44, 32))) ClosePanel();
             DrawPrice(new Rect(w.x + 921, w.y + 28, 136, 30),p.gold,false,1);
             float left = w.x + 24;
             DrawCurrentWear(new Rect(left,w.y+148,232,232),1);
@@ -1351,7 +1351,7 @@ namespace Emberfall
         {
             GameProfile p = session.Progression.Profile;
             Rect w = Modal(820, 366, "生命药剂", "选择十格快捷栏中的位置");
-            if (NavigationButton(new Rect(w.xMax - 69, w.y + 20, 44, 32), "×", jade)) ClosePanel();
+            if (PopupCloseButton(new Rect(w.xMax - 69, w.y + 20, 44, 32))) ClosePanel();
             for (int slot = 0; slot < GameBalance.HotbarSize; slot++)
             {
                 int entry = LearnedSkillAtSlot(p, slot);
@@ -1495,7 +1495,7 @@ namespace Emberfall
             GameProfile p = session.Progression.Profile;
             selectedSkill = Mathf.Clamp(selectedSkill, 0, GameBalance.SkillCount - 1);
             Rect w = Modal(1160, 660, GameBalance.ClassName(p.heroClass) + " · 技能", "");
-            if (NavigationButton(new Rect(w.xMax - 69, w.y + 20, 44, 32), "×", jade)) ClosePanel();
+            if (PopupCloseButton(new Rect(w.xMax - 69, w.y + 20, 44, 32))) ClosePanel();
             Text(new Rect(w.x + 763, w.y + 28, 296, 32), "技能点 " + p.skillPoints + "   /   角色 Lv." + p.level, 18, gold, true, false, TextAnchor.MiddleRight);
             DrawSkillTabs(new Rect(w.x+330,w.y+20,176,36));
             Rect branchHeading = new Rect(w.x + 24, w.y + 112, 267, 24);
@@ -1588,7 +1588,7 @@ namespace Emberfall
         {
             GameProfile p = session.Progression.Profile;
             Rect w = Modal(840, 500, "自定义快捷键", "固定 10 个位置 · 点击槽位，然后按下新的按键");
-            if (NavigationButton(new Rect(w.xMax - 69, w.y + 20, 44, 32), "×", jade)) ClosePanel();
+            if (PopupCloseButton(new Rect(w.xMax - 69, w.y + 20, 44, 32))) ClosePanel();
             Rect pageHeading = new Rect(w.x + 27, w.y + 114, 620, 25);
             Text(pageHeading, "十格技能栏", 15, jade, true);
             if (pageHeading.Contains(Mouse)) tooltip = "可绑定字母、数字与 F1～F12。已占用的按键会交换位置。\n移动及界面功能键保留。固定十格，可自由配置。";
@@ -1619,8 +1619,8 @@ namespace Emberfall
             if (MobileControls.Active) { DrawMobilePause(); return; }
             Rect w = Modal(780, 620, "设置", desktopPauseTab==3?"手动保存需确认覆盖":"");
             Rect close=new Rect(w.xMax-60,w.y+20,44,44);
-            DrawIcon(new Rect(close.center.x-9,close.center.y-9,18,18),UIIconAtlas.Utility("cancel"),jade);
-            if(QuietAction(close,"",true,"关闭设置")){session.SetPaused(false);BlockUITransition();return;}
+
+            if(PopupCloseButton(close)){session.SetPaused(false);BlockUITransition();return;}
             string[] tabs = { "冒险", "声音与画面", "键盘与操作", "存档" };
             int[] tabOrder={0,3,1,2};
             Fill(new Rect(w.x+24,w.y+110,152,470),new Color(.025f,.05f,.065f,.65f));
@@ -1671,7 +1671,7 @@ namespace Emberfall
             if(MobileControls.Active){DrawMobileGuide();return;}
             GameProfile p = session.Progression.Profile;
             Rect w = Modal(1060, 638, "操作指南", "键盘与鼠标 · 当前技能键帽会跟随你的自定义设置");
-            if (NavigationButton(new Rect(w.xMax - 69, w.y + 20, 44, 32), "×", jade)) ClosePanel();
+            if (PopupCloseButton(new Rect(w.xMax - 69, w.y + 20, 44, 32))) ClosePanel();
             Rect keyboard = new Rect(w.x + 24, w.y + 112, 650, 442);
             Fill(keyboard, card);
             Text(new Rect(keyboard.x + 18, keyboard.y + 12, 610, 25), "移动与战斗", 16, jade, true);
@@ -1735,7 +1735,7 @@ namespace Emberfall
         {
             if(MobileControls.Active){DrawMobileSaveLocation();return;}
             Rect w = Modal(800, 500, "存档位置与迁移", "游戏安装目录与角色存档分开保存，重新安装游戏可继续原有冒险。");
-            if (NavigationButton(new Rect(w.xMax - 69, w.y + 20, 44, 32), "×", jade)) ClosePanel();
+            if (PopupCloseButton(new Rect(w.xMax - 69, w.y + 20, 44, 32))) ClosePanel();
             string path = session.Progression.SaveDirectory;
             Fill(new Rect(w.x + 24, w.y + 113, 752, 79), card);
             Text(new Rect(w.x + 40, w.y + 123, 720, 17), "当前存档文件夹", 11, jade, true);
@@ -1803,6 +1803,7 @@ namespace Emberfall
 
         private void ClosePanel()
         {
+            if(SmithServiceActive&&smithPreviewMechanic!=EquipmentMechanic.None){smithPreviewMechanic=EquipmentMechanic.None;return;}
             if(presetSaleOpen){CancelPresetSale();return;}
             if(MerchantServiceActive||SmithServiceActive){inventoryHubNpc=HubNpcKind.None;merchantExchangeOpen=false;panel=Panel.None;session.SetUIBlocking(false);BlockUITransition();return;}
             if(CloseChapterSelection())return;

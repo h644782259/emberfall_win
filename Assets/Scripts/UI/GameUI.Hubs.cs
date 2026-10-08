@@ -18,6 +18,7 @@ namespace Emberfall
             inventoryHubNpc = kind;
             panel=Panel.Inventory;
             hubServiceScroll=Vector2.zero;inventoryFilter=-1;mobileInventoryNpcRequest=HubNpcKind.None;
+            if(kind==HubNpcKind.Blacksmith)smithPreviewMechanic=EquipmentMechanic.None;
             if(kind==HubNpcKind.Merchant)SelectMerchantMode(0,true);
             if(kind==HubNpcKind.Blacksmith)selectedItem=session.Progression.Profile.weaponId;
             session.SetUIBlocking(true);
@@ -78,8 +79,8 @@ namespace Emberfall
             blockedRects.Add(r);Box(r,jade);
             Text(new Rect(r.x+16*u,r.y+10*u,r.width-76*u,30*u),"地图 · "+session.ZoneName,Mathf.RoundToInt(20*u),pale,true);
             Rect close=new Rect(r.xMax-52*u,r.y+6*u,44*u,44*u);
-            DrawIcon(new Rect(close.center.x-9*u,close.center.y-9*u,18*u,18*u),UIIconAtlas.Utility("cancel"),jade);
-            if(QuietAction(close,"",!UITransitionBlocked)){CloseTravelMap();return;}
+
+            if(PopupCloseButton(close,!UITransitionBlocked)){CloseTravelMap();return;}
             if(PauseSidebarTab(new Rect(r.x+16*u,r.y+50*u,120*u,44*u),"当前地图",travelMapTab==0,u))travelMapTab=0;
             if(PauseSidebarTab(new Rect(r.x+144*u,r.y+50*u,120*u,44*u),"城镇旅行",travelMapTab==1,u))travelMapTab=1;
             Rect body=new Rect(r.x+16*u,r.y+102*u,r.width-32*u,r.height-114*u);

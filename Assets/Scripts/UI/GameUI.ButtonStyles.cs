@@ -7,6 +7,16 @@ namespace Emberfall
         // Roles describe the operation; item rarity and class colors do not change them.
         private enum ButtonRole { Action, Primary, Navigation, Danger, Tab, SelectedTab, Toggle, ActiveToggle, Row, SelectedRow }
 
+        // One icon and a 44-unit hit target for all dismissible surfaces.
+        private bool PopupCloseButton(Rect rect, bool enabled = true)
+        {
+            float u = MobileControls.Active ? TouchRatio : 1f;
+            Rect hit = new Rect(rect.xMax-44*u, rect.y, 44*u, 44*u);
+            DrawIcon(new Rect(hit.center.x-9*u,hit.center.y-9*u,18*u,18*u),
+                UIIconAtlas.Utility("cancel"), enabled && GUI.enabled ? pale : muted);
+            return QuietAction(hit, "", enabled);
+        }
+
         private bool NavigationButton(Rect rect, string caption, Color accent, bool enabled = true, string hint = null, bool primary = false)
         { return DrawButton(rect, caption, ButtonRole.Navigation, enabled, hint); }
 

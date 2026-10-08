@@ -219,7 +219,7 @@ namespace Emberfall
             if (skill == 4) return new Preview(Shape.Leap, 3.2f*r, 5*r);
             // Phantom volleys seek enemies near the selected ground mark; the circle
             // shows the acquisition area, not a claim that arrows hit the whole disk.
-            float radius = skill == 1 ? 3 : skill == 2 ? 4.3f : skill == 5 ? 3.7f : skill == 7 ? 10 : 6;
+            float radius = skill == 1 ? 3 : skill == 2 ? 4.3f : skill == 5 ? 3.7f : skill == 7 ? 10 : SkillDamageBudgets.RangerUltimateRadius;
             return new Preview(Shape.Ground, radius * r, 9 * r);
         }
 
@@ -288,7 +288,7 @@ namespace Emberfall
             }
             else if(spec.shape==Shape.Leap)
             {
-                Vector3 landing=Vector3.ClampMagnitude(origin+dir*spec.distance,session.ArenaRadius-spec.arenaMargin);
+                Vector3 landing=WorldTraversal.ResolveSkillLanding(origin,dir,spec.distance,.45f,session.ArenaRadius-spec.arenaMargin);
                 Circle(area,landing,spec.radius,true);Circle(marker,landing,.22f);
             }
             else if (spec.shape == Shape.Cone)

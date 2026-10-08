@@ -180,7 +180,7 @@ namespace Emberfall
         private void ArrowBeat(Vector3 at,float radius,bool final)
         {
             if(!gameObject.activeInHierarchy||owner==null||owner.IsDead||owner.CombatEpoch!=epoch)return;
-            float nextSize=Mathf.Clamp(radius,.15f,8);
+            float nextSize=Mathf.Clamp(radius,.15f,16);
             bool reuse=arrowGeometryReady&&arrowGeometryFinal==final&&arrowGeometryReduced==EffectPreferences.ReducedEffects&&
                 arrowGeometryRevision==WorldTraversal.Revision&&(transform.position-at).sqrMagnitude==0&&size==nextSize;
             if(reuse)
@@ -194,11 +194,12 @@ namespace Emberfall
             Add(rupture,Vector3.up*.08f,Vector3.one*(final?size*.65f:.3f),Quaternion.identity,0,5,0,final?size:.4f,"Arrow landing contact",true);
             Add(arrow,Vector3.zero,new Vector3(final?1.7f:.8f,final?3.2f:1.1f,final?1.7f:.8f),Quaternion.identity,0,11,0,.3f,"Primary falling arrow",true);
             Add(rupture,Vector3.up*.1f,Vector3.one*.22f,Quaternion.identity,0,4,0,final?3.5f:2.3f,"Arrow impact fragments");
-            int maximum=EffectPreferences.ReducedEffects?3:4;
+            bool ultimate=finaleCast>0;
+            int maximum=ultimate?(EffectPreferences.ReducedEffects?5:10):(EffectPreferences.ReducedEffects?3:4);
             for(int i=0;i<maximum;i++)
             {
-                float a=i*2.39996f,r=size*(.15f+(i%3)*.2f);var offset=new Vector3(Mathf.Cos(a)*r,.02f,Mathf.Sin(a)*r);
-                Add(arrow,offset,new Vector3(.7f,.55f+(i%2)*.2f,.7f),Quaternion.Euler(0,i*47,0),0,12,0,.25f,"Short embedded arrow");
+                float a=i*2.39996f,r=size*(ultimate?(.25f+(i%4)*.18f):(.15f+(i%3)*.2f));var offset=new Vector3(Mathf.Cos(a)*r,.02f,Mathf.Sin(a)*r);
+                Add(arrow,offset,new Vector3(ultimate?.95f:.7f,ultimate?1.6f:.55f+(i%2)*.2f,ultimate?.95f:.7f),Quaternion.Euler(0,i*47,0),ultimate?(i%3)*.035f:0,ultimate?11:12,0,.25f,"Short embedded arrow");
             }
             arrowGeometryReady=true;arrowGeometryFinal=final;arrowGeometryReduced=EffectPreferences.ReducedEffects;arrowGeometryRevision=WorldTraversal.Revision;
         }
