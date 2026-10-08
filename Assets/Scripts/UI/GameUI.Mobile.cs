@@ -285,15 +285,18 @@ namespace Emberfall
         {
             var layout = MobileControls.Layout;
             float panelWidth=Mathf.Min(520,layout.Width-24),x=(layout.Width-panelWidth)*.5f,y=12;
-            float titleWidth=panelWidth-154;
+            float titleWidth=panelWidth;
             float headerHeight=Mathf.Max(44,Style(TouchFont(23),true).CalcHeight(new GUIContent("冒险暂停"),titleWidth*TouchRatio)/TouchRatio+8);
             Fill(new Rect(0, 0, width, height), new Color(.012f, .025f, .04f, .94f));
             Text(TouchRect(x,y,titleWidth,headerHeight), "冒险暂停", TouchFont(23), pale, true);
-            if (NavigationButton(TouchRect(x+panelWidth-134,y,134,44), mobilePausePage == 0 ? "更多设置 ›" : mobilePausePage==1?"触控布局 ›":"‹ 返回", jade))
-            { mobilePausePage = (mobilePausePage+1)%3; BlockUITransition(); }
-            float bodyY=y+headerHeight+12,bodyHeight=Mathf.Max(48,layout.Height-bodyY-12),contentWidth=panelWidth-18;
-            string notice=string.IsNullOrEmpty(session.Notification)?"自动保存持续写入「"+ActiveCharacterName()+"」":PlatformText(session.Notification);
-            float noticeHeight=Mathf.Max(32,Style(TouchFont(11),false,true).CalcHeight(new GUIContent(notice),contentWidth*TouchRatio)/TouchRatio+8);
+            string[] tabs = { "冒险", "声音与画面", "触控布局" };
+            float tabWidth=(panelWidth-16)/3,tabY=y+headerHeight+8;
+            for (int i=0;i<tabs.Length;i++)
+                if (TabButton(TouchRect(x+i*(tabWidth+8),tabY,tabWidth,44),tabs[i],mobilePausePage==i) && mobilePausePage!=i)
+                { mobilePausePage=i; BlockUITransition(); }
+            float bodyY=tabY+56,bodyHeight=Mathf.Max(48,layout.Height-bodyY-12),contentWidth=panelWidth-18;
+            string notice=string.IsNullOrEmpty(session.Notification)?"":PlatformText(session.Notification);
+            float noticeHeight=string.IsNullOrEmpty(notice)?0:Mathf.Max(32,Style(TouchFont(11),false,true).CalcHeight(new GUIContent(notice),contentWidth*TouchRatio)/TouchRatio+8);
             float contentHeight=mobilePausePage==0?116+noticeHeight:mobilePausePage==1?232:174;
             mobilePauseScroll[mobilePausePage]=BeginTouchScroll("mobile-pause-"+mobilePausePage,TouchRect(x,bodyY,panelWidth,bodyHeight),mobilePauseScroll[mobilePausePage],new Rect(0,0,contentWidth*TouchRatio,Mathf.Max(bodyHeight,contentHeight)*TouchRatio));
             try { DrawMobilePauseBody(contentWidth,notice,noticeHeight); }
@@ -306,7 +309,7 @@ namespace Emberfall
             {
                 float column=(contentWidth-12)*.5f;
                 string[] extra = { "存档位置", "声音：" + (GameAudio.Muted ? "关" : "开"), "飘字：" + (EffectPreferences.CombatTextScale > 1.5f ? "大" : "标准"),
-                    "镜头反馈：" + (EffectPreferences.CameraShake ? "开" : "关"), "特效：" + (EffectPreferences.ReducedEffects ? "精简" : "完整"), "操作指南" };
+                    "镜头反馈：" + (EffectPreferences.CameraShake ? "开" : "关"), "特效：" + (EffectPreferences.ReducedEffects ? "精简" : "完整") };
                 for (int i = 0; i < extra.Length; i++)
                     if (Button(TouchRect((i%2)*(column+12),(i/2)*58,column,48),extra[i],jade))
                     {
@@ -315,9 +318,7 @@ namespace Emberfall
                         else if (i == 2) EffectPreferences.CombatTextScale = EffectPreferences.CombatTextScale > 1.5f ? 1.25f : 1.8f;
                         else if (i == 3) EffectPreferences.CameraShake = !EffectPreferences.CameraShake;
                         else if (i == 4) EffectPreferences.EffectsScale = EffectPreferences.ReducedEffects ? 1f : .35f;
-                        else OpenControls();
                     }
-                Text(TouchRect(0,174,contentWidth,48),notice,TouchFont(12),muted,false,true);
                 return;
             }
             string[] labels = { "继续冒险", "保存", "读取存档", "返回主菜单", "营地 / 撤离", "操作指南" };
@@ -335,7 +336,8 @@ namespace Emberfall
                     case 5: OpenControls(); break;
                 }
             }
-            Text(TouchRect(0,116,contentWidth,noticeHeight),notice,TouchFont(11),string.IsNullOrEmpty(session.Notification)?muted:gold,false,true,TextAnchor.MiddleCenter);
+            if (!string.IsNullOrEmpty(notice))
+                Text(TouchRect(0,116,contentWidth,noticeHeight),notice,TouchFont(11),gold,false,true,TextAnchor.MiddleCenter);
         }
     }
 }

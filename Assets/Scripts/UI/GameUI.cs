@@ -1539,27 +1539,41 @@ namespace Emberfall
             if (NavigationButton(new Rect(w.x + 397, w.y + 437, 419, 39), bindingReturnPause ? "返回暂停菜单" : bindingReturnPanel == Panel.Controls ? "返回操作指南" : "返回技能研习", jade)) ClosePanel();
         }
 
+        private int desktopPauseTab;
         private void DrawPause()
         {
             if (DrawSaveFlowConfirmation()) return;
             if (panel == Panel.SaveSelection) { DrawSaveSelection(); return; }
             if (MobileControls.Active) { DrawMobilePause(); return; }
-            Rect w = Modal(600, 620, "冒险暂停", "自动保存持续写入当前角色 · 手动保存需确认覆盖");
-            Text(new Rect(w.x + 32, w.y + 111, 536, 30), session.ZoneName + "  ·  " + ActiveCharacterName(), 17, jade, true, false, TextAnchor.MiddleCenter);
-            if (Button(new Rect(w.x + 32, w.y + 156, 536, 48), "继续冒险", jade, true, "Esc 也可继续冒险。", true)) session.SetPaused(false);
-            if (Button(new Rect(w.x + 32, w.y + 218, 260, 48), "保存", gold)) RequestManualSave();
-            if (NavigationButton(new Rect(w.x + 308, w.y + 218, 260, 48), "读取存档", jade)) OpenSaveSelection();
-            if (DangerButton(new Rect(w.x + 32, w.y + 280, 536, 44), "返回主菜单", muted)) RequestExit(true);
-            if (ToggleButton(new Rect(w.x + 32, w.y + 338, 260, 42), GameAudio.Muted ? "声音：已静音" : "声音：已开启", !GameAudio.Muted))
-            { GameAudio.Muted = !GameAudio.Muted; if (!GameAudio.Muted) GameAudio.Play(SoundCue.UI); }
-            if (NavigationButton(new Rect(w.x + 308, w.y + 338, 260, 42), "自定义快捷键", gold)) OpenBindings();
-            if (NavigationButton(new Rect(w.x + 32, w.y + 394, 260, 42), "存档位置 / 迁移", jade))
-            { saveReturnPause = true; panel = Panel.SaveLocation; session.SetUIBlocking(true); session.SetPaused(false); }
-            if (NavigationButton(new Rect(w.x + 308, w.y + 394, 260, 42), "操作指南", jade)) OpenControls();
+            Rect w = Modal(600, 620, "冒险暂停", "手动保存需确认覆盖");
+            string[] tabs = { "冒险", "声音与画面", "键盘与操作" };
+            for (int i = 0; i < tabs.Length; i++)
+                if (TabButton(new Rect(w.x + 32 + i * 182, w.y + 110, 172, 42), tabs[i], desktopPauseTab == i) && desktopPauseTab != i)
+                { desktopPauseTab = i; BlockUITransition(); }
+            Text(new Rect(w.x + 32, w.y + 164, 536, 30), session.ZoneName + "  ·  " + ActiveCharacterName(), 17, jade, true, false, TextAnchor.MiddleCenter);
+            if (desktopPauseTab == 0)
+            {
+                if (Button(new Rect(w.x + 32, w.y + 210, 536, 48), "继续冒险", jade, true, "Esc 也可继续冒险。", true)) session.SetPaused(false);
+                if (Button(new Rect(w.x + 32, w.y + 272, 260, 48), "保存", gold)) RequestManualSave();
+                if (NavigationButton(new Rect(w.x + 308, w.y + 272, 260, 48), "读取存档", jade)) OpenSaveSelection();
+                if (DangerButton(new Rect(w.x + 32, w.y + 334, 536, 44), "返回主菜单", muted)) RequestExit(true);
+                if (NavigationButton(new Rect(w.x + 32, w.y + 396, 260, 42), "存档位置 / 迁移", jade))
+                { saveReturnPause = true; panel = Panel.SaveLocation; session.SetUIBlocking(true); session.SetPaused(false); }
 #if !UNITY_IOS && !UNITY_ANDROID
-            if (DangerButton(new Rect(w.x + 32, w.y + 450, 536, 44), "退出游戏", muted)) RequestExit(false);
+                if (DangerButton(new Rect(w.x + 32, w.y + 450, 536, 44), "退出游戏", muted)) RequestExit(false);
 #endif
-            DrawAccessibilityStrip(new Rect(w.x + 32, w.y + 520, 536, 35));
+            }
+            else if (desktopPauseTab == 1)
+            {
+                if (ToggleButton(new Rect(w.x + 32, w.y + 210, 260, 42), GameAudio.Muted ? "声音：已静音" : "声音：已开启", !GameAudio.Muted))
+                { GameAudio.Muted = !GameAudio.Muted; if (!GameAudio.Muted) GameAudio.Play(SoundCue.UI); }
+                DrawAccessibilityStrip(new Rect(w.x + 32, w.y + 280, 536, 35));
+            }
+            else
+            {
+                if (NavigationButton(new Rect(w.x + 32, w.y + 210, 260, 42), "自定义快捷键", gold)) OpenBindings();
+                if (NavigationButton(new Rect(w.x + 308, w.y + 210, 260, 42), "操作指南", jade)) OpenControls();
+            }
         }
 
         private void OpenControls()

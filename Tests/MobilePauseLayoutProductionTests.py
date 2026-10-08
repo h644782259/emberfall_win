@@ -30,7 +30,7 @@ namespace Emberfall{
  bool MerchantServiceActive=>true;enum Panel{SaveLocation,Skills}enum ButtonRole{Primary,Danger,Navigation}Panel panel;Session session=new Session();bool saveReturnPause;int mobilePausePage;readonly Vector2[] mobilePauseScroll=new Vector2[3];Color pale,jade,gold,muted;float width=>MobileControls.Layout.Width;float height=>MobileControls.Layout.Height;float TouchRatio=>MobileControls.Layout.Scale;
  record Draw(Rect R,string Label,bool Scroll);List<Draw> buttons=new List<Draw>();List<Draw> texts=new List<Draw>();bool scrolling;Rect viewport,content;int begin,end;string click="",action="";
  Rect TouchRect(float x,float y,float w,float h)=>new Rect(x*TouchRatio,y*TouchRatio,w*TouchRatio,h*TouchRatio);int TouchFont(float f)=>(int)Math.Round(f*TouchRatio);GUIStyle Style(int s,bool bold=false,bool wrap=false)=>new GUIStyle{size=(int)Math.Round(s*EffectPreferences.InterfaceTextScale)};
- bool Button(Rect r,string s,Color c){buttons.Add(new Draw(r,s,scrolling));return click==s;}bool DangerButton(Rect r,string s)=>Button(r,s,gold);bool NavigationButton(Rect r,string s,Color c)=>Button(r,s,c);bool DrawButton(Rect r,string s,ButtonRole role)=>Button(r,s,jade);
+ bool Button(Rect r,string s,Color c){buttons.Add(new Draw(r,s,scrolling));return click==s;}bool TabButton(Rect r,string s,bool selected)=>Button(r,s,jade);bool DangerButton(Rect r,string s)=>Button(r,s,gold);bool NavigationButton(Rect r,string s,Color c)=>Button(r,s,c);bool DrawButton(Rect r,string s,ButtonRole role)=>Button(r,s,jade);
  void Fill(Rect r,Color c){}void Text(Rect r,string s,int f,Color c,bool bold=false,bool wrap=false,TextAnchor anchor=TextAnchor.MiddleCenter){texts.Add(new Draw(r,s,scrolling));if(s=="冒险暂停")C(r.height>=Style(f,bold).CalcHeight(new GUIContent(s),r.width),"measured title fits scaled font");}
  Vector2 BeginTouchScroll(string owner,Rect r,Vector2 p,Rect body){C(!scrolling,"one scroll owner");scrolling=true;begin++;viewport=r;content=body;return p;}void EndTouchScroll(){scrolling=false;end++;}
  void BlockUITransition(){}string ActiveCharacterName()=>"测试角色";string PlatformText(string s)=>s;
@@ -40,15 +40,18 @@ namespace Emberfall{
  foreach(var dims in new[]{(568f,320f,163f),(689f,373f,163f),(754f,386f,163f),(2048f,1536f,264f)})foreach(float scale in new[]{1f,1.1f,1.2f})for(int page=0;page<3;page++){
  MobileControls.Layout=new MobileControlLayout(dims.Item1,dims.Item2,dims.Item3);EffectPreferences.InterfaceTextScale=scale;var ui=new GameUI{mobilePausePage=page};ui.DrawMobilePause();float w=ui.width*ui.TouchRatio,h=ui.height*ui.TouchRatio;
  C(ui.begin==1&&ui.end==1&&!ui.scrolling,"balanced scrolling on all three pages");C(ui.viewport.x>=0&&ui.viewport.y>=0&&ui.viewport.xMax<=w&&ui.viewport.yMax<=h,"body safe area");C(ui.content.height>=ui.viewport.height,"body scrolls if smaller viewport");
- C(ui.buttons.Count==(page==0?7:page==1?NOTICECOUNT:6),"compact action counts");foreach(var b in ui.buttons){Rect bounds=b.Scroll?ui.content:new Rect(0,0,w,h);C(b.R.x>=0&&b.R.y>=0&&b.R.xMax<=bounds.xMax+.01&&b.R.yMax<=bounds.yMax+.01,"all buttons reachable");C(b.R.height>=44*ui.TouchRatio,"retained touch height");if(!b.Scroll)C(b.R.yMax<=ui.viewport.y,"header navigation fixed outside scrolling body");}
+ C(ui.buttons.Count==(page==0?9:page==1?NOTICECOUNT:8),"compact action counts");foreach(var b in ui.buttons){Rect bounds=b.Scroll?ui.content:new Rect(0,0,w,h);C(b.R.x>=0&&b.R.y>=0&&b.R.xMax<=bounds.xMax+.01&&b.R.yMax<=bounds.yMax+.01,"all buttons reachable");C(b.R.height>=44*ui.TouchRatio,"retained touch height");if(!b.Scroll)C(b.R.yMax<=ui.viewport.y,"header navigation fixed outside scrolling body");}
  foreach(string removed in new[]{"前往遗迹","城镇旅行地图","行囊","图鉴 / 待领"})C(!ui.buttons.Exists(b=>b.Label==removed),"no duplicate outer entry");
+ C(!ui.texts.Exists(t=>t.Label.Contains("自动保存持续写入")),"no automatic save boilerplate");
+ if(page==1)C(!ui.buttons.Exists(b=>b.Label=="操作指南"),"guide belongs only to adventure tab");
+ foreach(var tab in new[]{("冒险",0),("声音与画面",1),("触控布局",2)}){var target=new GameUI{mobilePausePage=page,click=tab.Item1};target.DrawMobilePause();C(target.mobilePausePage==tab.Item2&&target.session.Paused,"every tab directly accessible while paused");}
  if(page==0)foreach(var item in new[]{("保存","save"),("读取存档","load"),("返回主菜单","exit"),("营地 / 撤离","camp"),("操作指南","guide")}){ui.click=item.Item1;ui.DrawMobilePause();C(ui.action==item.Item2,"retained action invokes original handler");}
  }
  Console.WriteLine("PASS "+checks+" actual pause layout/action assertions with managed text measurement; not Unity rendering");}
  METHODS
  }
 }
-'''.replace('METHODS',methods).replace('NOTICECOUNT','8' if 'OpenMobileNoticeFromPause();' in methods else '7')
+'''.replace('METHODS',methods).replace('NOTICECOUNT','9' if 'OpenMobileNoticeFromPause();' in methods else '8')
 with tempfile.TemporaryDirectory(prefix='mobile-pause-layout-') as tmp:
  p=Path(tmp);(p/'Fixture.cs').write_text(fixture)
  for rel in ['UI/MobileControlLayout','Combat/MobileSkillPolicy']:(p/(Path(rel).name+'.cs')).write_text((root/'Assets/Scripts'/(rel+'.cs')).read_text())
