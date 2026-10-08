@@ -40,7 +40,7 @@ for file in ['Core/GameSession.cs','Core/GameSession.Expedition.cs','Core/GameSe
  check('DungeonEntryLevel' in read(file) and 'Progression.Profile.level + DungeonTier' not in read(file),'fixed entry-level single scaling in '+file)
 check('boss, InDungeon ? DungeonTier : 0)' in s,'dungeon loot receives the actual tier and wilderness retains its zero-tier roll')
 check('TierRewardBand.Materials(4,DungeonTier)' in read('Core/GameSession.RoomChain.cs') and read('Core/ExpeditionModeState.cs').count('TierRewardBand.Materials')==3,'all new modes use the same bounded tier schedule')
-check('AdventureEntryPresentation.Materials(session.SelectedArenaMode,session.SelectedDungeonTier)' in read('UI/GameUI.Modes.cs') and 'TierRewardBand.Materials(mode==-1?3:mode==3?4:mode+1,tier)' in read('UI/AdventureEntryPresentation.cs'),'entry reward preview uses actual tier schedule')
+check('AdventureRewardRules.Materials(mode,tier)' in read('UI/GameUI.Modes.cs') and 'AdventureRewardRules.Materials(mode,tier)' in read('UI/AdventureEntryPresentation.cs'),'entry reward preview uses actual tier schedule')
 mobile=read('UI/GameUI.Mobile.cs')
 check('if(Button(interact' not in mobile and 'finally{BlockUITransitionForFinger(triggeringFinger);}' in mobile,'context has one dispatch owner and consumes initiating pointer through transition')
 check('ui.ActivateMobileInteraction(finger)' in read('UI/MobileControls.cs') and 'uiTransition.IsBlocked' in read('UI/GameUI.Exit.cs'),'touch and simulated mouse share the pointer-specific release latch')

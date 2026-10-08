@@ -139,7 +139,7 @@ namespace Emberfall
             if (name == "inventory") name = "bag";
             if (name == "camp") name = "home";
             if (name == "blink") name = "dodge";
-            string[] names = { "bag", "skills", "home", "portal", "attack", "dodge", "potion", "pause", "help", "confirm", "cancel", "jump", "codex", "coin", "shard", "compare" };
+            string[] names = { "bag", "skills", "home", "portal", "attack", "dodge", "potion", "pause", "help", "confirm", "cancel", "jump", "codex", "coin", "shard", "compare", "save", "apply", "reset", "upgrade", "core", "lock" };
             int id = System.Array.IndexOf(names, name);
             if (id < 0) id = 1;
             int key = 100 + id;
@@ -159,12 +159,28 @@ namespace Emberfall
             else if (id == 10) { ink.Line(16, 16, 48, 48, 6); ink.Line(16, 48, 48, 16, 6); }
             else if(id==12){ink.color=new Color(.58f,.83f,1f);ink.Polygon(new[]{V(8,13),V(28,17),V(32,22),V(36,17),V(56,13),V(56,49),V(36,53),V(32,57),V(28,53),V(8,49)});ink.color=new Color(1f,.78f,.28f);ink.Line(32,22,32,54,4);ink.Line(14,24,24,27,3);ink.Line(40,27,50,24,3);}
             else if(id==13){ink.color=new Color(1f,.78f,.22f);ink.Disc(32,32,24);ink.color=new Color(.62f,.38f,.08f);ink.Ring(32,32,17,3);ink.Line(32,20,32,44,4);}
+            else if(id==16){ink.Polygon(new[]{V(10,9),V(49,9),V(55,16),V(55,55),V(10,55)});ink.color=new Color(.1f,.2f,.25f);ink.Line(22,12,22,28,5);ink.Line(22,28,43,28,5);ink.Line(21,43,44,43,5);}
+            else if(id==17){ink.Line(10,12,33,12,4);ink.Line(10,12,10,53,4);ink.Line(10,53,33,53,4);ink.Arrow(25,32,55,32);}
+            else if(id==18){ink.Arc(32,32,22,0,290,4);ink.Arrow(11,29,10,9);}
+            else if(id==19){ink.Line(32,10,32,54,6);ink.Line(10,32,54,32,6);}
+            else if(id==20){ink.Ring(32,32,23,3);ink.Polygon(new[]{V(32,13),V(47,32),V(32,51),V(17,32)});}
+            else if(id==21){ink.Line(20,27,20,15,4);ink.Arc(32,16,12,180,360,4);ink.Line(44,15,44,27,4);ink.Polygon(new[]{V(14,28),V(50,28),V(50,55),V(14,55)});}
             else if(id==15){ink.Line(12,12,12,52,4);ink.Line(26,22,26,52,4);ink.Line(40,12,40,52,4);ink.Line(54,22,54,52,4);ink.Arrow(19,10,47,10);}
             else if(id==14){ink.color=new Color(.68f,.63f,1f);ink.Polygon(new[]{V(32,6),V(51,28),V(39,56),V(18,48),V(13,23)});ink.color=Color.white;ink.Line(32,9,27,44,3);}
             else { ink.Arrow(32, 46, 32, 10); ink.Line(15, 55, 49, 55, 4); }
             texture = ink.Finish("Utility " + name); cache[key] = texture; return texture;
         }
 
+        public static Texture2D Mastery(MasteryType mastery)
+        {
+            int key=-5000-(int)mastery;Texture2D texture;if(cache.TryGetValue(key,out texture))return texture;
+            var ink=new Icon(Color.white);
+            if(mastery==MasteryType.Offense){ink.Sword(23,32);ink.Arrow(40,48,54,15);ink.Line(34,41,49,47,4);}
+            else if(mastery==MasteryType.Vitality){ink.Polygon(new[]{V(32,54),V(9,32),V(11,17),V(23,10),V(32,19),V(41,10),V(53,17),V(55,32)});ink.color=new Color(.1f,.22f,.17f);ink.Line(32,24,32,42,4);ink.Line(23,33,41,33,4);}
+            else if(mastery==MasteryType.Guard){ink.Shield();ink.color=new Color(.12f,.2f,.26f);ink.Line(32,19,32,43,4);}
+            else{ink.Ring(32,32,22,3);ink.Arrow(14,41,45,20);ink.Line(12,19,23,19,3);ink.Line(42,47,53,47,3);}
+            texture=ink.Finish("Mastery branch "+mastery,true);cache[key]=texture;return texture;
+        }
         public static Texture2D EquipmentLock(bool locked)
         {
             int key=locked?-4010:-4011;Texture2D texture;if(cache.TryGetValue(key,out texture))return texture;

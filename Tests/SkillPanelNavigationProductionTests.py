@@ -24,8 +24,8 @@ METHODS
 public static int Verify(){int n=0;Action<bool,string> check=(b,w)=>{n++;if(!b)throw new Exception(w);};
 foreach(float width in new[]{568,667,799,800,1024}){
 MobileControls.Layout.Width=width;var ui=new GameUI();ui.ClosePanel();
-check(ui.panel==(width<800?Panel.Skills:Panel.None),"first Back routes narrow detail to list, wide tree exits");
-check(ui.session.Blocked==(width<800),"detail Back keeps gameplay blocked");
+check(ui.panel==Panel.Skills,"first Back closes same-page hint while retaining tree on phones and tablets");
+check(ui.session.Blocked,"hint Back keeps gameplay blocked");
 check(ui.listScroll==173&&ui.detailScroll==81,"Back preserves scroll positions");
 ui.ClosePanel();check(ui.panel==Panel.None&&!ui.session.Blocked,"second Back exits list and releases gameplay");
 ui.mobileSkillDetail=true;ui.TogglePanel(Panel.Skills);check(ui.panel==Panel.Skills&&!ui.mobileSkillDetail&&ui.session.Blocked&&ui.listScroll==173,"reopen enters list retaining scroll");

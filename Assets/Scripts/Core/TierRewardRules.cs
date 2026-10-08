@@ -36,8 +36,8 @@ namespace Emberfall
         public static Rarity EquipmentRarity(int mode,int tier,int roll)
         {return roll<UpgradeChance(mode,tier)?(mode==2?Rarity.Legendary:Rarity.Epic):MinimumRarity(mode);}
         public static int Materials(int mode,int tier){Validate(mode);return TierRewardBand.Materials(mode==-1?3:mode==3?4:mode+1,tier);}
-        public static int Gold(int mode,int tier,bool restricted)
-        {Validate(mode);tier=TierRewardBand.Clamp(tier);int value=mode==-1?120+tier*30:mode==0?110+tier*20:mode==1?100+tier*25:mode==2?180+tier*40:200+tier*35;return restricted?(int)Math.Round(value*1.3f):value;}
+        public static int Gold(int mode,int tier,bool riskContract)
+        {Validate(mode);tier=TierRewardBand.Clamp(tier);int value=mode==-1?120+tier*30:mode==0?110+tier*20:mode==1?100+tier*25:mode==2?180+tier*40:200+tier*35;return riskContract?(int)Math.Round(value*1.3f):value;}
         public static int Experience(int mode,int tier)
         {Validate(mode);tier=TierRewardBand.Clamp(tier);return mode==-1?100+tier*20:mode==0?90+tier*20:mode==1?100+tier*20:mode==2?140+tier*30:160+tier*25;}
         public static string EquipmentSummary(int mode,int tier)

@@ -25,7 +25,7 @@ namespace Emberfall
    EndTouchScroll();
    int mode=session.SelectedArenaMode,tier=session.SelectedDungeonTier;float contentWidth=l.Details.Width-18;
    string detail=adventureChapterSelected?"星路章节\n\n选择章节与节点，完成双印路线并到达出口。\n章节解锁、难度、阶数和治疗限制在章节页设置。\n奖励按所选节点展示并结算。":
-    names[mode+1]+"\n\n通关保底\n"+AdventureRewardRules.EquipmentSummary(mode,tier)+"\n装备等级 "+ProgressionService.EquipmentGenerationLevel(session.Progression.Profile.level)+" · 直接入行囊\n星烬碎片 × "+AdventureRewardRules.Materials(mode,tier)+"\n金币 × "+AdventureRewardRules.Gold(mode,tier,false)+" · 经验 × "+AdventureRewardRules.Experience(mode,tier)+(mode==-1?"\n外观宝箱 × 1（完成后开启）":"")+
+    names[mode+1]+"\n\n通关保底\n"+AdventureRewardRules.EquipmentSummary(mode,tier)+"\n按结算时角色等级生成 · 当前 "+ProgressionService.EquipmentGenerationLevel(session.Progression.Profile.level)+" · 直接入行囊\n星烬碎片 × "+AdventureRewardRules.Materials(mode,tier)+"\n金币 × "+AdventureRewardRules.Gold(mode,tier,false)+" · 经验 × "+AdventureRewardRules.Experience(mode,tier)+(mode==-1?"\n外观宝箱 × 1（完成后开启）":"")+
     "\n\n遭遇与目标\n"+AdventureEntryPresentation.EncounterLine(mode)+"\n"+(mode==0?"三阶段：圈内无人争夺时推进占领，清敌并占领后进入下一阶段。":mode==1?"三阶段限时突破，战斗暂停不消耗时间。":mode==2?"连续击败三个不同攻击模式的首领。":mode==3?"完成五个房间目标，满足封印条件后前往出口。":"完成三波战斗并击败终局首领。")+
     "\n\n进入条件与进度\n当前开放至第 "+session.MaximumDungeonTier+" 阶 · 本次第 "+tier+" 阶\n"+(session.SelectedChallengeMode?"限疗挑战 · 每次冒险仅 3 次治疗":"普通治疗")+"\n"+AdventureEntryPresentation.GoalFit(session.Progression.Profile,session.Progression.SelectedProgressionGoal(),mode,tier)+"\n\n敌人随机掉落与通关保底分别结算；风险契约祝福会额外提高金币。";
    float h=Style(Mathf.RoundToInt(14*u),false,true).CalcHeight(new GUIContent(detail),contentWidth*u)+16*u;

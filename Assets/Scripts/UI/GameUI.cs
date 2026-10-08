@@ -273,7 +273,7 @@ namespace Emberfall
             GUI.matrix = Matrix4x4.TRS(guiOffset, Quaternion.identity, new Vector3(scale, scale, 1));
             GUI.color = Color.white;
             GUI.contentColor = Color.white;
-            GUI.enabled = !session.BackgroundPaused && !LifecycleTouchBlocked && MerchantServiceLayout.StablePanelEvent(UITransitionBlocked,panel==Panel.Inventory,Event.current.type==EventType.Repaint||Event.current.type==EventType.Layout);
+            GUI.enabled = !session.BackgroundPaused && !LifecycleTouchBlocked && MerchantServiceLayout.StablePanelEvent(UITransitionBlocked,panel==Panel.Inventory||panel==Panel.Skills,Event.current.type==EventType.Repaint||Event.current.type==EventType.Layout);
             blockedRects.Clear();
             tooltip = null;
             if(exitRequest.Open)

@@ -58,3 +58,30 @@ namespace Emberfall
         }
     }
 }
+
+namespace Emberfall
+{
+    public sealed class SkillDevelopmentLayout
+    {
+        public readonly float Width,ClassWidth,PlanWidth,ResetWidth;
+        public float ContentHeight {get{return 520;}}
+        public SkillDevelopmentLayout(float width)
+        {Width=width;ClassWidth=Math.Min(128,width*.24f);ResetWidth=Math.Min(96,width*.17f);PlanWidth=(width-ClassWidth-ResetWidth-24)/2;}
+        public MobilePanelLayout.Area MasteryNode(int index)
+        {if(index<0||index>=4)throw new ArgumentOutOfRangeException(nameof(index));float w=(Width-24)/4;return new MobilePanelLayout.Area(index*(w+8),64,w,116);}
+    }
+}
+
+namespace Emberfall
+{
+    public static class SkillTreePopupLayout
+    {
+        public static MobilePanelLayout.Area Place(MobilePanelLayout.Area bounds,MobilePanelLayout.Area anchor)
+        {
+            float w=Math.Min(360,bounds.Width),h=Math.Min(240,bounds.Height),x=anchor.XMax+8;
+            if(x+w>bounds.XMax)x=anchor.X-w-8;
+            x=Math.Max(bounds.X,Math.Min(bounds.XMax-w,x));float y=Math.Max(bounds.Y,Math.Min(bounds.YMax-h,anchor.Y));
+            return new MobilePanelLayout.Area(x,y,w,h);
+        }
+    }
+}

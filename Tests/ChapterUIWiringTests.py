@@ -12,7 +12,7 @@ assert 'OpenChapterSelection();' not in service and 'NavigateMerchantExchange();
 assert 'OpenChapterExchange' not in chapter and '"机制兑换"' not in chapter,'exchange leaves chapter footer'
 assert '"返回副本选择"' in chapter and 'session.EnterDungeon();' in chapter,'distinct parent navigation remains reachable'
 merchant=(r/'GameUI.Merchant.cs').read_text()
-assert '"购买 / 兑换"' in merchant and 'PrepareMerchantPurchase' in merchant,'merchant owns validated exchange'
+assert '"购买","兑换","出售"' in merchant and 'PrepareMerchantPurchase' in merchant,'merchant owns validated exchange'
 assert 'if(session.NearChapterExit)session.EnterNextChapterRoom();' in mobile,'real touch action advances chapter, not legacy room'
 assert 'session.ChapterObjectiveCompact' in modes and modes.index('if(session.ChapterActive)')<modes.index('if(session.RoomChainRun!=null)'),'chapter mobile state precedes nullable legacy mode access'
 assert ui.index('else if(session.ChapterFinished)DrawChapterResult();')<ui.index('else if(session.ModeFinished)'),'chapter result does not fall into legacy mode reward recap'

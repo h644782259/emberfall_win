@@ -18,8 +18,8 @@ namespace Emberfall
   private void CancelMobileScroll(){cancels++;}private void BlockUITransition(){blocks++;}
   public static int Verify(){int n=0;Action<bool,string> check=(ok,why)=>{n++;if(!ok)throw new Exception(why);};
    foreach(float width in new[]{568,667,799,800,1024,1366}){
-    MobileControls.Layout.Width=width;var ui=new GameUI{mobileSkillDetail=true};bool expected=width<800;
-    check(ui.CloseMobileSkillDetail()==expected,"only narrow skill detail owns first Back");
+    MobileControls.Layout.Width=width;var ui=new GameUI{mobileSkillDetail=true};bool expected=true;
+    check(ui.CloseMobileSkillDetail()==expected,"same-page popup owns first Back at every phone/tablet width");
     check(ui.mobileSkillListScroll==173&&ui.mobileSkillDetailScroll==81,"first Back preserves both scroll anchors");
     check(!ui.CloseMobileSkillDetail(),"second Back falls through to outer ClosePanel");
     check(ui.blocks==(expected?1:0)&&ui.cancels==(expected?1:0),"only consumed Back cancels active scroll and latches release");

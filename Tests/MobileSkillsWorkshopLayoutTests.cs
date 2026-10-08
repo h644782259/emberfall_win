@@ -57,6 +57,14 @@ public static class MobileSkillsWorkshopLayoutTests
                 if(i>0)Check(!action.Overlaps(dialog.FooterButton(i-1,count)),"dialog actions stay separate");
             }
         }
+        foreach(float available in new[]{520f,636f,880f})foreach(float textScale in new[]{1f,1.1f,1.2f})
+        {
+            var dev=new SkillDevelopmentLayout(available);
+            Check((dev.PlanWidth-24)/2>=44&&dev.ClassWidth>=88&&dev.ResetWidth>=70,"all compact tool actions retain 44-unit target widths");
+            Check(3*13*textScale<=dev.ClassWidth&&2*11*textScale<=(dev.PlanWidth-24)/2,"class and save/apply names fit enlarged fonts");
+            for(int i=0;i<4;i++){var node=dev.MasteryNode(i);Check(node.YMax<=188&&node.Width>=100,"all mastery nodes including upgrade targets visible in compact first viewport");Check(2*13*textScale<=node.Width&&13*textScale*1.2f<=22&&11*textScale*1.2f<=17,"mastery labels and rank metrics fit supported large fonts");if(i>0)Check(!node.Overlaps(dev.MasteryNode(i-1)),"mastery nodes never overlap");}
+            foreach(float bodyHeight in new[]{136f,188f,400f})for(int i=0;i<10;i++){var bounds=new MobilePanelLayout.Area(16,120,available,bodyHeight);var popup=SkillTreePopupLayout.Place(bounds,new MobilePanelLayout.Area(i*90-100,i*130-300,100,82));Check(popup.X>=bounds.X&&popup.Y>=bounds.Y&&popup.XMax<=bounds.XMax&&popup.YMax<=bounds.YMax,"same-page node hint always clamped to current scroll viewport");Check(popup.Height>=136&&popup.Width>=300,"hint retains readable width and separate 44-unit close/48-unit learn targets");}
+        }
         var compact = new MobilePanelLayout(568, 320);
         Check(compact.BodyLeft.Height == 188 && compact.TabbedBody.Height == 136, "568×320 boundary uses intended body heights without shrinking text");
         Check(compact.BodyLeft.Height >= 3 * 48 && compact.TabbedBody.Height >= 2 * 48,
