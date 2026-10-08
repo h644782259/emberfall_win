@@ -367,7 +367,7 @@ def main():
                              ("asset-meta-guid-controls", "Tests/MetaGuidAuditTests.py")]:
             passed = run_check(name, [[sys.executable, str(ROOT / script)]], env, output, report)
             failed = failed or not passed
-        for name, script in [("unified-ui-integration", "UnifiedUiIntegrationTests.py"), ("mandatory-chest-service", "MandatoryChestServiceTests.py"), ("equipment-visual-identity-production", "EquipmentVisualIdentityProductionTests.py")]:
+        for name, script in [("unified-ui-integration", "UnifiedUiIntegrationTests.py"), ("mandatory-chest-service", "MandatoryChestServiceTests.py"), ("mandatory-chest-ui", "MandatoryChestUIProductionTests.py"), ("equipment-visual-identity-production", "EquipmentVisualIdentityProductionTests.py")]:
             passed = run_check(name, [[sys.executable, str(ROOT / "Tests" / script), dotnet]], dict(env, DOTNET=dotnet), output, report)
             failed = failed or not passed
         for name, sources, program in checks:

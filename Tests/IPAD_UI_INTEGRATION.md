@@ -37,7 +37,8 @@ The existing visible equipment capacity is 256; protected saved equipment limit 
 - UnifiedUiIntegrationTests.py: 12,545 actual layout/input, backdrop lifecycle, roll reachability and atlas pixel assertions, managed engine boundaries.
 - EquipmentVisualIdentityProductionTests.py: 3,824 actual gear geometry, legacy fashion identity and budget assertions.
 - MandatoryChestServiceTests.py: 23 actual save transaction/capacity/restart/fault assertions.
-- SingleChestUIProductionTests.py: 120 actual desktop/mobile opener and acknowledgment assertions plus compiled negative controls.
+- MandatoryChestUIProductionTests.py: 288 actual desktop/mobile opener, failed-write/retry, skip and acknowledgment assertions across all four classes, plus compiled negative controls.
+- SingleChestUIProductionTests.py retains its original full receipt artwork assertions. It passes on iOS; Windows retains its pre-existing receipt artwork assertion failure. SingleChestProductionTests.py retains its pre-existing old rarity-bucket assertion failure on both platforms. These failures remain listed in the validation record; mandatory transaction and authoritative drop-rule suites are separate.
 - ChestPauseBackProductionTests.py: 85 production Update pause/back assertions; engine/session/persistence are explicit boundaries.
 - MobileBlessingPreviewProductionTests.py: measured fixed confirmation and preview/notification behavior plus a compiled occlusion negative control.
 - CompanionIntentProductionTests.py: production order execution/state transitions, target and roster invalidation, spam and existing compiled negative controls.
