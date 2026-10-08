@@ -4,6 +4,12 @@ namespace Emberfall
     public sealed class InventoryGridGeometry
     {
         public const float RowHeight=48;
+        public const float FilterRailWidth=60;
+        public static MobilePanelLayout.Area FilterButton(MobilePanelLayout.Area viewport,int index)
+        {
+            float row=Math.Min(44,viewport.Height/4);
+            return new MobilePanelLayout.Area(viewport.XMax-FilterRailWidth+4,viewport.Y+index*row,FilterRailWidth-8,row);
+        }
         public readonly int Columns;
         public readonly float CellWidth=44;
         public InventoryGridGeometry(float width)

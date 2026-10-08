@@ -29,6 +29,8 @@ public static class MobileControlLayoutTests
             Check((l.CombatView.X+48)/l.Width>=.25f&&(l.CombatView.X+48)/l.Width<=.75f&&(l.CombatView.Y+32)/l.Height>=.25f&&(l.CombatView.Y+32)/l.Height<=.75f,"Anchor remains central without blind pan");
             Check(l.DungeonEntrance.Y==8&&l.DungeonEntrance.Height==44&&Math.Abs(l.DungeonEntrance.X+l.DungeonEntrance.Width/2-l.Width/2)<.01,"dungeon entrance is a compact top-center safe-area control");
             foreach(var target in targets)Check(!l.DungeonEntrance.Overlaps(target),"entrance does not overlap any fixed or skill control");
+            Check(l.Skills[3].Y<l.Skills[2].Y && Math.Abs((l.Skills[2].X-l.Skills[3].X))==54,"fourth regular skill rises along the arc with retained spacing");
+            Check(Math.Abs(l.Skills[4].X+l.Skills[4].Width/2-(l.Width-240))<.01,"ultimate position remains fixed");
             Check(l.Skills.Length==5,"four paged slots plus one fixed ultimate; passives excluded");
             Check(Math.Abs(l.Width-l.Dodge.X-l.Dodge.Width-6)<.01&&Math.Abs(l.Width-l.Jump.X-l.Jump.Width-6)<.01,"right controls use safe width once, with exactly six units inset");
             Check(l.Height-l.Potion.Y-l.Potion.Height<=28&&l.Potion.Width==44,"potion stays compact near bottom edge");

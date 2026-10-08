@@ -155,20 +155,26 @@ namespace Emberfall
                 Rect hit=hotbarSlots[i];blockedRects.Add(hit);Rect r=MobileVisualRect(hit);
                 bool ready=session.Player!=null&&session.Player.IsSkillAvailable(skill);
                 bool pressed=mobileTap.Skill==skill&&mobileTap.Active;
-                // Transparent center; only a thin segmented rim indicates actual readiness.
-                if(ready)for(int segment=0;segment<40;segment++)
-                {float angle=segment*9*Mathf.Deg2Rad,radius=r.width*.47f;Fill(new Rect(r.center.x+Mathf.Cos(angle)*radius-TouchRatio,r.center.y+Mathf.Sin(angle)*radius-TouchRatio,2*TouchRatio,2*TouchRatio),new Color(.35f,1f,.76f,.85f));}
+                DrawMobileControlSurface(r,ready,pressed);
                 float iconSize=Mathf.Min(r.width,r.height)*.76f;
                 Rect icon=new Rect(r.center.x-iconSize*.5f,r.center.y-iconSize*.5f,iconSize,iconSize);
                 // Floating transparent glyph: the entire identity carries availability.
                 Color tint=pressed&&ready?gold:ready?Color.white:new Color(.38f,.42f,.46f,.58f);
-                DrawIcon(icon,UIIconAtlas.Skill(p.heroClass,skill,48),tint);
+                DrawIcon(icon,UIIconAtlas.SkillGlyph(p.heroClass,skill,48),tint);
                 if(skill==9)Text(new Rect(r.x,r.yMax-13*TouchRatio,r.width,12*TouchRatio),"终极",TouchFont(9),ready?new Color(.3f,1f,.72f):muted,true,false,TextAnchor.MiddleCenter);
                 DrawMobileSkillAvailability(r,skill);
             }
             Rect pageHit=TouchRect(l.SkillPage);blockedRects.Add(pageHit);
-            Text(pageHit,"↻\n"+(mobileSkillPage+1)+"/2",TouchFont(12),jade,true,false,TextAnchor.MiddleCenter);
+            Rect pageVisual=MobileVisualRect(pageHit);DrawMobileControlSurface(pageVisual,false,false);
+            float pageSize=pageVisual.width*.65f;
+            DrawIcon(new Rect(pageVisual.center.x-pageSize*.5f,pageVisual.center.y-pageSize*.5f,pageSize,pageSize),UIIconAtlas.SkillPageArrow(),Color.white);
             controlOpacity=priorOpacity;
+        }
+        private void DrawMobileControlSurface(Rect r,bool ready,bool pressed)
+        {
+            DrawIcon(r,UIIconAtlas.ControlDisc(),new Color(.75f,.87f,.92f,pressed&&ready?.10f:.045f));
+            if(ready)DrawIcon(r,UIIconAtlas.ControlRing(true),new Color(.32f,.88f,1f,.12f));
+            DrawIcon(r,UIIconAtlas.ControlRing(),ready?new Color(.35f,1f,.76f,.85f):new Color(.8f,.88f,.94f,.48f));
         }
         private void DrawMobileVitals(MobileControlLayout layout)
         {

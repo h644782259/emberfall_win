@@ -19,10 +19,12 @@ namespace Emberfall
             return skill >= 0 && skill < GameBalance.SkillCount ? skillColors[(int)hero, skill] : Color.white;
         }
         public static Texture2D Skill(HeroClass hero, int skill) { return Skill(hero, skill, 48); }
-        public static Texture2D Skill(HeroClass hero, int skill, int requestedSize)
+        public static Texture2D Skill(HeroClass hero, int skill, int requestedSize) { return BuildSkill(hero,skill,requestedSize,false); }
+        public static Texture2D SkillGlyph(HeroClass hero,int skill,int requestedSize=48) { return BuildSkill(hero,skill,requestedSize,true); }
+        private static Texture2D BuildSkill(HeroClass hero,int skill,int requestedSize,bool monochrome)
         {
             int rasterSize = SkillIconPresentation.RasterSize(requestedSize);
-            int key = rasterSize * 1000 + (int)hero * 10 + skill;
+            int key = (monochrome?1000000:0)+rasterSize * 1000 + (int)hero * 10 + skill;
             Texture2D texture;
             if (cache.TryGetValue(key, out texture)) return texture;
             var ink = new Icon(SkillColor(hero, skill), rasterSize);
@@ -57,13 +59,13 @@ namespace Emberfall
                     ink.Disc(32, 32, 6); ink.Ring(32, 32, 17, 3);
                     ink.Arrow(5, 5, 22, 22); ink.Arrow(59, 59, 42, 42);
                 }
-                texture = ink.Finish("Skill icon " + key); cache[key] = texture; return texture;
+                texture = ink.Finish("Skill icon " + key,monochrome); cache[key] = texture; return texture;
             }
             if (hero == HeroClass.Summoner && skill == 9)
             {
                 ink.Line(32, 54, 32, 24, 8); ink.Line(32, 35, 13, 22, 5); ink.Line(32, 35, 51, 22, 5);
                 ink.Disc(32, 16, 11); ink.Disc(14, 19, 9); ink.Disc(50, 19, 9);
-                texture = ink.Finish("Skill icon " + key); cache[key] = texture; return texture;
+                texture = ink.Finish("Skill icon " + key,monochrome); cache[key] = texture; return texture;
             }
             switch (skill)
             {
@@ -114,11 +116,24 @@ namespace Emberfall
                     ink.Polygon(new[] { V(32, 12), V(45, 32), V(32, 51), V(19, 32) });
                     break;
             }
-            texture = ink.Finish("Skill icon " + key); cache[key] = texture; return texture;
+            texture = ink.Finish("Skill icon " + key,monochrome); cache[key] = texture; return texture;
         }
 
         public static Texture2D ControlDisc()
         {const int key=2000000;Texture2D texture;if(cache.TryGetValue(key,out texture))return texture;var ink=new Icon(Color.white,48);ink.Disc(32,32,30);texture=ink.Finish("Circular battle control");cache[key]=texture;return texture;}
+        public static Texture2D ControlRing(bool glow=false)
+        {
+            int key=glow?2000002:2000001;Texture2D texture;if(cache.TryGetValue(key,out texture))return texture;
+            var ink=new Icon(Color.white,64);ink.Ring(32,32,30,glow?4f:1.1f);
+            texture=ink.Finish(glow?"Soft control halo":"Continuous control rim");cache[key]=texture;return texture;
+        }
+        public static Texture2D SkillPageArrow()
+        {
+            const int key=2000003;Texture2D texture;if(cache.TryGetValue(key,out texture))return texture;
+            var ink=new Icon(Color.white,48);ink.Arrow(15,23,48,23);ink.Arrow(48,41,15,41);
+            texture=ink.Finish("Skill page switch arrows",true);cache[key]=texture;return texture;
+        }
+
         public static Texture2D Utility(string name)
         {
             if (name == "inventory") name = "bag";
@@ -233,7 +248,7 @@ namespace Emberfall
                     if (inside) Plot(x, y, 1);
                 }
             }
-            public Texture2D Finish(string name)
+            public Texture2D Finish(string name,bool monochrome=false)
             {
                 Color[] output = pixels;
                 if (outputSize != Size)
@@ -249,6 +264,7 @@ namespace Emberfall
                         output[y*outputSize+x]=value;
                     }
                 }
+                if(monochrome)for(int i=0;i<output.Length;i++)output[i]=new Color(1,1,1,output[i].a);
                 var texture = new Texture2D(outputSize, outputSize, TextureFormat.RGBA32, false) { name = name, filterMode = FilterMode.Bilinear, wrapMode = TextureWrapMode.Clamp, hideFlags = HideFlags.HideAndDontSave };
                 texture.SetPixels(output); texture.Apply(false, true); return texture;
             }

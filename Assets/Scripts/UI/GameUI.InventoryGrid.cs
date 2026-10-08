@@ -89,6 +89,18 @@ namespace Emberfall
         }
         private void DrawEquipmentIconGrid(Rect viewport,ref Vector2 scroll,float u)
         {
+            var full=new MobilePanelLayout.Area(viewport.x/u,viewport.y/u,viewport.width/u,viewport.height/u);
+            string[] filters={"全部","武器","护甲","饰品"};
+            for(int index=0;index<filters.Length;index++)
+            {
+                var area=InventoryGridGeometry.FilterButton(full,index);
+                Rect hit=new Rect(area.X*u,area.Y*u,area.Width*u,area.Height*u);
+                bool selected=inventoryFilter==index-1;
+                if(selected)Fill(hit,new Color(gold.r,gold.g,gold.b,.08f));
+                if(QuietAction(hit,filters[index],!inventoryComparisonOpen,null,selected))
+                {inventoryFilter=index-1;scroll=Vector2.zero;RebuildBagItems();ResolveSelectedItem();CancelMobileScroll();BlockUITransition();}
+            }
+            viewport.width-=InventoryGridGeometry.FilterRailWidth*u;
             float available=viewport.width/u-18;var geometry=new InventoryGridGeometry(available);
             float contentHeight=Mathf.Max(viewport.height/u,((bagItems.Count+geometry.Columns-1)/geometry.Columns)*InventoryGridGeometry.RowHeight+4);
             bool previous=GUI.enabled;GUI.enabled=previous&&!inventoryComparisonOpen&&inventoryPopupDismissed!=Time.frameCount;

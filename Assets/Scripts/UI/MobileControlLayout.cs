@@ -39,11 +39,11 @@ namespace Emberfall
             // Width already excludes Screen.safeArea insets. Never subtract them again.
             Menu=Centered(Width-30,32,48);Inventory=Centered(Width-84,32,48);
             SkillsMenu=Centered(Width-138,32,48);Catalog=Centered(Width-192,32,48);
-            Interact=new Area(Width-68,92,60,48);
+            Interact=new Area(Width-54,92,48,48);
             DungeonEntrance=new Area(Width*.5f-58,8,116,44);
             float shift=positionPreset<0?-Math.Min(8,Math.Max(0,Height-320)):positionPreset>0?0:0;
             float[] dx={180,180,132,78,240};
-            float[] dy={30,92,140,118,30};
+            float[] dy={30,92,140,153,30};
             for(int i=0;i<Skills.Length;i++)Skills[i]=Centered(Width-dx[i],Height-dy[i]+shift-bottomLift,i==4?54:48);
             SkillPage=Centered(Width-30,Height-146,44);
             int[] opportunityIdentities={0,1,2,4,5,6,7,9};

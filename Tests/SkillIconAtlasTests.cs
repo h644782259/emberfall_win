@@ -18,6 +18,10 @@ public static class SkillIconAtlasTests
    check(ReferenceEquals(icon,UIIconAtlas.Skill((HeroClass)hero,skill,size)),"bounded cache reuses identity");
    int visible=0;foreach(var pixel in icon.CapturedPixels){check(pixel.a>=0&&pixel.a<=1,"finite bounded alpha");if(pixel.a>.2f)visible++;}
    check(visible>size&&visible<size*size,"glyph has visible structure and transparent background");check(icon.ReleasedCpu,"finished textures release CPU pixel storage");
+   if(size==48&&!GameBalance.IsPassive(skill)){
+    var glyph=UIIconAtlas.SkillGlyph((HeroClass)hero,skill,size);check(!ReferenceEquals(glyph,icon)&&ReferenceEquals(glyph,UIIconAtlas.SkillGlyph((HeroClass)hero,skill,size)),"floating glyph has a separate reusable cache");
+    for(int i=0;i<glyph.CapturedPixels.Length;i++){var pixel=glyph.CapturedPixels[i];check(pixel.r==1&&pixel.g==1&&pixel.b==1&&pixel.a==icon.CapturedPixels[i].a,"whole glyph is bright white with identical transparent silhouette");}
+   }
   }
   check(ReferenceEquals(UIIconAtlas.Skill(HeroClass.Vanguard,0,27),UIIconAtlas.Skill(HeroClass.Vanguard,0,32)),"arbitrary sizes use three bounded tiers");
   var signatures=new System.Collections.Generic.HashSet<uint>();
@@ -27,7 +31,12 @@ public static class SkillIconAtlasTests
    check(visible>64&&visible<4096&&resource.ReleasedCpu,"resource glyph has transparent structure and releases pixels");signatures.Add(hash);
   }
   check(signatures.Count==4,"gold fragment thread and experience pictograms are distinct");
-  var utility=UIIconAtlas.Utility("potion");check(utility.width==64,"utility cache keeps existing format");int before=UnityEngine.Object.Destroyed;UIIconAtlas.Clear();check(UnityEngine.Object.Destroyed-before==125,"all120skill variants four resource glyphs and utility are released");
+  var disc=UIIconAtlas.ControlDisc();check(disc.CapturedPixels[0].a==0&&disc.CapturedPixels[24*48+24].a>.9f&&ReferenceEquals(disc,UIIconAtlas.ControlDisc()),"battle controls have a transparent circular silhouette and reusable disc");
+  var ring=UIIconAtlas.ControlRing();check(ring.width==64&&ring.CapturedPixels[32*64+32].a==0&&ring.CapturedPixels[0].a==0,"continuous rim remains hollow with transparent corners");
+  for(int step=0;step<72;step++){double angle=step*Math.PI/36;int x=(int)Math.Round(32+30*Math.Cos(angle)),y=(int)Math.Round(32+30*Math.Sin(angle));float strongest=0;for(int dy=-1;dy<=1;dy++)for(int dx=-1;dx<=1;dx++){int sx=Math.Max(0,Math.Min(63,x+dx)),sy=Math.Max(0,Math.Min(63,y+dy));strongest=Math.Max(strongest,ring.CapturedPixels[sy*64+sx].a);}check(strongest>.2f,"rim has connected visible coverage through every angle");}
+  check(ReferenceEquals(ring,UIIconAtlas.ControlRing())&&!ReferenceEquals(ring,UIIconAtlas.ControlRing(true)),"thin rim and halo use bounded separate cached textures");
+  var page=UIIconAtlas.SkillPageArrow();int pageInk=0;foreach(var pixel in page.CapturedPixels)if(pixel.a>.2f){pageInk++;check(pixel.r==1&&pixel.g==1&&pixel.b==1,"page arrows are white raster graphics without font dependencies");}check(pageInk>48&&pageInk<48*48&&ReferenceEquals(page,UIIconAtlas.SkillPageArrow()),"page switch graphic is visible and cached");
+  var utility=UIIconAtlas.Utility("potion");check(utility.width==64,"utility cache keeps existing format");int before=UnityEngine.Object.Destroyed;UIIconAtlas.Clear();check(UnityEngine.Object.Destroyed-before==161,"all120skill variants32floating glyphs four resource glyphs disc and utility are released");
   return "PASS: "+n+" production skill icon raster/cache assertions (not rendered readability)";
  }
 }

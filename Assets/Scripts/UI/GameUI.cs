@@ -1268,17 +1268,7 @@ namespace Emberfall
             if(mobileInventoryTab==2){DrawBagSupplies(InventoryArea(bagArea));return;}
             Text(new Rect(middle, w.y + 112, 280, 23), "装备 · " + bagItems.Count + " 件", 16, jade, true);
             Text(new Rect(middle + 280, w.y + 117, 144, 17), "总容量 " + p.inventory.Count + " / " + ProgressionService.InventoryCapacity, 11, muted, false, false, TextAnchor.MiddleRight);
-            bool changed = false;
-            string[] filters = { "全部", "武器", "护甲", "饰品" };
-            for (int i = 0; i < filters.Length; i++)
-                if (QuietAction(new Rect(middle + i * 76, w.y + 144, 68, 27),filters[i],true,null,inventoryFilter==i-1))
-                {
-                    inventoryFilter = i - 1;
-                    inventoryScroll = Vector2.zero;
-                    changed = true;
-                }
-            if (changed) { RebuildBagItems(); ResolveSelectedItem(); }
-            Rect viewport=new Rect(middle,w.y+180,864,426);
+            Rect viewport=bagArea;
             DrawEquipmentIconGrid(viewport,ref inventoryScroll,1);
         }
 

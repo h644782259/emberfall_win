@@ -246,11 +246,10 @@ namespace Emberfall
         private void ActionCircle(Rect rect,string icon,bool ready)
         {
             float opacity=EffectPreferences.TouchOpacity;
-            if(ready)
-            {
-                GUI.color=new Color(.35f,1f,.76f,.85f*opacity);float radius=rect.width*.47f;
-                for(int i=0;i<40;i++){float angle=i*9*Mathf.Deg2Rad;GUI.DrawTexture(new Rect(rect.center.x+Mathf.Cos(angle)*radius-1,rect.center.y+Mathf.Sin(angle)*radius-1,2,2),Texture2D.whiteTexture);}
-            }
+            GUI.color=new Color(.75f,.87f,.92f,.045f*opacity);GUI.DrawTexture(rect,UIIconAtlas.ControlDisc(),ScaleMode.ScaleToFit,true);
+            if(ready){GUI.color=new Color(.32f,.88f,1f,.12f*opacity);GUI.DrawTexture(rect,UIIconAtlas.ControlRing(true),ScaleMode.ScaleToFit,true);}
+            GUI.color=ready?new Color(.35f,1f,.76f,.85f*opacity):new Color(.8f,.88f,.94f,.48f*opacity);
+            GUI.DrawTexture(rect,UIIconAtlas.ControlRing(),ScaleMode.ScaleToFit,true);
             GUI.color=ready?new Color(1,1,1,opacity):new Color(.38f,.42f,.46f,.58f*opacity);
             float size=rect.width*.66f;GUI.DrawTexture(new Rect(rect.center.x-size*.5f,rect.center.y-size*.5f,size,size),UIIconAtlas.Utility(icon),ScaleMode.ScaleToFit,true);GUI.color=Color.white;
         }

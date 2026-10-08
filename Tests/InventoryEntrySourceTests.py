@@ -34,3 +34,15 @@ assert 'pip<=(int)item.rarity' in grid and '"L"+item.level' in grid
 assert 'DrawInventorySortIcon(' not in bag.split('private string MobileInventoryFilterLabel')[0]
 assert 'if(inventoryComparisonOpen&&picked!=null)' not in bag
 print('PASS icon-only grid and same-page contextual popup wiring; no always-visible row actions or sorting entry')
+
+assert 'mobileInventoryPicker' not in bag and 'DrawMobileInventoryPicker' not in bag and 'CycleMobileInventoryFilter' not in bag
+assert 'MobileInventoryFilterLabel+" ▾"' not in bag
+assert 'InventoryGridGeometry.FilterButton(full,index)' in grid and 'viewport.width-=InventoryGridGeometry.FilterRailWidth*u' in grid
+assert 'inventoryFilter=index-1;scroll=Vector2.zero;RebuildBagItems();ResolveSelectedItem();' in grid
+assert 'string[] filters={"全部","武器","护甲","饰品"}' in grid
+hud=(r/'GameUI.Mobile.cs').read_text();controls=(r/'MobileControls.cs').read_text()
+assert 'SkillPageArrow()' in hud and '↻' not in hud and 'mobileSkillPage+1' not in hud
+assert 'DrawMobileControlSurface(r,ready,pressed)' in hud and 'UIIconAtlas.SkillGlyph(p.heroClass,skill,48)' in hud
+assert 'ControlRing(true)' in hud and 'ControlRing()' in hud and 'ControlRing()' in controls
+assert 'for(int segment=0;segment<40' not in hud and 'for(int i=0;i<40' not in controls
+print('PASS source wiring: permanent inline four-filter rail, no picker or sort entry, graphic-only page switching and continuous skill/action rims (not visual acceptance)')
