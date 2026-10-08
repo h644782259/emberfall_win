@@ -4,7 +4,7 @@ r=Path(__file__).resolve().parents[1]/'Assets/Scripts/UI'
 grid=(r/'GameUI.InventoryGrid.cs').read_text(); wear=(r/'GameUI.WearMap.cs').read_text(); scroll=(r/'GameUI.TouchScroll.cs').read_text(); bag=(r/'GameUI.MobileInventory.cs').read_text()
 assert not (r/'GameUI.EquipmentAppearance.cs').exists()
 assert 'GUI.enabled=false' not in scroll.replace(' ','')
-assert '"穿戴"' in grid and '"对比"' in grid and 'SetItemLocked(item.id,!item.locked)' in grid
+assert '"穿戴"' in grid and '"对比"' in grid and 'SetItemLocked(item.id,locked)' in grid and 'bool locked=!item.locked' in grid and 'session.Progression.Unequip(item.slot)' in grid
 assert 'DrawCurrentWear' in bag and 'DrawBagSupplies' in bag and 'DrawBagFashion' in bag
 assert 'wearModel.Render' in wear and 'collectionTrial' not in wear
 assert 'BuyPotion(' not in wear and '.Upgrade(' not in wear and 'SellInventoryItem(' not in wear

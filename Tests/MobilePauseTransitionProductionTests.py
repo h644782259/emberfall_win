@@ -10,8 +10,8 @@ def member(path,sig):
  return s[a:b]
 ui='\n'.join(member('UI/GameUI.Mobile.cs',x) for x in ['private void LeaveMobilePauseForCamp()','private void LeaveMobilePauseForDungeon()'])
 mobile=(root/'Assets/Scripts/UI/GameUI.Mobile.cs').read_text()
-assert 'case 4: LeaveMobilePauseForCamp(); break;' in mobile
-assert 'case 5: OpenControls(); break;' in mobile
+assert 'case 3: LeaveMobilePauseForCamp(); break;' in mobile
+assert 'case 4: OpenControls(); break;' in mobile
 assert 'case 5: LeaveMobilePauseForDungeon(); break;' not in mobile
 host='\n'.join(member('Core/GameSession.cs',x) for x in ['public void ReturnToCamp()','public void EnterDungeon()'])
 shell='''using System;using System.Collections.Generic;

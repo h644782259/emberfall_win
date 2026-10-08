@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using UnityEngine;
 namespace UnityEngine
 {
- public struct Rect{public Rect(float x,float y,float w,float h){}}
+ public struct Rect{public float x,y,width,height;public float xMax=>x+width;public Rect(float x,float y,float w,float h){this.x=x;this.y=y;width=w;height=h;}}
  public struct Vector2{public static Vector2 zero=>new Vector2();}
  public static class Mathf{public static int RoundToInt(float n)=>(int)Math.Round(n);public static float Ceil(float n)=>(float)Math.Ceiling(n);public static float Max(float a,float b)=>Math.Max(a,b);}
  public class GUIContent{public string text;public GUIContent(string value){text=value;}}
@@ -21,7 +21,7 @@ namespace Emberfall
   sealed class Context{public ProgressionService Progression;public bool IsInCamp=true,Blocked;public void SetUIBlocking(bool v){Blocked=v;}}
   Context session;float TouchRatio=1,width=568,height=320;Color jade,pale,gold,muted;
   List<Rect> blockedRects=new List<Rect>();List<string> shown=new List<string>();string click;int presetOpened;
-  void CancelMobileScroll(){}void BlockUITransition(){}void Fill(Rect r,Color c){}void Box(Rect r,Color c,bool b){}
+  void DrawPrice(Rect r,int amount,bool materials,float u){shown.Add(amount.ToString());}void CancelMobileScroll(){}void BlockUITransition(){}void Fill(Rect r,Color c){}void Box(Rect r,Color c,bool b){}
   void Text(Rect r,string s,int size,Color c,bool bold=false,bool wrap=false){shown.Add(s);}
   GUIStyle Style(int size,bool bold,bool wrap)=>new GUIStyle();
   Rect BuildPlanRect(MobilePanelLayout.Area r,float u)=>new Rect(r.X*u,r.Y*u,r.Width*u,r.Height*u);
