@@ -59,7 +59,7 @@ namespace Emberfall
             Rect w=new Rect((width-ww)*.5f,(height-wh)*.5f,ww,wh);
             Fill(w,new Color(.045f,.064f,.095f,.99f));Border(w,new Color(.52f,.60f,.67f,.3f));
             Text(new Rect(w.x+28,w.y+20,w.width-56,18),"F A L L E N   S T A R",10,gold,true);
-            Text(new Rect(w.x+28,w.y+45,w.width-248,42),revealed?(complete?"宝箱奖励":"开启宝箱"):"遗迹馈赠",28,pale,true);
+            Text(new Rect(w.x+28,w.y+45,w.width-248,42),revealed?(complete?"宝箱奖励":"开启宝箱"):"通关馈赠",28,pale,true);
             Text(new Rect(w.x+28,w.y+92,w.width-56,24),revealed?(complete?ChestRevealPresentation.Outcome(reward):"已保存奖励 · 可以跳过揭晓动画"):ChestRevealPresentation.ChoiceDisclosure,14,muted);
             if(NavigationButton(new Rect(w.xMax-200,w.y+43,78,36), "菜单", jade)){session.SetPaused(true);BlockUITransition();return;}
             if(NavigationButton(new Rect(w.xMax-110,w.y+43,82,36), chestDetails?"收起规则":"奖励规则", muted))chestDetails=!chestDetails;
@@ -92,7 +92,7 @@ namespace Emberfall
         private void DrawDesktopChestRules(Rect r)
         {
             int minimum=TierRewardRules.ChestGoldMinimum(session.Progression.Profile.pendingChestTier);
-            string rules=ProgressionService.DungeonChestRules(session.Progression.Profile.pendingChestTier, session.Progression.Profile.pendingChestReveal ? session.Progression.LastChestReward : null);
+            string rules=session.Progression.ActiveDungeonChestRules;
             Text(new Rect(r.x+10,r.y+8,r.width-20,r.height-16),rules,15,pale,false,true);
         }
         private void DrawDesktopChestResult(Rect r,ChestReward reward,Color accent)

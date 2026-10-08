@@ -31,6 +31,14 @@ namespace Emberfall
         private void DrawChestCommittedReward(Rect area,ChestReward reward,Color accent)
         {
             float unit=MobileControls.Active?TouchRatio:1;
+            if(reward!=null&&reward.equipmentIds!=null&&reward.equipmentIds.Length>0){
+                float size=Mathf.Min(56*unit,(area.width-8*unit)/reward.equipmentIds.Length);
+                for(int i=0;i<reward.equipmentIds.Length;i++){
+                    var item=session.Progression.Profile.inventory.Find(v=>v.id==reward.equipmentIds[i]);
+                    if(item!=null)DrawInventoryIcon(new Rect(area.x+i*(size+2*unit),area.y,size,size),item,unit);
+                }
+                area=new Rect(area.x,area.y+size+8*unit,area.width,Mathf.Max(1,area.height-size-8*unit));
+            }
             if(reward!=null&&reward.Rarity.HasValue)
             {
                 int count=(reward.goldDelta>0?1:0)+(reward.materialKind==RewardMaterialKind.StarAshFragment&&reward.materialsDelta>0?1:0)+(reward.threadsDelta>0?1:0);

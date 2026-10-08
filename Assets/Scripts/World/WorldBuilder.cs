@@ -146,7 +146,7 @@ namespace Emberfall
             Primitive(camp, "Camp rug", PrimitiveType.Cube, new Vector3(0,.047f,-10), new Vector3(3.8f,.018f,2.7f), r.Material(new Color(.25f,.37f,.36f)));
             BuildCampfire(camp, r, new Vector3(-5.5f, 0, -23));
             Tent(camp, r, new Vector3(5.5f, 0, -23));
-            Label(parent, "CAMP", "营地", new Vector3(0, .13f, -13.9f), .13f, new Color(.74f, .82f, .73f), true);
+            // The travel rune supplies the only label at this location.
             Portal(parent, r, new Vector3(0, 0, 11), jade);
             Label(parent, "FALLEN STAR", "沉星遗迹", new Vector3(0, 4.65f, 11), .10f, new Color(.65f, 1, .87f), false);
             for (int i = 0; i < 12; i++)

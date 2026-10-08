@@ -195,6 +195,7 @@ namespace Emberfall
             ui = session.GetComponent<GameUI>();
             Check(ui != null, "Runtime IMGUI component exists");
             Check(Path.GetFullPath(session.Progression.SaveDirectory) == SaveDirectory, "Test player uses its isolated save directory");
+            if(System.Array.IndexOf(System.Environment.GetCommandLineArgs(),"--adventure-rework")>=0){yield return VerifyAdventureRework();yield break;}
             if(System.Array.IndexOf(System.Environment.GetCommandLineArgs(),"--windows-handoff")>=0){yield return VerifyWindowsHandoff();yield break;}
             if(System.Array.IndexOf(System.Environment.GetCommandLineArgs(),"--chapter-ui")>=0){yield return VerifyChapterUI();yield break;}
             if(System.Array.IndexOf(System.Environment.GetCommandLineArgs(),"--adventure-typography")>=0){yield return VerifyAdventureTypography();yield break;}

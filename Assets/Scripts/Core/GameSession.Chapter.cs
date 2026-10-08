@@ -6,8 +6,9 @@ namespace Emberfall
     {
         public ChapterNode SelectedChapterNode {get;set;}
         public ChapterDifficulty SelectedChapterDifficulty {get;set;}
-        public int SelectedChapterTier {get;set;}=1;
-        public bool SelectedChapterLimitedHealing {get;set;}
+        private readonly int[] chapterSelectedTiers={1,1,1};
+        public int SelectedChapterTier {get{return chapterSelectedTiers[(int)SelectedChapterNode];}set{chapterSelectedTiers[(int)SelectedChapterNode]=value;}}
+        public bool SelectedChapterLimitedHealing {get{return false;}set{}}
         public int SelectedChapterTactic {get;set;}=-1;
         public ChapterCombatRun ChapterRun {get;private set;}
         public int ChapterRewardMaterials {get{return ChapterResult!=null&&ChapterResult.Saved?ChapterResult.Materials:0;}}

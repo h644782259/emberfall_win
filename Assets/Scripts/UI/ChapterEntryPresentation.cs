@@ -51,7 +51,7 @@ namespace Emberfall
             return DifficultyName(difficulty)+" · 敌人生命 ×"+health+" / 伤害 ×"+damage+"\n"+
                 ChapterDefinition.DifficultyMechanic(node,difficulty)+"\n"+
                 "难度解锁 · 通关普通后解锁困难，通关困难后解锁英雄。\n"+
-                (limited?"限疗：初始3次治疗充能。":"普通治疗：使用携带药剂。")+"\n"+
+
                 "完成奖励 "+(total+firstDifficulty)+" 碎片（通关 "+repeat+(total>repeat?" + 首次通关1":"")+(firstDifficulty>0?" + 难度首通4":"")+"）。\n"+
                 "首次通关困难或英雄难度，各额外获得4碎片；每段星路的首通奖励仅领取一次。\n"+
                 (!profile.firstClearRewardClaimed?(profile.pendingFirstClearReward?"首通核心待领取：返回营地领取。\n":"首次通关全部三段星路，可在营地领取首通核心。\n"):"")+TierEffect(node)+MasteryProgress(profile,node,difficulty);
@@ -67,7 +67,7 @@ namespace Emberfall
         {
             if(result==null)return "章节记录暂不可用";
             string text=ChapterDefinition.Get(result.Node).Name+" · "+DifficultyName(result.Difficulty)+" · 第 "+result.Tier+" 阶\n"+
-                "携带药剂 "+result.EntryPotions+" · "+(result.LimitedHealing?"限疗规则":"普通治疗")+"\n\n";
+                "携带药剂 "+result.EntryPotions+"\n\n";
             if(result.Failed)return text+"止步房间 "+(result.Room+1)+" / "+ChapterDefinition.RoomCount(result.Node)+"\n"+
                 (result.Node==ChapterNode.ForestCourt?"封印 "+result.Seals+"/2 · 一 "+result.FirstSealSeconds.ToString("0.0")+"s · 二 "+result.SecondSealSeconds.ToString("0.0")+"s\n":"")+
                 "最后受击："+(string.IsNullOrEmpty(result.LastHit)?"未记录":result.LastHit)+" · "+result.LastHitAmount.ToString("0.#")+"\n"+

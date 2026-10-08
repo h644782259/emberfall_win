@@ -130,7 +130,7 @@ namespace Emberfall
         private void DrawMobileChestDetails(MobilePanelLayout layout)
         {
             int minimum = TierRewardRules.ChestGoldMinimum(session.Progression.Profile.pendingChestTier);
-            string details = ProgressionService.DungeonChestRules(session.Progression.Profile.pendingChestTier, session.Progression.Profile.pendingChestReveal ? session.Progression.LastChestReward : null);
+            string details = session.Progression.ActiveDungeonChestRules;
             float width = layout.Body.Width - 34;
             float total = MeasureMobileParagraph(details, width, 15) + 24;
             mobileChestScroll = BeginTouchScroll("mobile-chest-details", MobilePanelRect(layout.Body), mobileChestScroll,

@@ -16,7 +16,7 @@ namespace Emberfall
         public bool TryBeginChapterNode(ChapterNode node,ChapterDifficulty difficulty,int tier,out ChapterRunReceipt receipt)
         {
             receipt=null;
-            if(!HasActiveSave||!ChapterProgression.CanEnter(Profile,node,difficulty)||tier<1||tier>Math.Min(100,HighestAdventureTier+1)||Profile.chapterRewardSequence==long.MaxValue)return Fail("章节或难度尚未解锁。");
+            if(!HasActiveSave||!ChapterProgression.CanEnter(Profile,node,difficulty)||tier<1||tier>UnlockedChapterTier(node)||Profile.chapterRewardSequence==long.MaxValue)return Fail("章节或难度尚未解锁。");
             int materials=ChapterProgression.CompletionMaterials(Profile,node,tier);
             receipt=new ChapterRunReceipt(node,difficulty,tier,materials,Profile.chapterRewardSequence+1,SaveFilePath);
             receipt.MasteryEligible=difficulty!=ChapterDifficulty.Normal&&(Profile.chapterCompletedMask&(1<<(int)node))!=0;
@@ -51,6 +51,9 @@ namespace Emberfall
             candidate.chapterRevision=1;candidate.chapterCompletedMask|=bit;candidate.chapterFirstRewardMask|=bit;
             candidate.chapterHighestDifficulties[index]=Math.Max(candidate.chapterHighestDifficulties[index],(int)receipt.Difficulty+1);
             candidate.mechanicMaterials=(int)Math.Min(999999L,(long)candidate.mechanicMaterials+receipt.Materials);
+            candidate.chapterBestTiers[index]=Math.Max(candidate.chapterBestTiers[index],receipt.Tier);
+            if(candidate.pendingFashionChest||candidate.pendingChestReveal)return Fail("请先收下已有宝箱。");
+            NewChestQualification(candidate,Math.Min(100,receipt.Tier+(int)receipt.Difficulty*5),Guid.NewGuid().ToString("N"));candidate.pendingChestMode=index==0?0:index==1?1:2;
             candidate.chapterRewardSequence=receipt.Sequence;candidate.lastChapterRewardId=receipt.Id;
             if(receipt.Node==ChapterNode.StarPlatform)
             {

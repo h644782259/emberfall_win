@@ -37,11 +37,6 @@ namespace Emberfall
             Text(new Rect(header.x+(iconSize+12)*unit,header.y,header.width-(iconSize+126)*unit,32*unit),title,Mathf.RoundToInt((mobile?23:28)*unit),pale,true);
             string location=snapshot==null?"":snapshot.InDungeon?(snapshot.ModeName.Length>0?snapshot.ModeName+"  ·  ":"")+"第 "+snapshot.Tier+" 阶  ·  "+snapshot.Wave+" / "+snapshot.TotalWaves+(snapshot.ModeName.Length>0?" 阶段":" 波"):"原野探索";
             Text(new Rect(header.x+(iconSize+12)*unit,header.y+34*unit,header.width-(iconSize+20)*unit,22*unit),location,Mathf.RoundToInt(13*unit),muted);
-            if(snapshot!=null&&snapshot.InDungeon)
-            {
-                Rect mode=new Rect(header.xMax-104*unit,header.y+6*unit,104*unit,29*unit);
-                Fill(mode,card);Text(mode,snapshot.Challenge?"限疗挑战":"普通模式",Mathf.RoundToInt(13*unit),accent,true,false,TextAnchor.MiddleCenter);
-            }
             Rule(frame.x+16*unit,frame.y+(mobile?61:78)*unit,frame.width-32*unit,accent*.5f);
             Rect viewport=RecapRect(layout.Viewport,unit);
             float statusHeight=RecapStatusHeight(layout,unit);

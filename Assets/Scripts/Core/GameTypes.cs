@@ -184,6 +184,7 @@ namespace Emberfall
     [Serializable]
     public class ChestReward
     {
+        public string[] equipmentIds;
         // Zero is the historical identical-chest schema; never infer it from choice.
         public int rulesRevision;
         public bool hasCurrencyDeltas;
@@ -368,6 +369,13 @@ namespace Emberfall
         public Rarity progressionGoalMinimumRarity;
         public int progressionGoalLevel;
         public int highestAdventureTier;
+        public int[] adventureBestTiers = new int[5];
+        public int adventureRewardRevision;
+        public int independentTierRevision;
+        public bool pendingAdventureChest;
+        public int pendingChestMode = -1;
+        public int groundGold, groundPotions;
+        public int[] chapterBestTiers=new int[3];
         public int chapterMasteryMask;
         public int[] chapterMasteryTiers = new int[4];
         public int chapterRevision;

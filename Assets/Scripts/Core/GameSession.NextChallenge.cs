@@ -18,7 +18,7 @@ namespace Emberfall
             Notify("直接挑战第 "+DungeonTier+" 阶 · "+ModeName);return true;
         }
         public bool CanChallengeNextChapterTier
-        {get{return HasStarted&&InDungeon&&ChapterFinished&&!ChapterRun.Failed&&!ChapterRewardPending&&!IsDead&&chapterReceipt!=null&&chapterReceipt.Tier<MaximumDungeonTier&&!changingZone;}}
+        {get{return HasStarted&&InDungeon&&ChapterFinished&&!ChapterRun.Failed&&!ChapterRewardPending&&!IsDead&&chapterReceipt!=null&&chapterReceipt.Tier<Progression.UnlockedChapterTier(ActiveChapterNode)&&!changingZone;}}
         public bool ChallengeNextChapterTier()
         {
             if(!CanChallengeNextChapterTier||Paused||BackgroundPaused)return false;

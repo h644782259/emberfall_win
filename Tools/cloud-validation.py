@@ -147,6 +147,8 @@ def main():
         ]
         checks.append(("service-integration", [ROOT / "Assets/Scripts/Core/GameTypes.cs", ROOT / "Assets/Scripts/Core/ProgressionService.cs", ROOT / "Assets/Scripts/UI/MobileControlLayout.cs", ROOT / "Assets/Scripts/UI/MobilePanelLayout.cs", ROOT / "Assets/Scripts/Combat/MobileSkillPolicy.cs", ROOT / "Assets/Scripts/UI/SmithServiceLayout.cs", ROOT / "Assets/Scripts/UI/MerchantServiceLayout.cs", ROOT / "Tests/ProgressionTests.cs", ROOT / "Tests/ServiceIntegrationTests.cs"],
             'using System; internal static class Program { static void Main(string[] args) { Console.WriteLine(ServiceIntegrationTests.Run(args[0])); } }'))
+        checks.append(("adventure-rework", [ROOT / "Assets/Scripts/Core/GameTypes.cs", ROOT / "Assets/Scripts/Core/ProgressionService.cs", ROOT / "Tests/ProgressionTests.cs", ROOT / "Tests/AdventureReworkTests.cs"],
+            'using System; internal static class Program { static void Main(string[] args) { Console.WriteLine(AdventureReworkTests.Run(args[0])); } }'))
         checks.append(("adventure-clear-rewards", [ROOT / "Assets/Scripts/Core/GameTypes.cs", ROOT / "Assets/Scripts/Core/ProgressionService.cs", ROOT / "Tests/ProgressionTests.cs", ROOT / "Tests/AdventureClearRewardTests.cs"],
             'using System; internal static class Program { static void Main(string[] args) { Console.WriteLine(AdventureClearRewardTests.Run(args[0])); } }'))
         checks.append(("reward-inventory-integration", [ROOT / "Assets/Scripts/Core/GameTypes.cs", ROOT / "Assets/Scripts/Core/ProgressionService.cs", ROOT / "Tests/ProgressionTests.cs", ROOT / "Tests/RewardInventoryIntegrationTests.cs"],

@@ -8,10 +8,12 @@ namespace Emberfall
         public RunMechanismEvidence MechanismEvidence {get;}=new RunMechanismEvidence();
         public RunChoices RunChoices { get; private set; } = new RunChoices();
         public bool DungeonSelectionOpen { get; private set; }
-        public int SelectedDungeonTier { get; set; } = 1;
-        public int MaximumDungeonTier { get { return Progression.HighestUnlockedAdventureTier; } }
-        public bool SelectedChallengeMode { get; set; }
-        public bool ChallengeRun { get; private set; }
+        private readonly int[] selectedAdventureTiers={1,1,1,1,1};
+        public int SelectedDungeonTier { get { return Progression==null?1:Mathf.Clamp(selectedAdventureTiers[Mathf.Clamp(SelectedArenaMode+1,0,4)],1,MaximumDungeonTier); } set { selectedAdventureTiers[Mathf.Clamp(SelectedArenaMode+1,0,4)]=value; } }
+        public int MaximumDungeonTier { get { return Progression.UnlockedAdventureTier(SelectedArenaMode); } }
+        public bool SelectedChallengeMode { get { return false; } set { } }
+        // Compatibility accessors cannot re-enable the removed healing restriction.
+        public bool ChallengeRun { get { return false; } private set { } }
         public int HealingCharges { get; private set; }
         public int DungeonLayout { get; private set; }
         public int DungeonEntryLevel { get; private set; } = 2;
@@ -39,11 +41,11 @@ namespace Emberfall
             SelectedDungeonTier = Mathf.Clamp(SelectedDungeonTier, 1, MaximumDungeonTier);
             DungeonSelectionOpen = false;
             bool previousChallengeRun = ChallengeRun;
-            ChallengeRun = SelectedChallengeMode;
+            ChallengeRun = false;
             if(!ChangeZone(true)){ChallengeRun=previousChallengeRun;DungeonSelectionOpen=true;UpdateTimeScale();Notify(Progression.LastError);return;}
             UpdateTimeScale();
             if(RoomChainRun!=null&&RoomChainRun.Failed)return;
-            Notify(ModeName+" · " + DungeonTier + " 阶 · " + (RoomChainRun!=null?RoomTactics.Name(RoomChainRun.Room.Objective):DungeonLayout == 0 ? "双廊" : "断柱") + (ChallengeRun ? " · 限疗挑战" : " · 普通模式"));
+            Notify(ModeName+" · " + DungeonTier + " 阶 · " + (RoomChainRun!=null?RoomTactics.Name(RoomChainRun.Room.Objective):DungeonLayout == 0 ? "双廊" : "断柱"));
         }
 
         private void ResetExpedition(bool dungeon)

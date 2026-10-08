@@ -28,19 +28,22 @@ namespace Emberfall
     public static class AdventureRewardRules
     {
         public static int EquipmentCount(int mode){Validate(mode);return mode==3?2:1;}
+        public static int EquipmentCount(int mode,int tier){return EquipmentCount(mode)+TierRewardBand.Of(tier)/2;}
+        public static int PotionChance(int tier){return 12+3*TierRewardBand.Of(tier);}
+        public static int LegendaryChance(int tier){return 2+2*TierRewardBand.Of(tier);}
         private static void Validate(int mode){if(mode < -1 || mode > 3)throw new ArgumentOutOfRangeException(nameof(mode));}
         public static ItemSlot EquipmentSlot(int mode,int index)
-        {Validate(mode);if(index<0||index>=EquipmentCount(mode))throw new ArgumentOutOfRangeException(nameof(index));return mode==0?ItemSlot.Armor:mode==1?ItemSlot.Relic:mode==3?(index==0?ItemSlot.Armor:ItemSlot.Relic):ItemSlot.Weapon;}
+        {Validate(mode);if(index<0||index>=8)throw new ArgumentOutOfRangeException(nameof(index));return mode==0?ItemSlot.Armor:mode==1?ItemSlot.Relic:mode==3?(index%2==0?ItemSlot.Armor:ItemSlot.Relic):ItemSlot.Weapon;}
         public static Rarity MinimumRarity(int mode){Validate(mode);return mode==2?Rarity.Epic:Rarity.Rare;}
         public static int UpgradeChance(int mode,int tier){Validate(mode);return mode==2?8+3*TierRewardBand.Of(tier):15+5*TierRewardBand.Of(tier);}
         public static Rarity EquipmentRarity(int mode,int tier,int roll)
-        {return roll<UpgradeChance(mode,tier)?(mode==2?Rarity.Legendary:Rarity.Epic):MinimumRarity(mode);}
-        public static int Materials(int mode,int tier){Validate(mode);return TierRewardBand.Materials(mode==-1?3:mode==3?4:mode+1,tier);}
+        {return roll<LegendaryChance(tier)?Rarity.Legendary:roll<LegendaryChance(tier)+UpgradeChance(mode,tier)?(mode==2?Rarity.Legendary:Rarity.Epic):MinimumRarity(mode);}
+        public static int Materials(int mode,int tier){Validate(mode);return (mode==0||mode==1?5:mode==3?4:3)+TierRewardBand.Of(tier);}
         public static int Gold(int mode,int tier,bool riskContract)
         {Validate(mode);tier=TierRewardBand.Clamp(tier);int value=mode==-1?120+tier*30:mode==0?110+tier*20:mode==1?100+tier*25:mode==2?180+tier*40:200+tier*35;return riskContract?(int)Math.Round(value*1.3f):value;}
         public static int Experience(int mode,int tier)
         {Validate(mode);tier=TierRewardBand.Clamp(tier);return mode==-1?100+tier*20:mode==0?90+tier*20:mode==1?100+tier*20:mode==2?140+tier*30:160+tier*25;}
         public static string EquipmentSummary(int mode,int tier)
-        {Validate(mode);string slot=mode==0?"护甲":mode==1?"饰品":mode==3?"护甲 + 饰品":"武器";return "保底 "+(mode==2?"史诗":"稀有")+" "+slot+" · "+UpgradeChance(mode,tier)+"% 升为"+(mode==2?"传说":"史诗");}
+        {Validate(mode);string slot=mode==0?"护甲":mode==1?"饰品":mode==3?"护甲 + 饰品":"武器";return "保底 "+(mode==2?"史诗":"稀有")+" "+slot+" · "+(mode==2?UpgradeChance(mode,tier)+LegendaryChance(tier):LegendaryChance(tier))+"% 传说"+(mode==2?"":" · "+UpgradeChance(mode,tier)+"% 史诗");}
     }
 }
