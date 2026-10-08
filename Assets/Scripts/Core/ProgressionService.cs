@@ -208,6 +208,7 @@ namespace Emberfall
                 // A failed save leaves the active role and durable reward flags intact.
                 string migrationFailure;
                 bool migrationRequired=ChapterProgression.BackfillDifficultyRewards(loaded);
+                if(loaded.skillStockVersion<1){SkillStockRules.Normalize(loaded);loaded.skillStockVersion=1;migrationRequired=true;}
                 if(loaded.variantKnowledgeRevision<1){loaded.variantKnowledgeRevision=1;migrationRequired=true;}
                 if (migrationRequired && !TryWriteProfile(loaded, candidatePath, false, out migrationFailure))
                     return Fail(migrationFailure);
@@ -504,6 +505,23 @@ namespace Emberfall
             recovered = true;
             error = "主存档无法读取，已恢复上一次备份。" + (string.IsNullOrEmpty(error) ? "" : " " + error);
             return true;
+        }
+
+        // Charge spending is persisted before the runtime pays energy/emits a cast.
+        // Recharge ticks update memory; normal save captures progress, never wall time.
+        public bool CommitSkillStock(HeroClass hero,int count,float remaining,float period)
+        {
+            if(Profile.heroClass!=hero)return Fail("职业已变化，技能未释放。");
+            var candidate=Snapshot();SkillStockRules.Normalize(candidate);candidate.skillStockVersion=1;
+            int i=(int)hero;candidate.skillStockCounts[i]=count;candidate.skillStockRemaining[i]=remaining;candidate.skillStockPeriods[i]=period;
+            string failure;if(!TryWriteAttachedProfile(candidate,out failure))return Fail(failure);
+            Profile=candidate;LastError=string.Empty;return true;
+        }
+        public void TrackSkillStock(HeroClass hero,int count,float remaining,float period)
+        {
+            if(Profile.heroClass!=hero)return;
+            SkillStockRules.Normalize(Profile);Profile.skillStockVersion=1;
+            int i=(int)hero;Profile.skillStockCounts[i]=count;Profile.skillStockRemaining[i]=remaining;Profile.skillStockPeriods[i]=period;
         }
 
         public void Save()
@@ -1135,11 +1153,11 @@ namespace Emberfall
             internal BuildDraft(ProgressionService owner)
             {
                 this.owner=owner;source=owner.Profile;slot=owner.CurrentSlotId;
-                fingerprint=JsonUtility.ToJson(source,true);
+                fingerprint=BuildFingerprint(source);
                 preview=new ProgressionService(owner.saveDirectory);preview.Profile=owner.Snapshot();
             }
             private bool Attached { get { return !completed && owner.CurrentSlotId==slot && ReferenceEquals(source,owner.Profile); } }
-            public bool IsCurrent { get { return Attached && fingerprint==JsonUtility.ToJson(owner.Profile,true); } }
+            public bool IsCurrent { get { return Attached && fingerprint==owner.BuildStateFingerprint(); } }
             public ProgressionService CreatePracticeCopy() { return IsCurrent ? owner.CreatePracticeSnapshot(preview.Profile) : null; }
             public int Points { get { int spent=0;foreach(int rank in preview.Profile.skillRanks)spent+=rank;foreach(int rank in preview.Profile.masteryRanks)spent+=rank;return GameBalance.SkillPointBudget(source.level)-spent; } }
             public int Level { get { return source.level; } }
@@ -1369,7 +1387,14 @@ namespace Emberfall
             return CommitCandidate(candidate);
         }
 
-        public string BuildStateFingerprint(){return JsonUtility.ToJson(Profile,true);}
+        public string BuildStateFingerprint(){return BuildFingerprint(Profile);}
+        private static string BuildFingerprint(GameProfile profile)
+        {
+            // Recharge progress is runtime state, not an edit to a build/quote.
+            var copy=JsonUtility.FromJson<GameProfile>(JsonUtility.ToJson(profile,true));
+            copy.skillStockCounts=null;copy.skillStockRemaining=null;copy.skillStockPeriods=null;
+            return JsonUtility.ToJson(copy,true);
+        }
         public sealed class PresetEquipmentQuote
         {
             internal readonly ProgressionService Owner;internal readonly GameProfile Source;internal readonly string State;internal readonly int Plan,Slot,Variant;internal readonly string ItemId;
@@ -1697,6 +1722,11 @@ namespace Emberfall
         internal bool IsApplyingBuildDraft { get; private set; }
         private bool CommitCandidate(GameProfile candidate,bool buildDraft=false)
         {
+            SkillStockRules.Normalize(Profile);
+            candidate.skillStockVersion=Profile.skillStockVersion;
+            candidate.skillStockCounts=(int[])Profile.skillStockCounts.Clone();
+            candidate.skillStockRemaining=(float[])Profile.skillStockRemaining.Clone();
+            candidate.skillStockPeriods=(float[])Profile.skillStockPeriods.Clone();
             string failure;
             if (!TryWriteAttachedProfile(candidate, out failure)) return Fail(failure);
             Profile = candidate; LastError = string.Empty;
@@ -2814,6 +2844,7 @@ namespace Emberfall
         private static GameProfile CreateProfile(HeroClass heroClass)
         {
             var profile = new GameProfile { heroClass = heroClass,chestRulesRevision=2, chapterDifficultyRewardRevision = 1, variantKnowledgeRevision = 1 };
+            SkillStockRules.Normalize(profile);profile.skillStockVersion=1;
             profile.skillRanks[0] = 1;
             for (int slot = 0; slot < 3; slot++) AddStarterItem(profile, (ItemSlot)slot);
             return profile;
@@ -2998,6 +3029,7 @@ namespace Emberfall
 
         private static int ValidateProfile(GameProfile profile)
         {
+            SkillStockRules.Normalize(profile);
             NormalizeEmptyChestDraw(profile);
             int refundedRanks = 0;
             EnsureBuildPresetSlots(profile);

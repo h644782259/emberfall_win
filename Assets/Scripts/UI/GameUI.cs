@@ -415,8 +415,8 @@ namespace Emberfall
             if(venom.Length>0)result=venom;
             if (GameBalance.IsPassive(skill)) return result;
             float cost = GameBalance.SkillEnergyCost(hero, skill);
-            result += "\n冷却 " + GameBalance.EffectiveCooldown(hero, skill, rank).ToString("0.#") +
-                (cost == 0 ? " 秒 · 无需能量" : " 秒 · 消耗 " + cost.ToString("0") + " " + GameBalance.EnergyName(hero));
+            result += (skill==SkillStockRules.Skill(hero)?"\n储存2次 · 每 "+SkillStockRules.Seconds(hero)+" 秒逐次回复 ·":"\n冷却 " + GameBalance.EffectiveCooldown(hero, skill, rank).ToString("0.#")) +
+                (cost == 0 ? " 秒 · 无需能量" : (skill==SkillStockRules.Skill(hero)?" 每次消耗 ":" 秒 · 消耗 ") + cost.ToString("0") + " " + GameBalance.EnergyName(hero));
             string budget=BuildCatalog.ConcentratedVenomEquipped(profile)&&hero==HeroClass.Ranger&&skill==0?"":SkillBudgetHint(hero,skill,rank);if(budget.Length>0)result+="\n"+budget;
             float charge = SkillChargeController.Duration(hero, skill);
             if (charge > 0) result += "\n蓄力 " + charge.ToString("0.##") + " 秒";
@@ -958,6 +958,7 @@ namespace Emberfall
                     Fill(new Rect(slot.x + 1, slot.yMax - cover, slot.width - 2, cover), new Color(0, .025f, .04f, .76f));
                     Text(new Rect(slot.x, slot.y + 12, slot.width, 29), cooldown.ToString(cooldown >= 10 ? "0" : "0.0"), 15, pale, true, false, TextAnchor.MiddleCenter);
                 }
+                DrawSkillStock(slot,skill,mobile?TouchRatio:1f);
                 string key = GameBalance.KeyName(p.hotbarKeys[slotIndex]);
                 if (!mobile)
                 {

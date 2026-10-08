@@ -27,7 +27,7 @@ namespace Emberfall
  public static class BlenderSkillVfx{public static bool TryPlay(PlayerController hero,float range,bool shock)=>false;}
  public static class WeaponSlashRibbon{public static void Spawn(params object[] args){}}
  public static class CombatFx{public static void Ring(params object[] a){}public static Vector3 Flat(Vector3 v)=>new Vector3(v.x,0,v.z);public static void WeaponSlash(params object[] p){}}
- public static class CombatSight{public static float BlockedZ=float.NaN;public static bool Visible=true;public static bool Direct(Vector3 a,Vector3 b)=>Visible&&b.z!=BlockedZ;public static bool Melee(Vector3 a,Vector3 b)=>Direct(a,b);public static Vector3 GroundPoint(Vector3 a,Vector3 b)=>Visible?b:a;}
+ public static class CombatSight{public static float BlockedZ=float.NaN;public static bool Visible=true;public static bool Direct(Vector3 a,Vector3 b)=>Visible&&b.z!=BlockedZ;public static bool Melee(Vector3 a,Vector3 b)=>Direct(a,b);public static bool Chain(Vector3 a,Vector3 b)=>Direct(a,b);public static Vector3 GroundPoint(Vector3 a,Vector3 b)=>Visible?b:a;}
  public enum RunBlessing{ChargedWard}public enum SkillVisualRecipe{Neutral,Steel,Ice,Fire,Poison,Lightning,Arcane,Spirit,ArrowRain}
  public struct MasteryResourceProc{public float Energy,CooldownReduction;}public class Mastery{public MasteryResourceProc SkillSpent(float cost)=>default;}
  public static class WorldTraversal{public static bool LeapAllowed=true;public static bool CanLeap(Vector3 from,Vector3 to,float radius)=>LeapAllowed;}
@@ -36,8 +36,8 @@ namespace Emberfall
  public static class SummonerSpell{public static void Cast(PlayerController player,GameSession game,int skill,int rank,Vector3 point,float damage,EnemyController target=null,bool preserve=false,int castId=0){player.RecordEmission(point,target);}}
  // Movement/ride emission boundaries; actual runtime is exercised in MovementSkillsRuntimeTests.
  public static class FlameRide{public static void Spawn(PlayerController p,GameSession s,float d,float a,int cast){}}
- public static class AdvancedSkillSequence{public static void Spawn(params object[] a){}}
- public class FakeProgression{public GameProfile Profile=new GameProfile{skillRanks=new int[10]};public float MechanicRangeMultiplier(EquipmentMechanic m)=>1;public float MechanicPowerMultiplier(EquipmentMechanic m)=>1;}
+ public static class AdvancedSkillSequence{public static int Calls;public static void Spawn(params object[] a){Calls++;}}
+ public class FakeProgression{public string LastError=>"injected persistence failure";public GameProfile Profile=new GameProfile{skillRanks=new int[10]};public float MechanicRangeMultiplier(EquipmentMechanic m)=>1;public float MechanicPowerMultiplier(EquipmentMechanic m)=>1;}
  // Historical targeting/healing fixtures represent ordinary play, never the isolated practice session.
  public class GameSession{public bool PracticeActive=>false;public void RecordPracticeCast(int castId,int skill){if(PracticeActive)throw new InvalidOperationException("unexpected practice session in ordinary targeting fixture");}public void Notify(string s){}public bool TrySpendHealingCharge()=>true;public bool HasBlessing(RunBlessing b)=>false;public PlayerController Player;public bool HasStarted=true,InputBlocked;public bool ChallengeRun,InDungeon;public int HealingCharges=3;public float ArenaRadius=25;public List<EnemyController> Enemies=new List<EnemyController>();public FakeProgression Progression=new FakeProgression();public string Failure;public void ReportControlFailure(string key,string s){Failure=key+":"+s;}public void RecordClassTutorial(HeroClass h){}public void RecordCombatAction(string s){}public void SpawnMechanismText(Vector3 p,string s,Color c){}}
  public class GameUI{public bool MobileInteractionVisible=true;public bool LifecycleTouchBlocked,CompanionCommandsVisible,Overlay;public void RefreshTouchViewport(){}public bool TryBeginTouchSkill(int f,Vector2 p)=>p.x>500&&p.y>250;public void UpdateTouchSkill(int f,Vector2 p,bool e,bool c){}public bool IsScreenPointOverUI(Vector2 p)=>Overlay||p.x<45;public bool IsScreenPointOverHUD(Vector2 p)=>Overlay||p.x<45;public void ActivateFreeCommand(bool b){}public void ActivateMobileInteraction(int f){}public void CancelMobileCast(){}}
@@ -156,7 +156,7 @@ public static class MobilePinnedTargetProductionTests
    CombatSight.Visible=true;SummonedCompanion.FocusReads=0;
    float observedEnergy=player.Energy;var aim=player.AimPoint;var facing=player.transform.forward;
    for(int repeat=0;repeat<3;repeat++)for(int skill=0;skill<10;skill++)
-    Check(player.IsSkillAvailable(skill)==!GameBalance.IsPassive(skill),"learned active skills allow empty ground while passives never advertise a cast");
+    Check(player.IsSkillAvailable(skill)==(!GameBalance.IsPassive(skill)&&!(kind==HeroClass.Arcanist&&skill==4)),"learned active skills allow empty ground while passives never advertise a cast");
    Check(SummonedCompanion.FocusReads==0&&player.Energy==observedEnergy&&player.Casts==0&&player.AimPoint.sqrMagnitude==aim.sqrMagnitude&&player.transform.forward.z==facing.z&&game.Failure==null,"readiness observation never mutates companion focus, resources, facing or feedback");
    game.Progression.Profile.skillRanks[0]=0;Check(!player.IsSkillAvailable(0),"unlearned skill unavailable");game.Progression.Profile.skillRanks[0]=1;
    player.IsDead=true;Check(!player.IsSkillAvailable(0),"dead hero unavailable");player.IsDead=false;
@@ -183,6 +183,17 @@ public static class MobilePinnedTargetProductionTests
    Check(!player.IsSkillAvailable(6),"limited healing at full health has no effect");player.Health=50;Check(player.IsSkillAvailable(6),"limited healing with health deficit available");game.HealingCharges=0;Check(!player.IsSkillAvailable(6),"zero limited healing charges unavailable");
    game.HealingCharges=1;player.Health=100;player.HeroClass=HeroClass.Summoner;player.skillRuntime=new SkillRuntime(HeroClass.Summoner);SummonedCompanion.HealingTarget=true;
    Check(player.IsSkillAvailable(6),"injured companion allows full-health summoner healing");SummonedCompanion.HealingTarget=false;
+  }
+  {
+   Time.frameCount++;var game=new GameSession();var player=new PlayerController(game);player.HeroClass=HeroClass.Arcanist;player.aimPoint=new Vector3(0,0,4);float stockEnergy=player.Energy;int sequences=AdvancedSkillSequence.Calls;
+   Check(!player.CastImmediateSkill(4)&&player.skillRuntime.Charges(4)==2&&player.Energy==stockEnergy,"empty lightning target refuses stock and energy");
+   var enemy=new EnemyController(4);game.Enemies.Add(enemy);CombatSight.Visible=false;
+   Check(!player.CastImmediateSkill(4)&&player.skillRuntime.Charges(4)==2&&player.Energy==stockEnergy,"occluded lightning refuses stock and energy");CombatSight.Visible=true;
+   player.skillRuntime.CommitStock=(c,t,d)=>false;
+   Check(!player.CastImmediateSkill(4)&&AdvancedSkillSequence.Calls==sequences&&player.skillRuntime.Charges(4)==2&&player.Energy==stockEnergy,"failed stock persistence cannot emit through actual cast entry");
+   player.skillRuntime.CommitStock=null;
+   Check(player.CastImmediateSkill(4)&&AdvancedSkillSequence.Calls==sequences+1&&player.skillRuntime.Charges(4)==1,"valid lightning commits through actual producer");int casts=AdvancedSkillSequence.Calls;
+   Check(!player.CastImmediateSkill(4)&&AdvancedSkillSequence.Calls==casts,"repeat actual entry cannot consume twice in same frame");
   }
   return "PASS: "+n+" actual pointer/aim/basic/targeting/charge assertions (managed scene doubles, not touch-device delivery)";
  }

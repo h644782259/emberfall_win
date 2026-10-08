@@ -754,7 +754,7 @@ public static class ProgressionTests
                     float cooldown = GameBalance.SkillCooldown((HeroClass)hero, skill);
                     float cost = GameBalance.SkillEnergyCost((HeroClass)hero, skill);
                     Check(cooldown > 0 && cooldown <= 90 && (skill == 9 ? cost == 0 : cost > 0 && cost <= 100), "ultimate is free while other active skills have finite usable costs");
-                    Check(GameBalance.EffectiveCooldown((HeroClass)hero, skill, 3) < cooldown, "evolving each active skill improves its class-specific cooldown");
+                    Check(skill==SkillStockRules.Skill((HeroClass)hero) ? GameBalance.EffectiveCooldown((HeroClass)hero,skill,3)==SkillStockRules.Seconds((HeroClass)hero) : GameBalance.EffectiveCooldown((HeroClass)hero, skill, 3) < cooldown, "stored skill has fixed recovery; other active ranks improve cooldown");
                 }
             }
             var complete = Fresh((HeroClass)hero);

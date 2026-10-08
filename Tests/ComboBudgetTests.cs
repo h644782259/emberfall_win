@@ -86,7 +86,14 @@ public static class ComboBudgetTests
                 Check(Near(cast.Cost,GameBalance.SkillEnergyCost(r.Hero,cast.Skill)),"each committed cast pays production cost once");
                 Check(cast.Committed-cast.Started+.011f>=SkillDamageBudgets.ChargeSeconds(r.Hero,cast.Skill),"charge commitment precedes cost and damage");
                 var prior=r.Casts.LastOrDefault(c=>c.Skill==cast.Skill&&c.Id<cast.Id);
-                if(prior!=null)Check(cast.Committed-prior.Committed+.02f>=GameBalance.EffectiveCooldown(r.Hero,cast.Skill,cast.Rank),"same skill observes actual cooldown");
+                if(cast.Skill==SkillRuntime.StockSkill(r.Hero))
+                {
+                    float lockSeconds=r.Hero==HeroClass.Vanguard?.55f:r.Hero==HeroClass.Ranger?.6f:.25f;
+                    if(prior!=null)Check(cast.Committed-prior.Committed+.02f>=lockSeconds,"stored casts respect action protection lock");
+                    var stockCasts=r.Casts.Where(c=>c.Skill==cast.Skill&&c.Id<=cast.Id).ToArray();
+                    Check(stockCasts.Length<=2+(int)((cast.Committed-stockCasts[0].Committed+.02f)/SkillRuntime.StockSeconds(r.Hero)),"stock output bounded by two initial uses plus sequential recharge");
+                }
+                else if(prior!=null)Check(cast.Committed-prior.Committed+.02f>=GameBalance.EffectiveCooldown(r.Hero,cast.Skill,cast.Rank),"same skill observes actual cooldown");
             }
             Check(r.EnergySamples.All(e=>e>=0&&e<=SkillRuntime.MaximumEnergy)&&r.MinimumEnergy>=0&&r.MaximumEnergy<=100,"energy never negative or over cap");
             Check(Near(r.EnergySpent,r.Casts.Sum(c=>c.Cost))&&Near(r.EnergyRemaining,100-r.EnergySpent+r.EnergyRestored,.02f),"resource ledger reconciles with actual SkillRuntime energy");

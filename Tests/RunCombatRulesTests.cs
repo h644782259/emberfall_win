@@ -49,9 +49,12 @@ public static class RunCombatRulesTests
             var runtime=new SkillRuntime((HeroClass)hero);
             Check(runtime.TryConsume(skill,rank,quick.CooldownMultiplier),"fresh active skill accepts run cooldown modifier");
             float expected=Math.Max(1,GameBalance.EffectiveCooldown((HeroClass)hero,skill,rank)*.85f);
-            Check(Near(runtime.Remaining(skill),expected),"new timer receives modifier exactly once");
-            Check(!runtime.TryConsume(skill,rank,.7f)&&Near(runtime.Remaining(skill),expected),"repeated casts cannot compound/reduce running timer");
+            bool stored=skill==SkillRuntime.StockSkill((HeroClass)hero);
+            Check(Near(stored?runtime.RechargeRemaining(skill):runtime.Remaining(skill),expected),"new timer receives modifier exactly once");
+            Check(!runtime.TryConsume(skill,rank,.7f)&&Near(stored?runtime.RechargeRemaining(skill):runtime.Remaining(skill),expected),"repeated casts cannot compound/reduce running timer");
+            if(stored){runtime.Advance(.7f);Check(runtime.TryConsume(skill,rank,.7f)&&Near(runtime.RechargeRemaining(skill),expected-.7f),"second stock preserves existing recovery modifier and progress");}
             float spent=runtime.Energy;runtime.ResetCooldowns();
+            if(stored)Check(runtime.Charges(skill)==2&&runtime.RechargeRemaining(skill)==0,"entry reset restores bank without hidden recovery");
             Check(Near(runtime.Remaining(skill),0)&&Near(runtime.Energy,spent),"actual-entry reset clears timer without refunding energy");
             runtime.ResetCooldowns();Check(Near(runtime.Energy,spent),"duplicate reset is idempotent and not resource generation");
         }

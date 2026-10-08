@@ -29,6 +29,7 @@ namespace Emberfall
         {
             var own=previous??shared;float elapsed=Mathf.Max(0,Time.time-own.At);
             skillRuntime=own.Skills.CopyForClass(HeroClass,elapsed,shared.Skills.Energy,shared.Skills);
+            BindSkillStock(candidate);
             stats=preparedStats;MaxHealth=Mathf.Max(1,stats.MaxHealth);Health=Mathf.Clamp01(shared.HealthFraction)*MaxHealth;
             int core=candidate.masteryCore;masteryCore.Configure(core,core>=0&&core<4?candidate.masteryRanks[core]:0);
             masteryCore.RestoreClassArchive(previous==null?null:own.Core,elapsed,shared.Core);

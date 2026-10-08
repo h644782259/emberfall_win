@@ -4,6 +4,21 @@ namespace Emberfall
     public sealed partial class GameUI
     {
         private readonly MobileOpportunityMeter[] mobileOpportunityMeters=new MobileOpportunityMeter[10];
+        private void DrawSkillStock(Rect r,int skill,float u)
+        {
+            var hero=session.Player;var profile=session.Progression.Profile;
+            if(hero==null||skill<0||skill!=SkillStockRules.Skill(profile.heroClass)||profile.skillRanks[skill]<1)return;
+            float period=hero.SkillRechargePeriod(skill),remaining=hero.SkillRechargeRemaining(skill);
+            if(remaining>0&&period>0)
+            {
+                float progress=1-Mathf.Clamp01(remaining/period),radius=Mathf.Min(r.width,r.height)*.47f;
+                for(int i=0;i<32;i++)
+                {float angle=(-90+i*360f/32)*Mathf.Deg2Rad;Fill(new Rect(r.center.x+Mathf.Cos(angle)*radius-u,r.center.y+Mathf.Sin(angle)*radius-u,2*u,2*u),i<progress*32?jade:new Color(.25f,.3f,.35f,.55f));}
+            }
+            Rect badge=new Rect(r.xMax-25*u,r.y+2*u,23*u,12*u);
+            Fill(badge,new Color(.015f,.025f,.04f,.85f));
+            Text(badge,hero.SkillCharges(skill)+"/2",Mathf.RoundToInt(9*u),hero.SkillCharges(skill)>0?pale:muted,true,false,TextAnchor.MiddleCenter);
+        }
         private string MobileSkillState(int skill)
         {
             var p=session.Progression.Profile;var hero=session.Player;
@@ -14,6 +29,7 @@ namespace Emberfall
         }
         private void DrawMobileSkillAvailability(Rect r,int skill)
         {
+            DrawSkillStock(r,skill,TouchRatio);
             string state=MobileSkillState(skill);
             var window=session.Player==null?default(CombatOpportunityState):session.Player.SkillOpportunityWindow(skill);
             var meter=mobileOpportunityMeters[skill]??(mobileOpportunityMeters[skill]=new MobileOpportunityMeter());

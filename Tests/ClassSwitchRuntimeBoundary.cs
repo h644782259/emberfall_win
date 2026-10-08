@@ -53,6 +53,7 @@ namespace Emberfall
   SkillBasicRecoveryClock skillBasicRecovery;Vector3 aimPoint;int nextCastId;EnemyController AimTarget,focusedEnemy;readonly Dictionary<int,int> aimGeometry=new Dictionary<int,int>();
   void ClearMobilePinnedTarget(){}void CancelCombatPose(){}void CancelTransientInput(){suppressBasicUntilReleased=true;}
   public void SetVitals(float fraction){Health=MaxHealth*fraction;}public void Consume(){skillRuntime.TryConsume(0,1);dodgeCooldown=4;passiveCooldown=7;returningBladeProc.TryTrigger(9);}
+  public int StockCount=>skillRuntime.Charges(SkillStockRules.Skill(HeroClass));public float StockTime=>skillRuntime.RechargeRemaining(SkillStockRules.Skill(HeroClass));public void SpendStock(){skillRuntime.FillEnergy();skillRuntime.TryConsume(SkillStockRules.Skill(HeroClass),1);}
   public float StarterRetry=>starterRetry;public MasteryResourceProc CoreSpent(float energy)=>masteryCore.SkillSpent(energy);
   public float Remaining(int i)=>skillRuntime.Remaining(i);public float Dodge=>dodgeCooldown;public float Proc=>returningBladeProc.Remaining;public int NewReceipt()=>IssueCastId();public bool HasReceipt(int id)=>CaptureCastReceipt(id)!=null;
   public void Advance(float dt){starterRetry=Math.Max(0,starterRetry-dt);skillRuntime.Advance(dt);masteryCore.Advance(dt);dodgeCooldown=Math.Max(0,dodgeCooldown-dt);passiveCooldown=Math.Max(0,passiveCooldown-dt);returningBladeProc.Advance(dt);}
@@ -74,6 +75,14 @@ public static class ClassSwitchRuntimeTest
  static void Main(string[] args)
  {
   Directory.CreateDirectory(args[0]);
+  foreach(HeroClass kind in Enum.GetValues(typeof(HeroClass)))
+  {
+   var session=New(args[0],kind);var old=session.Player;old.Advance(1);old.SpendStock();int count=old.StockCount;float recovery=old.StockTime;
+   HeroClass other=(HeroClass)(((int)kind+1)%4);Check(session.TrySwitchClass(other),"stock class switch accepted");
+   Time.frameCount++;session.Player.Advance(1);Time.time+=1;Check(session.TrySwitchClass(kind),"stock class returns");
+   Check(session.Player.StockCount==count&&Math.Abs(session.Player.StockTime-recovery)<.001f,"class round trip neither refills stock nor advances inactive bank");
+   string disk=File.ReadAllText(session.Progression.SaveFilePath);old.SpendStock();Check(File.ReadAllText(session.Progression.SaveFilePath)==disk,"retired same-class owner cannot write stock");
+  }
   foreach(HeroClass from in Enum.GetValues(typeof(HeroClass)))foreach(HeroClass to in Enum.GetValues(typeof(HeroClass)))
   {
    if(from==to)continue;var s=New(args[0],from);var old=s.Player;float energy=old.Energy,cd=old.Remaining(0),fraction=old.Health/old.MaxHealth;int receipt=old.NewReceipt();SummonedCompanion.Partners.Add(old);

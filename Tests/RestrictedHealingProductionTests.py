@@ -17,11 +17,11 @@ def adapt(f):
  f=f.replace('public class Mastery{','public class Mastery{public int Core,Tier;public void Configure(int core,int tier){Core=core;Tier=tier;}')
  f=f.replace('public class Model{','public class Model{public void ApplyFashion(object a,object b){}public void ApplyEquipment(object a,object b,object c){}public void SetBlenderPilotOwnerAlive(bool b){}')
  f=f.replace('public class Stats{public float Damage=10;}','public class Stats{public float Damage=10,MaxHealth=1000;}')
- f=f.replace('public static class AdvancedSkillSequence{public static void Spawn(params object[] a){}}','')
+ f=f.replace('public static class AdvancedSkillSequence{public static int Calls;public static void Spawn(params object[] a){Calls++;}}','')
  start=f.index(' public static class SummonedCompanion{');end=f.index('\n',start);f=f[:start]+f[end:]
  f=f.replace('public class GameSession{','public partial class GameSession{public bool IsDead,CombatEnded;public float Healed;public void RecordActualHealing(float h){Healed+=h;}public void SpawnFloatingText(params object[] a){}')
  f=f.replace('public bool TrySpendHealingCharge()=>true;','')
- f=f.replace('public class FakeProgression{','public class FakeProgression{public bool IsApplyingBuildDraft=>false;public float RefreshedMaxHealth=1000;public PlayerController.Stats GetStats()=>new PlayerController.Stats{MaxHealth=RefreshedMaxHealth};public object EquippedFashion(FashionSlot slot)=>null;public object Equipped(ItemSlot slot)=>null;public int Potions=3;public string LastError="none";public bool UsePotion(){if(Potions==0)return false;Potions--;return true;}')
+ f=f.replace('public class FakeProgression{','public class FakeProgression{public bool IsApplyingBuildDraft=>false;public float RefreshedMaxHealth=1000;public PlayerController.Stats GetStats()=>new PlayerController.Stats{MaxHealth=RefreshedMaxHealth};public object EquippedFashion(FashionSlot slot)=>null;public object Equipped(ItemSlot slot)=>null;public int Potions=3;public bool UsePotion(){if(Potions==0)return false;Potions--;return true;}')
  # The shared mobile shell now declares Beam for F6; do not inject a duplicate.
  assert f.count('public static void Beam(params object[] a){}')==1
  f=f.replace('public static AdvancedSkillVfx Rune(params object[] a)=>new AdvancedSkillVfx();','public static AdvancedSkillVfx Rune(PlayerController owner,Vector3 at,float r,Color c,float duration,int rank,bool follows=false,int identity=0)=>new AdvancedSkillVfx();')

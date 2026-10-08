@@ -131,12 +131,20 @@ public static class SkillRuntimeTests
             if (GameBalance.IsPassive(skill)) continue;
             HeroClass heroClass = (HeroClass)hero;
             Check(skill == 9 ? Near(GameBalance.SkillEnergyCost(heroClass, skill), 0) : GameBalance.SkillEnergyCost(heroClass, skill) > 0 && GameBalance.SkillEnergyCost(heroClass, skill) <= SkillRuntime.MaximumEnergy, "ultimate is free while other active skills have reachable costs");
-            Check(GameBalance.EffectiveCooldown(heroClass, skill, 3) < GameBalance.EffectiveCooldown(heroClass, skill, 2) &&
+            Check(skill==SkillStockRules.Skill(heroClass)||GameBalance.EffectiveCooldown(heroClass, skill, 3) < GameBalance.EffectiveCooldown(heroClass, skill, 2) &&
                 GameBalance.EffectiveCooldown(heroClass, skill, 2) < GameBalance.EffectiveCooldown(heroClass, skill, 1), "upgrading the same active skill reduces its cooldown");
             for (int rank = 1; rank <= 3; rank++)
             {
                 var cast = new SkillRuntime(heroClass);
                 float expected = GameBalance.EffectiveCooldown(heroClass, skill, rank);
+                if(skill==SkillStockRules.Skill(heroClass))
+                {
+                    Check(cast.TryConsume(skill,rank)&&cast.Charges(skill)==1,"first stored cast consumes one charge");
+                    Check(!cast.TryConsume(skill,rank),"duplicate same-frame stored cast blocked");
+                    cast.Advance(.7f);cast.FillEnergy();Check(cast.TryConsume(skill,rank)&&cast.Charges(skill)==0,"second stored cast remains available");
+                    Check(Near(cast.RechargeRemaining(skill),expected-.7f),"second cast preserves recharge clock");
+                    continue;
+                }
                 Check(cast.TryConsume(skill, rank), "active skill can cast at rank " + rank);
                 Check(cast.HeroClass == heroClass && Near(cast.Remaining(skill), expected) && Near(cast.Energy, 100 - GameBalance.SkillEnergyCost(heroClass, skill)), "cast uses its immutable class, selected rank cooldown and class resource cost");
                 cast.FillEnergy();
@@ -214,9 +222,9 @@ public static class SkillRuntimeTests
         var ranger = new SkillRuntime(HeroClass.Ranger);
         Check(ranger.TryConsume(4, 3) && ranger.TryConsume(7, 3) && ranger.TryConsume(5, 3) && Near(ranger.Energy, 6), "ranger combines retreat buff, marked volley and poison with little energy remaining");
         ranger.Advance(7);
-        Check(!ranger.TryConsume(4, 3) && Near(ranger.Remaining(4), 3.32f), "retreat cannot immediately renew its awakened buff when the buff expires");
-        ranger.Advance(3.33f);
-        Check(ranger.TryConsume(4, 3) && ranger.Remaining(7) > 0 && ranger.Remaining(5) > 0, "ranger regains mobility before both sustained offensive skills");
+        Check(ranger.TryConsume(4, 3) && ranger.Charges(4)==0 && Near(ranger.Remaining(4), 7f), "second vault spends stored charge without resetting fourteen-second recovery");
+        ranger.Advance(7.01f);
+        Check(ranger.TryConsume(4, 3) && ranger.Remaining(5) > 0, "ranger regains mobility before both sustained offensive skills");
 
         var summoner = new SkillRuntime(HeroClass.Summoner);
         Check(summoner.TryConsume(2, 1) && summoner.TryConsume(4, 1) && summoner.TryConsume(1, 1) && Near(summoner.Energy, 14), "summoner can establish wolf, spirit and a control field");

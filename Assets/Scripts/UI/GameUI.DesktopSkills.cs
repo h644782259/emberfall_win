@@ -46,7 +46,7 @@ namespace Emberfall
                 new Rect(0,0,532,Mathf.Max(viewport.height,evolutionY+evolutionCardHeight+6)));
             Text(new Rect(0,0,530,descriptionHeight),description,13,muted,false,true);
             string[] labels = { "当前冷却", "资源消耗", "初习解锁", "进阶成长" };
-            string[] values = { passive ? "自动生效" : GameBalance.EffectiveCooldown(p.heroClass, skill, rank).ToString("0.#") + " 秒", passive || GameBalance.SkillEnergyCost(p.heroClass, skill) == 0 ? "无需能量" : GameBalance.SkillEnergyCost(p.heroClass, skill).ToString("0") + " " + GameBalance.EnergyName(p.heroClass), "Lv." + GameBalance.SkillRequiredLevels[skill], "强化 → 觉醒" };
+            string[] values = { passive ? "自动生效" : skill==SkillStockRules.Skill(p.heroClass)?"储存2次 · "+SkillStockRules.Seconds(p.heroClass)+"秒/次":GameBalance.EffectiveCooldown(p.heroClass, skill, rank).ToString("0.#") + " 秒", passive || GameBalance.SkillEnergyCost(p.heroClass, skill) == 0 ? "无需能量" : GameBalance.SkillEnergyCost(p.heroClass, skill).ToString("0") + " " + GameBalance.EnergyName(p.heroClass), "Lv." + GameBalance.SkillRequiredLevels[skill], "强化 → 觉醒" };
             for (int i = 0; i < 4; i++)
             {
                 Rect stat = new Rect(i*134,statsY,128,43);

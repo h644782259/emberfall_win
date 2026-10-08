@@ -94,6 +94,7 @@ namespace Emberfall
             else if (skillRuntime.HeroClass != heroClass)
                 throw new System.InvalidOperationException("A player controller cannot change class during an adventure.");
             session = game;
+            BindSkillStock(game.Progression.Profile);
             if(session!=null&&session.PracticeActive)skillRuntime.EnergyChanged=session.RecordPracticeEnergy;
             inputUI = game == null ? null : game.GetComponent<GameUI>();
             HeroClass = heroClass;
@@ -109,6 +110,18 @@ namespace Emberfall
             RefreshStats(true);
             aimPoint = transform.position + Vector3.forward * 5;
         }
+
+        private void BindSkillStock(GameProfile profile)
+        {
+            SkillStockRules.Normalize(profile);int i=(int)skillRuntime.HeroClass;
+            skillRuntime.RestoreStock(profile.skillStockCounts[i],profile.skillStockRemaining[i],profile.skillStockPeriods[i]);
+            var owner=session.Progression;string slot=owner.CurrentSlotId;
+            skillRuntime.CommitStock=(count,remaining,period)=>session.Player==this&&session.Progression==owner&&owner.CurrentSlotId==slot&&owner.CommitSkillStock(skillRuntime.HeroClass,count,remaining,period);
+            skillRuntime.StockChanged=(count,remaining,period)=>{if(session.Player==this&&session.Progression==owner&&owner.CurrentSlotId==slot)owner.TrackSkillStock(skillRuntime.HeroClass,count,remaining,period);};
+        }
+        public int SkillCharges(int skill){return skillRuntime==null?0:skillRuntime.Charges(skill);}
+        public float SkillRechargeRemaining(int skill){return skillRuntime==null?0:skillRuntime.RechargeRemaining(skill);}
+        public float SkillRechargePeriod(int skill){return skillRuntime==null?0:skillRuntime.RechargePeriod(skill);}
 
         public void RefreshStats(bool heal)
         {
@@ -1202,7 +1215,7 @@ namespace Emberfall
             else if(skill==6&&session.ChallengeRun&&session.InDungeon&&session.HealingCharges<=0) failure="治疗充能已耗尽。";
             else if(!CanUseMovementSkill(skill,rank)) failure="前方有障碍或没有安全落点，请走桥或调整方向。";
             if(failure==null) return true;
-            session.ReportControlFailure("skill"+skill,rank<=0?"未学":skillRuntime.Remaining(skill)>0?"冷却":Energy<GameBalance.SkillEnergyCost(HeroClass,skill)?"缺能":!SkillHealingHasEffect(skill,rank)?"无需治疗":skill==6&&session.ChallengeRun&&session.InDungeon&&session.HealingCharges<=0?"无充能":"无落点");
+            session.ReportControlFailure("skill"+skill,rank<=0?"未学":skillRuntime.Remaining(skill)>0?"冷却":Energy<GameBalance.SkillEnergyCost(HeroClass,skill)?"缺能":!SkillHealingHasEffect(skill,rank)?"无需治疗":!StockTargetReady(skill,rank)?"无目标":skill==6&&session.ChallengeRun&&session.InDungeon&&session.HealingCharges<=0?"无充能":"无落点");
             if (CombatReviewEvents.Enabled && Energy<GameBalance.SkillEnergyCost(HeroClass,skill)) CombatReviewEvents.Emit("noenergy",CombatReviewObjectId.Get(this),skill:skill);
             if(skillFeedbackCooldown<=0) { session.Notify(failure); skillFeedbackCooldown=.8f; }
             return false;
@@ -1216,8 +1229,8 @@ namespace Emberfall
             // living target's position here so immediate directional casts face it.
             FaceAim();
             if (SkillChargeController.Duration(HeroClass, skill) > 0) return charge.Begin(skill);
-            CastSkill(skill);
-            return true;
+            int before=nextCastId;CastSkill(skill);
+            return nextCastId!=before;
         }
 
         internal bool ConfirmTargetedSkill(int skill,Vector3 worldPoint)
@@ -1234,8 +1247,8 @@ namespace Emberfall
                 CombatFx.Flat(selected.transform.position-aimPoint).sqrMagnitude<=1f?selected:null;
             FaceAim();
             if (SkillChargeController.Duration(HeroClass, skill) > 0) return charge.Begin(skill);
-            CastSkill(skill);
-            return true;
+            int before=nextCastId;CastSkill(skill);
+            return nextCastId!=before;
         }
 
         internal bool ExecuteChargedSkill(int skill)
@@ -1244,10 +1257,10 @@ namespace Emberfall
             AimTarget = null;
             aimPoint = charge.TargetPoint;
             transform.rotation = Quaternion.LookRotation(charge.Direction);
-            executingChargedSkill = true;
+            executingChargedSkill = true;int before=nextCastId;
             try { CastSkill(skill); }
             finally { executingChargedSkill = false; }
-            return true;
+            return nextCastId!=before;
         }
 
         public void ApplySlow(float duration, float strength)
@@ -1282,12 +1295,14 @@ namespace Emberfall
                 return;
             }
             if (!CanUseMovementSkill(slot, rank)) { TraversalFailure(); return; }
+            if(!StockTargetReady(slot,rank)){session.ReportControlFailure("skill"+slot,"无目标");return;}
             // Limited healing rank one has no defensive benefit: do not pay for an empty heal.
             if (!SkillHealingHasEffect(slot,rank))
             { session.Notify("生命已满，无需使用治疗技能。"); return; }
             if (slot == 6 && skillRuntime.Remaining(slot) <= 0 && Energy >= GameBalance.SkillEnergyCost(HeroClass, slot) && !session.TrySpendHealingCharge()) return;
             if (!skillRuntime.TryConsume(slot, rank, ActiveRunBonuses == null ? 1f : ActiveRunBonuses.CooldownMultiplier))
             {
+                if(skillRuntime.StockPersistenceFailed){session.Notify("技能未释放："+session.Progression.LastError);return;}
                 if (skillFeedbackCooldown <= 0)
                 {
                     float remaining = skillRuntime.Remaining(slot);

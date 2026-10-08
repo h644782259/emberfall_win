@@ -313,9 +313,35 @@ namespace Emberfall
         public bool mounted=true, variantUnlocked;
     }
 
+    public static class SkillStockRules
+    {
+        public static int Skill(HeroClass hero){return hero==HeroClass.Vanguard?5:hero==HeroClass.Arcanist?4:hero==HeroClass.Ranger?4:0;}
+        public static float Seconds(HeroClass hero){return hero==HeroClass.Vanguard?12:hero==HeroClass.Arcanist?9:hero==HeroClass.Ranger?14:8;}
+        public static void Normalize(GameProfile profile)
+        {
+            bool legacy=profile.skillStockVersion<1;
+            if(profile.skillStockCounts==null||profile.skillStockCounts.Length!=4)profile.skillStockCounts=new int[4];
+            if(profile.skillStockRemaining==null||profile.skillStockRemaining.Length!=4)profile.skillStockRemaining=new float[4];
+            if(profile.skillStockPeriods==null||profile.skillStockPeriods.Length!=4)profile.skillStockPeriods=new float[4];
+            for(int i=0;i<4;i++)
+            {
+                float basis=Seconds((HeroClass)i),period=profile.skillStockPeriods[i],remaining=profile.skillStockRemaining[i];
+                int count=legacy?2:Math.Max(0,Math.Min(2,profile.skillStockCounts[i]));
+                if(float.IsNaN(period)||float.IsInfinity(period)||period<basis*.7f||period>basis)period=basis;
+                if(count==2)remaining=0;
+                else if(float.IsNaN(remaining)||float.IsInfinity(remaining)||remaining<=0||remaining>period)remaining=period;
+                profile.skillStockCounts[i]=count;profile.skillStockPeriods[i]=period;profile.skillStockRemaining[i]=remaining;
+            }
+        }
+    }
+
     [Serializable]
     public class GameProfile
     {
+        public int skillStockVersion;
+        public int[] skillStockCounts;
+        public float[] skillStockRemaining,skillStockPeriods;
+
         public int attachmentRevision;
         public List<MechanicAttachment> attachments=new List<MechanicAttachment>();
         public List<string> growthRewardReceipts=new List<string>();
@@ -584,6 +610,8 @@ namespace Emberfall
         }
         public static float EffectiveCooldown(HeroClass hero, int skill, int rank)
         {
+            ValidateSkillBudget(hero,skill);
+            if(skill==SkillStockRules.Skill(hero))return SkillStockRules.Seconds(hero);
             return SkillCooldown(hero, skill) * (1f - (Math.Max(1, Math.Min(3, rank)) - 1) * .07f);
         }
         private static void ValidateSkillBudget(HeroClass hero, int skill)

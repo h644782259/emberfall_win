@@ -17,7 +17,7 @@ public static class RoomBlessingUsabilityTests
     if(!normal.TryConsume(skill,profile.skillRanks[skill]))continue;
     faster.TryConsume(skill,profile.skillRanks[skill],.85f);
     if(card==RunBlessing.FlowingEssence&&normal.Energy<SkillRuntime.MaximumEnergy)return true;
-    if(card==RunBlessing.QuickRecovery&&faster.Remaining(skill)<normal.Remaining(skill))return true;
+    if(card==RunBlessing.QuickRecovery&&(skill==SkillRuntime.StockSkill(profile.heroClass)?faster.RechargeRemaining(skill)<normal.RechargeRemaining(skill):faster.Remaining(skill)<normal.Remaining(skill)))return true;
     if(card==RunBlessing.ChargedWard&&SkillDamageBudgets.ChargeSeconds(profile.heroClass,skill)>0)return true;
     if(card==RunBlessing.InterruptFlow&&EnemyControlPolicy.IsInterruptSkill(profile.heroClass,skill))return true;
     if(card==RunBlessing.MarkedPursuit&&profile.heroClass==HeroClass.Ranger&&skill==7)return true;
