@@ -2314,7 +2314,7 @@ namespace Emberfall
         // Includes auto-sold drops which no longer have an inventory entry.
         internal bool HasCommittedWorldLoot(string itemId) { return collectedLootIds.Contains(itemId); }
 
-        /// <summary>Protected overflow is persisted for claiming. A full pending queue rejects
+        /// <summary>Overflow remains visible and owned. The retained-item safety boundary rejects
         /// acquisition without consuming the drop; the caller must retain it or block departure.</summary>
         public bool CollectLoot(ItemData item)
         {

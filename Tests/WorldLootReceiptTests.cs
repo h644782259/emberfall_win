@@ -50,21 +50,18 @@ public static class WorldLootReceiptTests
     private static void ProtectedCapacityCanRetrySameIdentity(string root)
     {
         var p = Fresh(root);
-        while (p.Profile.inventory.Count < ProgressionService.InventoryCapacity) p.Profile.inventory.Add(Item("bag-" + p.Profile.inventory.Count));
-        while (p.Profile.pendingLoot.Count < ProgressionService.PendingLootCapacity) p.Profile.pendingLoot.Add(Item("pending-" + p.Profile.pendingLoot.Count));
+        while (p.Profile.inventory.Count < ProgressionService.MaximumRetainedEquipment) p.Profile.inventory.Add(Item("bag-" + p.Profile.inventory.Count));
         p.Save(); ItemData loot = Item("retained-protected"); int gold = p.Profile.gold;
-        Check(!p.CollectLoot(loot) && p.Profile.gold == gold && !Receipts(p).Contains(loot.id),
-            "full protected mailbox does not sell, acknowledge or consume the rejected drop");
-        p.Profile.pendingLoot.RemoveAt(0);
-        Check(p.CollectLoot(loot) && p.Profile.pendingLoot.Count(x => x.id == loot.id) == 1 && p.Profile.gold == gold,
-            "the same protected identity enters one freed pending slot");
-        Check(!p.CollectLoot(loot), "protected retry is idempotent after admission");
+        Check(!p.CollectLoot(loot) && p.Profile.gold == gold && !Receipts(p).Contains(loot.id), "retention safety boundary leaves rejected world identity available");
+        p.Profile.inventory.RemoveAt(p.Profile.inventory.Count-1);p.Save();
+        Check(p.CollectLoot(loot) && p.Profile.inventory.Count(x => x.id == loot.id) == 1 && p.Profile.gold == gold, "same world identity can retry when visible capacity is freed");
+        Check(!p.CollectLoot(loot), "successful admission is idempotent");
     }
     private static void BoundaryGuardsAndDurableIdentity(string root)
     {
         var p = Fresh(root); p.Profile.autoSellCommon = true;
         ItemData sold = Item("world-autosold", Rarity.Common); int gold = p.Profile.gold;
-        Check(p.CollectLoot(sold) && p.Profile.gold > gold, "fixture creates a receipt for an item absent from every bag");
+        Check(p.CollectLoot(sold) && p.Profile.gold == gold && !p.Profile.autoSellCommon && p.Sell(sold.id), "legacy autosell is disabled; explicit sale creates an absent-item receipt");
         int soldGold = p.Profile.gold;
         ItemData held = Item("world-held"), recovered = Item("world-recovered");
         Check(p.CollectLoot(held) && p.PreserveGroundLoot(new[] { recovered }), "fixture covers bag and recovery identities");
@@ -78,7 +75,7 @@ public static class WorldLootReceiptTests
                 "every incomplete boundary retains all collection receipts, flags " + flags);
         }
         p.Save();
-        Check(!p.CollectLoot(sold) && p.Profile.gold == soldGold && Receipts(p).Count == receipts, "ordinary saves never release an autosale receipt");
+        Check(!p.CollectLoot(sold) && p.Profile.gold == soldGold && Receipts(p).Count == receipts, "ordinary saves never release a manual-sale receipt");
         ItemData sellLater = Item("world-manual-sale", Rarity.Rare);
         Check(p.CollectLoot(sellLater) && p.Sell(sellLater.id), "fixture collects then manually sells an unprotected item");
         int afterSale = p.Profile.gold;

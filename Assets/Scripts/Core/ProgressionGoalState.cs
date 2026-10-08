@@ -25,8 +25,8 @@ namespace Emberfall
             {
                 switch(Action)
                 {
-                    case ProgressionGoalAction.ClaimCore:return "领取目标核心";
-                    case ProgressionGoalAction.ExchangeCore:return "兑换目标核心";
+                    case ProgressionGoalAction.ClaimCore:return "前往商人兑换";
+                    case ProgressionGoalAction.ExchangeCore:return "前往商人兑换";
                     case ProgressionGoalAction.ClaimPending:case ProgressionGoalAction.ClaimRecovery:return "领取目标装备";
                     case ProgressionGoalAction.Equip:return "穿戴目标装备";
                     case ProgressionGoalAction.UnlockVariant:return "解锁目标变体";

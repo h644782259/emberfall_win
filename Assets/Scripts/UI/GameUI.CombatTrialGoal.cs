@@ -22,10 +22,24 @@ namespace Emberfall
             session.Notify("已定位商人，请对话进入机制兑换。");
             BlockUITransition();
         }
+        private void NavigateSmithAttachment(ProgressionGoalState goal)
+        {
+            if(!session.IsInCamp){ClosePanel();session.ReturnToCamp();if(!session.IsInCamp)return;}
+            var p=session.Progression;
+            var attachment=p.Profile.attachments.Find(a=>a.id==goal.ItemId);
+            var gear=p.Profile.inventory.Find(item=>item.id==goal.ItemId);
+            if(attachment!=null)smithSelectedSlot=(int)BuildCatalog.MechanicSlot(attachment.mechanic);
+            else if(gear!=null)smithSelectedSlot=(int)gear.slot;
+            smithCategory=1;progressionGoalsOpen=false;panel=Panel.None;session.SetUIBlocking(false);
+            session.Player.Teleport(WorldTraversal.NearestWalkable(GameSession.HubNpcPosition(1),.45f));
+            session.Notify("已定位铁匠，请对话进入镶嵌与挂件成长。");BlockUITransition();
+        }
         private void PerformGoalAction(ProgressionGoalState goal)
         {
             if(goal.Action==ProgressionGoalAction.ClaimCore||goal.Action==ProgressionGoalAction.ExchangeCore)
             {NavigateMerchantExchange();return;}
+            if(goal.Action==ProgressionGoalAction.UnlockVariant||goal.Action==ProgressionGoalAction.Ascend||goal.Action==ProgressionGoalAction.UpgradeAttachment)
+            {NavigateSmithAttachment(goal);return;}
             if(goal.Action==ProgressionGoalAction.OpenPresets){progressionGoalsOpen=false;panel=Panel.Skills;skillSection=1;OpenBuildPlans();buildPlanDetails=1;return;}
             Feedback(session.Progression.ExecuteProgressionGoal(goal.ActionIdentity,session.IsInCamp),"目标操作已保存");
         }

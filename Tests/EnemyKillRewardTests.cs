@@ -105,8 +105,8 @@ public static class EnemyKillRewardTests
         string beforeRoll = Files(p.SaveFilePath);
         ItemData ordinary = p.RollLoot(p.Profile.level, false);
         ItemData boss = p.RollLoot(p.Profile.level + 1, true);
-        Check(ordinary.level == 2 && boss.level == 3 && Files(p.SaveFilePath) == beforeRoll,
-            "post-reward loot uses the gained level while rolling alone remains read-only");
+        Check(ordinary.level == ProgressionService.EquipmentGenerationLevel(p.Profile.level) && boss.level == ProgressionService.EquipmentGenerationLevel(p.Profile.level+1) && Files(p.SaveFilePath) == beforeRoll,
+            "post-reward loot uses the existing generation-level bands while rolling remains read-only");
         string rewarded = File.ReadAllText(p.SaveFilePath);
         Check(p.CollectLoot(boss) && p.Profile.inventory.Count(item => item.id == boss.id) == 1 &&
             File.ReadAllText(p.SaveFilePath + ".bak") == rewarded,

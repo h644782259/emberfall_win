@@ -27,7 +27,7 @@ namespace Emberfall
                 default:g.Done=a.upgradeRank>=MaximumAttachmentRank;g.Action=g.Done?ProgressionGoalAction.None:ProgressionGoalAction.UpgradeAttachment;g.MaterialCost=AttachmentUpgradeCost;break;
             }
             g.CanAct=inCamp&&!g.Done&&(g.Action==ProgressionGoalAction.UpgradeAttachment?AttachmentUpgradeLock(a.mechanic,true).Length==0:Profile.mechanicMaterials>=g.MaterialCost&&(g.Action!=ProgressionGoalAction.Ascend||a.rarity==Rarity.Epic&&HighestAdventureTier>=5));
-            g.Step=g.Done?"挂件目标已达成，原装备丢失不影响挂件":"旧装备目标已转为独立挂件 · 点击定位营地工坊";
+            g.Step=g.Done?"挂件目标已达成，原装备丢失不影响挂件":"旧装备目标已转为独立挂件 · 点击定位铁匠";
             return g;
         }
         public float MechanicPowerMultiplier(EquipmentMechanic mechanic)

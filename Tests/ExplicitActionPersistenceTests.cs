@@ -26,8 +26,8 @@ public static class ExplicitActionPersistenceTests
   test("specialization",p=>{},p=>p.SetSpecialization(ElementalistSpecialization.Burn,true));
   test("lock",p=>{p.Profile.inventory[0].locked=false;},p=>p.SetItemLocked(p.Profile.inventory[0].id,true));
   test("unlock",p=>{p.Profile.inventory[0].locked=true;},p=>p.SetItemLocked(p.Profile.inventory[0].id,false));
-  test("pending-lock",p=>{var item=p.CreateMechanicItem(EquipmentMechanic.FrostEcho);p.Profile.pendingLoot.Add(item);},p=>p.SetItemLocked(p.Profile.pendingLoot[0].id,false));
-  test("autosell",p=>{p.Profile.autoSellCommon=false;},p=>p.SetAutoSell(Rarity.Common,true));
+  test("pending-lock",p=>{var item=p.CreateMechanicItem(EquipmentMechanic.FrostEcho);p.Profile.pendingLoot.Add(item);},p=>p.SetItemLocked(p.Profile.inventory.Find(x=>x.mechanic==EquipmentMechanic.FrostEcho).id,false));
+  test("disable-legacy-autosell",p=>{p.Profile.autoSellCommon=true;},p=>p.SetAutoSell(Rarity.Common,false));
   test("potion",p=>{},p=>p.UsePotion());
   test("assign-skill",p=>{},p=>p.AssignSkill(5,0));
   test("assign-potion",p=>{},p=>p.AssignConsumable(5));

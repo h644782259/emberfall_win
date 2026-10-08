@@ -298,7 +298,8 @@ public static class ProgressionTests
         float before = service.GetStats().Damage;
         Check(service.Upgrade(weapon.id), "upgrade with enough gold");
         Check(service.Profile.gold == 60 - cost && weapon.upgradeLevel == 1 && service.GetStats().Damage > before, "upgrade charges and immediately improves stats");
-        ItemData highLevel = service.CreateLoot(20, true);
+        ItemData highLevel = service.RollLoot(20, true, 1);
+        Check(service.CollectLoot(highLevel), "tier-one boss fixture is acquired");
         Check(highLevel.rarity >= Rarity.Rare, "boss loot has at least rare quality");
         Check(!service.Equip(highLevel.id), "high-level loot cannot be equipped early");
         int gold = service.Profile.gold;
@@ -310,12 +311,8 @@ public static class ProgressionTests
         for (int i = service.Profile.inventory.Count; i < ProgressionService.InventoryCapacity; i++) service.CreateLoot(1, false);
         gold = service.Profile.gold;
         ItemData overflow = service.CreateLoot(1, true);
-        Check(service.Profile.inventory.Count == 72 && !service.Profile.inventory.Exists(item => item.id == overflow.id), "inventory is capped without losing existing gear");
-        bool protectedOverflow = ProgressionService.IsProtectedLoot(overflow);
-        Check(protectedOverflow
-            ? service.Profile.gold == gold && service.Profile.pendingLoot.Exists(item => item.id == overflow.id) && service.LastError.Contains("待领取")
-            : service.Profile.gold == gold + service.SellValue(overflow) && service.LastError.Contains("自动出售"),
-            "protected overflow preserves the item for claiming; ordinary overflow grants gold and a notification");
+        Check(service.Profile.inventory.Count == ProgressionService.InventoryCapacity+1 && service.Profile.inventory.Exists(item => item.id == overflow.id), "full regular capacity retains overflow visibly");
+        Check(service.Profile.gold == gold && service.Profile.pendingLoot.Count==0 && service.LastError.Contains("保全"), "overflow never sells or enters claim queue");
         service.AddGold(100);
         gold = service.Profile.gold;
         int potions = service.Profile.potions;
@@ -336,7 +333,7 @@ public static class ProgressionTests
         // independently, so randomized mechanic rolls must not change its event contract.
         loot.mechanic = EquipmentMechanic.None;
         loot.locked = false;
-        ItemData boss = service.RollLoot(int.MaxValue, true);
+        ItemData boss = service.RollLoot(int.MaxValue, true, 1);
         Check(loot.id != boss.id && loot.level == 1 && boss.level == 100 && boss.rarity >= Rarity.Rare, "world loot has unique IDs, capped levels and guaranteed boss rarity");
         Check(loot.upgradeBaseInitialized && boss.upgradeBaseInitialized && loot.upgradeLevel == 0, "world loot initializes permanent upgrade metadata");
         Check(UnityEngine.JsonUtility.ToJson(service.Profile, true) == before && changed == 0, "rolling world drops never inserts gear or awards gold/events");
@@ -367,17 +364,14 @@ public static class ProgressionTests
         saved = File.ReadAllText(service.SaveFilePath);
         written = File.GetLastWriteTimeUtc(service.SaveFilePath);
         ItemData overflow = service.RollLoot(8, true);
-        Check(service.Profile.inventory.Count == 72 && service.Profile.gold == gold && changed == 0 && File.ReadAllText(service.SaveFilePath) == saved && File.GetLastWriteTimeUtc(service.SaveFilePath) == written, "full bag still waits for actual pickup before converting a world drop");
-        bool protectedOverflow = ProgressionService.IsProtectedLoot(overflow);
-        int value = protectedOverflow ? 0 : service.SellValue(overflow);
-        Check(service.CollectLoot(overflow) && service.Profile.inventory.Count == 72 && service.Profile.gold == gold + value && changed == 1 && service.LastError.Contains(protectedOverflow ? "待领取" : "自动出售"), "full-bag pickup either protects valuable loot or converts ordinary loot exactly once");
-        Check(!service.Profile.inventory.Exists(item => item.id == overflow.id) && (!protectedOverflow || service.Profile.pendingLoot.Exists(item => item.id == overflow.id)), "overflow does not replace existing gear and protected rewards remain claimable");
-        saved = File.ReadAllText(service.SaveFilePath);
-        written = File.GetLastWriteTimeUtc(service.SaveFilePath);
-        Check(!service.CollectLoot(overflow) && !service.CollectLoot(UnityEngine.JsonUtility.FromJson<ItemData>(UnityEngine.JsonUtility.ToJson(overflow, true))), "overflow receipt blocks object and copied-ID duplicates");
-        Check(service.Profile.gold == gold + value && changed == 1 && File.ReadAllText(service.SaveFilePath) == saved && File.GetLastWriteTimeUtc(service.SaveFilePath) == written, "repeated overflow pickup grants no gold, event or save write");
+        Check(service.Profile.inventory.Count == ProgressionService.InventoryCapacity && service.Profile.gold == gold && changed == 0 && File.ReadAllText(service.SaveFilePath) == saved && File.GetLastWriteTimeUtc(service.SaveFilePath) == written, "rolling a full-bag world drop is read-only");
+        Check(service.CollectLoot(overflow) && service.Profile.inventory.Count == ProgressionService.InventoryCapacity+1 && service.Profile.gold == gold && changed == 1 && service.LastError.Contains("保全"), "full-bag pickup preserves every rarity once");
+        Check(service.Profile.inventory.Exists(item => item.id == overflow.id) && service.Profile.pendingLoot.Count==0, "overflow stays owned and immediately visible");
+        saved = File.ReadAllText(service.SaveFilePath);written = File.GetLastWriteTimeUtc(service.SaveFilePath);
+        Check(!service.CollectLoot(overflow) && !service.CollectLoot(UnityEngine.JsonUtility.FromJson<ItemData>(UnityEngine.JsonUtility.ToJson(overflow, true))), "overflow receipt rejects original and copied ID");
+        Check(service.Profile.gold == gold && changed == 1 && File.ReadAllText(service.SaveFilePath) == saved && File.GetLastWriteTimeUtc(service.SaveFilePath) == written, "replayed overflow never writes or grants twice");
         restored = new ProgressionService(service.SaveDirectory);
-        Check(restored.Load() && restored.Profile.inventory.Count == 72 && restored.Profile.gold == gold + value && (!protectedOverflow || restored.Profile.pendingLoot.Exists(item => item.id == overflow.id)), "full bag and correct pending-item or gold outcome persist through reload");
+        Check(restored.Load() && restored.Profile.inventory.Count == ProgressionService.InventoryCapacity+1 && restored.Profile.gold == gold && restored.Profile.inventory.Exists(item=>item.id==overflow.id), "visible overflow survives restart");
     }
 
     private static void HotbarDragMovesAndSwaps()
@@ -506,7 +500,7 @@ public static class ProgressionTests
         foreach (ItemSlot slot in new[] { ItemSlot.Weapon, ItemSlot.Armor, ItemSlot.Relic })
         {
             var service = Fresh(); ReachLevel(service, 50); service.AddGold(1000000);
-            ItemData source = service.Equipped(slot), target = TransferFixture(service, slot);
+            ItemData target = TransferFixture(service, slot), source = service.Equipped(slot);
             UpgradeTo(service, source, 5);
             ItemData targetFive = service.PreviewEquippedItem(target), sourceFive = service.PreviewEquippedItem(source);
             ItemData sourceZero = service.PreviewUpgrade(source, 0);
@@ -639,6 +633,7 @@ public static class ProgressionTests
             health = slot == ItemSlot.Armor ? 180 : slot == ItemSlot.Relic ? 90 : 0 };
         service.Profile.inventory.Add(item);
         service.Save();
+        item=service.Profile.inventory.Find(x=>x.id==item.id);
         Check(item.upgradeBaseInitialized, "equipment fixture receives persistent upgrade metadata through production validation");
         return item;
     }
@@ -650,7 +645,7 @@ public static class ProgressionTests
         copy.name += " paid reference";
         service.Profile.inventory.Add(copy);
         service.Save();
-        return copy;
+        return service.Profile.inventory.Find(x=>x.id==copy.id);
     }
 
     private static void UpgradeTo(ProgressionService service, ItemData item, int rank)
