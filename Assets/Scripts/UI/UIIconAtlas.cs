@@ -139,7 +139,7 @@ namespace Emberfall
             if (name == "inventory") name = "bag";
             if (name == "camp") name = "home";
             if (name == "blink") name = "dodge";
-            string[] names = { "bag", "skills", "home", "portal", "attack", "dodge", "potion", "pause", "help", "confirm", "cancel", "jump", "codex", "coin", "shard" };
+            string[] names = { "bag", "skills", "home", "portal", "attack", "dodge", "potion", "pause", "help", "confirm", "cancel", "jump", "codex", "coin", "shard", "compare" };
             int id = System.Array.IndexOf(names, name);
             if (id < 0) id = 1;
             int key = 100 + id;
@@ -159,6 +159,7 @@ namespace Emberfall
             else if (id == 10) { ink.Line(16, 16, 48, 48, 6); ink.Line(16, 48, 48, 16, 6); }
             else if(id==12){ink.color=new Color(.58f,.83f,1f);ink.Polygon(new[]{V(8,13),V(28,17),V(32,22),V(36,17),V(56,13),V(56,49),V(36,53),V(32,57),V(28,53),V(8,49)});ink.color=new Color(1f,.78f,.28f);ink.Line(32,22,32,54,4);ink.Line(14,24,24,27,3);ink.Line(40,27,50,24,3);}
             else if(id==13){ink.color=new Color(1f,.78f,.22f);ink.Disc(32,32,24);ink.color=new Color(.62f,.38f,.08f);ink.Ring(32,32,17,3);ink.Line(32,20,32,44,4);}
+            else if(id==15){ink.Line(12,12,12,52,4);ink.Line(26,22,26,52,4);ink.Line(40,12,40,52,4);ink.Line(54,22,54,52,4);ink.Arrow(19,10,47,10);}
             else if(id==14){ink.color=new Color(.68f,.63f,1f);ink.Polygon(new[]{V(32,6),V(51,28),V(39,56),V(18,48),V(13,23)});ink.color=Color.white;ink.Line(32,9,27,44,3);}
             else { ink.Arrow(32, 46, 32, 10); ink.Line(15, 55, 49, 55, 4); }
             texture = ink.Finish("Utility " + name); cache[key] = texture; return texture;
@@ -176,7 +177,7 @@ namespace Emberfall
         {
             int key=-3000-(int)slot;Texture2D texture;if(cache.TryGetValue(key,out texture))return texture;
             var ink=new Icon(Color.white);
-            if(slot==ItemSlot.Weapon){ink.Sword(32,32);ink.color=new Color(1f,.74f,.3f);ink.Line(18,42,46,42,5);}
+            if(slot==ItemSlot.Weapon){ink.Polygon(new[]{V(42,5),V(50,7),V(47,19),V(29,43),V(21,37),V(37,11)});ink.color=new Color(.46f,.73f,.91f);ink.Line(43,11,26,37,3);ink.color=new Color(1f,.74f,.3f);ink.Line(17,32,35,47,5);ink.color=new Color(.63f,.39f,.23f);ink.Line(24,42,14,55,6);ink.color=new Color(1f,.74f,.3f);ink.Disc(12,57,4);}
             else if(slot==ItemSlot.Armor){ink.Polygon(new[]{V(20,9),V(26,16),V(38,16),V(44,9),V(58,23),V(47,34),V(45,56),V(19,56),V(17,34),V(6,23)});ink.color=new Color(.35f,.72f,1f);ink.Line(32,22,32,49,6);}
             else{ink.Ring(32,25,19,4);ink.Polygon(new[]{V(32,28),V(46,43),V(32,59),V(18,43)});ink.color=new Color(.86f,.45f,1f);ink.Disc(32,43,6);}
             texture=ink.Finish("Equipment slot "+slot);cache[key]=texture;return texture;
