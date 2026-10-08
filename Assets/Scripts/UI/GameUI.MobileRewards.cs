@@ -83,7 +83,8 @@ namespace Emberfall
             DrawSingleChestCard(cardRect,TouchRatio);
             bool open=PrimaryButton(TouchRect(20,disclosure+errors+cardHeight-60,bodyWidth-40,48), session.Progression.ChestOpenCaption, gold, !chestOpening&&session.Progression.Profile.pendingFashionChest&&!session.Progression.Profile.pendingChestReveal);
             EndTouchScroll();if(!open)return false;
-            chestOpening=true;string result=session.Progression.OpenDungeonChest();
+            chestOpening=true;string result;
+            try{result=session.Progression.OpenDungeonChest();}finally{chestOpening=false;}
             if(result==null){chestOpening=false;mobileChestError=session.Progression.LastError;mobileChestScroll=Vector2.zero;Feedback(false,"宝箱暂时无法开启");}
             else
             {

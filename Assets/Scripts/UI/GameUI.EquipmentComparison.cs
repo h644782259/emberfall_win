@@ -25,21 +25,20 @@ namespace Emberfall
                 foreach(var a in session.Progression.Profile.attachments)
                     if(a.mounted&&BuildCatalog.MechanicClass(a.mechanic)==session.Progression.Profile.heroClass)mounts+=(mounts.Length>0?" / ":"")+BuildCatalog.MechanicName(a.mechanic)+" · "+a.upgradeRank+"阶";
                 Fill(area,new Color(.025f,.05f,.065f));
-                string text="挂件换装沿用 · "+(mounts.Length>0?mounts:"当前未挂载")+"\n旧装备属性与部位强化按换装比较；到营地工坊管理挂件与变体。";
+                string text="宝石换装沿用 · "+(mounts.Length>0?mounts:"当前未挂载")+"\n旧装备属性与部位强化按换装比较；到营地工坊管理宝石与变体。";
                 Text(new Rect(area.x+8,area.y+6,area.width-16,area.height-12),text,12,jade,false,true);
                 if(area.Contains(Mouse))tooltip=text;
                 return;
             }
             var hero=session.Progression.Profile.heroClass;float half=(area.width-8)*.5f;
-            bool lost=!EquipmentComparisonPresentation.SameMechanism(current,candidate,hero)&&EquipmentComparisonPresentation.ActiveMechanic(current,hero)!=EquipmentMechanic.None;
-            DrawMechanismTradeoff(new Rect(area.x,area.y,half,area.height),current,hero,lost?"原机制 · 将失去":"当前机制",lost?gold:muted);
-            DrawMechanismTradeoff(new Rect(area.x+half+8,area.y,half,area.height),candidate,hero,"换装后机制",jade);
-            if(area.Contains(Mouse))tooltip=EquipmentComparisonPresentation.Changes(current,candidate,hero)+"\n"+EquipmentComparisonPresentation.Description(candidate,hero);
+            DrawMechanismTradeoff(new Rect(area.x,area.y,half,area.height),current,hero,"当前",muted);
+            DrawMechanismTradeoff(new Rect(area.x+half+8,area.y,half,area.height),candidate,hero,"换装后",jade);
+            if(area.Contains(Mouse))tooltip=EquipmentComparisonPresentation.Changes(current,candidate,session.Progression)+"\n"+EquipmentComparisonPresentation.Description(candidate,session.Progression);
         }
         private void DrawMechanismTradeoff(Rect area,ItemData item,HeroClass hero,string label,Color accent)
         {
             Fill(area,new Color(.025f,.05f,.065f));
-            string copy=label+" · "+MechanicBadgePresentation.Title(item,hero)+"\n收益："+MechanicBadgePresentation.Benefit(item,hero)+"\n代价："+MechanicBadgePresentation.Cost(item,hero);
+            string copy=label+" · "+EquipmentComparisonPresentation.Description(item,session.Progression);
             int size=11;
             if(Style(size,false,true).CalcHeight(new GUIContent(copy),area.width-8)>area.height-6)size=10;
             Text(new Rect(area.x+4,area.y+3,area.width-8,area.height-6),copy,size,accent,false,true);

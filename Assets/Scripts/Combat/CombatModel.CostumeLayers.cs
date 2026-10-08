@@ -53,9 +53,9 @@ namespace Emberfall
         }
         private void BuildWeaponFashionShape(FashionData fashion)
         {
-            Color accent=Color.Lerp(GameBalance.ClassColor(heroClass),GameBalance.RarityColor(fashion.rarity),.55f);
-            WingSilhouette style=CostumeRecipes.WingStyle(fashion.rarity);
-            if(fashion.rarity==Rarity.Rare)BuildRareWeaponFashion(accent);
+            Color accent=Color.Lerp(GameBalance.ClassColor(heroClass),GameBalance.RarityColor(fashion.AppearanceRarity),.55f);
+            WingSilhouette style=CostumeRecipes.WingStyle(fashion.AppearanceRarity);
+            if(fashion.AppearanceRarity==Rarity.Rare)BuildRareWeaponFashion(accent);
             // Small structural ornaments echo the back silhouette; the blade, string and core stay readable.
             if(swordRig!=null)
             {
@@ -71,7 +71,7 @@ namespace Emberfall
             else if(bowRig!=null)
                 for(int side=-1;side<=1;side+=2)
                     CostumeMesh("Fashion bow limb crest",style,fashionWeapon,new Vector3(.025f,side*weaponStructure.BowReach*.84f,.10f),new Vector3(.5f,.26f,.5f),accent,style==WingSilhouette.Crystal?VisualSurface.Crystal:VisualSurface.Wood).localRotation=Quaternion.Euler(0,0,side<0?180:0);
-            int rank=(int)fashion.rarity;
+            int rank=(int)fashion.AppearanceRarity;
             if(staffRig!=null&&heroClass==HeroClass.Summoner)
             {
                 // Contract staff uses branching wood/leaf forms, distinct from the elementalist's crystal astrolabe.

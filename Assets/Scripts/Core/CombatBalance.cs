@@ -11,7 +11,7 @@ namespace Emberfall
     {
         public const int MaximumLevel = 100;
         public const int MaximumTier = 100;
-        public const int MaximumUpgradeRank = 10;
+        public const int MaximumUpgradeRank = MaximumLevel;
         public const float UpgradePerRank = .05f;
         public const float MinimumArmorDamageMultiplier = .30f;
         public const float MinimumCombinedDamageMultiplier = .16f;

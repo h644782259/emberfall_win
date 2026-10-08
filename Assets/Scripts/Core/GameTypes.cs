@@ -106,6 +106,18 @@ namespace Emberfall
         public static bool HasMechanicVariant(EquipmentMechanic mechanic)
         { return mechanic == EquipmentMechanic.FrostEcho || mechanic == EquipmentMechanic.CinderTrail || mechanic == EquipmentMechanic.ReturningBlade || mechanic == EquipmentMechanic.VenomSpread; }
 
+        public static string GemName(EquipmentMechanic mechanic)
+        {
+            switch(mechanic)
+            {
+                case EquipmentMechanic.FrostEcho:return "霜鸣宝石";
+                case EquipmentMechanic.CinderTrail:return "烬辉宝石";
+                case EquipmentMechanic.ReturningBlade:return "旋锋宝石";
+                case EquipmentMechanic.VenomSpread:return "碧蚀宝石";
+                case EquipmentMechanic.TwinSummonResonance:return "双契宝石";
+                default:return "宝石";
+            }
+        }
         public static string MechanicName(EquipmentMechanic mechanic)
         {
             switch (mechanic)
@@ -195,6 +207,7 @@ namespace Emberfall
         public int choice;
         public int gold;
         public int rarityIndex = -1;
+        public int appearanceTier = -1;
         public int slotIndex = -1;
         public string name;
         public bool duplicate;
@@ -214,6 +227,9 @@ namespace Emberfall
         public FashionSlot slot;
         public Rarity rarity;
         public string name;
+        // Preserve the collected visual identity while quality is upgraded.
+        public int appearanceTier=-1;
+        public Rarity AppearanceRarity {get{return appearanceTier>=0&&appearanceTier<=3?(Rarity)appearanceTier:rarity;}}
     }
     public enum EnemyKind { Slime, Goblin, Wisp, Guardian }
     public enum ZoneKind { Wilderness, Dungeon }
@@ -238,6 +254,8 @@ namespace Emberfall
         public int attack;
         public int defense;
         public int health;
+        public float criticalChance,criticalDamageBonus;
+        public int statRollRevision;
         public int upgradeLevel;
         public EquipmentMechanic mechanic;
         public bool locked;
@@ -429,6 +447,7 @@ namespace Emberfall
         public string weaponId;
         public string armorId;
         public string relicId;
+        public int fashionQualityRevision;
         public List<FashionData> fashions = new List<FashionData>();
         public string wingsFashionId;
         public string weaponFashionId;
@@ -448,6 +467,7 @@ namespace Emberfall
         public float Armor;
         public float MoveSpeed;
         public float CritChance;
+        public float CritDamageBonus;
     }
 
     public static class GameBalance
@@ -457,7 +477,7 @@ namespace Emberfall
         public const int HotbarSize = 10;
         public const int HotbarPotion = -2;
         public const int HotbarPages = 3;
-        public static readonly int[] DefaultHotbarKeys = { 122, 120, 99, 118, 98, 49, 50, 51, 52, 53 };
+        public static readonly int[] DefaultHotbarKeys = { 49, 50, 51, 52, 53, 122, 120, 99, 118, 98 };
         public static readonly string[] ClassNames = { "剑卫", "元素师", "游侠", "唤灵师" };
         public static readonly string[] ClassDescriptions = {
             "挥剑近战 · 旋风斩击 · 坚韧生存",
@@ -586,6 +606,7 @@ namespace Emberfall
         public static string SkillEvolution(HeroClass hero, int skill, int rank)
         {
             int stage = Math.Max(1, Math.Min(3, rank)) - 1;
+            if(hero==HeroClass.Arcanist&&skill==5)return new[]{"持续6秒；霜环每1.5秒造成95%攻击伤害。","持续8秒；霜环每1.2秒造成115%攻击伤害。","持续10秒；霜环每1秒造成135%攻击伤害。"}[stage]+"灼燃改为火路，每0.5秒造成65%攻击伤害，重叠不叠加。";
             if (skill == 3)
             {
                 if (hero == HeroClass.Vanguard) return new[] { "攻击 +8%，防御 +2。永久生效。", "攻击 +14%，防御 +4。", "攻击 +22%，防御 +7。" }[stage];
@@ -640,7 +661,7 @@ namespace Emberfall
         }
         public static bool IsBindableKey(int key)
         {
-            if (key == 97 || key == 100 || key == 102 || key == 103 || key == 104 || key == 105 || key == 106 || key == 107 || key == 115 || key == 116 || key == 119) return false;
+            if (key == 97 || key == 100 || key == 102 || key == 103 || key == 104 || key == 105 || key == 106 || key == 107 || key == 109 || key == 115 || key == 116 || key == 119) return false;
             return (key >= 97 && key <= 122) || (key >= 48 && key <= 57) || (key >= 282 && key <= 293);
         }
         public static string KeyName(int key)

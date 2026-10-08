@@ -16,7 +16,7 @@ namespace Emberfall
                 string id=prefix+"core/"+(int)mechanic;
                 if(!p.growthRewardReceipts.Contains(id))
                 {
-                    g.Identity=id;g.Title="获得挂件 · "+BuildCatalog.MechanicName(mechanic);g.Done=a!=null;g.ItemId=a==null?null:a.id;
+                    g.Identity=id;g.Title="获得宝石 · "+BuildCatalog.GemName(mechanic);g.Done=a!=null;g.ItemId=a==null?null:a.id;
                     bool first=p.pendingFirstClearReward&&!p.firstClearRewardClaimed;
                     g.Action=first?ProgressionGoalAction.ClaimCore:ProgressionGoalAction.ExchangeCore;g.MaterialCost=first?0:MechanicExchangeCost;
                     g.CanAct=inCamp&&(first||p.mechanicMaterials>=MechanicExchangeCost);g.Step=first?"首通自选可领取":"挑战副本收集碎片，再到营地兑换";return g;
@@ -33,10 +33,10 @@ namespace Emberfall
                 string id;
                 id=prefix+"upgrade/"+(int)mechanic;
                 if(!p.growthRewardReceipts.Contains(id))
-                {g.Identity=id;g.ItemId=a==null?null:a.id;g.Title="升级挂件 · "+BuildCatalog.MechanicName(mechanic);g.Done=a!=null&&a.upgradeRank>0;g.Action=ProgressionGoalAction.UpgradeAttachment;g.MaterialCost=AttachmentUpgradeCost;g.CanAct=inCamp&&a!=null&&p.level>=6&&p.mechanicMaterials>=AttachmentUpgradeCost;g.Step="角色6级 · 消耗6碎片升阶，提升属性和机制强度";return g;}
+                {g.Identity=id;g.ItemId=a==null?null:a.id;g.Title="升级宝石 · "+BuildCatalog.GemName(mechanic);g.Done=a!=null&&a.upgradeRank>0;g.Action=ProgressionGoalAction.UpgradeAttachment;g.MaterialCost=AttachmentUpgradeCost;g.CanAct=inCamp&&a!=null&&p.level>=6&&p.mechanicMaterials>=AttachmentUpgradeCost;g.Step="角色6级 · 消耗6碎片升阶，提升属性和机制强度";return g;}
                 id=prefix+"variant/"+(int)mechanic;
                 if(BuildCatalog.HasMechanicVariant(mechanic)&&!p.growthRewardReceipts.Contains(id))
-                {g.Identity=id;g.ItemId=a==null?null:a.id;g.Title="解锁挂件变体";g.Done=a!=null&&a.variantUnlocked;g.Action=ProgressionGoalAction.UnlockVariant;g.MaterialCost=VariantCost;g.CanAct=inCamp&&a!=null&&p.mechanicMaterials>=VariantCost;g.Step="到营地花4碎片解锁；之后免费切换";return g;}
+                {g.Identity=id;g.ItemId=a==null?null:a.id;g.Title="解锁宝石变体";g.Done=a!=null&&a.variantUnlocked;g.Action=ProgressionGoalAction.UnlockVariant;g.MaterialCost=VariantCost;g.CanAct=inCamp&&a!=null&&p.mechanicMaterials>=VariantCost;g.Step="到营地花4碎片解锁；之后免费切换";return g;}
             }
             foreach(int tier in new[]{10,20})
             {
@@ -47,13 +47,13 @@ namespace Emberfall
             {
                 g.Identity=prefix+"plans";g.Title="保存第二套配装";g.Action=ProgressionGoalAction.OpenPresets;g.CanAct=inCamp;
                 g.Done=p.buildPresets!=null&&p.buildPresets.Length>1&&p.buildPresets[0].populated&&p.buildPresets[1].populated;
-                g.Step=g.Done?"方案 A / B 已保存，点击检查方案 B":"到营地保存方案 A / B，记录挂件与变体";return g;
+                g.Step=g.Done?"方案 A / B 已保存，点击检查方案 B":"到营地保存方案 A / B，记录宝石与变体";return g;
             }
             foreach(var a in p.attachments)
             {
                 if(BuildCatalog.MechanicClass(a.mechanic)!=p.heroClass)continue;
                 string id=prefix+"ascend/"+(int)a.mechanic;if(p.growthRewardReceipts.Contains(id))continue;
-                g.Identity=id;g.ItemId=a.id;g.Title="升华挂件 · "+BuildCatalog.MechanicName(a.mechanic);g.Done=a.rarity==Rarity.Legendary;g.Action=ProgressionGoalAction.Ascend;g.MaterialCost=AscensionCost;g.RequiredAdventureTier=5;g.CanAct=inCamp&&p.highestAdventureTier>=5&&p.mechanicMaterials>=AscensionCost;g.Step="营地消耗24碎片，保留变体与升阶";return g;
+                g.Identity=id;g.ItemId=a.id;g.Title="升华宝石 · "+BuildCatalog.GemName(a.mechanic);g.Done=a.rarity==Rarity.Legendary;g.Action=ProgressionGoalAction.Ascend;g.MaterialCost=AscensionCost;g.RequiredAdventureTier=5;g.CanAct=inCamp&&p.highestAdventureTier>=5&&p.mechanicMaterials>=AscensionCost;g.Step="营地消耗24碎片，保留变体与升阶";return g;
             }
             foreach(int tier in new[]{40,60,80,100})
             {

@@ -109,7 +109,7 @@ namespace Emberfall
             { mobileRowWidth = width; mobileRowRatio = TouchRatio; mobileRowHeights.Clear(); }
             float height;
             if (mobileRowHeights.TryGetValue(item.id, out height)) return height;
-            string level = (item.level > session.Progression.Profile.level ? "需 " + item.level + " 级" : "Lv." + item.level) + " · ";
+            string level = (item.level > session.Progression.Profile.level ? "需 " + item.level + " 级" : "Lv" + item.level) + " · ";
             string locked = item.locked ? " · 已锁" : "";
             height = 16 + MeasureMobileParagraph(ItemTitle(MobileEquipmentPreview(item)), width - 60, 16, true) +
                 Mathf.Max(MeasureMobileParagraph(level + GameBalance.SlotName(item.slot) + locked, width - 26, 14), MeasureMobileParagraph(level + "穿戴中" + locked, width - 26, 14)) +
@@ -148,23 +148,15 @@ namespace Emberfall
             bool worn = IsEquipped(item), eligible = ProgressionAttention.LevelEligible(progression.Profile, item);
             Color rarity = GameBalance.RarityColor(item.rarity);
             y += MobileDetailParagraph(draw, 8, y, available, ItemTitle(preview)+" · "+progression.PresetReferences(item.id), 18, eligible ? rarity : muted, true) + 4;
-            y += MobileDetailParagraph(draw, 8, y, available, GameBalance.RarityName(item.rarity) + " · " + GameBalance.SlotName(item.slot) + " · " + (eligible ? "Lv." + item.level : "需 " + item.level + " 级") + " · 部位 +" + progression.SlotUpgradeRank(item.slot), 14, eligible ? muted : gold) + 8;
+            y += MobileDetailParagraph(draw, 8, y, available, GameBalance.RarityName(item.rarity) + " · " + GameBalance.SlotName(item.slot) + " · " + (eligible ? "Lv" + item.level : "需 " + item.level + " 级") + " · 部位 +" + progression.SlotUpgradeRank(item.slot), 14, eligible ? muted : gold) + 8;
             if (draw) DrawMobileEquipmentScores(8, y, available, current, preview);
             y += MobileCollectionLayout.ScoreHeight + 8;
             y += MobileDetailParagraph(draw, 8, y, available, MobileAttributeLine("攻击", current == null ? 0 : current.attack, preview.attack), 16, pale, true) + 3;
             y += MobileDetailParagraph(draw, 8, y, available, MobileAttributeLine("防御", current == null ? 0 : current.defense, preview.defense), 16, pale, true) + 3;
             y += MobileDetailParagraph(draw, 8, y, available, MobileAttributeLine("生命", current == null ? 0 : current.health, preview.health), 16, pale, true) + 8;
             y += MobileDetailParagraph(draw, 8, y, available, "换装继承部位强化", 14, muted) + 8;
-            y += MobileDetailParagraph(draw, 8, y, available, EquipmentComparisonPresentation.Changes(current,item,progression.Profile.heroClass), 15, gold, true) + 8;
-            if(item.mechanic!=EquipmentMechanic.None)
-            {
-                y += MobileDetailParagraph(draw,8,y,available,MechanicBadgePresentation.Title(item,progression.Profile.heroClass),16,gold,true)+4;
-                y += MobileDetailParagraph(draw,8,y,available,"收益 · "+MechanicBadgePresentation.Benefit(item,progression.Profile.heroClass),14,jade)+4;
-                y += MobileDetailParagraph(draw,8,y,available,"代价 · "+MechanicBadgePresentation.Cost(item,progression.Profile.heroClass),14,gold)+8;
-            }
-            y += MobileDetailParagraph(draw, 8, y, available, "换装后机制：" + EquipmentComparisonPresentation.Description(item,progression.Profile.heroClass), 14, item.mechanic == EquipmentMechanic.None ? muted : gold) + 8;
-            if (!worn && !EquipmentComparisonPresentation.SameMechanism(current,item,progression.Profile.heroClass))
-                y += MobileDetailParagraph(draw, 8, y, available, "当前机制：" + EquipmentComparisonPresentation.Description(current,progression.Profile.heroClass), 14, muted) + 8;
+            y += MobileDetailParagraph(draw, 8, y, available, EquipmentComparisonPresentation.Changes(current,item,progression), 15, gold, true) + 8;
+            y += MobileDetailParagraph(draw,8,y,available,EquipmentComparisonPresentation.Description(item,progression),14,jade)+8;
 
             y += MobileDetailParagraph(draw, 8, y, available, "强化绑定部位；同一强化等级的加成按每件装备自身基础属性计算。", 14, jade) + 8;
             return y;

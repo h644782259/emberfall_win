@@ -51,7 +51,8 @@ namespace Emberfall
         // Same single-target ceiling as the former 3/4/5 arrow retreat volley.
         public static float RangerVault(int rank)
         {rank=Rank(rank);return .32f*(1f+(rank-1)*.3f)*(rank+2)*1.65f;}
-        public const float FlameRideTick=.18f;
+        public const float FlameRideTick=.65f;
+        public static float FrostWalkerPulse(int rank){return .95f+.2f*(Rank(rank)-1); }
         public const float FlameRideInterval=.5f;
         public const float BasicEnergyOnHit=8f;
         // Nominal release/recovery timing is gameplay data, not the current model's

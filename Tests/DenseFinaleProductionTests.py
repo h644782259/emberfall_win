@@ -13,7 +13,7 @@ def member(s,k):
 s=(r/'Tests/FilledVfxAllocationTests.cs').read_text();s='using System;using System.Linq;using System.Collections.Generic;using System.Reflection;using UnityEngine;'+s[s.index('namespace Emberfall'):]
 burn=(r/'Tests/BurnFinaleProductionTests.cs').read_text()
 s=s.replace(member(s,'public sealed class PlayerController:'),member(burn,'public sealed partial class PlayerController:'))
-s=s.replace('public bool HasStarted,ModeFinished,InputBlocked;','public bool HasStarted,ModeFinished,InputBlocked,CombatEnded;public List<EnemyController> Enemies=new List<EnemyController>();public void RecordClassTutorial(HeroClass hero){}')
+s=s.replace('public bool HasStarted,ModeFinished,InputBlocked;','public bool HasStarted,ModeFinished,InputBlocked,CombatEnded;public bool CombatEffectsEnded=>CombatEnded;public List<EnemyController> Enemies=new List<EnemyController>();public void RecordClassTutorial(HeroClass hero){}')
 s=s.replace('public class MonoBehaviour:Component{}','public class MonoBehaviour:Component{public T GetComponentInChildren<T>()where T:Component=>null;}')
 s=s.replace('public static float Min(float a,float b)', 'public static int Min(int a,int b)=>Math.Min(a,b);public static float Min(float a,float b)')
 s=s.replace('public static class CombatFx{','public static class CombatFx{public static void Ring(Vector3 p,float r,Color c,float d,float w){}'+member((r/'Assets/Scripts/Combat/CombatEffects.cs').read_text(),'internal static void BurnContact('))

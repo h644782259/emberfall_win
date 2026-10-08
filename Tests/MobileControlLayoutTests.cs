@@ -18,6 +18,13 @@ public static class MobileControlLayoutTests
                 Check(r.Width>=(r.Width==44?44:48)&&r.Height>=(r.Width==44?44:48),"minimum 48 touch targets; compact potion retains 44");
                 Check(r.X>=0&&r.Y>=0&&r.X+r.Width<=l.Width+.01f&&r.Y+r.Height<=l.Height+.01f,"safe-area contained controls");
             }
+            foreach(var service in new[]{l.Shop,l.Smith})
+            {
+                Check(service.X>=0&&service.Y>=0&&service.X+service.Width<=l.Width&&service.Y+service.Height<=l.Height,"service icon remains within safe area");
+                foreach(var target in targets)Check(!service.Overlaps(target),"camp service icon clears combat/navigation targets");
+                Check(!service.Overlaps(l.Map)&&!service.Overlaps(l.DungeonEntrance),"service icons clear map and dungeon entry");
+            }
+            Check(!l.Shop.Overlaps(l.Smith),"shop and smith have independent hit targets");
             for(int i=0;i<targets.Count;i++)for(int j=i+1;j<targets.Count;j++)Check(!targets[i].Overlaps(targets[j]),"non-overlapping touch hitboxes "+i+"/"+j+" at "+d[0]);
             Check(Math.Abs(l.PlayerStatus.X+l.PlayerStatus.Width/2-l.Width/2)<.01&&l.PlayerStatus.Width==160&&l.PlayerStatus.Height==18&&Math.Abs(l.Height-l.PlayerStatus.Y-l.PlayerStatus.Height-17)<.01,"compact centered bottom vitals");
             foreach(var target in targets)Check(!l.PlayerStatus.Overlaps(target),"vitals clear all action targets");

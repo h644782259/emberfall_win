@@ -14,7 +14,7 @@ namespace Emberfall
         }
         public readonly float Scale, Width, Height;
         public readonly bool Tablet;
-        public readonly Area Joystick, MoveZone, Attack, Dodge, Potion, Jump, Cancel, Menu, Inventory, SkillsMenu, Catalog, Interact, SkillPage, DungeonEntrance;
+        public readonly Area Joystick, MoveZone, Attack, Dodge, Potion, Jump, Cancel, Menu, Inventory, SkillsMenu, Catalog, Interact, SkillPage, DungeonEntrance, Shop, Smith;
         public readonly Area EncounterText, BossHealth, Notice, AdventureStatus, FocusCommand, RecallCommand, CombatView, PlayerStatus, PlayerHealth, PlayerEnergy, Map;
         public readonly Area[] Skills = new Area[5];
         public readonly Area[] SkillOpportunities = new Area[10];
@@ -40,6 +40,7 @@ namespace Emberfall
             // Width already excludes Screen.safeArea insets. Never subtract them again.
             Menu=Centered(Width-30,32,48);Inventory=Centered(Width-84,32,48);
             SkillsMenu=Centered(Width-138,32,48);Catalog=Centered(Width-192,32,48);
+            Shop=Centered(Width-192,88,48);Smith=Centered(Width-138,88,48);
             Interact=new Area(Width-54,92,48,48);
             DungeonEntrance=new Area(Width*.5f-58,8,116,44);
             float shift=positionPreset<0?-Math.Min(8,Math.Max(0,Height-320)):positionPreset>0?0:0;
@@ -89,7 +90,7 @@ namespace Emberfall
         private bool ClearView(Area area)
         {
             if(area.X<0||area.Y<56||area.X+area.Width>Width||area.Y+area.Height>Height)return false;
-            foreach(var control in new[]{MoveZone,Attack,Dodge,Potion,Jump,Menu,Inventory,SkillsMenu,Catalog,Interact,FocusCommand,RecallCommand,Notice,BossHealth,EncounterText,AdventureStatus,PlayerStatus,Map,SkillPage,DungeonEntrance})
+            foreach(var control in new[]{MoveZone,Attack,Dodge,Potion,Jump,Menu,Inventory,SkillsMenu,Catalog,Interact,FocusCommand,RecallCommand,Notice,BossHealth,EncounterText,AdventureStatus,PlayerStatus,Map,SkillPage,DungeonEntrance,Shop,Smith})
                 if(area.Overlaps(control))return false;
             foreach(var skill in Skills)if(area.Overlaps(skill))return false;
             foreach(var hint in SkillOpportunities)if(area.Overlaps(hint))return false;

@@ -12,7 +12,7 @@ namespace Emberfall
         private CombatDamage finisherDamage;
         private readonly ScheduledImpactBatch<EnemyController> pendingTargets = new ScheduledImpactBatch<EnemyController>();
         private bool pendingFinisher;
-        private bool IsCurrentCast { get { return owner != null && session != null && session.Player == owner && !owner.IsDead && session.HasStarted && !session.CombatEnded && owner.CombatEpoch == epoch; } }
+        private bool IsCurrentCast { get { return owner != null && session != null && session.Player == owner && !owner.IsDead && session.HasStarted && !session.CombatEffectsEnded && owner.CombatEpoch == epoch; } }
         private float Radius { get { return 4.4f * GameBalance.SkillRangeMultiplier(rank); } }
         public static void Cast(PlayerController player, GameSession game, int skill, int rank, Vector3 target, float damage, EnemyController commandTarget = null, bool preserveTargetPoint = false, int castId = 0)
         {

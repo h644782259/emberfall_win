@@ -11,12 +11,14 @@ namespace Emberfall
         {
             var p=session.Progression;
             if(wearModel==null)wearModel=new CollectionModelPreview();
-            Rect viewport=new Rect(area.x,area.y,area.width,Mathf.Max(64*u,area.height-48*u));
+            bool fashion=mobileInventoryTab==3||inventoryFashionOpen;
+            Rect viewport=new Rect(area.x,area.y,area.width,Mathf.Max(64*u,area.height-(fashion?80:48)*u));
             wearModel.SetCenterOnAvatar(true);wearModel.SetComposition(CollectionPreviewComposition.Full);wearModel.SetYaw(20);
             wearModel.SetViewport(viewport.width*Mathf.Abs(GUI.matrix.m00),viewport.height*Mathf.Abs(GUI.matrix.m11),MobileControls.Active);
             Texture current=wearModel.RenderSafe(p.Profile.heroClass,p.Equipped(ItemSlot.Weapon),p.Equipped(ItemSlot.Armor),p.Equipped(ItemSlot.Relic),p.EquippedFashion(FashionSlot.Wings),p.EquippedFashion(FashionSlot.Weapon));
             if(current!=null)GUI.DrawTexture(viewport,current,ScaleMode.ScaleToFit,false);
             else Text(viewport,wearModel.LastError==null?"角色预览正在恢复":"预览暂不可用，其他操作可继续",Mathf.RoundToInt(11*u),muted,false,true);
+            if(fashion){DrawFashionWearSlots(area,u);return;}
             for(int slot=0;slot<3;slot++)
             {
                 var item=p.Equipped((ItemSlot)slot);Rect r=new Rect(area.center.x-70*u+slot*48*u,area.yMax-44*u,44*u,44*u);
@@ -33,6 +35,27 @@ namespace Emberfall
                 if(QuietAction(r,"",item!=null&&!inventoryComparisonOpen))
                 {mobileInventoryTab=0;OpenInventoryPopup(item.id,r);}
                 if(r.Contains(Mouse)&&item!=null)tooltip=item.name+" · 已穿戴";
+            }
+        }
+        private void DrawFashionWearSlots(Rect area,float u)
+        {
+            for(int i=0;i<2;i++)
+            {
+                FashionSlot slot=i==0?FashionSlot.Weapon:FashionSlot.Wings;
+                var item=session.Progression.EquippedFashion(slot);
+                float cell=(area.width-8*u)*.5f;
+                Rect r=new Rect(area.x+i*(cell+8*u),area.yMax-76*u,cell,76*u);
+                Color tint=item==null?muted:GameBalance.RarityColor(item.rarity);
+                Fill(r,card);Border(r,tint,item==null?1:2);
+                DrawIcon(new Rect(r.center.x-18*u,r.y+4*u,36*u,36*u),UIIconAtlas.FashionCardIcon(slot),tint);
+                string label=item==null?(slot==FashionSlot.Weapon?"兵装":"羽翼")+"\n未穿戴":ProgressionService.FashionName(item.slot,item.AppearanceRarity,session.Progression.Profile.heroClass);
+                Text(new Rect(r.x+3*u,r.y+42*u,r.width-6*u,32*u),label,Mathf.RoundToInt(10*u),item==null?muted:pale,item!=null,true,TextAnchor.MiddleCenter);
+                if(item!=null)
+                {
+                    Text(new Rect(r.xMax-18*u,r.y+2*u,16*u,16*u),"✓",Mathf.RoundToInt(11*u),jade,true);
+                    if(QuietAction(r,"",!inventoryComparisonOpen)){OpenInventoryPopup("@fashion:"+item.id,r);}
+                    if(!MobileControls.Active&&r.Contains(Mouse))tooltip=label+" · "+GameBalance.RarityName(item.rarity)+" · 已穿戴\n"+ProgressionService.FashionBonus(slot,item.rarity);
+                }
             }
         }
         private void DrawBagFashion(MobilePanelLayout.Area area)

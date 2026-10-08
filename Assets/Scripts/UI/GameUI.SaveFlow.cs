@@ -187,7 +187,7 @@ namespace Emberfall
             // A prior Save-and-Load attempt may itself have updated this same slot.
             bool ownSameSlotWrite = saveFlow.SavedCurrent && saveFlow.SourceId == saveFlow.TargetId;
             if (currentTarget == null || !currentTarget.CanLoad || (!ownSameSlotWrite && SaveRevision(currentTarget) != saveFlowTargetRevision))
-            { saveFlowError = "目标存档已改变或无法读取。请取消、刷新列表并重新确认。"; return; }
+            { saveFlowError = "目标存档已改变或无法读取。请取消并重新打开存档页确认。"; return; }
             try
             {
                 bool loaded = saveFlow.ConfirmLoad(CurrentSaveFlowId(), selectedSaveId, choice, SaveCurrentForFlow, discard =>

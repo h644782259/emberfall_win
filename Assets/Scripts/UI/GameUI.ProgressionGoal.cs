@@ -101,7 +101,7 @@ namespace Emberfall
             y+=h;
         }
         private static string GoalItemTitle(ItemData item)
-        {return item.name+" · Lv."+item.level+" · "+GameBalance.RarityName(item.rarity);}
+        {return item.name+" · Lv"+item.level+" · "+GameBalance.RarityName(item.rarity);}
         private void GoalCoreOption(ref float y,float w,float u,EquipmentMechanic mechanic,Rarity rarity,bool draw)
         {
             var p=session.Progression;bool selected=p.Profile.progressionGoal==ProgressionGoalKind.Core&&p.Profile.progressionGoalMechanic==mechanic&&p.Profile.progressionGoalMinimumRarity==rarity;

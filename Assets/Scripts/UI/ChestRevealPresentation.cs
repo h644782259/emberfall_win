@@ -33,7 +33,7 @@ namespace Emberfall
             var ranks=new HashSet<Rarity>();
             if(profile!=null&&profile.fashions!=null&&Enum.IsDefined(typeof(FashionSlot),slot))
                 foreach(var fashion in profile.fashions)
-                    if(fashion!=null&&fashion.slot==slot&&Enum.IsDefined(typeof(Rarity),fashion.rarity))ranks.Add(fashion.rarity);
+                    if(fashion!=null&&fashion.slot==slot&&Enum.IsDefined(typeof(Rarity),fashion.rarity))ranks.Add(fashion.AppearanceRarity);
             return ranks.Count;
         }
         public static string CollectionProgress(GameProfile profile,FashionSlot slot)

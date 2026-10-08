@@ -21,7 +21,14 @@ namespace Emberfall
             if(NavigationButton(BuildPlanRect(l.Close,u),"×",jade)){ClosePanel();return;}
             string[] tabs={"购买","兑换","出售"};
             for(int mode=0;mode<tabs.Length;mode++)if(TabButton(BuildPlanRect(l.Tab(mode),u),tabs[mode],merchantMode==mode))SelectMerchantMode(mode);
-            if(!MerchantServiceActive){Text(BuildPlanRect(l.Body,u),"靠近商人后才能交易。",Mathf.RoundToInt(16*u),muted);return;}
+            if(!MerchantServiceActive){Text(BuildPlanRect(l.Body,u),"返回营地后可使用商店。",Mathf.RoundToInt(16*u),muted);return;}
+            if(merchantMode==2)
+            {
+                var bulk=p.PrepareMerchantBulkSale(MerchantServiceActive);
+                Text(BuildPlanRect(l.Info,u),bulk==null?"暂无可一键出售的装备":"未锁定且评分更低 · "+bulk.Count+"件 · +"+bulk.Gold+"金币",Mathf.RoundToInt(12*u),muted,false,true);
+                if(PrimaryButton(BuildPlanRect(l.Action,u),"一键出售",gold,bulk!=null&&Time.unscaledTime>=merchantActionUntil)&&StartMerchantAction())
+                {bool sold=p.SellAtMerchant(bulk,MerchantServiceActive);Feedback(sold,"已出售 "+bulk.Count+" 件 · +"+bulk.Gold+" 金币");if(sold){RebuildBagItems();ResolveSelectedItem();}}
+            }
             var mechanics=BuildCatalog.MechanicsFor(p.Profile.heroClass);
             var saleItems=new List<ItemData>();
             if(merchantMode==2)foreach(var gear in p.Profile.inventory)if(gear!=null&&!gear.locked&&!IsEquipped(gear))saleItems.Add(gear);
@@ -42,8 +49,8 @@ namespace Emberfall
                 var quote=item==null?p.PrepareMerchantPurchase(mechanic,MerchantServiceActive):null;
                 bool first=p.Profile.pendingFirstClearReward&&!p.Profile.firstClearRewardClaimed;
                 int price=item!=null?p.SellValue(item):mechanic==EquipmentMechanic.None?ProgressionService.PotionPrice:first?0:ProgressionService.MechanicExchangeCost;
-                string caption=item!=null?item.name:mechanic==EquipmentMechanic.None?"生命药剂":BuildCatalog.MechanicName(mechanic);
-                DrawIcon(new Rect(tile.center.x-23*u,tile.y+6*u,46*u,46*u),item!=null?UIIconAtlas.EquipmentCardIcon(item.slot):UIIconAtlas.Utility(mechanic==EquipmentMechanic.None?"potion":"skills"),item!=null?GameBalance.RarityColor(item.rarity):Color.white);
+                string caption=item!=null?item.name:mechanic==EquipmentMechanic.None?"生命药剂":BuildCatalog.GemName(mechanic);
+                DrawIcon(new Rect(tile.center.x-23*u,tile.y+6*u,46*u,46*u),item!=null?UIIconAtlas.EquipmentCardIcon(item.slot,item.level):UIIconAtlas.Utility(mechanic==EquipmentMechanic.None?"potion":"gem"),item!=null?GameBalance.RarityColor(item.rarity):Color.white);
                 Text(new Rect(tile.x+6*u,tile.y+54*u,tile.width-12*u,20*u),caption,Mathf.RoundToInt(12*u),pale,false,false,TextAnchor.MiddleCenter);
                 DrawPriceTint(new Rect(tile.x+8*u,tile.y+77*u,tile.width-16*u,20*u),price,merchantMode==1,u,item!=null||quote!=null?gold:new Color(.98f,.28f,.24f));
                 if(item!=null)
@@ -57,13 +64,13 @@ namespace Emberfall
                     string captionAction=owned?"已拥有":quote!=null?merchantMode==0?"购买":"兑换":merchantMode==0?p.Profile.potions>=99?"药剂已满":"金币不足":"碎片不足";
                     Rect action=new Rect(tile.x+6*u,tile.y+100*u,tile.width-12*u,44*u);
                     if(PrimaryButton(action,captionAction,gold,quote!=null&&Time.unscaledTime>=merchantActionUntil)&&StartMerchantAction())
-                    {Feedback(p.BuyAtMerchant(quote,MerchantServiceActive),merchantMode==0?"购买成功 · 药剂已入行囊":"兑换成功 · 挂件已拥有，请到铁匠镶嵌");}
+                    {Feedback(p.BuyAtMerchant(quote,MerchantServiceActive),merchantMode==0?"购买成功 · 药剂已入行囊":"兑换成功 · 宝石已拥有，请到铁匠镶嵌");}
 
                 }
             }
             EndTouchScroll();
             Rect info=BuildPlanRect(l.Info,u);
-            Text(info,merchantMode==0?"生命药剂 × "+p.Profile.potions+" / 99":merchantMode==1?"兑换后可到铁匠镶嵌":"穿戴中与锁定物品受保护",Mathf.RoundToInt(13*u),muted,false,true);
+            if(merchantMode!=2)Text(info,merchantMode==0?"生命药剂 × "+p.Profile.potions+" / 99":merchantMode==1?"兑换后可到铁匠镶嵌":"穿戴中与锁定物品受保护",Mathf.RoundToInt(13*u),muted,false,true);
             if(merchantMode==2&&count==0)Text(BuildPlanRect(l.Body,u),"没有可出售装备。",Mathf.RoundToInt(16*u),jade);
         }
 

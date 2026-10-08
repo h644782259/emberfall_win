@@ -4,7 +4,7 @@ namespace Emberfall
 {
     public sealed partial class GameUI
     {
-        private sealed class LootNotice { public string Id,Name;public ItemSlot Slot;public Rarity Rarity;public float Started=-1; }
+        private sealed class LootNotice { public string Id,Name;public ItemSlot Slot;public Rarity Rarity;public int Level;public float Started=-1; }
         private readonly List<LootNotice> lootNotices=new List<LootNotice>();
         private ProgressionService lootNoticeOwner;private string lootNoticeSlot;
         private void BindLootNotices()
@@ -19,7 +19,7 @@ namespace Emberfall
         {
             if(item==null||!session.InDungeon||session.IsDead||session.PracticeActive||lootNoticeOwner!=session.Progression||lootNoticeSlot!=session.Progression.CurrentSlotId)return;
             if(lootNotices.Exists(n=>n.Id==item.id))return;
-            lootNotices.Add(new LootNotice{Id=item.id,Name=item.name,Slot=item.slot,Rarity=item.rarity});
+            lootNotices.Add(new LootNotice{Id=item.id,Name=item.name,Slot=item.slot,Rarity=item.rarity,Level=item.level});
         }
         private bool LootNoticesVisible {get{return session.InDungeon&&!session.IsDead&&!session.Paused&&!session.PracticeActive&&panel==Panel.None&&!session.InputBlocked;}}
         private int VisibleLootNoticeCount {get{return Mathf.Min(lootNotices.Count,MobileControls.Active&&MobileControls.Layout.Height<400?2:3);}}
@@ -55,7 +55,7 @@ namespace Emberfall
             {
                 var notice=lootNotices[i];Rect r=LootNoticeRect(i);Color tint=GameBalance.RarityColor(notice.Rarity);bool upgrade=LootNoticeUpgrade(notice)!=null;
                 Fill(r,new Color(.025f,.045f,.065f,.94f));Border(r,tint);
-                Rect icon=new Rect(r.x+6*u,r.y+9*u,36*u,36*u);Border(icon,tint);DrawIcon(icon,UIIconAtlas.EquipmentCardIcon(notice.Slot),tint);
+                Rect icon=new Rect(r.x+6*u,r.y+9*u,36*u,36*u);Border(icon,tint);DrawIcon(icon,UIIconAtlas.EquipmentCardIcon(notice.Slot,notice.Level),tint);
                 Text(new Rect(r.x+48*u,r.y+5*u,r.width-(upgrade?104:54)*u,26*u),notice.Name,Mathf.RoundToInt(11*u),pale,false,true);
                 Text(new Rect(r.x+48*u,r.y+32*u,r.width-54*u,17*u),"已拾取 · "+GameBalance.RarityName(notice.Rarity),Mathf.RoundToInt(10*u),tint);
                 if(upgrade){Rect action=LootNoticeEquipRect(r);Fill(action,new Color(.08f,.3f,.18f));Border(action,jade);Text(action,"穿戴",Mathf.RoundToInt(12*u),pale,true,false,TextAnchor.MiddleCenter);}

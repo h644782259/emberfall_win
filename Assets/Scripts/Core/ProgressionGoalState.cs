@@ -32,7 +32,7 @@ namespace Emberfall
                     case ProgressionGoalAction.UnlockVariant:return "解锁目标变体";
                     case ProgressionGoalAction.Ascend:return "升华目标装备";
                     case ProgressionGoalAction.Reforge:return "重铸目标装备";
-                    case ProgressionGoalAction.UpgradeAttachment:return "升级目标挂件";
+                    case ProgressionGoalAction.UpgradeAttachment:return "升级目标宝石";
                     case ProgressionGoalAction.OpenPresets:return "打开配装方案";
                     default:return "继续当前目标";
                 }

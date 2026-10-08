@@ -7,7 +7,11 @@ namespace Emberfall
         private string pendingDungeonRewardId;
         private int pendingDungeonRewardTier,pendingDungeonRewardGold,pendingDungeonRewardExperience;
         public bool DungeonRewardPending {get{return !string.IsNullOrEmpty(pendingDungeonRewardId);}}
+        public bool DungeonResultsReady {get{return HasStarted&&InDungeon&&DungeonCleared&&!DungeonRewardPending&&Progression!=null&&!Progression.Profile.pendingFashionChest&&!Progression.Profile.pendingChestReveal;}}
         public bool CombatEnded {get{return (PracticeActive&&PracticeRecord!=null&&PracticeRecord.Finished)||ModeFinished||(InDungeon&&DungeonCleared);}}
+        // A cleared ordinary dungeon remains explorable until the player leaves.
+        // Damage and rewards still use CombatEnded; new cast visuals may finish normally.
+        public bool CombatEffectsEnded {get{return CombatEnded&&!(InDungeon&&DungeonCleared&&!ModeFinished&&!PracticeActive);}}
         private void QueueDungeonCompletion()
         {
             if(DungeonRewardPending)return;

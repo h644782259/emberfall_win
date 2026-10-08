@@ -32,7 +32,7 @@ namespace Emberfall
             else if(gear!=null)smithSelectedSlot=(int)gear.slot;
             smithCategory=1;progressionGoalsOpen=false;panel=Panel.None;session.SetUIBlocking(false);
             session.Player.Teleport(WorldTraversal.NearestWalkable(GameSession.HubNpcPosition(1),.45f));
-            session.Notify("已定位铁匠，请对话进入镶嵌与挂件成长。");BlockUITransition();
+            session.Notify("已定位铁匠，请对话进入镶嵌与宝石成长。");BlockUITransition();
         }
         private void PerformGoalAction(ProgressionGoalState goal)
         {

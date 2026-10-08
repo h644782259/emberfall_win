@@ -13,7 +13,7 @@ namespace Emberfall
         public SmithUpgradeQuote PrepareSmithUpgrade(ItemSlot slot,bool atSmith)
         {
             var item=Equipped(slot);
-            if(!atSmith||item==null||SlotUpgradeRank(slot)>=MaximumUpgrade||Profile.gold<UpgradeCost(item))return null;
+            if(!atSmith||item==null||SlotUpgradeRank(slot)>=CurrentUpgradeLimit||Profile.gold<UpgradeCost(item))return null;
             return new SmithUpgradeQuote{Owner=this,ItemId=item.id,Slot=slot,PaidRank=SlotUpgradeRank(slot),GoldCost=UpgradeCost(item)};
         }
         public bool UpgradeAtSmith(SmithUpgradeQuote quote,bool atSmith)

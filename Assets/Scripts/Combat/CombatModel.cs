@@ -142,7 +142,7 @@ namespace Emberfall
                 fashionWings = new GameObject("Fashion Wings").transform;
                 fashionWings.SetParent(spine, false);
                 fashionWings.localPosition = new Vector3(0, .26f, -.43f);
-                Color color = GameBalance.RarityColor(wings.rarity);
+                Color color = GameBalance.RarityColor(wings.AppearanceRarity);
                 BuildFashionWingShape(wings,color);
             }
             Transform weaponAnchor = heroClass == HeroClass.Ranger ? bowRig :

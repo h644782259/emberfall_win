@@ -15,11 +15,26 @@ namespace Emberfall
         private float chestRevealedAt;
         private bool rewardSoundPlayed;
         private string chestReceiptId;
+        private string chestQualificationId;
+        private void EnsurePendingChestPanel()
+        {
+            if(session==null||!session.HasStarted||session.Paused||session.IsDead)return;
+            var profile=session.Progression.Profile;
+            if(!profile.pendingFashionChest&&!profile.pendingChestReveal)return;
+            if(panel!=Panel.None&&panel!=Panel.Chests&&panel!=Panel.Summary)return;
+            if(panel!=Panel.Chests||chestQualificationId!=profile.pendingChestQualificationId)
+            {
+                ResetChestReveal();mobileChestError=null;
+                mobileChestScroll=mobileChestArtScroll=Vector2.zero;
+                panel=Panel.Chests;session.SetUIBlocking(true);
+            }
+        }
         private float ChestDuration { get { var reward=session.Progression.LastChestReward; return EffectPreferences.ReducedEffects ? .15f : reward != null && reward.Duplicate ? .7f : reward == null || !reward.Rarity.HasValue ? .95f : 1.1f + (int)reward.Rarity.Value * .28f; } }
         private bool ChestAnimationDone { get { return chestRevealResult != null && Time.unscaledTime-chestRevealedAt >= ChestDuration; } }
 
         private void ResetChestReveal()
         {
+            chestQualificationId=session.Progression.Profile.pendingChestQualificationId;
             chestDetails = false;
             chestOpening = false;
             revealedChest = -1;
@@ -70,7 +85,8 @@ namespace Emberfall
                 DrawSingleChestCard(r,1);
                 if(PrimaryButton(new Rect(r.x+12,r.yMax-54,r.width-24,42), progression.ChestOpenCaption, gold, !chestOpening&&progression.Profile.pendingFashionChest&&!progression.Profile.pendingChestReveal))
                 {
-                    chestOpening=true;string result=progression.OpenDungeonChest();
+                    chestOpening=true;string result;
+                    try{result=progression.OpenDungeonChest();}finally{chestOpening=false;}
                     if(result==null){chestOpening=false;Feedback(false,"宝箱暂时无法开启");}
                     else {chestRevealOrigin=ChestChoiceArt(r,1);revealedChest=0;chestRevealResult=result;chestRevealedAt=Time.unscaledTime;chestDetails=false;rewardSoundPlayed=false;chestReceiptId=progression.LastChestReward.Id;desktopChestResultScroll=Vector2.zero;GameAudio.Play(SoundCue.Cast);}
                     BlockUITransition();return;

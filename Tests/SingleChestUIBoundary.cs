@@ -1,5 +1,8 @@
 using System;using System.IO;using System.Collections.Generic;using System.Linq;using Emberfall;using UnityEngine;
 namespace UnityEngine{
+ public enum TextAnchor{MiddleRight}
+ public class GUIContent{public string text;public GUIContent(string s){text=s;}}
+ public class GUIStyle{public float CalcHeight(GUIContent c,float width)=>Math.Max(20,(float)Math.Ceiling(c.text.Length*12/Math.Max(1,width))*16);}
  public struct Vector2{public float x,y;public static Vector2 zero=>new Vector2();}
  public struct Rect{public float x,y,width,height;public float xMax=>x+width;public float yMax=>y+height;public Rect(float a,float b,float w,float h){x=a;y=b;width=w;height=h;}}
  public static class Mathf{public static float Min(float a,float b)=>Math.Min(a,b);public static float Max(float a,float b)=>Math.Max(a,b);public static int RoundToInt(float x)=>(int)Math.Round(x);public static float Clamp(float x,float a,float b)=>Math.Min(b,Math.Max(a,x));public static int Clamp(int x,int a,int b)=>Math.Min(b,Math.Max(a,x));}
@@ -7,14 +10,14 @@ namespace UnityEngine{
  public static class GUI{public static bool enabled=true;}
 }
 namespace Emberfall{
- public static class UIIconAtlas{public static int Reward(int kind)=>kind;}
+ public static class UIIconAtlas{public static int Reward(int kind)=>kind;public static int FashionCardIcon(FashionSlot slot)=>4+(int)slot;}
  public static class MobileControls{public static bool Active;}
  public static class EffectPreferences{public static bool ReducedEffects;}
  public enum SoundCue{UI,Cast,Loot,LevelUp,Victory}public static class GameAudio{public static void Play(SoundCue s){}}
  public class GameSession{public ProgressionService Progression;public void LogSystem(string s){}public void SetUIBlocking(bool b){}public void SetPaused(bool b){}}
  public sealed partial class GameUI{
-  bool MerchantServiceActive=>true;enum Panel{None,Chests,Camp,Skills}Panel panel=Panel.Chests;GameSession session;float width,height,TouchRatio=1;Color gold,jade,pale,muted;
-  bool chestDetails,chestOpening,rewardSoundPlayed;int revealedChest=-1;string chestRevealResult,chestReceiptId,mobileChestError;float chestRevealedAt;Rect chestRevealOrigin;Vector2 desktopChestResultScroll,mobileChestScroll,mobileChestArtScroll;
+  bool MerchantServiceActive=>true;enum Panel{None,Chests,Camp,Skills}Panel panel=Panel.Chests;GameSession session;float width,height,TouchRatio=1;Color gold,jade,pale,muted,card;GUIStyle Style(int size,bool bold=false,bool wrap=false)=>new GUIStyle();
+  bool chestDetails,chestOpening,rewardSoundPlayed;int revealedChest=-1;string chestRevealResult,chestReceiptId,chestQualificationId,mobileChestError;float chestRevealedAt;Rect chestRevealOrigin;Vector2 desktopChestResultScroll,mobileChestScroll,mobileChestArtScroll;
   readonly List<(string caption,Rect bounds)> buttons=new List<(string,Rect)>();string click;bool clicked;int scrollDepth;
   bool Button(Rect r,string s,Color c,bool enabled=true,string reason=null,bool highlight=false){buttons.Add((s,r));if(!enabled||clicked||click!=s)return false;clicked=true;return true;}
   // Graphics boundary for the existing 483b47b button-role API; click semantics stay in Button.
@@ -24,10 +27,10 @@ namespace Emberfall{
   bool PrimaryButton(Rect r,string s,Color accent,bool enabled=true,string hint=null,bool primary=false)=>DrawButton(r,s,ButtonRole.Primary,enabled,hint);
   readonly List<int> resourceIcons=new List<int>();readonly List<string> resourceNumbers=new List<string>();int legacyDraws;
   void DrawIcon(Rect r,int icon,Color c){resourceIcons.Add(icon);}void DrawChestGoldReward(Rect r,ChestReward reward,Color c){legacyDraws++;}bool DrawChestRewardModel(Rect r,ChestReward reward)=>false;
-  void Fill(Rect r,Color c){}void Border(Rect r,Color c){}void Text(Rect r,string s,int size,Color c,bool bold=false,bool wrap=false){resourceNumbers.Add(s);}
+  void Fill(Rect r,Color c){}void Border(Rect r,Color c){}void Text(Rect r,string s,int size,Color c,bool bold=false,bool wrap=false,TextAnchor anchor=default){resourceNumbers.Add(s);}
   void DrawRewardChest(Rect r,bool opened,float alpha,float progress){}void DrawDesktopChestRules(Rect r){}void DrawDesktopChestResult(Rect r,ChestReward reward,Color c){}void DrawChestRevealTransition(Rect r,ChestReward reward,Rect target){}
   void DrawMobileChestDetails(MobilePanelLayout l){}void DrawMobileChestResult(MobilePanelLayout l,ChestReward r,Color c,bool complete){}
-  bool DrawMobilePanelChrome(MobilePanelLayout l,string title,string subtitle,bool close=true,bool menu=true)=>false;
+  bool DrawMobilePanelChrome(MobilePanelLayout l,string title,string subtitle,bool showClose=true,bool menu=true)=>false;
   MobilePanelLayout MobilePanelGeometry()=>new MobilePanelLayout(width/TouchRatio,height/TouchRatio);
   Rect MobilePanelRect(MobilePanelLayout.Area a)=>TouchRect(a.X,a.Y,a.Width,a.Height);
   Rect TouchRect(float x,float y,float w,float h)=>new Rect(x*TouchRatio,y*TouchRatio,w*TouchRatio,h*TouchRatio);
@@ -49,8 +52,9 @@ namespace Emberfall{
     ui.Frame();C(ui.buttons.Count(x=>x.caption=="继续开启")==1,"failed draw offers one continue action");ui.Frame("继续开启");C(events==1&&p.Profile.pendingChestReveal,"one click persists entire reward before reveal");
     ui.resourceIcons.Clear();ui.resourceNumbers.Clear();string visualBefore=JsonUtility.ToJson(p.Profile,true);
     ui.DrawChestCommittedReward(new Rect(0,0,240*ratio,220*ratio),p.LastChestReward,ui.gold);
-    C(ui.resourceIcons.SequenceEqual(new[]{0,1,2}),"actual receipt draws coin, fragment and thread pictograms");
-    C(ui.resourceNumbers.SequenceEqual(new[]{"+"+p.LastChestReward.goldDelta,"+"+p.LastChestReward.materialsDelta,"+"+p.LastChestReward.threadsDelta}),"actual resource numbers use committed deltas");
+    C(ui.resourceIcons.Count==0,"left art does not duplicate reward totals");ui.DrawChestRewardContents(300,ratio,p.LastChestReward,null,true);
+    C(ui.resourceIcons.Take(3).SequenceEqual(new[]{0,1,2}),"actual receipt draws coin, fragment and thread pictograms");
+    C(ui.resourceNumbers.Where(s=>s.StartsWith("+")).SequenceEqual(new[]{"+"+p.LastChestReward.goldDelta,"+"+p.LastChestReward.materialsDelta,"+"+p.LastChestReward.threadsDelta}),"actual resource numbers use committed deltas");
     C(JsonUtility.ToJson(p.Profile,true)==visualBefore&&events==1,"resource rendering never grants or acknowledges");
     ui.resourceIcons.Clear();ui.resourceNumbers.Clear();ui.DrawChestResourceVisuals(new Rect(0,0,240,220),new ChestReward{hasCurrencyDeltas=true});C(ui.resourceIcons.Count==0&&ui.resourceNumbers.Count==0,"zero actual capped deltas draw no invented gain");
     ui.DrawChestResourceVisuals(new Rect(0,0,240,220),new ChestReward());C(ui.legacyDraws==1,"legacy receipt without deltas keeps legacy presentation");

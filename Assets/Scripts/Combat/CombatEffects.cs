@@ -321,7 +321,7 @@ namespace Emberfall
             CombatImpactBatch.BeginAction();
             try
             {
-            if (session == null || session.Player == null || session.Player != playerGeneration || !session.HasStarted || session.IsDead || session.CombatEnded || session.Player.CombatEpoch != epoch || (!hostile && owner == null))
+            if (session == null || session.Player == null || session.Player != playerGeneration || !session.HasStarted || session.IsDead || session.CombatEffectsEnded || hostile && session.CombatEnded || session.Player.CombatEpoch != epoch || (!hostile && owner == null))
             { terminationReason = "retired"; Destroy(gameObject); return; }
             if (session.InputBlocked) return;
             float dt = Time.deltaTime;
@@ -505,7 +505,7 @@ namespace Emberfall
         private SkillVisualRecipe visualRecipe;
         private FilledSkillVfx.ArrowBatchHandle arrowRainVisual;
         private readonly ScheduledImpactBatch<EnemyController> pendingTickTargets = new ScheduledImpactBatch<EnemyController>();
-        private bool IsCurrentCast { get { return owner != null && session != null && session.Player == owner && !owner.IsDead && session.HasStarted && !session.CombatEnded && owner.CombatEpoch == epoch; } }
+        private bool IsCurrentCast { get { return owner != null && session != null && session.Player == owner && !owner.IsDead && session.HasStarted && !session.CombatEffectsEnded && owner.CombatEpoch == epoch; } }
 
         public static void Spawn(PlayerController player, GameSession game, Vector3 at, float size, CombatDamage amount, float disable,
             float startup, float activeTime, float tickInterval, Color tint, bool followPlayer = false, bool fallingMeteor = false, float pulling = 0f, CombatDamage finisher = default(CombatDamage), int statusSkill = -1, int statusRank = 1, int castId = 0, SkillVisualRecipe visual = SkillVisualRecipe.Neutral, int trackedMechanic = -1)

@@ -85,7 +85,7 @@ namespace Emberfall
             {
                 int equipped = LearnedSkillAtSlot(p, slot);
                 bool current = equipped == skill;
-                Rect target = new Rect(actionX + (slot % 5) * 112, r.y + 424 + (1 - slot / 5) * 40, 102, 36);
+                Rect target = new Rect(actionX + (slot % 5) * 112, r.y + 424 + (slot / 5) * 40, 102, 36);
                 string key = GameBalance.KeyName(p.hotbarKeys[slot]);
                 detailSlots[slot] = target;
                 string hint = key + " · " + SlotSkillName(p, slot) + "\n" + (rank == 0 ? "先学习这项技能。" : current ? "点击从此槽卸下；不会清除技能冷却。" : "将" + GameBalance.SkillName(p.heroClass, skill) + "配置到此槽。") + "\n拖动已配置技能可移动或交换，拖到栏外取消。";

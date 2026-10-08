@@ -45,7 +45,8 @@ namespace Emberfall
         public const int InventoryCapacity = 256;
         public const int MaximumSavedEquipment = 4098; // Two reserved clear-reward slots; new pickups still stop at 4096.
         public const int MaximumRetainedEquipment = 4096; // Visible overflow; bounded by the save byte limit as well.
-        public const int MaximumUpgrade = 10;
+        public const int MaximumUpgrade = MaximumLevel;
+        public int CurrentUpgradeLimit {get{return Clamp(Profile.level,1,MaximumUpgrade);}}
         public const int PotionPrice = 20;
         public const int PendingLootCapacity = 24;
         public const int RecoveryLootCapacity = 256;
@@ -59,16 +60,11 @@ namespace Emberfall
         private static readonly int[] WingHealthPercents = { 3, 5, 8, 12 };
         private static readonly int[] WingArmorPercents = { 2, 3, 5, 8 };
         private static readonly int[] WeaponPercents = { 2, 4, 6, 9 };
-        // Absolute probabilities per opened dungeon chest: 22% common, 12% rare,
-        // 5% epic, 1% legendary, and 60% without a fashion drop.
+        // Preserve the overall 40% fashion chance; every new fashion is legendary.
         public static Rarity? RollFashionRarity(int roll)
         {
-            if (roll < 0 || roll >= 100) throw new ArgumentOutOfRangeException("roll");
-            if (roll < 1) return Rarity.Legendary;
-            if (roll < 6) return Rarity.Epic;
-            if (roll < 18) return Rarity.Rare;
-            if (roll < 40) return Rarity.Common;
-            return null;
+            if(roll<0||roll>=100)throw new ArgumentOutOfRangeException("roll");
+            return roll<40?(Rarity?)Rarity.Legendary:null;
         }
 
         public static string FashionName(FashionSlot slot,Rarity rarity)
@@ -214,6 +210,7 @@ namespace Emberfall
                 // A failed save leaves the active role and durable reward flags intact.
                 string migrationFailure;
                 bool migrationRequired=ChapterProgression.BackfillDifficultyRewards(loaded);
+                if(loaded.fashionQualityRevision<1){loaded.fashionQualityRevision=1;migrationRequired=true;}
                 if(loaded.rewardInventoryRevision<1){loaded.rewardInventoryRevision=1;migrationRequired=true;}
                 if(loaded.skillStockVersion<1){SkillStockRules.Normalize(loaded);loaded.skillStockVersion=1;migrationRequired=true;}
                 if(loaded.variantKnowledgeRevision<1){loaded.variantKnowledgeRevision=1;migrationRequired=true;}
@@ -732,6 +729,8 @@ namespace Emberfall
                 stats.MaxHealth += item.health;
                 stats.Damage += item.attack;
                 stats.Armor += item.defense;
+                stats.CritChance=Math.Min(1f,stats.CritChance+item.criticalChance);
+                stats.CritDamageBonus+=item.criticalDamageBonus;
             }
             if(Profile.attachments!=null)foreach(var a in Profile.attachments)if(a.mounted&&BuildCatalog.MechanicClass(a.mechanic)==Profile.heroClass)
             {stats.Damage*=1f+.015f*a.upgradeRank;stats.MaxHealth*=1f+.02f*a.upgradeRank;}
@@ -1507,12 +1506,12 @@ namespace Emberfall
                 if (!GameBalance.IsBindableKey(key) || !keys.Add(key)) return "方案快捷键无效或重复。";
             if(preset.mountedAttachments!=null)
             {
-                if(preset.mountedAttachments.Length>BuildCatalog.MechanicsFor(Profile.heroClass).Length||preset.attachmentVariants==null||preset.attachmentVariants.Length!=preset.mountedAttachments.Length)return "方案挂件数据无效。";
+                if(preset.mountedAttachments.Length>BuildCatalog.MechanicsFor(Profile.heroClass).Length||preset.attachmentVariants==null||preset.attachmentVariants.Length!=preset.mountedAttachments.Length)return "方案宝石数据无效。";
                 var mounted=new HashSet<EquipmentMechanic>();
                 for(int i=0;i<preset.mountedAttachments.Length;i++)
                 {
                     var mechanic=preset.mountedAttachments[i];var attachment=Attachment(mechanic);int variant=preset.attachmentVariants[i];
-                    if(!mounted.Add(mechanic)||BuildCatalog.MechanicClass(mechanic)!=Profile.heroClass||attachment==null||variant<0||variant>1||variant==1&&!attachment.variantUnlocked)return "方案挂件缺失、重复或变体尚未解锁。";
+                    if(!mounted.Add(mechanic)||BuildCatalog.MechanicClass(mechanic)!=Profile.heroClass||attachment==null||variant<0||variant>1||variant==1&&!attachment.variantUnlocked)return "方案宝石缺失、重复或变体尚未解锁。";
                 }
             }
             if(preset.equipmentVariants!=null && preset.equipmentVariants.Length!=3)return "方案变体数据无效。";
@@ -1808,7 +1807,7 @@ namespace Emberfall
             int minimum=TierRewardRules.ChestGoldMinimum(tier);
             return (savedReward!=null&&savedReward.rulesRevision<2?"旧版已保存奖励按原回执展示，不追加新箱收益。\n\n":"")+
                 "一个通关宝箱，直接开启。金币 "+minimum+"～"+(minimum+40)+" + 1星烬碎片 + 1基础星纹。\n"+
-                "额外时装：普通22% · 稀有12% · 史诗5% · 传说1% · 无时装60%。先抽品质，再随机补齐该品质尚缺的兵装或羽翼；两部位齐全才随机重复。\n"+
+                "额外时装：传说40% · 无时装60%。优先补齐未拥有的传说兵装或羽翼，两部位齐全后随机重复。\n"+
                 "重复时装仍转为原金币与额外星纹。未抽签的旧资格仅此箱保留金币×1.5；已冻结抽签只继续原结果。\n"+
                 "营地可手动用6星纹换1碎片，或30星纹自选未有传说；不自动兑换。实际到账受余额上限影响。基础通关碎片独立结算，跳过动画不改变收益。";
         }
@@ -1887,12 +1886,12 @@ namespace Emberfall
                 FashionSlot slot=roll.rulesRevision>=2?(FashionSlot)roll.slotIndex:roll.choice==0?FashionSlot.Weapon:FashionSlot.Wings;
                 string id="fashion-"+(int)slot+"-"+(int)rarity.Value;
                 bool owned=candidate.fashions.Exists(x=>x.id==id);
-                receipt.rarityIndex=(int)rarity.Value;receipt.slotIndex=(int)slot;receipt.name=FashionName(slot,rarity.Value,candidate.heroClass);
+                receipt.rarityIndex=(int)Rarity.Legendary;receipt.appearanceTier=(int)rarity.Value;receipt.slotIndex=(int)slot;receipt.name=FashionName(slot,rarity.Value,candidate.heroClass);
                 receipt.duplicate=roll.rulesRevision>=2?roll.duplicate:owned;
                 if(!receipt.duplicate&&owned){Fail("冻结奖励的收藏状态已改变，请保留存档并恢复原资格；不会重抽。");return null;}
                 if(receipt.duplicate)
-                {receipt.duplicateGold=new[]{40,100,250,800}[(int)rarity.Value];receipt.duplicateThreads=new[]{1,2,4,8}[(int)rarity.Value];receipt.gold+=receipt.duplicateGold;}
-                else candidate.fashions.Add(new FashionData{id=id,slot=slot,rarity=rarity.Value,name=receipt.name});
+                {receipt.duplicateGold=800;receipt.duplicateThreads=8;receipt.gold+=receipt.duplicateGold;}
+                else candidate.fashions.Add(new FashionData{id=id,slot=slot,rarity=Rarity.Legendary,appearanceTier=(int)rarity.Value,name=receipt.name});
             }
             if(Profile.pendingAdventureChest){
                 int before=candidate.inventory.Count;
@@ -2104,7 +2103,7 @@ namespace Emberfall
                     bool first=Profile.pendingFirstClearReward&&!Profile.firstClearRewardClaimed;
                     goal.MaterialCost=first?0:MechanicExchangeCost;goal.Action=first?ProgressionGoalAction.ClaimCore:ProgressionGoalAction.ExchangeCore;
                     goal.CanAct=inCamp&&(first||Profile.mechanicMaterials>=MechanicExchangeCost);
-                    goal.Step=first?"首通自选可领取这件挂件":"在营地定向兑换这件史诗挂件";break;
+                    goal.Step=first?"首通自选可领取这件宝石":"在营地定向兑换这件史诗宝石";break;
                 case ProgressionGoalKind.Variant:case ProgressionGoalKind.Ascension:case ProgressionGoalKind.Reforge:
                     goal.Identity+="/"+Profile.progressionGoalItemId+(Profile.progressionGoal==ProgressionGoalKind.Reforge?"/"+Profile.progressionGoalLevel:"");
                     goal.ItemId=Profile.progressionGoalItemId;
@@ -2340,21 +2339,41 @@ namespace Emberfall
 
         private static void SetRolledStats(ItemData item)
         {
-            float multiplier = new[] { 1f, 1.5f, 2.25f, 3.4f }[(int)item.rarity];
-            int level = EquipmentGenerationLevel(item.level);
-            item.attack = item.defense = item.health = 0;
-            if (item.slot == ItemSlot.Weapon) item.attack = Round((5 + level * 2.5f) * multiplier);
-            else if (item.slot == ItemSlot.Armor)
+            // The identified drop owns its roll. Preview, reload and reforge never
+            // reroll it; each newly generated GUID produces independent percentiles.
+            int seed=17;unchecked{foreach(char c in item.id??"")seed=seed*31+c;}
+            var roll=new System.Random(seed);int quality=Clamp((int)item.rarity,0,3);
+            float[] minimum={.85f,1.10f,1.45f,1.90f},maximum={1.05f,1.40f,1.85f,2.50f};
+            int level=EquipmentGenerationLevel(item.level);item.level=level;
+            item.attack=item.defense=item.health=0;
+            if(item.slot==ItemSlot.Weapon)item.attack=RolledEquipmentStat(5+level*2.5f,minimum[quality],maximum[quality],roll);
+            else if(item.slot==ItemSlot.Armor)
             {
-                item.defense = Round((3 + level * 1.2f) * multiplier);
-                item.health = Round((10 + level * 4) * multiplier);
+                item.defense=RolledEquipmentStat(3+level*1.2f,minimum[quality],maximum[quality],roll);
+                item.health=RolledEquipmentStat(10+level*4,minimum[quality],maximum[quality],roll);
             }
             else
             {
-                item.attack = Round((2 + level) * multiplier);
-                item.health = Round((6 + level * 3) * multiplier);
+                item.attack=RolledEquipmentStat(2+level,minimum[quality],maximum[quality],roll);
+                item.health=RolledEquipmentStat(6+level*3,minimum[quality],maximum[quality],roll);
             }
+            item.criticalChance=item.criticalDamageBonus=0;
+            int chance=new[]{0,25,55,80}[quality];
+            if(roll.Next(100)<chance)
+            {
+                bool criticalRate=roll.Next(2)==0;
+                if(criticalRate)item.criticalChance=roll.Next(new[]{0,100,200,300}[quality],new[]{0,301,501,801}[quality])/10000f;
+                else item.criticalDamageBonus=roll.Next(new[]{0,500,800,1200}[quality],new[]{0,1001,1501,2001}[quality])/10000f;
+                if(quality>=2&&roll.Next(100)<(quality==3?45:20))
+                {
+                    if(criticalRate)item.criticalDamageBonus=roll.Next(quality==3?1200:800,quality==3?2001:1501)/10000f;
+                    else item.criticalChance=roll.Next(quality==3?300:200,quality==3?801:501)/10000f;
+                }
+            }
+            item.statRollRevision=1;
         }
+        private static int RolledEquipmentStat(float basis,float minimum,float maximum,System.Random random)
+        {return Math.Max(1,Round(basis*(minimum+(maximum-minimum)*(random.Next(10001)/10000f))));}
 
         // Added only after the attached profile write succeeds, before observers run.
         // Includes auto-sold drops which no longer have an inventory entry.
@@ -2477,7 +2496,7 @@ namespace Emberfall
             ItemData item = FindItem(id);
             if (item == null) return Fail("找不到这件装备。");
             int rank = SlotUpgradeRank(item.slot);
-            if (rank >= MaximumUpgrade) return Fail("该部位已达到强化上限 +10；换装会自动继承。");
+            if (rank >= CurrentUpgradeLimit) return Fail("已达到当前角色等级的强化上限 +"+CurrentUpgradeLimit+"；角色升级后可继续强化。");
             int cost = UpgradeCost(item);
             if (Profile.gold < cost) return Fail("金币不足，部位强化需要 " + cost + " 金币。");
             ItemData equipped = Equipped(item.slot);
@@ -2526,6 +2545,7 @@ namespace Emberfall
                 mechanic = item.mechanic, locked = item.locked,
                 mechanicVariant = item.mechanicVariant, mechanicVariantUnlocked = item.mechanicVariantUnlocked, balanceRevision = item.balanceRevision,
                 attack = item.attack, defense = item.defense, health = item.health, upgradeLevel = item.upgradeLevel,
+                criticalChance=item.criticalChance,criticalDamageBonus=item.criticalDamageBonus,statRollRevision=item.statRollRevision,
                 upgradeBaseInitialized = item.upgradeBaseInitialized,
                 baseAttack = item.baseAttack, baseDefense = item.baseDefense, baseHealth = item.baseHealth,
                 upgradeAnchorLevel = item.upgradeAnchorLevel, upgradeAnchorAttack = item.upgradeAnchorAttack,
@@ -2589,6 +2609,8 @@ namespace Emberfall
             item.attack = Clamp(item.attack, 0, MaximumEquipmentStat);
             item.defense = Clamp(item.defense, 0, MaximumEquipmentStat);
             item.health = Clamp(item.health, 0, MaximumEquipmentHealth);
+            item.criticalChance=float.IsNaN(item.criticalChance)||float.IsInfinity(item.criticalChance)?0:Math.Max(0,Math.Min(.08f,item.criticalChance));
+            item.criticalDamageBonus=float.IsNaN(item.criticalDamageBonus)||float.IsInfinity(item.criticalDamageBonus)?0:Math.Max(0,Math.Min(.20f,item.criticalDamageBonus));
             bool old = item.balanceRevision < 1;
             bool validOld = item.upgradeBaseInitialized && item.upgradeAnchorLevel >= 0 && item.upgradeAnchorLevel <= MaximumUpgrade &&
                 ValidUpgradeBasis(item.baseAttack, item.upgradeAnchorAttack, item.upgradeAnchorLevel, 1, MaximumEquipmentStat) &&
@@ -2629,7 +2651,7 @@ namespace Emberfall
         {
             if (item == null || !Enum.IsDefined(typeof(ItemSlot), item.slot)) return 0;
             int rank = SlotUpgradeRank(item.slot);
-            if (rank >= MaximumUpgrade) return 0;
+            if (rank >= CurrentUpgradeLimit) return 0;
             // Every item of a slot trains the same permanent slot rank. Price never
             // depends on a donor's level, rarity, or cached item upgradeLevel.
             int slotPrice = item.slot == ItemSlot.Weapon ? 60 : item.slot == ItemSlot.Armor ? 50 : 45;
@@ -2646,6 +2668,7 @@ namespace Emberfall
         {
             if(item==null)return 0;
             float attributes=item.attack*5f+item.defense*3f+item.health*.2f;
+            attributes+=(20+item.level*2)*(item.criticalChance*8f+item.criticalDamageBonus*2f);
             // Intrinsic item valuation, not a prediction of DPS or build synergy.
             bool mechanic=item.mechanic!=EquipmentMechanic.None&&Enum.IsDefined(typeof(EquipmentMechanic),item.mechanic)&&BuildCatalog.MechanicSlot(item.mechanic)==item.slot;
             return attributes+(mechanic?attributes*.2f:0);
@@ -3112,7 +3135,7 @@ namespace Emberfall
                 throw new ArgumentException("星纹兑换流水无效，原文件保留。");
             ChestReward receipt = profile.lastChestReward;
             if (receipt == null || string.IsNullOrWhiteSpace(receipt.id) || receipt.id.Length > 80 ||
-                receipt.gold < 60 || receipt.gold > (receipt.rulesRevision>=2?1100:1000) || receipt.rarityIndex < -1 || receipt.rarityIndex > 3 ||
+                receipt.gold < 60 || receipt.gold > 1100 || receipt.rarityIndex < -1 || receipt.rarityIndex > 3 ||
                 (receipt.rarityIndex >= 0 && (receipt.slotIndex < 0 || receipt.slotIndex > 1)))
             {
                 profile.lastChestReward = null;
@@ -3123,7 +3146,12 @@ namespace Emberfall
                 if(receipt.rulesRevision<2)receipt.choice = Clamp(receipt.choice, 0, 2);
                 else if(receipt.rulesRevision!=2||receipt.rewardKind!=ChestRewardKind.SingleChest||receipt.choice!=-1||receipt.materialKind!=RewardMaterialKind.StarAshFragment||receipt.materialsDelta<0||receipt.materialsDelta>10)throw new ArgumentException("宝箱回执类型或增量无效。");
                 if (receipt.rarityIndex < 0) { receipt.slotIndex = -1; receipt.duplicate = false; receipt.name = receipt.rulesRevision>=2?"通关资源":"金币"; }
-                else receipt.name = FashionName((FashionSlot)receipt.slotIndex, (Rarity)receipt.rarityIndex,profile.heroClass);
+                else
+                {
+                    if(receipt.appearanceTier<0||receipt.appearanceTier>3)receipt.appearanceTier=receipt.rarityIndex;
+                    receipt.rarityIndex=(int)Rarity.Legendary;
+                    receipt.name=FashionName((FashionSlot)receipt.slotIndex,(Rarity)receipt.appearanceTier,profile.heroClass);
+                }
                 if (string.IsNullOrWhiteSpace(receipt.summary)) receipt.summary = receipt.name + " · " + receipt.gold + " 金币";
                 if (receipt.summary.Length > 240) receipt.summary = receipt.summary.Substring(0, 240);
             }
@@ -3233,10 +3261,19 @@ namespace Emberfall
             {
                 if (fashion == null || !Enum.IsDefined(typeof(FashionSlot), fashion.slot) ||
                     !Enum.IsDefined(typeof(Rarity), fashion.rarity)) continue;
-                string expectedId = "fashion-" + (int)fashion.slot + "-" + (int)fashion.rarity;
+                if(profile.fashionQualityRevision<1)
+                {
+                    // Old Unity saves have no appearance field; decode their stable ID
+                    // rather than depending on missing-field initializer behavior.
+                    int oldTier;string prefix="fashion-"+(int)fashion.slot+"-";
+                    fashion.appearanceTier=fashion.id!=null&&fashion.id.StartsWith(prefix,StringComparison.Ordinal)&&int.TryParse(fashion.id.Substring(prefix.Length),out oldTier)&&oldTier>=0&&oldTier<=3?oldTier:(int)fashion.rarity;
+                }
+                if(fashion.appearanceTier<0||fashion.appearanceTier>3)fashion.appearanceTier=(int)fashion.rarity;
+                fashion.rarity=Rarity.Legendary;
+                string expectedId = "fashion-" + (int)fashion.slot + "-" + fashion.appearanceTier;
                 if (!fashionIds.Add(expectedId)) continue;
                 fashion.id = expectedId;
-                fashion.name = FashionName(fashion.slot, fashion.rarity,profile.heroClass);
+                fashion.name = FashionName(fashion.slot, fashion.AppearanceRarity,profile.heroClass);
                 validFashions.Add(fashion);
             }
             profile.fashions = validFashions;
@@ -3288,10 +3325,12 @@ namespace Emberfall
 
         private static void RepairItem(ItemData item, HeroClass hero)
         {
-            item.level = Clamp(item.level, 1, MaximumLevel);
+            item.level = EquipmentGenerationLevel(item.level);
             item.attack = Clamp(item.attack, 0, MaximumEquipmentStat);
             item.defense = Clamp(item.defense, 0, MaximumEquipmentStat);
             item.health = Clamp(item.health, 0, MaximumEquipmentHealth);
+            item.criticalChance=float.IsNaN(item.criticalChance)||float.IsInfinity(item.criticalChance)?0:Math.Max(0,Math.Min(.08f,item.criticalChance));
+            item.criticalDamageBonus=float.IsNaN(item.criticalDamageBonus)||float.IsInfinity(item.criticalDamageBonus)?0:Math.Max(0,Math.Min(.20f,item.criticalDamageBonus));
             item.upgradeLevel = Clamp(item.upgradeLevel, 0, MaximumUpgrade);
             if (!Enum.IsDefined(typeof(EquipmentMechanic), item.mechanic) ||
                 (item.mechanic != EquipmentMechanic.None && BuildCatalog.MechanicSlot(item.mechanic) != item.slot)) item.mechanic = EquipmentMechanic.None;
@@ -3333,6 +3372,11 @@ namespace Emberfall
 
         private static int[] RepairHotbarKeys(int[] previous)
         {
+            // Migrate only the untouched old default; retain individually customized bindings.
+            int[] oldDefault={122,120,99,118,98,49,50,51,52,53};
+            bool oldOrder=previous!=null&&previous.Length==oldDefault.Length;
+            if(oldOrder)for(int i=0;i<oldDefault.Length;i++)if(previous[i]!=oldDefault[i]){oldOrder=false;break;}
+            if(oldOrder)return (int[])GameBalance.DefaultHotbarKeys.Clone();
             int[] keys = new int[GameBalance.HotbarSize];
             var used = new HashSet<int>();
             for (int slot = 0; slot < keys.Length; slot++)

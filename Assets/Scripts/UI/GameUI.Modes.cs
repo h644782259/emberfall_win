@@ -3,6 +3,61 @@ namespace Emberfall
 {
  public sealed partial class GameUI
  {
+  private string entryRewardSelection,entryRewardContext;
+  private Rect entryRewardViewport;
+  private sealed class EntryRewardPreview
+  {
+   public string Key,Name,Description;public Texture2D Icon;public Color Tint;
+  }
+  private System.Collections.Generic.List<EntryRewardPreview> EntryRewardPreviews(int mode,int tier,bool chapter)
+  {
+   var result=new System.Collections.Generic.List<EntryRewardPreview>();int level=ProgressionService.EquipmentGenerationLevel(session.Progression.Profile.level);
+   if(!chapter)for(int i=0;i<AdventureRewardRules.EquipmentCount(mode);i++)
+   {
+    var slot=AdventureRewardRules.EquipmentSlot(mode,i);var rarity=AdventureRewardRules.MinimumRarity(mode);
+    result.Add(new EntryRewardPreview{Key="gear"+i,Name=GameBalance.SlotName(slot),Icon=UIIconAtlas.EquipmentCardIcon(slot,level),Tint=GameBalance.RarityColor(rarity),Description="通关保底 · "+GameBalance.SlotName(slot)+"\n等级：按结算时角色等级对应的十级档生成，当前 "+level+" 级\n稀有度："+GameBalance.RarityName(rarity)+"，有机会升为"+GameBalance.RarityName(mode==2?Rarity.Legendary:Rarity.Epic)+"\n机制：无；基础属性在获得时生成。"});
+   }
+   result.Add(new EntryRewardPreview{Key="shard",Name="星烬碎片",Icon=UIIconAtlas.Utility("shard"),Tint=jade,Description="星烬碎片\n用于兑换机制宝石、升级宝石及解锁机制变体。\n通关获得，数量以当前副本奖励为准。"});
+   if(!chapter&&mode==-1)result.Add(new EntryRewardPreview{Key="fashion",Name="外观宝箱",Icon=UIIconAtlas.FashionCardIcon(FashionSlot.Wings),Tint=gold,Description="外观宝箱\n通关后开启，可能获得兵装或羽翼及穿戴加成。\n品质随机；重复外观转为资源。"});
+   foreach(var mechanic in BuildCatalog.MechanicsFor(session.Progression.Profile.heroClass))
+   {
+    string effect=BuildCatalog.MechanicDescription(mechanic);int variant=effect.IndexOf("变体");if(variant>0)effect=effect.Substring(0,variant).Trim();
+    result.Add(new EntryRewardPreview{Key="mechanic"+mechanic,Name=BuildCatalog.MechanicName(mechanic),Icon=UIIconAtlas.EquipmentCardIcon(BuildCatalog.MechanicSlot(mechanic)),Tint=gold,Description=BuildCatalog.MechanicName(mechanic)+" · 敌人随机掉落\n等级与稀有度随实际掉落生成。\n"+effect});
+   }
+   return result;
+  }
+  private float DrawEntryRewardPreviews(float available,float u,int mode,int tier,bool chapter,bool draw)
+  {
+   string context=chapter?"chapter"+session.SelectedChapterNode+":"+session.SelectedChapterDifficulty+":"+session.SelectedChapterTier:mode+":"+tier;
+   if(entryRewardContext!=context){entryRewardContext=context;entryRewardSelection=null;}
+   var items=EntryRewardPreviews(mode,tier,chapter);int columns=Mathf.Max(1,Mathf.FloorToInt(available/82));float cell=available/columns;
+   float end=28+Mathf.Ceil(items.Count/(float)columns)*88;
+   if(draw)Text(new Rect(8*u,0,available*u,24*u),"掉落预览",Mathf.RoundToInt(14*u),gold,true);
+   for(int i=0;i<items.Count;i++)
+   {
+    var item=items[i];Rect hit=new Rect((i%columns*cell+4)*u,(28+i/columns*88)*u,(cell-8)*u,80*u);
+    if(!draw)continue;
+    Rect icon=new Rect(hit.center.x-24*u,hit.y,48*u,48*u);Fill(icon,card);Border(icon,item.Tint);
+    DrawIcon(new Rect(icon.x+5*u,icon.y+5*u,38*u,38*u),item.Icon,item.Tint);
+    Text(new Rect(hit.x,hit.y+50*u,hit.width,28*u),item.Name,Mathf.RoundToInt(11*u),pale,false,true,TextAnchor.MiddleCenter);
+    if(!MobileControls.Active&&entryRewardViewport.Contains(Mouse)&&hit.Contains(Event.current.mousePosition)&&GUI.enabled)tooltip=item.Description;
+    if(MobileControls.Active&&GUI.Button(hit,GUIContent.none,invisibleButton))entryRewardSelection=entryRewardSelection==item.Key?null:item.Key;
+   }
+   var selected=MobileControls.Active?items.Find(item=>item.Key==entryRewardSelection):null;
+   if(selected!=null)
+   {
+    float textWidth=Mathf.Max(80,available-64)*u;
+    float h=Mathf.Max(52*u,Style(Mathf.RoundToInt(12*u),false,true).CalcHeight(new GUIContent(selected.Description),textWidth)+20*u);
+    if(draw)
+    {
+     Rect box=new Rect(4*u,end*u,(available-8)*u,h);Fill(box,ink);Border(box,selected.Tint);
+     Text(new Rect(box.x+10*u,box.y+10*u,textWidth,h-20*u),selected.Description,Mathf.RoundToInt(12*u),pale,false,true);
+     if(NavigationButton(new Rect(box.xMax-44*u,box.y,44*u,44*u),"×",jade))entryRewardSelection=null;
+    }
+    end+=h/u+8;
+   }
+   return end+8;
+  }
   private Vector2 adventureListScroll,adventureDetailScroll;
   private bool adventureChapterSelected;
   private Rect AdventureRect(MobilePanelLayout.Area a,float u){return new Rect(a.X*u,a.Y*u,a.Width*u,a.Height*u);}

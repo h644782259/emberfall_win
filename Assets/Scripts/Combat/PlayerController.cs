@@ -364,9 +364,13 @@ namespace Emberfall
                     if (Specialization != ElementalistSpecialization.Burn)
                     {
                         ControlArea(transform.position,guardRadius,.25f);
-                        foreach (EnemyController enemy in session.Enemies)
+                        foreach (EnemyController enemy in session.Enemies.ToArray())
                             if (ValidAimTarget(enemy) && CombatFx.Flat(enemy.transform.position-transform.position).sqrMagnitude <= guardRadius*guardRadius && CombatSight.Area(transform.position,enemy.transform.position))
-                                enemy.StatusEffects.FrostMark(5f);
+                                {
+                                    enemy.StatusEffects.FrostMark(5f);
+                                    RegisterSkillHit(guardCastId);
+                                    enemy.TakeDamage(CombatAttack*SkillDamageBudgets.FrostWalkerPulse(guardRank),Vector3.zero,0,0,practiceCastId:guardCastId);
+                                }
                     }
                     CombatFx.Ring(transform.position,guardRadius,Specialization==ElementalistSpecialization.Burn?new Color(1f,.55f,.25f):new Color(.56f,.93f,1f),.4f,.12f);
                 }
@@ -635,7 +639,7 @@ namespace Emberfall
         {
             RunChoices bonus = ActiveRunBonuses;
             return CombatDamage.Roll(amount, bonus == null ? stats.CritChance : bonus.CritChance(stats.CritChance),
-                castDamageRoll >= 0 ? castDamageRoll : Random.value, bonus == null ? 1.65f : bonus.CriticalMultiplier);
+                castDamageRoll >= 0 ? castDamageRoll : Random.value, (bonus == null ? 1.65f : bonus.CriticalMultiplier)+stats.CritDamageBonus);
         }
 
         private CombatDamage Damage(float multiplier)

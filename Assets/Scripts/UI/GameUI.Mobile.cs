@@ -54,7 +54,7 @@ namespace Emberfall
                 if(targeting!=null&&!targeting.Begin(skill))
                 {if(string.IsNullOrEmpty(session.ControlFailure("skill"+skill)))session.ReportControlFailure("skill"+skill,"暂不可用");}}
         }
-        public bool MobileDungeonEntranceVisible {get{return session!=null&&!session.PracticeActive&&!session.InDungeon&&!session.InputBlocked&&!session.DungeonSelectionOpen&&!session.NearChapterExit&&!session.NearRoomExit&&!session.SideEventAvailable&&session.NearbyHubNpc==HubNpcKind.None&&session.IsNearDungeonEntrance&&session.Progression.CanEnterDungeon;}}
+        public bool MobileDungeonEntranceVisible {get{return session!=null&&!session.PracticeActive&&!session.InDungeon&&!session.InputBlocked&&!session.DungeonSelectionOpen&&!session.NearChapterExit&&!session.NearRoomExit&&!session.SideEventAvailable&&session.IsNearDungeonEntrance&&session.Progression.CanEnterDungeon;}}
         public MobileControlLayout.Area MobileInteractionArea
         {
             get
@@ -62,13 +62,11 @@ namespace Emberfall
                 var layout=MobileControls.Layout;
                 if(MobileDungeonEntranceVisible)return layout.DungeonEntrance;
                 if(session!=null&&(session.SideEventAvailable||session.NearDungeonReturn))return new MobileControlLayout.Area(layout.Width*.5f-66,layout.Height*.62f-22,132,44);
-                if(session!=null&&session.NearbyHubNpc!=HubNpcKind.None&&!session.NearChapterExit&&!session.NearRoomExit&&!session.SideEventAvailable)
-                    return new MobileControlLayout.Area(Mathf.Max(layout.Width*.5f-48,254),layout.Height*.62f-22,96,44);
                 return layout.Interact;
             }
         }
-        public bool MobileInteractionVisible {get{return session!=null&&!session.PracticeActive&&(session.NearDungeonReturn||session.NearChapterExit||session.NearRoomExit||session.SideEventAvailable||session.NearbyHubNpc!=HubNpcKind.None||MobileDungeonEntranceVisible);}}
-        private bool CanMobileInteract {get{return session!=null&&!session.PracticeActive&&!session.InputBlocked&&!session.DungeonSelectionOpen&&(session.NearDungeonReturn||session.NearChapterExit||session.NearRoomExit||session.SideEventAvailable||session.NearbyHubNpc!=HubNpcKind.None||session.IsInCamp||session.InDungeon||session.IsNearDungeonEntrance);}}
+        public bool MobileInteractionVisible {get{return session!=null&&!session.PracticeActive&&(session.NearDungeonReturn||session.NearChapterExit||session.NearRoomExit||session.SideEventAvailable||MobileDungeonEntranceVisible);}}
+        private bool CanMobileInteract {get{return session!=null&&!session.PracticeActive&&!session.InputBlocked&&!session.DungeonSelectionOpen&&(session.NearDungeonReturn||session.NearChapterExit||session.NearRoomExit||session.SideEventAvailable||session.IsInCamp||session.InDungeon||session.IsNearDungeonEntrance);}}
         public void ActivateMobileInteraction(int triggeringFinger=TouchReleaseLatch.AnyPointer)
         {
             if(!CanMobileInteract||UITransitionBlocked)return;
@@ -79,7 +77,6 @@ namespace Emberfall
                 else if(session.NearChapterExit)session.EnterNextChapterRoom();
                 else if(session.NearRoomExit)session.EnterNextRoom();
                 else if(session.SideEventAvailable)session.StartSideEvent();
-                else if(session.NearbyHubNpc!=HubNpcKind.None)OpenNearbyHubNpc();
                 else if(session.IsInCamp){panel=Panel.Camp;session.SetUIBlocking(true);}
                 else if(session.InDungeon)session.ReturnToCamp();
                 else session.EnterDungeon();
@@ -118,6 +115,11 @@ namespace Emberfall
             if(MobileIcon(l.Menu,"settings",pale))session.SetPaused(true);
             if(MobileIcon(l.Catalog,"confirm",gold))OpenProgressionGoals();
             Badge(TouchRect(l.Catalog),Attention.Rewards);
+            if(HubServicesAvailable)
+            {
+                if(MobileIcon(l.Shop,"shop",gold))OpenHubService(HubNpcKind.Merchant);
+                if(MobileIcon(l.Smith,"smith",jade))OpenHubService(HubNpcKind.Blacksmith);
+            }
             Rect map=TouchRect(l.Map);blockedRects.Add(map);Box(map,jade,false);DrawMinimapTerrain(map);
             if(!session.InDungeon){MapDot(map,new Vector3(0,0,11),jade,4*TouchRatio);for(int npc=0;npc<3;npc++)MapDot(map,GameSession.HubNpcPosition(npc),gold,3*TouchRatio);}
             else MapDot(map,new Vector3(0,0,-16),jade,4*TouchRatio);
@@ -139,25 +141,21 @@ namespace Emberfall
             {blockedRects.Add(TouchRect(l.EncounterText));Text(TouchRect(l.EncounterText),session.DungeonCleared?"遗迹肃清":"第 "+session.DungeonWave+" / "+session.TotalWaves+" 波",TouchFont(12),pale,true,false,TextAnchor.MiddleCenter);}
             DrawMobileHotbar();
             DrawCompanionCommands();
+            DrawVictoryNotice();
 
-            string interaction=MobileDungeonEntranceVisible?"进入副本":session.NearDungeonReturn?"返回营地":session.NearChapterExit?"沿星路前进":session.NearRoomExit?"进入下一间":session.SideEventAvailable?"开启晶核挑战":session.NearbyHubNpc!=HubNpcKind.None?HubNpcMobileLabel(session.NearbyHubNpc):session.IsInCamp?"营地工坊":session.InDungeon?"返回营地":session.IsNearDungeonEntrance?"进入副本":"靠近入口";
+            string interaction=MobileDungeonEntranceVisible?"进入副本":session.NearDungeonReturn?"返回营地":session.NearChapterExit?"沿星路前进":session.NearRoomExit?"进入下一间":session.SideEventAvailable?"开启晶核挑战":session.IsInCamp?"营地工坊":session.InDungeon?"返回营地":session.IsNearDungeonEntrance?"进入副本":"靠近入口";
             if(MobileInteractionVisible)
             {
             Rect interact=TouchRect(MobileInteractionArea);blockedRects.Add(interact);
             // One pointer owner handles real touches and simulated/attached mice.
             // This is presentation only: a second IMGUI Button here would dispatch
             // again after a room transition changed the context on pointer release.
-            if(session.NearbyHubNpc!=HubNpcKind.None&&!session.NearChapterExit&&!session.NearRoomExit&&!session.SideEventAvailable)
-            {
-                DrawIcon(interact,UIIconAtlas.NpcDialogCapsule(),new Color(.025f,.075f,.085f,.92f));
-                DrawIcon(interact,UIIconAtlas.NpcDialogCapsule(true),CanMobileInteract?gold:muted);
-            }
-            else Box(interact,CanMobileInteract?gold:muted,false);
+            Box(interact,CanMobileInteract?gold:muted,false);
             Text(interact,interaction,TouchFont(11),CanMobileInteract?gold:muted,true,true,TextAnchor.MiddleCenter);
 
             }
             EnemyController boss=null;foreach(var e in session.Enemies)if(e!=null&&e.IsBoss&&!e.IsDead){boss=e;break;}
-            if(boss!=null){blockedRects.Add(TouchRect(l.BossHealth));Bar(TouchRect(l.BossHealth),boss.Health/Mathf.Max(1,boss.MaxHealth),new Color(.93f,.34f,.29f));}
+            if(boss!=null){Rect bossBar=HubServicesAvailable?TouchRect(l.BossHealth.X,58,l.BossHealth.Width,l.BossHealth.Height):TouchRect(l.BossHealth);blockedRects.Add(bossBar);Bar(bossBar,boss.Health/Mathf.Max(1,boss.MaxHealth),new Color(.93f,.34f,.29f));}
             var targeting=session.Player==null?null:session.Player.GetComponent<SkillTargetingController>();
             var charge=session.Player==null?null:session.Player.GetComponent<SkillChargeController>();
             if(charge!=null&&charge.IsCharging)Bar(TouchRect(26,l.Height-12,128,5),charge.Progress,gold);
@@ -241,10 +239,12 @@ namespace Emberfall
         }
         private void DrawMobileTitle()
         {
-            if(saveSlotsDirty)RefreshSaveSlots();var l=MobileControls.Layout;
+            if(saveSlotsDirty)RefreshSaveSlots();
+            if(!titleCreatingHero){DrawAdventureHome();return;}
+            var l=MobileControls.Layout;
             Fill(new Rect(0,0,width,height),new Color(.018f,.029f,.048f,1));
             float x=(l.Width-528)/2,y=(l.Height-300)/2;
-            Text(TouchRect(x,y,528,30),"星烬纪元",TouchFont(25),pale,true);
+            Text(TouchRect(x,y,528,30),"选择职业",TouchFont(25),pale,true);
             Text(TouchRect(x,y+31,528,16),"初选职业可在安全营地自由切换",TouchFont(11),muted);
             for(int i=0;i<4;i++)
             {
@@ -254,8 +254,8 @@ namespace Emberfall
                 Text(TouchRect(x+i*134+5,y+166,116,31),GameBalance.ClassName(hero),TouchFont(18),pale,true,false,TextAnchor.MiddleCenter);
                 if(GUI.Button(r,GUIContent.none,invisibleButton))selectedClass=hero;
             }
-            if(NavigationButton(TouchRect(x,y+237,254,52), "选择角色存档", jade, saveSlots.Count>0))OpenSaveSelection();
-            if(PrimaryButton(TouchRect(x+274,y+237,254,52), "新建冒险", gold))StartSelectedHero();
+            if(NavigationButton(TouchRect(x,y+237,254,52), "返回首页", jade)){titleCreatingHero=false;BlockUITransition();return;}
+            if(PrimaryButton(TouchRect(x+274,y+237,254,52), "开始冒险", gold))StartSelectedHero();
             if(!string.IsNullOrEmpty(session.Progression.LastError))Text(TouchRect(x,y+291,528,22),session.Progression.LastError,TouchFont(11),gold);
         }
         private void DrawMobileSaveSelection()

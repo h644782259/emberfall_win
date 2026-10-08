@@ -30,7 +30,7 @@ namespace Emberfall
                 part.localScale=i==0?new Vector3(1.15f,.22f,1.8f):new Vector3(.3f,.3f,.9f);
             }
         }
-        private bool Current {get{return owner!=null&&!owner.IsDead&&session!=null&&session.Player==owner&&session.HasStarted&&!session.CombatEnded&&owner.CombatEpoch==epoch;}}
+        private bool Current {get{return owner!=null&&!owner.IsDead&&session!=null&&session.Player==owner&&session.HasStarted&&!session.CombatEffectsEnded&&owner.CombatEpoch==epoch;}}
         private void Update()
         {
             if(!Current){Destroy(gameObject);return;}

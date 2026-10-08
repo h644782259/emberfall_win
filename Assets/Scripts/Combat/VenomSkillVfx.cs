@@ -36,7 +36,7 @@ namespace Emberfall
         private void Update()
         {
             var game=GameSession.Instance;
-            if(owner==null||owner.IsDead||owner.CombatEpoch!=epoch||game==null||game.Player!=owner||!game.HasStarted||game.CombatEnded){Destroy(gameObject);return;}
+            if(owner==null||owner.IsDead||owner.CombatEpoch!=epoch||game==null||game.Player!=owner||!game.HasStarted||game.CombatEffectsEnded){Destroy(gameObject);return;}
             if(game.InputBlocked)return;
             age+=Time.deltaTime;if(age>=duration){Destroy(gameObject);return;}
             // Shrinking inward communicates expenditure of three stacks, never outward splash.

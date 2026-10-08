@@ -112,6 +112,7 @@ namespace Emberfall
             float optionalH=60+(chapterStoryExpanded?ChapterCopyHeight(story,contentWidth-32,u,14)+24:0)+
                 (chapterRulesExpanded?ChapterCopyHeight(rules,contentWidth-32,u,13)+24:0);
             float total=errorH+mainH+16+tacticHeight+optionalH;
+            entryRewardViewport=body;
             chapterScroll=BeginTouchScroll("chapter-entry",body,chapterScroll,new Rect(0,0,contentWidth*u,Mathf.Max(body.height/u,total)*u),false,total>body.height/u);
             if(errorH>0)
             {

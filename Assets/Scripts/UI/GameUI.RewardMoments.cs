@@ -81,7 +81,7 @@ namespace Emberfall
                 Text(new Rect(area.x+50*u,area.y+5*u,area.width-56*u,42*u),rewardMoment.Item==null?"星烬碎片":rewardMoment.Item.name,Mathf.RoundToInt(12*u),pale,false,true);if(canEquip)DrawRewardEquip(area);return;
             }
             DrawIcon(RewardMomentSkipRect(area),UIIconAtlas.Utility("cancel"),muted);
-            string title=rewardMoment.Attachment!=null?BuildCatalog.MechanicName(rewardMoment.Attachment.mechanic)+" · 挂件":rewardMoment.Item!=null?GameBalance.SlotName(rewardMoment.Item.slot)+" · "+rewardMoment.Item.name:rewardMoment.Fashion!=null?rewardMoment.Fashion.name:"星烬碎片";
+            string title=rewardMoment.Attachment!=null?BuildCatalog.GemName(rewardMoment.Attachment.mechanic):rewardMoment.Item!=null?GameBalance.SlotName(rewardMoment.Item.slot)+" · "+rewardMoment.Item.name:rewardMoment.Fashion!=null?rewardMoment.Fashion.name:"星烬碎片";
             Text(new Rect(area.x+10*u,area.y+6*u,area.width-66*u,38*u),title,Mathf.RoundToInt(14*u),accent,true,true);
             int rows=(rewardMoment.MaterialsDelta!=0?1:0)+(rewardMoment.ThreadsDelta!=0?1:0)+(rewardMoment.GoldDelta!=0?1:0);
             Rect body=new Rect(area.x+8*u,area.y+52*u,area.width-16*u,area.height-60*u-(canEquip?48*u:0));
@@ -89,7 +89,7 @@ namespace Emberfall
             if(rewardMoment.Attachment!=null)
             {
                 var a=rewardMoment.Attachment;
-                DrawIcon(new Rect(body.x,body.y,64*u,64*u),UIIconAtlas.Utility("skills"),GameBalance.RarityColor(a.rarity));
+                DrawIcon(new Rect(body.x,body.y,64*u,64*u),UIIconAtlas.Utility("gem"),GameBalance.RarityColor(a.rarity));
                 Text(new Rect(body.x+72*u,body.y,body.width-72*u,64*u),GameBalance.RarityName(a.rarity)+" · "+a.upgradeRank+"/5阶\n独立挂载 · 换装沿用",Mathf.RoundToInt(13*u),pale,false,true);
             }
             if(rewardMoment.Item!=null||rewardMoment.Fashion!=null)

@@ -58,12 +58,7 @@ namespace Emberfall
                 if(NavigationButton(new Rect(primary.x,primary.y,menuWidth,primary.height), "菜单 / 存档", jade))session.SetPaused(true);
                 primary.x+=menuWidth+12*unit;primary.width-=menuWidth+12*unit;
             }
-            if(snapshot!=null&&snapshot.Won&&session.CanChallengeNextTier)
-            {
-                float nextWidth=primary.width*.55f;
-                if(PrimaryButton(new Rect(primary.x,primary.y,nextWidth,primary.height),"挑战下一阶",gold)){session.ChallengeNextTier();BlockUITransition();return false;}
-                primary.x+=nextWidth+8*unit;primary.width-=nextWidth+8*unit;
-            }
+
             if(session.CanRetryRoomChain)
             {
                 float retryWidth=primary.width*.48f;
@@ -153,7 +148,7 @@ namespace Emberfall
                     Text(new Rect((w-164)*unit,(inner-4)*unit,150*unit,30*unit),snapshot.Materials+" / "+snapshot.ExchangeCost,Mathf.RoundToInt(22*unit),gold,true,false,TextAnchor.MiddleRight);
                     Fill(new Rect(14*unit,(inner+32)*unit,(w-28)*unit,5*unit),new Color(.09f,.12f,.16f));
                     Fill(new Rect(14*unit,(inner+32)*unit,(w-28)*unit*data.ExchangeProgress,5*unit),gold);
-                    Text(new Rect(14*unit,(inner+43)*unit,(w-28)*unit,21*unit),snapshot.Materials>=snapshot.ExchangeCost?"可兑换机制挂件":"距兑换还差 "+(snapshot.ExchangeCost-snapshot.Materials)+" 碎片",Mathf.RoundToInt(13*unit),muted);
+                    Text(new Rect(14*unit,(inner+43)*unit,(w-28)*unit,21*unit),snapshot.Materials>=snapshot.ExchangeCost?"可兑换机制宝石":"距兑换还差 "+(snapshot.ExchangeCost-snapshot.Materials)+" 碎片",Mathf.RoundToInt(13*unit),muted);
                     inner+=72;
                 }
                 if(snapshot.GoldLost>0)

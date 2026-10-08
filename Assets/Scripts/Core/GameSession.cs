@@ -636,8 +636,15 @@ namespace Emberfall
         private void OnLevelUp(int level)
         {
             GameAudio.Play(SoundCue.LevelUp);
-            if (Player != null) { Player.RefreshStats(true); SpawnFloatingText(Player.transform.position + Vector3.up * 3, "LEVEL " + level + "  +" + GameBalance.SkillPointsGainedAtLevel(level) + " SP", new Color(.9f, .82f, .4f)); }
-            Notify("升至 " + level + " 级！" + Progression.LevelGrowthDescription() + " · 生命恢复，获得 " + GameBalance.SkillPointsGainedAtLevel(level) + " 技能点 · 按 K 查看技能。");
+            if (Player != null)
+            {
+                Player.RefreshStats(true);
+                Color glow=new Color(.95f,.83f,.4f);
+                Vector3 position=Player.transform.position;
+                CombatFx.Ring(position,2.1f,glow,.85f,.12f);
+                CombatFx.Ring(position,1.25f,new Color(.65f,1f,.84f),.65f,.08f);
+                SpawnFloatingText(position+Vector3.up*3,"Lv"+level,glow);
+            }
         }
         private float nextGrowthCheck;
         public void Notify(string message) { notification = message; notificationUntil = Time.unscaledTime + 6; }
@@ -883,7 +890,7 @@ namespace Emberfall
     {
         public const float MinimumPitch = -18f;
         public const float MaximumPitch = 75f;
-        private const float DefaultPitch = 48.36646f;
+        private const float DefaultPitch = 38f;
         private const float DistanceScale = 1.2041595f;
         private static AdventureCamera active;
         private readonly CameraOrbitInput orbitInput = new CameraOrbitInput();

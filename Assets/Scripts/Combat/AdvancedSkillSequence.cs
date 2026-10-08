@@ -62,7 +62,7 @@ namespace Emberfall
 
         private void Update()
         {
-            if (owner == null || owner.IsDead || session == null || session.Player != owner || !session.HasStarted || session.CombatEnded || owner.CombatEpoch != epoch)
+            if (owner == null || owner.IsDead || session == null || session.Player != owner || !session.HasStarted || session.CombatEffectsEnded || owner.CombatEpoch != epoch)
             { Destroy(gameObject); return; }
             if (session.InputBlocked || Time.deltaTime <= 0) return;
             age += Time.deltaTime;
@@ -71,7 +71,7 @@ namespace Emberfall
             int catchup = 0;
             while (step < steps && age >= nextEvent && catchup++ < 3)
             {
-                if (owner == null || owner.IsDead || owner.CombatEpoch != epoch || session.CombatEnded) { Destroy(gameObject); return; }
+                if (owner == null || owner.IsDead || owner.CombatEpoch != epoch || session.CombatEffectsEnded) { Destroy(gameObject); return; }
                 if (session.InputBlocked) return;
                 CombatImpactBatch.BeginAction();
                 try
