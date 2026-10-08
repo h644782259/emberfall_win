@@ -47,32 +47,32 @@ namespace Emberfall
   }
   private void DrawMobileModeStatus(Rect r)
   {
-   blockedRects.Add(r);Box(r,jade,false);float u=TouchRatio;
+   float y=r.y;
    if(session.ChapterActive)
    {
-    var firstSeal=session.ChapterSealView(0);
-    Text(new Rect(r.x+6*u,r.y+4*u,r.width-12*u,18*u),firstSeal!=null&&session.ChapterRun.DoorUnlocked?"双印完成 · 前往出口":ChapterDefinition.Get(session.ActiveChapterNode).Name,TouchFont(13),gold,true,false,TextAnchor.MiddleCenter);
-    if(firstSeal!=null)DrawChapterSeals(new Rect(r.x+6*u,r.y+24*u,r.width-12*u,44*u),u,firstSeal,session.ChapterSealView(1));
-    else Text(new Rect(r.x+6*u,r.y+24*u,r.width-12*u,r.height-28*u),session.ChapterObjectiveCompact,TouchFont(11),pale,false,true,TextAnchor.UpperCenter);
+    var first=session.ChapterSealView(0);var second=session.ChapterSealView(1);
+    DrawMobileObjectiveText(r,ref y,first!=null&&session.ChapterRun.DoorUnlocked?"双印完成 · 前往出口":ChapterDefinition.Get(session.ActiveChapterNode).Name,11,gold,true,true);
+    if(first!=null){DrawMobileSealText(r,ref y,first);DrawMobileSealText(r,ref y,second);}
+    else DrawMobileObjectiveText(r,ref y,session.ChapterObjectiveCompact,10,pale);
     return;
    }
    if(session.RoomChainRun!=null)
    {
-    var objective=session.RoomObjectiveView;var firstSeal=session.RoomSealView(0);
-    Text(new Rect(r.x+6*u,r.y+4*u,r.width-12*u,16*u),firstSeal!=null&&session.RoomChainRun.DoorUnlocked?"双印完成 · 前往北门":objective.Title,TouchFont(13),gold,true,false,TextAnchor.MiddleCenter);
-    if(firstSeal!=null)
-    {DrawRoomSeals(new Rect(r.x+6*u,r.y+21*u,r.width-12*u,50*u),u,true,firstSeal,session.RoomSealView(1),objective);return;}
-    Text(new Rect(r.x+6*u,r.y+21*u,r.width-12*u,15*u),objective.ProgressText,TouchFont(11),pale,false,false,TextAnchor.MiddleCenter);
-    Text(new Rect(r.x+6*u,r.y+37*u,r.width-12*u,14*u),objective.Hint,TouchFont(10),session.RoomCaptureContested?gold:jade,false,false,TextAnchor.MiddleCenter);
-    Text(new Rect(r.x+6*u,r.y+52*u,r.width-12*u,14*u),objective.SupportHint,TouchFont(10),muted,false,false,TextAnchor.MiddleCenter);
-    Bar(new Rect(r.x+8*u,r.yMax-7*u,r.width-16*u,3*u),objective.Fraction,jade);
+    var objective=session.RoomObjectiveView;var first=session.RoomSealView(0);
+    DrawMobileObjectiveText(r,ref y,first!=null&&session.RoomChainRun.DoorUnlocked?"双印完成 · 前往北门":objective.Title,11,gold,true,true);
+    if(first!=null){DrawMobileSealText(r,ref y,first);DrawMobileSealText(r,ref y,session.RoomSealView(1));}
+    else {DrawMobileObjectiveText(r,ref y,objective.ProgressText,10,pale);DrawMobileObjectiveText(r,ref y,objective.Hint,10,session.RoomCaptureContested?gold:jade);}
+    DrawMobileObjectiveText(r,ref y,objective.SupportHint,10,muted);
     return;
    }
-   Text(new Rect(r.x+6*u,r.y+5*u,r.width-12*u,20*u),session.ModeName,TouchFont(14),gold,true,false,TextAnchor.MiddleCenter);
-   Text(new Rect(r.x+6*u,r.y+27*u,r.width-12*u,20*u),"阶段 "+session.DungeonWave+" / 3  ·  "+Mathf.CeilToInt(session.ModeRun.RemainingSeconds)+"秒",TouchFont(11),pale,false,false,TextAnchor.MiddleCenter);
-   if(session.ModeRun.Mode==ExpeditionModeKind.HoldPoint)
-    Text(new Rect(r.x+6*u,r.y+49*u,r.width-12*u,15*u),session.ModeRun.HoldStateLabel+" "+Mathf.RoundToInt(session.ModeRun.ObjectiveProgress*100)+"%",TouchFont(10),session.ModeRun.HoldState==HoldPointState.Contested?gold:jade,false,false,TextAnchor.MiddleCenter);
-   Bar(new Rect(r.x+8*u,r.yMax-7*u,r.width-16*u,3*u),session.ModeRun.ObjectiveProgress,jade);
+   DrawMobileObjectiveText(r,ref y,session.ModeName,11,gold,true,true);
+   DrawMobileObjectiveText(r,ref y,"阶段 "+session.DungeonWave+" / 3 · "+Mathf.CeilToInt(session.ModeRun.RemainingSeconds)+"秒",10,pale);
+   DrawMobileObjectiveText(r,ref y,(session.ModeRun.Mode==ExpeditionModeKind.HoldPoint?session.ModeRun.HoldStateLabel+" ":"")+Mathf.RoundToInt(session.ModeRun.ObjectiveProgress*100)+"%",10,jade);
+  }
+  private void DrawMobileSealText(Rect r,ref float y,ChapterSealPresentation seal)
+  {
+   if(seal==null)return;
+   DrawMobileObjectiveText(r,ref y,seal.Label+" "+Mathf.RoundToInt(seal.Seconds/3f*100)+"%",10,seal.Complete?jade:seal.Contested?gold:pale);
   }
  }
 }

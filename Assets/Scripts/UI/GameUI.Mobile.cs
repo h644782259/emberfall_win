@@ -91,13 +91,7 @@ namespace Emberfall
         private void DrawMobileHUD()
         {
             var l=MobileControls.Layout;GameProfile p=session.Progression.Profile;
-            Color accent=GameBalance.ClassColor(p.heroClass);
-            Rect status=TouchRect(l.PlayerStatus);blockedRects.Add(status);Box(status,accent,false);
-            Text(TouchRect(100,17,68,18),GameBalance.ClassName(p.heroClass)+" "+p.level,TouchFont(12),pale,true);
-            float hp=session.Player==null?0:session.Player.Health,max=session.Player==null?1:session.Player.MaxHealth;
-            Text(TouchRect(168,17,87,18),Mathf.CeilToInt(hp)+"/"+Mathf.CeilToInt(max),TouchFont(11),pale,true,false,TextAnchor.MiddleRight);
-            Bar(TouchRect(MobilePassiveStatusLayout.HealthBar),hp/Mathf.Max(1,max),jade);
-            Bar(TouchRect(MobilePassiveStatusLayout.EnergyBar),session.Player==null?0:session.Player.Energy/Mathf.Max(1,session.Player.MaxEnergy),new Color(.35f,.63f,1));
+            DrawMobileVitals(l);
             if(MobileIcon(l.Inventory,"inventory",jade))TogglePanel(Panel.Inventory);
             if(MobileIcon(l.SkillsMenu,"skills",p.skillPoints>0?gold:jade))TogglePanel(Panel.Skills);
             if(MobileIcon(l.Menu,"pause",muted))session.SetPaused(true);
@@ -115,9 +109,9 @@ namespace Emberfall
                 if(session.ChapterActive||session.SpecialAdventure)DrawMobileModeStatus(TouchRect(l.AdventureStatus));
                 else if(TryGrowthHudHint(out growthTitle,out growthStep))
                 {
-                    Rect goal=TouchRect(l.AdventureStatus);blockedRects.Add(goal);Box(goal,jade,false);
-                    Text(new Rect(goal.x+6*TouchRatio,goal.y+4*TouchRatio,goal.width-12*TouchRatio,20*TouchRatio),growthTitle,TouchFont(11),gold,true,true);
-                    Text(new Rect(goal.x+6*TouchRatio,goal.y+25*TouchRatio,goal.width-12*TouchRatio,46*TouchRatio),growthStep,TouchFont(10),pale,false,true);
+                    Rect goal=TouchRect(l.AdventureStatus);float y=goal.y;
+                    DrawMobileObjectiveText(goal,ref y,growthTitle,11,gold,true,true);
+                    DrawMobileObjectiveText(goal,ref y,growthStep,10,pale);
                 }
             }
             if(session.InDungeon&&!session.SpecialAdventure)
@@ -166,19 +160,29 @@ namespace Emberfall
                 if(skill==9)Text(new Rect(r.x,r.yMax-13*TouchRatio,r.width,12*TouchRatio),"终极",TouchFont(9),ready?new Color(.3f,1f,.72f):muted,true,false,TextAnchor.MiddleCenter);
                 DrawMobileSkillAvailability(r,skill);
             }
-            DrawMobilePassiveIdentities();
             controlOpacity=priorOpacity;
         }
-        private void DrawMobilePassiveIdentities()
+        private void DrawMobileVitals(MobileControlLayout layout)
         {
-            var profile=session.Progression.Profile;
-            for(int i=0;i<MobilePassiveStatusLayout.Count;i++)
-            {
-                int skill=MobilePassiveStatusLayout.SkillAtIndicator(i),rank=profile.skillRanks[skill];
-                Rect area=TouchRect(MobilePassiveStatusLayout.Indicator(i));blockedRects.Add(area);
-                DrawSkillIdentity(new Rect(area.x,area.y,area.width,24*TouchRatio),profile.heroClass,skill,rank,rank>0,24);
-                Text(new Rect(area.x,area.y+24*TouchRatio,area.width,10*TouchRatio),rank>0?"被动":"未学",TouchFont(9),rank>0?pale:muted,false,false,TextAnchor.MiddleCenter);
-            }
+            float hp=session.Player==null?0:session.Player.Health,max=session.Player==null?1:session.Player.MaxHealth;
+            blockedRects.Add(TouchRect(layout.PlayerStatus));
+            Bar(TouchRect(layout.PlayerHealth),hp/Mathf.Max(1,max),jade);
+            Text(TouchRect(layout.PlayerHealth),Mathf.CeilToInt(hp)+" / "+Mathf.CeilToInt(max),TouchFont(9),pale,true,false,TextAnchor.MiddleCenter);
+            Bar(TouchRect(layout.PlayerEnergy),session.Player==null?0:session.Player.Energy/Mathf.Max(1,session.Player.MaxEnergy),new Color(.35f,.63f,1));
+        }
+        // Only the measured title is interactive. Text and the unused objective slot
+        // never claim battlefield input; a small shadow works over bright terrain.
+        private void DrawMobileObjectiveText(Rect bounds,ref float y,string value,int size,Color tint,bool bold=false,bool locate=false)
+        {
+            if(string.IsNullOrEmpty(value))return;
+            string content=PlatformText(value);var style=Style(TouchFont(size),bold,true);
+            float w=Mathf.Min(bounds.width,style.CalcSize(new GUIContent(content)).x+2*TouchRatio);
+            float h=style.CalcHeight(new GUIContent(content),w);
+            Rect line=new Rect(bounds.x,y,w,h);
+            Text(new Rect(line.x+TouchRatio,line.y+TouchRatio,line.width,line.height),content,TouchFont(size),new Color(0,0,0,.9f),bold,true);
+            Text(line,content,TouchFont(size),tint,bold,true);
+            if(locate){blockedRects.Add(line);if(GUI.Button(line,GUIContent.none,invisibleButton))OpenTravelMap();}
+            y+=h+2*TouchRatio;
         }
         private string mobileNoticeDetail;
         private Vector2 mobileNoticeScroll;

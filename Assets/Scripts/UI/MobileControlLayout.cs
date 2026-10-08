@@ -15,7 +15,7 @@ namespace Emberfall
         public readonly float Scale, Width, Height;
         public readonly bool Tablet;
         public readonly Area Joystick, MoveZone, Attack, Dodge, Potion, Jump, Cancel, Menu, Inventory, SkillsMenu, Catalog, Interact;
-        public readonly Area EncounterText, BossHealth, Notice, AdventureStatus, FocusCommand, RecallCommand, CombatView, PlayerStatus, Map;
+        public readonly Area EncounterText, BossHealth, Notice, AdventureStatus, FocusCommand, RecallCommand, CombatView, PlayerStatus, PlayerHealth, PlayerEnergy, Map;
         public readonly Area[] Skills = new Area[8];
         public readonly Area[] SkillOpportunities = new Area[10];
         public readonly Area CounterOpportunity, ComboOpportunity;
@@ -34,7 +34,8 @@ namespace Emberfall
             Attack=Centered(Width-98,Height-55,76);
             Dodge=Centered(Width-30,Height-30,48);
             Jump=Centered(Width-30,Height-99,48);Cancel=Jump;
-            Potion=Centered(214,Height-28,48);
+            float bottomLift=Width<700?22:0;
+            Potion=Centered(214,Height-28-bottomLift,48);
             // Width already excludes Screen.safeArea insets. Never subtract them again.
             Menu=Centered(Width-30,32,48);Inventory=Centered(Width-84,32,48);
             SkillsMenu=Centered(Width-138,32,48);Catalog=Centered(Width-192,32,48);
@@ -46,15 +47,17 @@ namespace Emberfall
             for(int i=0;i<Skills.Length;i++)
             {
                 float size=i==7?54:48;
-                Skills[i]=Centered(Width-dx[i],Height-dy[i]+shift,size);
+                Skills[i]=Centered(Width-dx[i],Height-dy[i]+shift-bottomLift,size);
                 Area key=Skills[i];
                 SkillOpportunities[identities[i]]=i==7?new Area(key.X-52,key.Y+17,48,14):
                     new Area(key.X,(i==0||i==1||i==5)?key.Y-15:key.Y+key.Height+1,key.Width,14);
             }
             CounterOpportunity=new Area(Attack.X,Attack.Y+Attack.Height+1,Attack.Width/2,13);
             ComboOpportunity=new Area(Attack.X+Attack.Width/2,Attack.Y+Attack.Height+1,Attack.Width/2,13);
-            FocusCommand=new Area(204,Height-170,48,48);RecallCommand=new Area(204,Height-120,48,48);
-            PlayerStatus=new Area(90,12,175,58);Map=new Area(12,12,72,56);
+            FocusCommand=new Area(204,Height-170-bottomLift,48,48);RecallCommand=new Area(204,Height-120-bottomLift,48,48);
+            PlayerStatus=new Area(Width*.5f-80,Height-22,160,18);
+            PlayerHealth=new Area(PlayerStatus.X,PlayerStatus.Y,160,12);
+            PlayerEnergy=new Area(PlayerStatus.X,PlayerStatus.Y+15,160,3);Map=new Area(12,12,72,56);
             AdventureStatus=new Area(12,70,188,76);
             // Transient notices replace this left-side information slot, never the battlefield.
             Notice=AdventureStatus;
