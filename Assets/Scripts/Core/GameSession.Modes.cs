@@ -127,7 +127,7 @@ namespace Emberfall
    try
    {
     int goldReward=HasBlessing(RunBlessing.RiskContract)?Mathf.RoundToInt(ticket.Reward.Gold*1.3f):ticket.Reward.Gold;
-    saved=progression.TryGrantModeReward(receipt,goldReward,ticket.Reward.Experience,ticket.Reward.Materials,DungeonTier);
+    saved=progression.TryGrantModeReward(receipt,goldReward,ticket.Reward.Experience,ticket.Reward.Materials,rewardRun.Tier,(int)rewardRun.Mode);
    }
    catch(Exception error)
    {

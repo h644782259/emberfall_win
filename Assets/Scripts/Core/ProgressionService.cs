@@ -43,6 +43,7 @@ namespace Emberfall
         private const string DeletionMarker = "Emberfall confirmed character deletion v1\n";
         private static readonly object StorageGate = new object();
         public const int InventoryCapacity = 256;
+        public const int MaximumSavedEquipment = 4098; // Two reserved clear-reward slots; new pickups still stop at 4096.
         public const int MaximumRetainedEquipment = 4096; // Visible overflow; bounded by the save byte limit as well.
         public const int MaximumUpgrade = 10;
         public const int PotionPrice = 20;
@@ -604,7 +605,7 @@ namespace Emberfall
                     throw new IOException("发现可恢复的临时存档，已保留且未覆盖。请先备份整个存档目录，再处理临时存档恢复。");
                 // Older readers must reject independent attachment investments
                 // and reward receipts instead of silently erasing unknown fields.
-                var save = new SaveFile { format = SaveFormat, version = profile.rewardInventoryRevision>0?5:profile.attachmentRevision>0?4:profile.chestRulesRevision>=2?3:profile.classStateRevision>0?2:1, profile = profile };
+                var save = new SaveFile { format = SaveFormat, version = profile.inventory.Count>MaximumRetainedEquipment?6:profile.rewardInventoryRevision>0?5:profile.attachmentRevision>0?4:profile.chestRulesRevision>=2?3:profile.classStateRevision>0?2:1, profile = profile };
                 string json = PreserveOptionalReceiptNulls(JsonUtility.ToJson(save, true), profile);
                 if (Encoding.UTF8.GetByteCount(json) > MaximumSaveBytes)
                     throw new IOException("存档超过 4 MiB 安全大小，未覆盖原文件或备份。请保留现有文件。");
@@ -944,7 +945,7 @@ namespace Emberfall
             foreach (var source in new[] { profile.pendingLoot, profile.recoveryLoot })
                 if (source != null) foreach (var item in source)
                     if (item != null && known.Add(item.id)) profile.inventory.Add(item);
-            if (profile.inventory.Count > MaximumRetainedEquipment)
+            if (profile.inventory.Count > MaximumSavedEquipment)
                 throw new ArgumentException("装备数量超过存档安全上限；原文件与奖励保留，请先整理行囊。");
             profile.pendingLoot.Clear(); profile.recoveryLoot.Clear();
         }
@@ -2143,7 +2144,25 @@ namespace Emberfall
                 (runMaterials>0?" · 本局 +"+runMaterials+"碎片":"");
         }
 
-        public bool TryCompleteDungeonRun(string rewardId, int tier, int gold, int experience)
+        private bool AddAdventureEquipment(GameProfile candidate,string receipt,int mode,int tier)
+        {
+            int count=AdventureRewardRules.EquipmentCount(mode);
+            if(count>MaximumSavedEquipment-candidate.inventory.Count-candidate.pendingLoot.Count-candidate.recoveryLoot.Count)
+                return Fail("通关装备保全空间已满；奖励尚未结算，请整理行囊后重试。");
+            // Receipt-derived rolls and IDs stay identical across failed writes/retries.
+            byte[] seed=Guid.ParseExact(receipt,"N").ToByteArray();uint hash=2166136261;
+            foreach(byte value in seed)hash=unchecked((hash^value)*16777619);
+            for(int i=0;i<count;i++)
+            {
+                hash=unchecked((hash^(uint)(mode+2+i))*16777619);
+                var item=new ItemData{id=receipt+"-clear-"+i,slot=AdventureRewardRules.EquipmentSlot(mode,i),rarity=AdventureRewardRules.EquipmentRarity(mode,tier,(int)(hash%100)),level=EquipmentGenerationLevel(Profile.level)};
+                item.name=new[]{"旅者","苍蓝","星辉","烬王"}[(int)item.rarity]+ItemBaseName(item.slot,candidate.heroClass);
+                SetRolledStats(item);EnsureUpgradeBasis(item);candidate.inventory.Add(item);
+            }
+            return true;
+        }
+
+        public bool TryCompleteDungeonRun(string rewardId, int tier, int gold, int experience, bool grantEquipment=false)
         {
             Guid receipt;
             if (rewardId == null || !Guid.TryParseExact(rewardId, "N", out receipt) || tier < 1 || tier > 100 ||
@@ -2167,15 +2186,16 @@ namespace Emberfall
             NewChestQualification(candidate,tier,rewardId);
             candidate.pendingFirstClearReward = !candidate.firstClearRewardClaimed;
             candidate.lastDungeonRewardId = rewardId;
+            if(grantEquipment&&!AddAdventureEquipment(candidate,rewardId,-1,tier))return false;
             candidate.lastDungeonRewardDetails=CaptureRewardPresentation(rewardId,Profile,candidate);
             if (!CommitCandidate(candidate)) return false;
             for (int level = oldLevel + 1; level <= candidate.level; level++) RaiseLeveledUp(level);
             return true;
         }
 
-        public bool TryGrantModeReward(string receipt,int gold,int experience,int materials,int completedTier=0)
+        public bool TryGrantModeReward(string receipt,int gold,int experience,int materials,int completedTier=0,int adventureMode=-2)
         {
-            Guid id;if(completedTier<0||completedTier>100||receipt==null||!Guid.TryParseExact(receipt,"N",out id)||gold<0||gold>10000||experience<0||experience>10000||materials<0||materials>10)return Fail("挑战奖励无效。");
+            Guid id;if(adventureMode < -2 || adventureMode > 3 || adventureMode>=-1&&completedTier==0 || completedTier<0||completedTier>100||receipt==null||!Guid.TryParseExact(receipt,"N",out id)||gold<0||gold>10000||experience<0||experience>10000||materials<0||materials>10)return Fail("挑战奖励无效。");
             receipt=id.ToString("N");
             if(Profile.lastModeRewardId==receipt){LastError=string.Empty;return true;}
             GameProfile candidate=Snapshot();int oldLevel=candidate.level;
@@ -2190,6 +2210,7 @@ namespace Emberfall
                 candidate.chapterPriorAdventureTier=Math.Max(candidate.chapterPriorAdventureTier,completedTier);
                 candidate.pendingFirstClearReward=!candidate.firstClearRewardClaimed;
             }
+            if(adventureMode>=-1&&!AddAdventureEquipment(candidate,receipt,adventureMode,completedTier))return false;
             candidate.lastModeRewardDetails=CaptureRewardPresentation(receipt,Profile,candidate);
             if(!CommitCandidate(candidate))return false;
             for(int level=oldLevel+1;level<=candidate.level;level++)RaiseLeveledUp(level);
@@ -2920,9 +2941,9 @@ namespace Emberfall
                 if (frozenRecord && !emptyChestDraw && (data == null || data.profile == null || data.profile.pendingChestDraw == null))
                     throw new ArgumentException("冻结奖励内容不是有效对象；原文件保留。");
                 frozenRecord=frozenRecord||(data!=null&&data.profile!=null&&data.profile.pendingChestDraw!=null);
-                if(data!=null&&data.format==SaveFormat&&(data.version>5||data.profile!=null&&(data.profile.version>1||data.profile.rewardInventoryRevision>1||data.profile.attachmentRevision>1||data.profile.growthRevision>1||data.profile.classStateRevision>1||data.profile.chestRulesRevision>2||data.profile.pendingChestRulesRevision>2||data.profile.pendingChestDraw!=null&&data.profile.pendingChestDraw.rulesRevision>2)))
+                if(data!=null&&data.format==SaveFormat&&(data.version>6||data.profile!=null&&(data.profile.version>1||data.profile.rewardInventoryRevision>1||data.profile.attachmentRevision>1||data.profile.growthRevision>1||data.profile.classStateRevision>1||data.profile.chestRulesRevision>2||data.profile.pendingChestRulesRevision>2||data.profile.pendingChestDraw!=null&&data.profile.pendingChestDraw.rulesRevision>2)))
                 {error="future format";return false;}
-                if (data == null || data.format != SaveFormat || (data.version != 1 && data.version != 2 && data.version != 3 && data.version != 4 && data.version != 5) || data.profile == null || data.profile.version != 1)
+                if (data == null || data.format != SaveFormat || (data.version != 1 && data.version != 2 && data.version != 3 && data.version != 4 && data.version != 5 && data.version != 6) || data.profile == null || data.profile.version != 1)
                 { error = frozenRecord?FrozenRewardReadFailure+" unsupported format":"unsupported format"; return false; }
                 bool balanceChanged = HasLegacyEnhancement(data.profile.inventory) || HasLegacyEnhancement(data.profile.pendingLoot) || HasLegacyEnhancement(data.profile.recoveryLoot);
                 bool masteryMigrated = data.profile.masteryRevision < 1 && data.profile.masteryRanks != null && Array.Exists(data.profile.masteryRanks, rank => rank > 0);

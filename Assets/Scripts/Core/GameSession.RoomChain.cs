@@ -114,7 +114,7 @@ namespace Emberfall
    if(RoomChainRun==null||!RoomChainRun.Finished||RoomChainRun.Failed||RoomChainRun.RewardClaimed)return true;
    var run=RoomChainRun;var source=Progression;string slot=source.CurrentSlotId,receipt=modeReceipt;
    int reward=200+DungeonTier*35;if(HasBlessing(RunBlessing.RiskContract))reward=Mathf.RoundToInt(reward*1.3f);
-   bool saved=Progression.TryGrantModeReward(modeReceipt,reward,160+DungeonTier*25,TierRewardBand.Materials(4,DungeonTier),DungeonTier);
+   bool saved=Progression.TryGrantModeReward(modeReceipt,reward,160+DungeonTier*25,TierRewardBand.Materials(4,DungeonTier),DungeonTier,3);
    if(!saved){Notify(Progression.LastError);return false;}
    run.ClaimReward(true);if(RoomChainRun!=run||Progression!=source||source.CurrentSlotId!=slot)return true;ApplyRewardPresentation(receipt);
    LastRunSummary=BuildRunSummary(true);return true;

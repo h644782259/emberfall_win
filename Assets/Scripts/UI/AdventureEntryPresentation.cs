@@ -7,10 +7,10 @@ namespace Emberfall
         public static int Materials(int mode,int tier)
         {
             if(mode < -1 || mode > 3)throw new ArgumentOutOfRangeException(nameof(mode));
-            return TierRewardBand.Materials(mode==-1?3:mode==3?4:mode+1,tier);
+            return AdventureRewardRules.Materials(mode,tier);
         }
         public static string RewardLine(int mode,int tier)
-        {return "通关 "+Materials(mode,tier)+"碎片 · "+(mode==-1?"外观宝箱":"无外观宝箱");}
+        {return AdventureRewardRules.EquipmentSummary(mode,tier)+" · "+Materials(mode,tier)+"碎片";}
         public static string GoalFit(GameProfile profile,ProgressionGoalState goal,int mode,int tier)
         {
             if(profile==null||goal==null||profile.progressionGoal==ProgressionGoalKind.None&&!profile.automaticGrowth)return mode==-1?"外观收集可选遗迹；碎片用于营地整备":"碎片整备；本模式不产外观宝箱";

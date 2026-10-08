@@ -22,7 +22,7 @@ namespace Emberfall
             if(!DungeonRewardPending)return true;
             if(!HasStarted||Progression==null)return false;
             var source=Progression;string slot=source.CurrentSlotId,receipt=pendingDungeonRewardId;
-            if(!Progression.TryCompleteDungeonRun(pendingDungeonRewardId,pendingDungeonRewardTier,pendingDungeonRewardGold,pendingDungeonRewardExperience))
+            if(!Progression.TryCompleteDungeonRun(pendingDungeonRewardId,pendingDungeonRewardTier,pendingDungeonRewardGold,pendingDungeonRewardExperience,true))
             {Notify(Progression.LastError);return false;}
             if(Progression!=source||source.CurrentSlotId!=slot||pendingDungeonRewardId!=receipt)return true;
             pendingDungeonRewardId=null;
