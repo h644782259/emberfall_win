@@ -67,7 +67,15 @@ namespace Emberfall
             EnsureMobileBagItems();
             ItemData picked = ResolveSelectedItem();
             var layout = MobilePanelGeometry();
-            if(DrawMobilePanelChrome(layout,HubInventoryTitle,"Lv."+profile.level+" · "+Money(profile.gold)+" 金币 · "+profile.inventory.Count+"/"+ProgressionService.InventoryCapacity))return;
+            if(DrawMobilePanelChrome(layout,HubInventoryTitle,""))return;
+            if(string.IsNullOrEmpty(session.Notification))
+            {
+                float y=layout.Header.Y+31;
+                Text(TouchRect(layout.Header.X,y,40,20),"Lv."+profile.level,TouchFont(12),pale,true);
+                DrawPrice(TouchRect(layout.Header.X+46,y,90,20),profile.gold,false,TouchRatio);
+                DrawIcon(TouchRect(layout.Header.X+144,y+1,18,18),UIIconAtlas.Utility("bag"),jade);
+                Text(TouchRect(layout.Header.X+166,y,90,20),profile.inventory.Count+"/"+ProgressionService.InventoryCapacity,TouchFont(12),pale,true);
+            }
             float leftWidth=Mathf.Clamp(layout.Body.Width*.28f,156,232);
             var wear=new MobilePanelLayout.Area(layout.Body.X,layout.Body.Y,leftWidth,layout.Height-layout.Body.Y-12);
             var bag=new MobilePanelLayout.Area(wear.XMax+12,layout.Body.Y,layout.Body.Width-leftWidth-12,wear.Height);

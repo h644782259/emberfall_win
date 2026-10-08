@@ -30,6 +30,9 @@ namespace Emberfall
         int surfaceFrame=-1;
         bool framingDirty=true;
         bool equipmentFraming,equipmentDetail;
+        bool centerOnAvatar;
+        public void SetCenterOnAvatar(bool enabled)
+        {if(centerOnAvatar==enabled)return;centerOnAvatar=enabled;framingDirty=true;state.Invalidate();}
         int equipmentHighlightSlot=-1;
         readonly MaterialPropertyBlock highlightBlock=new MaterialPropertyBlock();
         MaterialPropertyBlock[] savedHighlightBlocks;
@@ -192,6 +195,13 @@ namespace Emberfall
             if(!found)bounds=new Bounds(avatar.transform.position+Vector3.up*1.3f,new Vector3(1.3f,1.6f,1));
             if(composition==CollectionPreviewComposition.Back)
                 bounds.Encapsulate(new Bounds(avatar.transform.position+Vector3.up*1.4f,new Vector3(1,1.3f,.7f)));
+            if(centerOnAvatar)
+            {
+                // Keep the body centered even when a weapon or an attack pose extends sideways.
+                Vector3 center=bounds.center;float bodyX=avatar.transform.position.x;
+                Vector3 size=bounds.size;size.x+=2*Mathf.Abs(center.x-bodyX);center.x=bodyX;
+                bounds=new Bounds(center,size);
+            }
             camera.aspect=(float)texture.width/texture.height;
             camera.orthographicSize=CollectionPreviewFraming.Size(bounds.extents.x,bounds.extents.y,bounds.extents.z,camera.aspect,composition);
             camera.transform.position=bounds.center+new Vector3(0,1.1134f,7.9221f);camera.transform.LookAt(bounds.center);

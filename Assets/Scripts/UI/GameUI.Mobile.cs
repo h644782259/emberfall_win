@@ -22,7 +22,7 @@ namespace Emberfall
 
         private int mobileSkillPage, mobileSkillPageFrame=-1;
         public bool MobileSkillVisible(int skill)
-        {for(int button=0;button<MobileSkillPolicy.ButtonCount;button++)if(MobileSkillPolicy.SkillAtButton(button,mobileSkillPage)==skill)return true;return false;}
+        {for(int button=0;button<MobileSkillPolicy.ButtonCount;button++)if(BoundMobileSkill(button,mobileSkillPage)==skill)return true;return false;}
         public void CancelMobileCast(){mobileTap.Cancel();}
         private bool BeginMobileCast(int finger,Vector2 screen)
         {
@@ -33,7 +33,7 @@ namespace Emberfall
             for(int i=0;i<MobileSkillPolicy.ButtonCount;i++)
             {
                 if(!hotbarSlots[i].Contains(p))continue;
-                int skill=MobileSkillPolicy.SkillAtButton(i,mobileSkillPage);
+                int skill=BoundMobileSkill(i,mobileSkillPage);
                 if(skill<0)return false;
                 if(session.Progression.Profile.skillRanks[skill]<=0||!MobileSkillPolicy.IsActiveSkill(skill))return true;
                 mobileTap.Begin(finger,skill);return true;
@@ -47,7 +47,7 @@ namespace Emberfall
             {CancelMobileCast();return;}
             if(!ended)return;
             bool inside=false;Vector2 point=ScreenToUI(screen);
-            for(int i=0;i<MobileSkillPolicy.ButtonCount;i++)if(hotbarSlots[i].Contains(point)&&MobileSkillPolicy.SkillAtButton(i,mobileSkillPage)==mobileTap.Skill)inside=true;
+            for(int i=0;i<MobileSkillPolicy.ButtonCount;i++)if(hotbarSlots[i].Contains(point)&&BoundMobileSkill(i,mobileSkillPage)==mobileTap.Skill)inside=true;
             int skill;
             if(mobileTap.Release(finger,inside,false,out skill))
             {var targeting=session.Player.GetComponent<SkillTargetingController>();
@@ -151,7 +151,7 @@ namespace Emberfall
             var l=MobileControls.Layout;GameProfile p=session.Progression.Profile;
             for(int i=0;i<MobileSkillPolicy.ButtonCount;i++)
             {
-                int skill=MobileSkillPolicy.SkillAtButton(i,mobileSkillPage);if(skill<0)continue;
+                int skill=BoundMobileSkill(i,mobileSkillPage);if(skill<0)continue;
                 Rect hit=hotbarSlots[i];blockedRects.Add(hit);Rect r=MobileVisualRect(hit);
                 bool ready=session.Player!=null&&session.Player.IsSkillAvailable(skill);
                 bool pressed=mobileTap.Skill==skill&&mobileTap.Active;
@@ -165,9 +165,11 @@ namespace Emberfall
                 DrawMobileSkillAvailability(r,skill);
             }
             Rect pageHit=TouchRect(l.SkillPage);blockedRects.Add(pageHit);
-            Rect pageVisual=MobileVisualRect(pageHit);DrawMobileControlSurface(pageVisual,false,false);
-            float pageSize=pageVisual.width*.65f;
-            DrawIcon(new Rect(pageVisual.center.x-pageSize*.5f,pageVisual.center.y-pageSize*.5f,pageSize,pageSize),UIIconAtlas.SkillPageArrow(),Color.white);
+            Rect pageVisual=MobileVisualRect(pageHit);
+            Rect pageTab=new Rect(pageVisual.x,pageVisual.center.y-14*TouchRatio,pageVisual.width,28*TouchRatio);
+            Fill(pageTab,new Color(.025f,.055f,.075f,.72f));
+            Fill(new Rect(pageTab.x,pageTab.yMax-2*TouchRatio,pageTab.width,2*TouchRatio),jade);
+            DrawIcon(new Rect(pageTab.center.x-10*TouchRatio,pageTab.center.y-10*TouchRatio,20*TouchRatio,20*TouchRatio),UIIconAtlas.SkillPageArrow(),pale);
             controlOpacity=priorOpacity;
         }
         private void DrawMobileControlSurface(Rect r,bool ready,bool pressed)
@@ -279,26 +281,44 @@ namespace Emberfall
             for(int i=0;i<tips.Length;i++)Text(TouchRect(x,y+43+i*32,510,28),tips[i],TouchFont(14),i==2?jade:pale);
             if(controlsReturnPause&&NavigationButton(TouchRect(x,y+250,510,48), "返回暂停菜单", jade))ClosePanel();
         }
+        private bool PauseSidebarTab(Rect hit,string caption,bool selected,float u)
+        {
+            if(selected)
+            {
+                Fill(hit,new Color(jade.r,jade.g,jade.b,.10f));
+                Fill(new Rect(hit.x,hit.y+8*u,3*u,hit.height-16*u),gold);
+            }
+            Text(new Rect(hit.x+14*u,hit.y,hit.width-20*u,hit.height),caption,Mathf.RoundToInt(14*u),selected?gold:muted,selected,false,TextAnchor.MiddleLeft);
+            bool clicked=GUI.Button(hit,GUIContent.none,invisibleButton);
+            if(clicked)GameAudio.Play(SoundCue.UI);
+            return clicked;
+        }
         private int mobilePausePage;
         private readonly Vector2[] mobilePauseScroll = new Vector2[3];
         private void DrawMobilePause()
         {
+            if(mobileBindingEditor){DrawMobileBindingEditor();return;}
             var layout = MobileControls.Layout;
-            float panelWidth=Mathf.Min(520,layout.Width-24),x=(layout.Width-panelWidth)*.5f,y=12;
-            float titleWidth=panelWidth;
+            float panelWidth=Mathf.Min(720,layout.Width-24),x=(layout.Width-panelWidth)*.5f,y=12;
+            float titleWidth=panelWidth-52;
             float headerHeight=Mathf.Max(44,Style(TouchFont(23),true).CalcHeight(new GUIContent("冒险暂停"),titleWidth*TouchRatio)/TouchRatio+8);
             Fill(new Rect(0, 0, width, height), new Color(.012f, .025f, .04f, .94f));
             Text(TouchRect(x,y,titleWidth,headerHeight), "冒险暂停", TouchFont(23), pale, true);
-            string[] tabs = { "冒险", "声音与画面", "触控布局" };
-            float tabWidth=(panelWidth-16)/3,tabY=y+headerHeight+8;
+            Rect close=TouchRect(x+panelWidth-44,y,44,44);
+            DrawIcon(new Rect(close.center.x-9*TouchRatio,close.center.y-9*TouchRatio,18*TouchRatio,18*TouchRatio),UIIconAtlas.Utility("cancel"),jade);
+            if(QuietAction(close,"",true,"关闭暂停菜单")){session.SetPaused(false);BlockUITransition();return;}
+            string[] tabs = { "冒险", "声音与画面", "按键设置" };
+            float sidebarWidth=120,bodyY=y+headerHeight+8;
+            float bodyHeight=Mathf.Max(48,layout.Height-bodyY-12);
+            Fill(TouchRect(x,bodyY,sidebarWidth,bodyHeight),new Color(.025f,.05f,.065f,.65f));
             for (int i=0;i<tabs.Length;i++)
-                if (TabButton(TouchRect(x+i*(tabWidth+8),tabY,tabWidth,44),tabs[i],mobilePausePage==i) && mobilePausePage!=i)
+                if (PauseSidebarTab(TouchRect(x,bodyY+i*52,sidebarWidth,48),tabs[i],mobilePausePage==i,TouchRatio) && mobilePausePage!=i)
                 { mobilePausePage=i; BlockUITransition(); }
-            float bodyY=tabY+56,bodyHeight=Mathf.Max(48,layout.Height-bodyY-12),contentWidth=panelWidth-18;
+            float contentX=x+sidebarWidth+16,bodyWidth=panelWidth-sidebarWidth-16,contentWidth=bodyWidth-18;
             string notice=string.IsNullOrEmpty(session.Notification)?"":PlatformText(session.Notification);
             float noticeHeight=string.IsNullOrEmpty(notice)?0:Mathf.Max(32,Style(TouchFont(11),false,true).CalcHeight(new GUIContent(notice),contentWidth*TouchRatio)/TouchRatio+8);
-            float contentHeight=mobilePausePage==0?116+noticeHeight:mobilePausePage==1?232:174;
-            mobilePauseScroll[mobilePausePage]=BeginTouchScroll("mobile-pause-"+mobilePausePage,TouchRect(x,bodyY,panelWidth,bodyHeight),mobilePauseScroll[mobilePausePage],new Rect(0,0,contentWidth*TouchRatio,Mathf.Max(bodyHeight,contentHeight)*TouchRatio));
+            float contentHeight=mobilePausePage==0?(contentWidth<420?174:116)+noticeHeight:mobilePausePage==1?232:mobileBindingEditor?438:116;
+            mobilePauseScroll[mobilePausePage]=BeginTouchScroll("mobile-pause-"+mobilePausePage,TouchRect(contentX,bodyY,bodyWidth,bodyHeight),mobilePauseScroll[mobilePausePage],new Rect(0,0,contentWidth*TouchRatio,Mathf.Max(bodyHeight,contentHeight)*TouchRatio));
             try { DrawMobilePauseBody(contentWidth,notice,noticeHeight); }
             finally { EndTouchScroll(); }
         }
@@ -321,23 +341,23 @@ namespace Emberfall
                     }
                 return;
             }
-            string[] labels = { "继续冒险", "保存", "读取存档", "返回主菜单", "营地 / 撤离", "操作指南" };
-            float buttonWidth=(contentWidth-16)/3;
+            string[] labels = { "保存", "读取存档", "返回主菜单", "营地 / 撤离", "操作指南" };
+            int columns=contentWidth<420?2:3;
+            float buttonWidth=(contentWidth-(columns-1)*8)/columns;
             for (int i = 0; i < labels.Length; i++)
             {
-                if (!DrawButton(TouchRect((i%3)*(buttonWidth+8),(i/3)*58,buttonWidth,48),labels[i],i==0||i==1?ButtonRole.Primary:i==3?ButtonRole.Danger:ButtonRole.Navigation)) continue;
+                if (!DrawButton(TouchRect((i%columns)*(buttonWidth+8),(i/columns)*58,buttonWidth,48),labels[i],i==0?ButtonRole.Primary:i==2?ButtonRole.Danger:ButtonRole.Navigation)) continue;
                 switch (i)
                 {
-                    case 0: session.SetPaused(false); break;
-                    case 1: RequestManualSave(); break;
-                    case 2: OpenSaveSelection(); break;
-                    case 3: RequestExit(true); break;
-                    case 4: LeaveMobilePauseForCamp(); break;
-                    case 5: OpenControls(); break;
+                    case 0: RequestManualSave(); break;
+                    case 1: OpenSaveSelection(); break;
+                    case 2: RequestExit(true); break;
+                    case 3: LeaveMobilePauseForCamp(); break;
+                    case 4: OpenControls(); break;
                 }
             }
             if (!string.IsNullOrEmpty(notice))
-                Text(TouchRect(0,116,contentWidth,noticeHeight),notice,TouchFont(11),gold,false,true,TextAnchor.MiddleCenter);
+                Text(TouchRect(0,columns==2?174:116,contentWidth,noticeHeight),notice,TouchFont(11),gold,false,true,TextAnchor.MiddleCenter);
         }
     }
 }

@@ -3,7 +3,7 @@ namespace Emberfall
 {
     public sealed partial class MobileControls
     {
-        private GUIStyle controlLabel;
+        private GUIStyle controlLabel,pinnedTargetLabel;
         private readonly MobileOpportunityMeter counterMeter=new MobileOpportunityMeter(),comboMeter=new MobileOpportunityMeter();
         private bool LimitedHealing {get{return session.ChallengeRun&&session.InDungeon;}}
         private int PotionCount {get{return LimitedHealing?session.HealingCharges:session.Progression.Profile.potions;}}
@@ -51,8 +51,17 @@ namespace Emberfall
                 {
                     Vector2 p=ToUI(new Vector2(screen.x,screen.y));
                     var pending=hero.GetComponent<SkillChargeController>();
-                    string title=pinned.DisplayName+(pending!=null&&pending.IsCharging?" · 下次固定":" · 固定目标");
-                    GUI.Label(new Rect(Mathf.Clamp(p.x-60,0,Layout.Width-120),Mathf.Clamp(p.y-20,80,Layout.Height-120),120,20),title,controlLabel);
+                    if(pinnedTargetLabel==null)pinnedTargetLabel=new GUIStyle(controlLabel)
+                    {wordWrap=true,clipping=TextClipping.Overflow,padding=new RectOffset(4,4,3,3)};
+                    pinnedTargetLabel.fontSize=controlLabel.fontSize;
+                    pinnedTargetLabel.normal.textColor=Color.white;
+                    string title=pinned.DisplayName+"\n"+(pending!=null&&pending.IsCharging?"下次固定":"固定目标");
+                    var content=new GUIContent(title);
+                    float labelWidth=Mathf.Min(Layout.Width-16,Mathf.Max(140,Mathf.Min(240,pinnedTargetLabel.CalcSize(content).x+8)));
+                    float labelHeight=pinnedTargetLabel.CalcHeight(content,labelWidth)+4;
+                    Rect labelRect=new Rect(Mathf.Clamp(p.x-labelWidth*.5f,8,Layout.Width-labelWidth-8),
+                        Mathf.Clamp(p.y-labelHeight,80,Layout.Height-labelHeight-8),labelWidth,labelHeight);
+                    GUI.Label(labelRect,content,pinnedTargetLabel);
                 }
             }
             failure=session.ControlFailure("dodge");if(!string.IsNullOrEmpty(failure))LabelControl(Dodge,failure,true);

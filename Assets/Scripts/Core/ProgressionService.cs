@@ -2403,6 +2403,21 @@ namespace Emberfall
             return true;
         }
 
+        public bool Unequip(ItemSlot slot)
+        {
+            if (!Enum.IsDefined(typeof(ItemSlot), slot)) return Fail("无效的装备槽。");
+            GameProfile candidate = Snapshot();
+            string id = slot == ItemSlot.Weapon ? candidate.weaponId : slot == ItemSlot.Armor ? candidate.armorId : candidate.relicId;
+            var item = candidate.inventory.Find(value => value != null && value.id == id);
+            if (item == null) return Fail("这个装备槽是空的。");
+            ApplyUpgradeRank(item, 0);
+            // Empty string records an intentional empty slot; null remains legacy repair input.
+            if (slot == ItemSlot.Weapon) candidate.weaponId = string.Empty;
+            else if (slot == ItemSlot.Armor) candidate.armorId = string.Empty;
+            else candidate.relicId = string.Empty;
+            return CommitCandidate(candidate);
+        }
+
         public int SlotUpgradeRank(ItemSlot slot)
         {
             int index = (int)slot;
@@ -3181,6 +3196,7 @@ namespace Emberfall
             {
                 ItemSlot itemSlot = (ItemSlot)slot;
                 string equippedId = slot == 0 ? profile.weaponId : slot == 1 ? profile.armorId : profile.relicId;
+                if (equippedId == string.Empty) continue;
                 ItemData equipped = items.Find(item => item.id == equippedId && item.slot == itemSlot && item.level <= profile.level);
                 if (equipped == null) equipped = items.Find(item => item.slot == itemSlot && item.level <= profile.level);
                 if (equipped == null) AddStarterItem(profile, itemSlot);

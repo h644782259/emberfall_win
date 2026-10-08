@@ -11,19 +11,24 @@ namespace Emberfall
         {
             var p=session.Progression;
             if(wearModel==null)wearModel=new CollectionModelPreview();
-            Rect viewport=new Rect(area.x+38*u,area.y,area.width-38*u,Mathf.Max(64*u,area.height-48*u));
-            wearModel.SetComposition(CollectionPreviewComposition.Full);wearModel.SetYaw(20);
+            Rect viewport=new Rect(area.x,area.y,area.width,Mathf.Max(64*u,area.height-48*u));
+            wearModel.SetCenterOnAvatar(true);wearModel.SetComposition(CollectionPreviewComposition.Full);wearModel.SetYaw(20);
             wearModel.SetViewport(viewport.width*Mathf.Abs(GUI.matrix.m00),viewport.height*Mathf.Abs(GUI.matrix.m11),MobileControls.Active);
             Texture current=wearModel.RenderSafe(p.Profile.heroClass,p.Equipped(ItemSlot.Weapon),p.Equipped(ItemSlot.Armor),p.Equipped(ItemSlot.Relic),p.EquippedFashion(FashionSlot.Wings),p.EquippedFashion(FashionSlot.Weapon));
             if(current!=null)GUI.DrawTexture(viewport,current,ScaleMode.ScaleToFit,false);
             else Text(viewport,wearModel.LastError==null?"角色预览正在恢复":"预览暂不可用，其他操作可继续",Mathf.RoundToInt(11*u),muted,false,true);
             for(int slot=0;slot<3;slot++)
             {
-                var item=p.Equipped((ItemSlot)slot);Rect r=new Rect(area.x,area.y+slot*48*u,44*u,44*u);
-                if(QuietAction(r,"",item!=null))
+                var item=p.Equipped((ItemSlot)slot);Rect r=new Rect(area.center.x-70*u+slot*48*u,area.yMax-44*u,44*u,44*u);
+                if(item!=null)DrawInventoryIcon(r,item,u);
+                else
+                {
+                    Fill(r,card);Border(r,new Color(jade.r,jade.g,jade.b,.35f));
+                    DrawIcon(new Rect(r.x+9*u,r.y+6*u,26*u,26*u),UIIconAtlas.EquipmentCardIcon((ItemSlot)slot),muted);
+                    Text(new Rect(r.x,r.yMax-14*u,r.width,14*u),GameBalance.SlotName((ItemSlot)slot),Mathf.RoundToInt(9*u),muted,false,false,TextAnchor.MiddleCenter);
+                }
+                if(QuietAction(r,"",item!=null&&!inventoryComparisonOpen))
                 {mobileInventoryTab=0;OpenInventoryPopup(item.id,r);}
-                DrawIcon(new Rect(r.x+6*u,r.y+3*u,30*u,28*u),UIIconAtlas.EquipmentCardIcon((ItemSlot)slot),item==null?muted:GameBalance.RarityColor(item.rarity));
-                Text(new Rect(r.x,r.y+29*u,r.width,14*u),GameBalance.SlotName((ItemSlot)slot),Mathf.RoundToInt(9*u),jade,true,false,TextAnchor.MiddleCenter);
                 if(r.Contains(Mouse)&&item!=null)tooltip=item.name+" · 已穿戴";
             }
         }

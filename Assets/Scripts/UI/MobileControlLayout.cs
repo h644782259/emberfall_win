@@ -42,15 +42,21 @@ namespace Emberfall
             Interact=new Area(Width-54,92,48,48);
             DungeonEntrance=new Area(Width*.5f-58,8,116,44);
             float shift=positionPreset<0?-Math.Min(8,Math.Max(0,Height-320)):positionPreset>0?0:0;
-            float[] dx={180,180,132,78,240};
-            float[] dy={30,92,140,153,30};
-            for(int i=0;i<Skills.Length;i++)Skills[i]=Centered(Width-dx[i],Height-dy[i]+shift-bottomLift,i==4?54:48);
+            // Equal-size skills follow a 30-degree arc with one shared chord length.
+            const float radius=132,diameter=48;
+            float chord=2*radius*(float)Math.Sin(Math.PI/12);
+            for(int i=0;i<4;i++)
+            {
+                double angle=i*Math.PI/6;
+                Skills[i]=Centered(Width-78-radius*(float)Math.Cos(angle),Height-30-radius*(float)Math.Sin(angle)+shift-bottomLift,diameter);
+            }
+            Skills[4]=Centered(Width-78-radius-chord,Height-30+shift-bottomLift,diameter);
             SkillPage=Centered(Width-30,Height-146,44);
             int[] opportunityIdentities={0,1,2,4,5,6,7,9};
             for(int index=0;index<opportunityIdentities.Length;index++)
             {
                 int skill=opportunityIdentities[index],button=index==7?4:index%4;
-                Area key=Skills[button];SkillOpportunities[skill]=button==4?new Area(key.X-52,key.Y+17,48,14):new Area(key.X,button==0?key.Y-14:button==3&&key.Y-15<140?key.Y+key.Height+1:key.Y-15,key.Width,14);
+                Area key=Skills[button];SkillOpportunities[skill]=new Area(key.X,button==0?key.Y-14:button==3&&key.Y-15<140?key.Y+key.Height+1:key.Y-15,key.Width,14);
             }
             CounterOpportunity=new Area(Attack.X,Attack.Y+Attack.Height+1,Attack.Width/2,13);
             ComboOpportunity=new Area(Attack.X+Attack.Width/2,Attack.Y+Attack.Height+1,Attack.Width/2,13);
