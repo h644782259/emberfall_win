@@ -64,9 +64,12 @@ namespace Emberfall
         }
         public bool AdvanceAutomaticGrowth()
         {
-            if(IsPracticeOnly||!Profile.automaticGrowth)return true;
+            if(IsPracticeOnly)return true;
             var candidate=Snapshot();int rewarded=0;
-            for(int i=0;i<32;i++)
+            string practice="growth/"+(int)candidate.heroClass+"/practice";
+            if(candidate.classTutorialCompleted&&!candidate.growthRewardReceipts.Contains(practice))
+            {candidate.growthRewardReceipts.Add(practice);candidate.gold=Math.Min(MaximumGold,candidate.gold+50);candidate.mechanicMaterials=Math.Min(999999,candidate.mechanicMaterials+1);rewarded++;}
+            for(int i=0;candidate.automaticGrowth&&i<32;i++)
             {
                 var goal=AutomaticGoal(candidate,false);if(!goal.Done)break;
                 if(candidate.growthRewardReceipts.Contains(goal.Identity))break;

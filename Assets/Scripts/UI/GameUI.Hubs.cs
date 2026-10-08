@@ -36,11 +36,7 @@ namespace Emberfall
             if(UITransitionBlocked||session==null||session.Paused||session.BackgroundPaused||panel!=Panel.HubDialogue)return;
             HubNpcKind kind=session.ActiveHubNpc;
             if(kind==HubNpcKind.None){ClosePanel();return;}
-            if (kind == HubNpcKind.Exchange)
-            {
-                OpenChapterSelection();
-                return;
-            }
+            if(kind==HubNpcKind.Exchange){ClosePanel();NavigateMerchantExchange();return;}
             else
             {
                 panel = Panel.Inventory;

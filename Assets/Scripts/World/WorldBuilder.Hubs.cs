@@ -83,7 +83,7 @@ namespace Emberfall
   }
   private static void BuildHubNpcs(Transform parent,WorldResources r)
   {
-   for(int index=0;index<3;index++)
+   for(int index=0;index<2;index++)
    {
     Vector3 p=GameSession.HubNpcPosition(index);Transform npc=Region(parent,index==0?"Camp Merchant":index==1?"Camp Blacksmith":"Star Exchange Steward");
     Transform body=Region(npc,"NPC body pivot");body.localPosition=p;

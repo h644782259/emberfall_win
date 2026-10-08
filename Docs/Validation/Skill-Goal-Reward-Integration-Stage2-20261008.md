@@ -1,0 +1,21 @@
+# Skill / goal / reward integration: final candidate
+
+Independent branch `codex/skill-goal-reward-integration`; stage 1 is Windows 0c465b6 / iOS 12d48eb. No Android edits or main merge.
+
+Completed added requests: compact merchant Buy/Exchange and Sell pages, price icons and separated header balance/X, removed autosell flags and UI, guarded repeat purchase quotes; blacksmith categories Strengthen / Mount / Inherit, three equipped-slot selectors, exact cost/stat preview, guarded upgrade quote. Free automatic same-slot inheritance remains. Bought attachments start unmounted; existing mounted attachments, IDs, investments, variants and presets survive migration. iOS now uses attachment power/range multipliers in the existing mechanic effects without replacing combat logic.
+
+Removed the obsolete third exchange NPC from spawn, proximity and minimap. Star-road chapters occupy the sixth slot of the existing unified dungeon picker; chapter prerequisites, difficulty, tier, story and reward transactions remain. Chapter footer retains the distinct parent-navigation and enter actions. Goals use a non-overlapping top-right control: desktop left of minimap, mobile existing catalog control slot. Manual combat-trial goals receive the historical once-only gold/material receipt even with automatic goals disabled, including save-failure retry. Removed additional plain adventure-back footers when a header X already closes, keeping return-to-pause semantics.
+
+Inventory: original regular capacity 72 -> 256. Owned overflow is visible and usable immediately, not a refill mailbox; old pending/recovery IDs are deduplicated and migrated before publishing a loaded role. A 4096-item retention limit and 4 MiB save limit reject further acquisition while retaining world ownership; there is no implicit sale/discard. Save format 5 prevents older readers from truncating the enlarged inventory. Keep backups when switching executable versions.
+
+## Automated evidence
+
+Both repositories pass reward migration 62 assertions / 6 scenarios; smith/merchant transactions and measured layout 308 / 6; upgrade 382 / 19; idempotent save 149 / 23; build presets 136; goal identity 53. Chapter suite passes 212 chapter transaction assertions, 14 mode receipt assertions and 103 adventure/preset/tutorial assertions, including negative replay mutations. Chapter entry production fixture verifies retained navigation, qualification, measured scrolling and transaction/save retry; its test doubles were updated for the new parent route and removed exchange action. Full runtime source compilation passes against pinned Unity API references (Windows and UNITY_IOS respectively).
+
+Reports in the execution workspace: `/workspace/validation/win-stage2-final2/report.json`, `ios-stage2-final2/report.json` (six core checks pass; historical chapter harness failures superseded), and `{win,ios}-stage2-routing2/report.json` (chapter checks and runtime compilation pass). Final footer-space edit recompiled successfully with zero errors: `{win,ios}-stage2-finalcompile/report.json`. All checks are headless managed fixtures/API compilation, not Unity Editor/platform builds, real JsonUtility, pixels, shaders or user UI acceptance. Other unselected checks have not been run.
+
+Original exact baseline: Windows progression fails assertion 35, boss loot at least rare; Windows original upgrade passes 485/20. iOS original progression passes 2650/151 and upgrade 480/20. Removed claim/autosell assertions were revised for the requested direct inventory semantics, while atomicity/inheritance tests continue exercising production methods.
+
+Reference Library file transfer failed; no 403 bypass and no local pixel acceptance claimed. Button scope uses the parent-verified list: camp bottom adventure/skills/inventory shortcuts plus subsequently verified service changes. UI and actual results remain for the user. No user Mac or automated device acceptance was operated.
+
+Coordination: parent must reconcile later `codex/oct07-gameplay` updates. Shared overlap includes ProgressionService, GameUI and hub/service partials; InventoryGrid and costume model/visual/name work were left untouched. Do not merge main before user UI acceptance.

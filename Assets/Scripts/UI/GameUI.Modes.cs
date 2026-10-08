@@ -13,9 +13,18 @@ namespace Emberfall
    var f=layout.Frame;Rect frame=new Rect(f.X*u,f.Y*u,f.Width*u,f.Height*u);Fill(frame,new Color(.035f,.06f,.085f));Border(frame,jade*.5f);
    Text(new Rect((x+240)*u,y*u,280*u,24*u),"已解锁最高 "+session.MaximumDungeonTier+" 阶",Mathf.RoundToInt(13*u),muted,false,false,TextAnchor.MiddleRight);
    Text(new Rect(x*u,y*u,520*u,26*u),"选择冒险",Mathf.RoundToInt(22*u),pale,true);
-   string[] names={"沉星遗迹","守望林庭","烬河突围","蚀星斗场","回廊远征"};
+   string[] names={"沉星遗迹","守望林庭","烬河突围","蚀星斗场","回廊远征","星路章节"};
    for(int i=0;i<names.Length;i++)
    {
+    if(i==5)
+    {
+        var chapterArea=layout.Entry(i);Rect chapterRect=new Rect(chapterArea.X*u,chapterArea.Y*u,chapterArea.Width*u,chapterArea.Height*u);
+        Fill(chapterRect,card);Border(chapterRect,jade*.4f);
+        Text(new Rect(chapterRect.x+12*u,chapterRect.y+6*u,chapterRect.width-24*u,20*u),"星路章节",Mathf.RoundToInt(16*u),pale,true);
+        Text(new Rect(chapterRect.x+12*u,chapterRect.y+29*u,chapterRect.width-24*u,chapterRect.height-33*u),"选章节 / 难度 / 阶数 / 治疗限制",Mathf.RoundToInt(11*u),jade,false,true);
+        if(GUI.Button(chapterRect,GUIContent.none,invisibleButton)){session.CancelDungeonSelection();OpenChapterSelection();BlockUITransition();return;}
+        continue;
+    }
     var a=layout.Entry(i);Rect r=new Rect(a.X*u,a.Y*u,a.Width*u,a.Height*u);bool chosen=session.SelectedArenaMode==i-1;
     Fill(r,chosen?new Color(.11f,.2f,.21f):card);Border(r,chosen?gold:jade*.4f);
     var title=layout.EntryTitle(i);var reward=layout.EntryReward(i);var encounter=layout.EntryEncounter(i);

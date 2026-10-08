@@ -26,7 +26,7 @@ namespace Emberfall
                 {
                     bool first=p.Profile.pendingFirstClearReward&&!p.Profile.firstClearRewardClaimed;
                     if(PrimaryButton(new Rect(16,y+168,cw-32,36),first?"领取首通挂件":"兑换挂件 · 12碎片",gold,session.IsInCamp&&(first||p.Profile.mechanicMaterials>=12)))
-                        Feedback(first?p.ClaimFirstClearReward(mechanic):p.ExchangeMechanic(mechanic),"挂件已获得并挂载");
+                        Feedback(first?p.ClaimFirstClearReward(mechanic):p.ExchangeMechanic(mechanic),"挂件已获得，请到铁匠镶嵌");
                 }
                 else
                 {

@@ -115,7 +115,7 @@ namespace Emberfall
             var candidate=Snapshot();
             if(first){candidate.firstClearRewardClaimed=true;candidate.pendingFirstClearReward=false;}
             else candidate.mechanicMaterials-=MechanicExchangeCost;
-            candidate.attachments.Add(new MechanicAttachment{id=Guid.NewGuid().ToString("N"),mechanic=mechanic,level=EquipmentGenerationLevel(Profile.level)});
+            candidate.attachments.Add(new MechanicAttachment{id=Guid.NewGuid().ToString("N"),mechanic=mechanic,level=EquipmentGenerationLevel(Profile.level),mounted=false});
             if(!candidate.discoveredMechanics.Contains(mechanic))candidate.discoveredMechanics.Add(mechanic);
             if(!CommitCandidate(candidate,true))return false;
             PublishRewardMoment(first?RewardMomentKind.FirstCore:RewardMomentKind.MechanicExchange,materials:first?0:-MechanicExchangeCost,attachment:Attachment(mechanic));return true;

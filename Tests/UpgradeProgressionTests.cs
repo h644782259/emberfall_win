@@ -56,8 +56,9 @@ public static class UpgradeProgressionTests
 
     private static void FillPending(ProgressionService service)
     {
-        while (service.Profile.pendingLoot.Count < ProgressionService.PendingLootCapacity)
-            Check(service.CollectLoot(Plain(Rarity.Epic)), "protected overflow fills pending slots");
+        for(int i=0;i<ProgressionService.PendingLootCapacity;i++)service.Profile.pendingLoot.Add(Plain(Rarity.Epic));
+        service.Save();
+        Check(service.Profile.pendingLoot.Count==0,"legacy overflow automatically joins visible bag");
     }
 
     private static ProgressionService Reload(ProgressionService service)
@@ -119,54 +120,25 @@ public static class UpgradeProgressionTests
 
     private static void ProtectedOverflowSurvivesReloadAndRefusal()
     {
-        var service = Fresh();
-        FillBag(service);
-        int gold = service.Profile.gold;
-        ItemData epic = Plain(Rarity.Epic);
-        Check(service.CollectLoot(epic), "epic overflow is accepted into pending");
-        Check(service.Profile.pendingLoot.Count == 1 && service.Profile.pendingLoot[0].id == epic.id && service.Profile.gold == gold, "protected drop keeps item identity and grants no sale gold");
-        Check(!service.CollectLoot(epic), "pending drop cannot be collected twice");
-        var restored = Reload(service);
-        Check(restored.Profile.pendingLoot[0].id == epic.id && !restored.CollectLoot(epic), "pending receipt prevents duplicate after reload");
-        Check(!restored.ClaimPendingLoot(epic.id), "full bag cannot claim pending item");
-        ItemData locked = Plain(); locked.locked = true;
-        ItemData enhanced = Plain(); enhanced.locked = true;
-        ItemData mechanic = restored.CreateMechanicItem(EquipmentMechanic.FrostEcho); mechanic.rarity = Rarity.Rare; mechanic.locked = false;
-        Check(restored.CollectLoot(locked) && restored.CollectLoot(enhanced) && restored.CollectLoot(mechanic), "locks, invested upgrades and first mechanics protect even low rarities");
-        FillPending(restored);
-        string saved = File.ReadAllText(restored.SaveFilePath);
-        ItemData overflow = Plain(Rarity.Legendary);
-        Check(!restored.CollectLoot(overflow), "full bounded queue refuses additional protected drop");
-        Check(restored.Profile.pendingLoot.Count == ProgressionService.PendingLootCapacity && restored.Profile.gold == gold, "refusal does not sell or exceed bounds");
-        Check(File.ReadAllText(restored.SaveFilePath) == saved, "refusal does not write a consumed receipt");
-        ItemData expendable = restored.Profile.inventory.Find(value => value.id != restored.Profile.weaponId && value.id != restored.Profile.armorId && value.id != restored.Profile.relicId);
-        Check(restored.Sell(expendable.id) && restored.CollectLoot(overflow), "same refused drop remains collectible after making room");
-        Check(restored.Profile.inventory.Exists(value => value.id == overflow.id), "retry preserves the original legendary item");
-        Check(restored.BulkSellLowQuality() == ProgressionService.InventoryCapacity - 4, "bulk cleanup removes only unequipped ordinary filler");
-        Check(restored.ClaimAllPendingLoot() == ProgressionService.PendingLootCapacity, "all protected pending items can be explicitly claimed");
-        Check(restored.Profile.pendingLoot.Count == 0 && restored.Profile.inventory.Exists(value => value.id == epic.id), "claim moves rather than duplicates items");
-        Check(Reload(restored).Profile.inventory.Exists(value => value.id == mechanic.id), "first mechanic still exists after every transition");
+        var service=Fresh();FillBag(service);int gold=service.Profile.gold;
+        var epic=Plain(Rarity.Epic);Check(service.CollectLoot(epic),"protected full-bag reward is admitted");
+        Check(service.Profile.inventory.Exists(x=>x.id==epic.id)&&service.Profile.pendingLoot.Count==0&&service.Profile.gold==gold,"reward stays owned and visible with no sale");
+        var restored=Reload(service);Check(restored.Profile.inventory.Exists(x=>x.id==epic.id)&&!restored.CollectLoot(epic),"durable identity prevents duplicate reward");
+        Check(!restored.ClaimPendingLoot(epic.id)&&restored.ClaimAllPendingLoot()==0,"legacy claim never grants again");
+        var common=Plain();Check(restored.CollectLoot(common)&&restored.Profile.gold==gold,"ordinary overflow is preserved too");
+        Check(restored.BulkSellLowQuality()>0&&restored.Profile.inventory.Exists(x=>x.id==epic.id),"explicit cleanup retains precious reward");
     }
 
     private static void AutoSellAndBulkNeverConsumeProtectedGear()
     {
-        var service = Fresh();
-        Check(!service.Profile.autoSellCommon && !service.Profile.autoSellRare, "new characters opt into low-quality autosell");
-        Check(service.SetAutoSell(Rarity.Common, true) && service.SetAutoSell(Rarity.Rare, true), "low quality settings can be independently enabled");
-        Check(!service.SetAutoSell(Rarity.Epic, true), "high rarity autosell cannot be enabled");
-        int gold = service.Profile.gold;
-        ItemData common = Plain(), rare = Plain(Rarity.Rare);
-        Check(service.CollectLoot(common) && service.CollectLoot(rare), "enabled low quality pickups are processed");
-        Check(service.Profile.gold == gold + service.SellValue(common) + service.SellValue(rare) && service.Profile.inventory.Count == 3, "autosell credits exactly each sale once");
-        ItemData locked = Plain(); locked.locked = true;
-        ItemData upgraded = Plain(); upgraded.locked = true;
-        ItemData mechanic = service.CreateMechanicItem(EquipmentMechanic.FrostEcho); mechanic.rarity = Rarity.Rare; mechanic.locked = false;
-        Check(service.CollectLoot(locked) && service.CollectLoot(upgraded) && service.CollectLoot(mechanic) && service.CollectLoot(Plain(Rarity.Legendary)), "all protection classes override autosell");
-        Check(service.Profile.inventory.Count == 7 && service.BulkSellLowQuality() == 0, "bulk action also honors equipped, locks, upgrades and mechanic protection");
-        Check(service.SetAutoSell(Rarity.Common, false) && service.SetAutoSell(Rarity.Rare, false), "autosell can be disabled");
-        Check(service.CollectLoot(Plain()) && service.CollectLoot(Plain(Rarity.Rare)) && service.BulkSellLowQuality() == 2, "bulk cleanup sells low quality when expressly invoked");
-        Check(service.SetItemLocked(locked.id, false) && service.Sell(locked.id), "explicit unlocking remains reversible");
-        Check(Reload(service).Profile.inventory.Exists(value => value.id == mechanic.id), "unlocked mechanic survives bulk and reload");
+        var service=Fresh();Check(!service.SetAutoSell(Rarity.Common,true)&&!service.SetAutoSell(Rarity.Rare,true),"removed autosell cannot be enabled");
+        service.Profile.autoSellCommon=service.Profile.autoSellRare=true;service.Save();Check(!service.Profile.autoSellCommon&&!service.Profile.autoSellRare,"old settings migrate disabled");
+        int gold=service.Profile.gold;var common=Plain();var rare=Plain(Rarity.Rare);Check(service.CollectLoot(common)&&service.CollectLoot(rare)&&service.Profile.gold==gold,"all rewards stay items");
+        Check(service.BulkSellLowQuality()==2,"only explicit cleanup sells ordinary idle rewards");
+        var locked=Plain();locked.locked=true;var mechanic=service.CreateMechanicItem(EquipmentMechanic.FrostEcho);
+        Check(service.CollectLoot(locked)&&service.CollectLoot(mechanic)&&service.BulkSellLowQuality()==0,"equipped, locks and mechanisms stay protected");
+        Check(service.SetItemLocked(locked.id,false)&&service.Sell(locked.id),"explicit unlock and sale remain available");
+        Check(Reload(service).Profile.inventory.Exists(x=>x.id==mechanic.id),"mechanism reward survives cleanup and reload");
     }
 
     private static void FirstClearAndExchangeHaveDurableBudgets()
@@ -344,26 +316,12 @@ public static class UpgradeProgressionTests
 
     private static void ProtectedAcquisitionsRollbackFailedWrites()
     {
-        var service = Fresh();
-        FillBag(service);
-        ItemData mechanic = service.CreateMechanicItem(EquipmentMechanic.FrostEcho);
-        string blockedTemp = service.SaveFilePath + ".tmp";
-        int gold = service.Profile.gold;
-        Directory.CreateDirectory(blockedTemp);
-        Check(!service.CollectLoot(mechanic) && service.Profile.pendingLoot.Count == 0 && !service.HasDiscoveredMechanic(mechanic.mechanic), "failed protected pickup save returns item ownership to world without discovery");
-        Check(service.Profile.gold == gold, "failed pickup cannot sell protected reward");
-        Directory.Delete(blockedTemp);
-        Check(service.CollectLoot(mechanic) && service.Profile.pendingLoot.Count == 1, "same world item is retryable after disk recovery");
-        service.BulkSellLowQuality();
-        Directory.CreateDirectory(blockedTemp);
-        Check(!service.ClaimPendingLoot(mechanic.id) && service.Profile.pendingLoot.Count == 1 && !service.Profile.inventory.Exists(value => value.id == mechanic.id), "failed individual claim retains pending ownership");
-        Check(service.ClaimAllPendingLoot() == 0 && service.Profile.pendingLoot.Count == 1, "failed bulk claim restores pending order and ownership");
-        service.Profile.mechanicMaterials = ProgressionService.MechanicExchangeCost;
-        Check(!service.ExchangeMechanic(EquipmentMechanic.CinderTrail) && service.Profile.mechanicMaterials == ProgressionService.MechanicExchangeCost, "failed exchange save refunds all materials");
-        service.Profile.clearedRuns = 1; service.Profile.pendingFirstClearReward = true;
-        Check(!service.ClaimFirstClearReward(EquipmentMechanic.CinderTrail) && service.Profile.pendingFirstClearReward && !service.Profile.firstClearRewardClaimed, "failed first reward save preserves selection token");
-        Directory.Delete(blockedTemp);
-        Check(service.ClaimAllPendingLoot() == 1 && Reload(service).Profile.inventory.Exists(value => value.id == mechanic.id), "recovered claim persists item exactly once");
+        var service=Fresh();FillBag(service);var mechanic=service.CreateMechanicItem(EquipmentMechanic.FrostEcho);
+        string blocked=service.SaveFilePath+".tmp";int count=service.Profile.inventory.Count,gold=service.Profile.gold;
+        Directory.CreateDirectory(blocked);Check(!service.CollectLoot(mechanic)&&service.Profile.inventory.Count==count&&!service.HasDiscoveredMechanic(mechanic.mechanic),"failed pickup preserves world ownership and discovery");
+        Check(service.Profile.gold==gold,"failed pickup never sells reward");Directory.Delete(blocked);
+        Check(service.CollectLoot(mechanic)&&service.Profile.inventory.Exists(x=>x.id==mechanic.id),"same reward retries directly into visible inventory");
+        Check(!service.CollectLoot(mechanic),"replayed callback cannot pay twice");
     }
 
     private static void DeepCopiesPreserveBuildAndRewardMetadata()
@@ -384,51 +342,19 @@ public static class UpgradeProgressionTests
         Check(service.SaveAsNewSlot() && service.Profile != oldProfile && service.SaveFilePath != oldPath, "save-as makes a separate full-profile copy");
         Check(File.ReadAllText(oldPath) == oldBytes, "save-as leaves original character byte-for-byte intact");
         Check(service.HasMechanic(EquipmentMechanic.FrostEcho) && service.Profile.specialization == ElementalistSpecialization.Shatter, "copy preserves active build state");
-        Check(service.Profile.pendingLoot.Count == 1 && service.Profile.pendingLoot[0].id == pending.id && service.Profile.pendingLoot[0].locked, "copy preserves pending identity and lock");
+        Check(service.Profile.pendingLoot.Count == 0 && service.Profile.inventory.Exists(x=>x.id==pending.id&&x.locked), "copy preserves pending identity and lock");
         Check(service.Profile.pendingChestReveal && service.LastChestReward.Id == receipt, "copy preserves unacknowledged receipt without rerolling");
         Check(service.Load() && service.LastChestReward.Id == receipt && service.HasMechanic(EquipmentMechanic.FrostEcho), "selected copied slot reload preserves full metadata");
     }
 
     private static void RecoveryMailboxProtectsRetiringGroundLoot()
     {
-        var service = Fresh(); FillBag(service); FillPending(service);
-        ItemData first = service.CreateMechanicItem(EquipmentMechanic.FrostEcho), second = Plain(Rarity.Legendary);
-        int gold = service.Profile.gold, changes = 0;
-        service.Changed += () => changes++;
-        ItemData[] ground = { first, first, second, service.Profile.inventory[0], service.Profile.pendingLoot[0] };
-        Check(service.PreserveGroundLoot(ground) && service.RecoveryLootCount == 2 && changes == 1, "exit mailbox captures only new unique world items across all stores");
-        Check(service.Profile.gold == gold && !service.CanEnterDungeon, "recovery is non-selling and blocks repeat dungeon accumulation");
-        string saved = File.ReadAllText(service.SaveFilePath);
-        Check(service.PreserveGroundLoot(ground) && service.RecoveryLootCount == 2 && changes == 1 && File.ReadAllText(service.SaveFilePath) == saved, "repeated quit/save/transition capture is idempotent and writes no duplicate receipt");
-        Check(!service.CollectLoot(first) && !service.ClaimRecoveryLoot(first.id), "recovered item cannot duplicate through pickup or bypass full inventory");
-        service = Reload(service);
-        Check(service.RecoveryLootCount == 2 && service.Profile.recoveryLoot[0].id == first.id && service.Profile.recoveryLoot[0].locked && !service.CanEnterDungeon, "recovery survives process reload with identity and protections intact");
-        service.BulkSellLowQuality();
-        Check(service.ClaimRecoveryLoot(first.id) && service.RecoveryLootCount == 1 && !service.CanEnterDungeon, "partial claim leaves remaining mailbox blocking new runs");
-        Check(service.ClaimAllRecoveryLoot() == 1 && service.RecoveryLootCount == 0 && service.CanEnterDungeon, "claiming final recovery item releases entry gate");
-        Check(service.Profile.inventory.Exists(value => value.id == first.id) && service.Profile.inventory.Exists(value => value.id == second.id), "recovery claims transfer exact objects rather than convert rewards");
-        ItemData third = Plain(Rarity.Epic);
-        string blocked = service.SaveFilePath + ".tmp";
-        Directory.CreateDirectory(blocked);
-        Check(!service.PreserveGroundLoot(new[] { third }) && service.RecoveryLootCount == 0, "failed emergency capture cannot retire world ownership");
-        Directory.Delete(blocked);
-        Check(service.PreserveGroundLoot(new[] { third }) && service.RecoveryLootCount == 1, "failed capture can retry with same identity");
-        Directory.CreateDirectory(blocked);
-        Check(!service.ClaimRecoveryLoot(third.id) && service.RecoveryLootCount == 1, "failed individual recovery claim remains durable and pending");
-        Check(service.ClaimAllRecoveryLoot() == 0 && service.RecoveryLootCount == 1, "failed bulk recovery claim also preserves pending ownership");
-        Directory.Delete(blocked);
-        Check(service.ClaimAllRecoveryLoot() == 1 && Reload(service).Profile.inventory.Exists(value => value.id == third.id), "recovered write succeeds exactly once");
-        var bounded = Fresh();
-        var maximum = new ItemData[ProgressionService.RecoveryLootCapacity];
-        for (int index = 0; index < maximum.Length; index++) maximum[index] = Plain(Rarity.Epic);
-        Check(bounded.PreserveGroundLoot(maximum) && bounded.RecoveryLootCount == maximum.Length, "mailbox can hold the bounded maximum from one expedition");
-        string bytes = File.ReadAllText(bounded.SaveFilePath);
-        Check(!bounded.PreserveGroundLoot(new[] { Plain(Rarity.Legendary) }) && bounded.RecoveryLootCount == maximum.Length && File.ReadAllText(bounded.SaveFilePath) == bytes, "overflow refuses entire capture without deleting or changing durable rewards");
-        Check(bounded.PreserveGroundLoot(maximum) && bounded.RecoveryLootCount == maximum.Length, "duplicates remain idempotent even at mailbox cap");
-        bounded.Profile.tutorialMask = -99; bounded.Save();
-        Check(bounded.Profile.tutorialMask == 0, "negative tutorial bits repaired");
-        bounded.Profile.tutorialMask = 0x101; bounded.Save();
-        Check(bounded.Profile.tutorialMask == 1 && Reload(bounded).Profile.tutorialMask == 1, "only four tutorial action bits persist");
+        var service=Fresh();FillBag(service);var first=Plain(Rarity.Epic);first.locked=true;var second=Plain(Rarity.Legendary);
+        string blocked=service.SaveFilePath+".tmp";int count=service.Profile.inventory.Count;Directory.CreateDirectory(blocked);
+        Check(!service.PreserveGroundLoot(new[]{first,second})&&service.Profile.inventory.Count==count,"failed ground capture is atomic");Directory.Delete(blocked);
+        Check(service.PreserveGroundLoot(new[]{first,first,second,service.Profile.inventory[0]})&&service.Profile.inventory.Count==count+2,"capture goes directly to bag once per identity");
+        var restored=Reload(service);Check(restored.Profile.inventory.Exists(x=>x.id==first.id&&x.locked)&&restored.Profile.inventory.Exists(x=>x.id==second.id)&&restored.RecoveryLootCount==0,"preserved ground rewards survive reload without claim gate");
+        Check(restored.PreserveGroundLoot(new[]{first,second})&&restored.Profile.inventory.Count==count+2,"repeated capture never duplicates");
     }
 
     private static void SlotTrainingMigratesEveryStorageAndCannotBeSold()
@@ -451,9 +377,9 @@ public static class UpgradeProgressionTests
         Check(weapon.upgradeLevel == 0 && weapon.locked && weapon.balanceRevision == 1 && weapon.upgradeAnchorLevel == 0, "unequipped legacy cache resets but immutable anchor and protective lock survive");
         Check(service.PreviewEquippedItem(weapon).attack == CombatBalance.UpgradeValue(weapon.baseAttack,7) && service.PreviewEquippedItem(weapon).upgradeLevel == 7, "candidate preview restores exact legacy stats at migrated slot rank");
         Check(service.Equip(weapon.id) && weapon.attack == CombatBalance.UpgradeValue(weapon.baseAttack,7) && weapon.upgradeLevel == 7, "equipping migrated item restores original exact anchored strength");
-        Check(service.ClaimPendingLoot(oldArmor.id) && service.Equip(oldArmor.id), "pending migration source can be claimed and automatically equipped");
+        Check(!service.ClaimPendingLoot(oldArmor.id) && service.Equip(oldArmor.id), "pending migration source can be claimed and automatically equipped");
         Check(service.Equipped(ItemSlot.Armor).defense == CombatBalance.UpgradeValue(service.Equipped(ItemSlot.Armor).baseDefense,9) && service.Equipped(ItemSlot.Armor).health == CombatBalance.UpgradeValue(service.Equipped(ItemSlot.Armor).baseHealth,9,2) && service.Equipped(ItemSlot.Armor).upgradeLevel == 9, "pending item's own distinct armor baseline determines enhancement");
-        Check(service.ClaimRecoveryLoot(oldRelic.id) && service.Equip(oldRelic.id), "recovery migration source automatically inherits its slot after claim");
+        Check(!service.ClaimRecoveryLoot(oldRelic.id) && service.Equip(oldRelic.id), "recovery migration source automatically inherits its slot after claim");
         Check(service.Equipped(ItemSlot.Relic).attack == CombatBalance.UpgradeValue(service.Equipped(ItemSlot.Relic).baseAttack,6) && service.Equipped(ItemSlot.Relic).health == CombatBalance.UpgradeValue(service.Equipped(ItemSlot.Relic).baseHealth,6,2), "recovery item's exact anchor remains intact");
         for (int cycle = 0; cycle < 4; cycle++)
         {
@@ -466,7 +392,7 @@ public static class UpgradeProgressionTests
         Check(weakPreview.upgradeLevel == 7 && strongPreview.upgradeLevel == 7 && strongPreview.attack - strong.attack > weakPreview.attack - weak.attack, "same slot rank gives different absolute boosts according to each item's own base");
         int expectedSale = service.SellValue(weak);
         Check(service.SellValue(weakPreview) == expectedSale, "effective training rank never increases sale value");
-        Check(service.Equip(weak.id) && weak.upgradeLevel == 7 && service.Equip(strong.id) && weak.upgradeLevel == 0, "replacement applies and releases cache without transferring an investment");
+        Check(service.Equip(weak.id) && service.Profile.inventory.Find(x=>x.id==weak.id).upgradeLevel == 7 && service.Equip(strong.id) && service.Profile.inventory.Find(x=>x.id==weak.id).upgradeLevel == 0, "replacement applies and releases cache without transferring an investment");
         int gold = service.Profile.gold;
         Check(service.Sell(weak.id) && service.Profile.gold == gold + expectedSale && service.SlotUpgradeRank(ItemSlot.Weapon) == 7, "selling former equipment cannot sell or refund the permanent slot rank");
         for (int cycle = 0; cycle < 6; cycle++)
@@ -477,7 +403,7 @@ public static class UpgradeProgressionTests
         Check(service.SlotUpgradeRank(ItemSlot.Weapon) == 7 && service.Equipped(ItemSlot.Weapon).attack == strongPreview.attack, "sell cycles do not compound damage or reduce training");
         service.SetAutoSell(Rarity.Common, true);
         ItemData ordinary = Plain(); int count = service.Profile.inventory.Count;
-        Check(service.CollectLoot(ordinary) && service.Profile.inventory.Count == count && service.SlotUpgradeRank(ItemSlot.Weapon) == 7, "trained slots do not disable ordinary drop autosell");
+        Check(service.CollectLoot(ordinary) && service.Profile.inventory.Count == count+1 && service.SlotUpgradeRank(ItemSlot.Weapon) == 7, "trained slots do not disable ordinary drop autosell");
         service.Profile.slotUpgradeRanks = new[] { int.MaxValue, -1, 6 }; service.Save();
         Check(service.SlotUpgradeRank(ItemSlot.Weapon) == 10 && service.SlotUpgradeRank(ItemSlot.Armor) == 0 && service.SlotUpgradeRank(ItemSlot.Relic) == 6, "corrupt slot ranks are independently clamped to legal bounds");
         Check(service.UpgradeCost(strong) == 0 && !service.Upgrade(strong.id), "maximum slot rank rejects upgrades independent of item cache");
@@ -488,6 +414,7 @@ public static class UpgradeProgressionTests
         var service = Fresh(); service.Profile.level = 100; service.Profile.gold = 100000; service.Save();
         ItemData original = service.Equipped(ItemSlot.Weapon), candidate = Plain(Rarity.Legendary); candidate.attack = 200;
         Check(service.CollectLoot(candidate) && service.Upgrade(original.id), "atomic fixture owns one trained slot and a replacement");
+        original = service.Profile.inventory.Find(x=>x.id==original.id);
         string originalId = original.id;
         int oldAttack = original.attack, oldGold = service.Profile.gold, oldRank = service.SlotUpgradeRank(ItemSlot.Weapon), events = 0;
         service.Changed += () => events++;

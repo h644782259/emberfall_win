@@ -24,9 +24,9 @@ namespace Emberfall
     if(!HasStarted||InDungeon||IsDead||PracticeActive||Player==null){nearbyHubNpc=HubNpcKind.None;return nearbyHubNpc;}
     // Ground proximity is unaffected by jumping. Keep the current prompt through
     // a small edge buffer so tiny movement cannot toggle its IMGUI control away.
-    if(nearbyHubNpc!=HubNpcKind.None&&CombatFx.Flat(Player.transform.position-HubNpcPosition((int)nearbyHubNpc-1)).sqrMagnitude<3.15f*3.15f)return nearbyHubNpc;
+    if(nearbyHubNpc!=HubNpcKind.None&&nearbyHubNpc!=HubNpcKind.Exchange&&CombatFx.Flat(Player.transform.position-HubNpcPosition((int)nearbyHubNpc-1)).sqrMagnitude<3.15f*3.15f)return nearbyHubNpc;
     HubNpcKind kind=HubNpcKind.None;float nearest=2.65f;
-    for(int index=0;index<3;index++){float distance=CombatFx.Flat(Player.transform.position-HubNpcPosition(index)).magnitude;if(distance<nearest){nearest=distance;kind=(HubNpcKind)(index+1);}}
+    for(int index=0;index<2;index++){float distance=CombatFx.Flat(Player.transform.position-HubNpcPosition(index)).magnitude;if(distance<nearest){nearest=distance;kind=(HubNpcKind)(index+1);}}
     nearbyHubNpc=kind;
     return kind;
    }
@@ -46,7 +46,7 @@ namespace Emberfall
    try {if(!ChangeZone(false))return false;}
    finally {loadingSaveSnapshot=false;}
    Player.Teleport(WorldTraversal.NearestWalkable(new Vector3(0,0,-14),.45f));
-   Notify("已抵达"+HubTravelRules.Name(CurrentHub)+" · 商人、铁匠与兑换员在营地");return true;
+   Notify("已抵达"+HubTravelRules.Name(CurrentHub)+" · 商人、铁匠在营地");return true;
   }
  }
 }

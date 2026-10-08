@@ -23,7 +23,7 @@ public static class ProgressionGoalIdentityTests
         Check(!p.SelectCoreGoal(EquipmentMechanic.FrostEcho)&&State(p)==before&&events==0,"failed goal change preserves live identity");
         Directory.Delete(p.SaveFilePath+".tmp");
         Check(p.ExecuteProgressionGoal(fireGoal.ActionIdentity,true),"target core exchange succeeds");var acquired=p.SelectedProgressionGoal(true);
-        Check(acquired.Done&&acquired.Identity==identity&&acquired.Action==ProgressionGoalAction.None&&p.Attachment(EquipmentMechanic.CinderTrail).mounted,"acquisition keeps goal identity and mounts independent attachment");
+        Check(acquired.Done&&acquired.Identity==identity&&acquired.Action==ProgressionGoalAction.None&&!p.Attachment(EquipmentMechanic.CinderTrail).mounted,"acquisition keeps goal identity and retains unmounted attachment for smith");
         before=State(p);Check(!p.ExecuteProgressionGoal(fireGoal.ActionIdentity,true)&&State(p)==before,"replayed exchange token cannot buy again or silently execute next action");
         Check(p.ExecuteProgressionGoal(acquired.ActionIdentity,true),"completed attachment acquisition is idempotent");
         var legacyItem=p.CreateMechanicItem(EquipmentMechanic.CinderTrail);Check(p.CollectLoot(legacyItem),"retain legacy equipment investment path");

@@ -104,7 +104,7 @@ namespace Emberfall
             if(MobileIcon(l.Inventory,"inventory",jade))TogglePanel(Panel.Inventory);
             if(MobileIcon(l.SkillsMenu,"skills",p.skillPoints>0?gold:jade))TogglePanel(Panel.Skills);
             if(MobileIcon(l.Menu,"pause",muted))session.SetPaused(true);
-            if(MobileIcon(new MobileControlLayout.Area(width/TouchRatio-60,12,44,44),"confirm",gold))OpenProgressionGoals();
+            if(MobileIcon(l.Catalog,"confirm",gold))OpenProgressionGoals();
             Badge(TouchRect(l.Catalog),Attention.Rewards);
             Rect map=TouchRect(l.Map);blockedRects.Add(map);Box(map,jade,false);DrawMinimapTerrain(map);
             if(!session.InDungeon){MapDot(map,new Vector3(0,0,11),jade,4*TouchRatio);for(int npc=0;npc<3;npc++)MapDot(map,GameSession.HubNpcPosition(npc),gold,3*TouchRatio);}
@@ -212,12 +212,10 @@ namespace Emberfall
             var layout=DrawMobileDialogChrome("冒险提示",gold);
             float contentWidth=layout.Body.Width-18;
             float contentHeight=MeasureMobileParagraph(mobileNoticeDetail,contentWidth-16,16)+16;
-            mobileNoticeScroll=BeginTouchScroll("mobile-notice",MobilePanelRect(layout.Body),mobileNoticeScroll,
-                new Rect(0,0,contentWidth*TouchRatio,Mathf.Max(layout.Body.Height,contentHeight)*TouchRatio));
+            mobileNoticeScroll=BeginTouchScroll("mobile-notice",MobilePanelRect(new MobilePanelLayout.Area(layout.Body.X,layout.Body.Y,layout.Body.Width,layout.Body.Height+56)),mobileNoticeScroll,
+                new Rect(0,0,contentWidth*TouchRatio,Mathf.Max(layout.Body.Height+56,contentHeight)*TouchRatio));
             DrawMobileParagraph(8,8,contentWidth-16,mobileNoticeDetail,16,pale);
             EndTouchScroll();
-            if(NavigationButton(MobilePanelRect(layout.FooterButton(0,1)), "返回冒险", jade))
-            {ClosePanel();BlockUITransition();}
         }
         private void DrawMobileTitle()
         {

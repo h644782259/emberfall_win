@@ -70,6 +70,10 @@ public static class RewardInventoryIntegrationTests
     {
         var p=Fresh();p.Profile.automaticGrowth=false;Check(p.SelectProgressionGoal(ProgressionGoalKind.CombatTrial),"trial is selectable goal");
         p.Profile.tutorialMask=11;p.Profile.classTutorialCompleted=true;p.Save();Check(p.SelectedProgressionGoal(true).Done&&ProgressionService.CombatTrialProgress(p.Profile)==4,"all four historical trial flags are used");
+        int gold=p.Profile.gold, materials=p.Profile.mechanicMaterials;
+        Directory.CreateDirectory(p.SaveFilePath+".tmp");Check(!p.AdvanceAutomaticGrowth()&&p.Profile.gold==gold,"trial reward save failure preserves ownership");Directory.Delete(p.SaveFilePath+".tmp");
+        Check(p.AdvanceAutomaticGrowth()&&p.Profile.gold==gold+50&&p.Profile.mechanicMaterials==materials+1,"manual trial goal grants historical reward directly");
+        Check(p.AdvanceAutomaticGrowth()&&p.Profile.gold==gold+50,"trial reward replay is idempotent");
         Fill(p,ProgressionService.InventoryCapacity);p.Profile.fashions.Add(new FashionData{id="fashion-0-2",slot=FashionSlot.Wings,rarity=Rarity.Epic});p.Save();
         var q=new ProgressionService(p.SaveDirectory);Check(q.LoadSlot(p.CurrentSlotId)&&q.Profile.fashions.Count==1&&q.SelectedProgressionGoal(true).Done,"fashion and trial ownership survive capacity migration");
     }

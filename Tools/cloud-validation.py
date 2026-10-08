@@ -60,7 +60,7 @@ def unity_references(download):
 
 def write_project(directory, sources, program=None, references=None, framework="net8.0", defines="", automatic_partials=True):
     if automatic_partials and any(Path(path).name=="ProgressionService.cs" for path in sources):
-        for name in ["ProgressionService.Attachments.cs","ProgressionService.AutomaticGrowth.cs"]:
+        for name in ["ProgressionService.Attachments.cs","ProgressionService.AutomaticGrowth.cs","ProgressionService.Smith.cs","ProgressionService.Trading.cs"]:
             part=ROOT/"Assets/Scripts/Core"/name
             if not any(Path(path).name==name for path in sources):sources=[*sources,part]
     if automatic_partials and any(Path(path).name=="WorldTraversal.cs" for path in sources):
@@ -145,6 +145,8 @@ def main():
                         ROOT / "Tests/SkillRuntimeTests.cs"],
              'using System; internal static class Program { static void Main() { Console.WriteLine(SkillRuntimeTests.Run()); } }'),
         ]
+        checks.append(("service-integration", [ROOT / "Assets/Scripts/Core/GameTypes.cs", ROOT / "Assets/Scripts/Core/ProgressionService.cs", ROOT / "Assets/Scripts/UI/MobileControlLayout.cs", ROOT / "Assets/Scripts/UI/MobilePanelLayout.cs", ROOT / "Assets/Scripts/Combat/MobileSkillPolicy.cs", ROOT / "Assets/Scripts/UI/SmithServiceLayout.cs", ROOT / "Assets/Scripts/UI/MerchantServiceLayout.cs", ROOT / "Tests/ProgressionTests.cs", ROOT / "Tests/ServiceIntegrationTests.cs"],
+            'using System; internal static class Program { static void Main(string[] args) { Console.WriteLine(ServiceIntegrationTests.Run(args[0])); } }'))
         checks.append(("reward-inventory-integration", [ROOT / "Assets/Scripts/Core/GameTypes.cs", ROOT / "Assets/Scripts/Core/ProgressionService.cs", ROOT / "Tests/ProgressionTests.cs", ROOT / "Tests/RewardInventoryIntegrationTests.cs"],
             'using System; internal static class Program { static void Main(string[] args) { Console.WriteLine(RewardInventoryIntegrationTests.Run(args[0])); } }'))
         if (ROOT / "Tests/UpgradeProgressionTests.cs").exists():

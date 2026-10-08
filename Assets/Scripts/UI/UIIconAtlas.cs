@@ -124,7 +124,7 @@ namespace Emberfall
             if (name == "inventory") name = "bag";
             if (name == "camp") name = "home";
             if (name == "blink") name = "dodge";
-            string[] names = { "bag", "skills", "home", "portal", "attack", "dodge", "potion", "pause", "help", "confirm", "cancel", "jump", "codex" };
+            string[] names = { "bag", "skills", "home", "portal", "attack", "dodge", "potion", "pause", "help", "confirm", "cancel", "jump", "codex", "coin", "shard" };
             int id = System.Array.IndexOf(names, name);
             if (id < 0) id = 1;
             int key = 100 + id;
@@ -143,6 +143,8 @@ namespace Emberfall
             else if (id == 9) { ink.Line(10, 32, 26, 48, 6); ink.Line(26, 48, 54, 16, 6); }
             else if (id == 10) { ink.Line(16, 16, 48, 48, 6); ink.Line(16, 48, 48, 16, 6); }
             else if(id==12){ink.color=new Color(.58f,.83f,1f);ink.Polygon(new[]{V(8,13),V(28,17),V(32,22),V(36,17),V(56,13),V(56,49),V(36,53),V(32,57),V(28,53),V(8,49)});ink.color=new Color(1f,.78f,.28f);ink.Line(32,22,32,54,4);ink.Line(14,24,24,27,3);ink.Line(40,27,50,24,3);}
+            else if(id==13){ink.color=new Color(1f,.78f,.22f);ink.Disc(32,32,24);ink.color=new Color(.62f,.38f,.08f);ink.Ring(32,32,17,3);ink.Line(32,20,32,44,4);}
+            else if(id==14){ink.color=new Color(.68f,.63f,1f);ink.Polygon(new[]{V(32,6),V(51,28),V(39,56),V(18,48),V(13,23)});ink.color=Color.white;ink.Line(32,9,27,44,3);}
             else { ink.Arrow(32, 46, 32, 10); ink.Line(15, 55, 49, 55, 4); }
             texture = ink.Finish("Utility " + name); cache[key] = texture; return texture;
         }

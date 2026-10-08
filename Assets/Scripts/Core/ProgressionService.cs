@@ -533,7 +533,8 @@ namespace Emberfall
             if (TryWriteAttachedProfile(candidate, out failure))
             {
                 LastError = string.Empty;
-                lastLoggedSaveError = null;Profile=candidate;
+                lastLoggedSaveError = null;
+                if(JsonUtility.ToJson(Profile,true)!=JsonUtility.ToJson(candidate,true))Profile=candidate;
             }
             else
             {
@@ -882,13 +883,11 @@ namespace Emberfall
             return CommitCandidate(candidate);
         }
 
+        // Compatibility shim: old automation can disable but never re-enable removed autosales.
         public bool SetAutoSell(Rarity rarity, bool enabled)
         {
-            GameProfile candidate=Snapshot();
-            if (rarity == Rarity.Common) candidate.autoSellCommon = enabled;
-            else if (rarity == Rarity.Rare) candidate.autoSellRare = enabled;
-            else return Fail("只可自动出售普通或稀有装备；机制、锁定和已强化装备始终受保护。");
-            return CommitCandidate(candidate);
+            if(enabled)return Fail("自动出售已移除，请在商人处明确选择要出售的装备。");
+            var candidate=Snapshot();candidate.autoSellCommon=candidate.autoSellRare=false;return CommitCandidate(candidate);
         }
 
         public int BulkSellLowQuality(bool confirmPresetReferences=false)
@@ -2331,6 +2330,12 @@ namespace Emberfall
             if(item.mechanic!=EquipmentMechanic.None&&!candidate.discoveredMechanics.Contains(item.mechanic))candidate.discoveredMechanics.Add(item.mechanic);
             string failure;
             if(!TryWriteAttachedProfile(candidate,out failure))return Fail(failure);
+            // Preserve the caller's successfully admitted item identity, while failures
+            // leave both the world item and the live profile untouched.
+            var owned=candidate.inventory.Find(value=>value.id==item.id);
+            RestoreUpgradeState(item,owned);item.level=owned.level;item.name=owned.name;item.rarity=owned.rarity;
+            item.locked=owned.locked;item.mechanic=owned.mechanic;item.mechanicVariant=owned.mechanicVariant;item.mechanicVariantUnlocked=owned.mechanicVariantUnlocked;
+            candidate.inventory[candidate.inventory.IndexOf(owned)]=item;
             Profile=candidate;collectedLootIds.Add(item.id);
             if(IsStrictEquipmentUpgrade(item))PublishRewardMoment(RewardMomentKind.StrictUpgrade,item);
             LastError=string.Empty;RaiseChanged();
@@ -3060,6 +3065,7 @@ namespace Emberfall
             if (profile.masteryCore < 0 || profile.masteryCore >= mastery.Length || mastery[profile.masteryCore] < MasteryCoreRules.InitialInvestment)
                 profile.masteryCore = -1;
             profile.masteryRevision = 1;
+            profile.autoSellCommon=profile.autoSellRare=false;
             profile.fashionThreads = Clamp(profile.fashionThreads, 0, 999999);
             if (!Enum.IsDefined(typeof(SummonerRoute), profile.summonerRoute)) profile.summonerRoute = SummonerRoute.Bonded;
             // No saved free-point counter is trusted. Levels pay for both skills and

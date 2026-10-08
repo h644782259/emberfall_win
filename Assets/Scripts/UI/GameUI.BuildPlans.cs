@@ -204,6 +204,7 @@ namespace Emberfall
         private Vector2 presetSaleScroll;private bool presetSaleOpen,presetSaleBulk;private string presetSaleId,presetSaleState,presetSaleImpact,presetSaleError;private ProgressionService presetSaleOwner;
         private void RequestPresetSale(string id,bool bulk=false)
         {
+            if(!MerchantServiceActive){Feedback(false,"请在商人处交易。");return;}
             var p=session.Progression;string impact=bulk?p.BulkSalePresetImpact():p.PresetReferences(id);
             if(impact.Length==0){if(bulk){int sold=p.BulkSellLowQuality();Feedback(sold>0,"已出售 "+sold+" 件");}else SellInventoryItem(id,true);return;}
             presetSaleOwner=p;presetSaleState=p.BuildStateFingerprint();presetSaleId=id;presetSaleBulk=bulk;presetSaleImpact=impact;presetSaleError=null;presetSaleScroll=Vector2.zero;presetSaleOpen=true;BlockUITransition();
@@ -212,7 +213,7 @@ namespace Emberfall
         private void ConfirmPresetSale()
         {
             var p=session.Progression;
-            if(!presetSaleOpen||presetSaleOwner!=p||presetSaleState!=p.BuildStateFingerprint()||session.IsDead||session.PracticeActive||panel!=Panel.Inventory&&(panel!=Panel.Camp&&panel!=Panel.Skills))return;
+            if(!MerchantServiceActive||!presetSaleOpen||presetSaleOwner!=p||presetSaleState!=p.BuildStateFingerprint()||session.IsDead||session.PracticeActive)return;
             bool ok;if(presetSaleBulk){int count=p.BulkSellLowQuality(true);ok=count>0;}else ok=p.Sell(presetSaleId,true);
             if(ok){presetSaleOpen=false;RebuildBagItems();ResolveSelectedItem();session.Notify("已确认出售；相关方案引用需手动修复");}else presetSaleError=p.LastError;
             BlockUITransition();
@@ -220,7 +221,8 @@ namespace Emberfall
         private bool DrawPresetSaleConfirmation()
         {
             if(!presetSaleOpen)return false;
-            var p=session.Progression;if(presetSaleOwner!=p||session.IsDead||session.PracticeActive||panel!=Panel.Inventory&&(panel!=Panel.Camp&&panel!=Panel.Skills)){presetSaleOpen=false;return false;}
+            if(!MerchantServiceActive){CancelPresetSale();return false;}
+            var p=session.Progression;if(presetSaleOwner!=p||session.IsDead||session.PracticeActive){presetSaleOpen=false;return false;}
             float unit=MobileControls.Active?TouchRatio:1;var layout=new MobileDialogLayout(width/unit,height/unit);
             Fill(new Rect(0,0,width,height),new Color(.008f,.018f,.03f,1));blockedRects.Add(new Rect(0,0,width,height));Box(BuildPlanRect(layout.Frame,unit),gold,false);
             Text(BuildPlanRect(layout.Header,unit),"出售会影响已存方案",Mathf.RoundToInt(21*unit),gold,true);

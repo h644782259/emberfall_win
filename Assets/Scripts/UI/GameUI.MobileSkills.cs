@@ -35,8 +35,8 @@ namespace Emberfall
             if(skillSection==1)return;
             bool split = SkillIconPresentation.SideBySide(layout.Width) && mobileSkillDetail;
             bool showList = split || !mobileSkillDetail, showDetail = split || mobileSkillDetail;
-            var listArea = split ? layout.BodyLeft : layout.TabbedBody;
-            var detailArea = split ? layout.BodyRight : layout.TabbedBody;
+            var listArea = split ? new MobilePanelLayout.Area(layout.BodyLeft.X,layout.TabbedBody.Y,layout.BodyLeft.Width,layout.TabbedBody.Height) : layout.TabbedBody;
+            var detailArea = split ? new MobilePanelLayout.Area(layout.BodyRight.X,layout.TabbedBody.Y,layout.BodyRight.Width,layout.TabbedBody.Height) : layout.TabbedBody;
             if(!showDetail&&!RouteSkillReturnAvailable)listArea=new MobilePanelLayout.Area(listArea.X,listArea.Y,listArea.Width,layout.Height-listArea.Y-12);
             float u = TouchRatio, listWidth = listArea.Width - 16, detailWidth = detailArea.Width - 16;
             if (showList)
