@@ -20,6 +20,7 @@ with tempfile.TemporaryDirectory(prefix='mobile-opportunity-h05-') as t:
   else:q.check_returncode()
  run()
  for name,before,after,oracle in [
+ ('MobileControls.Feedback.cs','wordWrap=true,clipping=TextClipping.Overflow','wordWrap=false,clipping=TextClipping.Clip','long pinned identity has measured wrapped bounds'),
  ('GameUI.MobileFeedback.cs','if(!session.InputBlocked)meter.Draw','meter.Draw','pause resume same window never replays acquisition emphasis'),
  ('MobileOpportunityMeter.cs','style.normal.textColor=tint;GUI.color=Color.white;','style.normal.textColor=tint;GUI.color=new Color(1,1,1,opacity);','outer clock opacity applied once'),
  ('MobileOpportunityMeter.cs','state.Fraction','state.Remaining/16f','arc uses actual total grant duration'),
