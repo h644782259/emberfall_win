@@ -8,7 +8,7 @@ namespace Emberfall
     public sealed class PauseSessionStub { public bool Paused; }
     public sealed partial class GameUI
     {
-        private enum Panel { None, Controls, Chests, SaveSelection, SaveLocation, Bindings }
+        private bool MerchantServiceActive=>true;enum Panel{ None, Controls, Chests, SaveSelection, SaveLocation, Bindings ,Skills}
         private Panel panel;
         private PauseSessionStub session;
         private int mobilePausePage, transitionBlocks;

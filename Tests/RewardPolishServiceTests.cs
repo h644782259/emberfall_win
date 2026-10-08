@@ -30,7 +30,7 @@ public static class RewardPolishServiceTests
    var locked=Copy(gain);locked.level=46;C(!p.IsStrictEquipmentUpgrade(locked),"level-locked candidate is not eligible upgrade");C(!p.IsStrictEquipmentUpgrade(Copy(current)),"equal stats do not celebrate");
    Directory.CreateDirectory(p.SaveFilePath+".tmp");C(!p.CollectLoot(gain)&&p.LastRewardMoment==null,"failed acquisition publishes no visual moment");Directory.Delete(p.SaveFilePath+".tmp");
    C(p.CollectLoot(gain)&&p.LastRewardMoment.Kind==RewardMomentKind.StrictUpgrade,"real committed lossless acquisition produces visual snapshot");long seq=p.LastRewardMoment.Sequence;C(!p.CollectLoot(gain)&&p.LastRewardMoment.Sequence==seq,"repeat acquisition cannot replay moment");p.Equip(gain.id);p.Equip(current.id);C(p.LastRewardMoment.Sequence==seq,"free equipment switching does not replay moment");
-   var mail=Copy(gain);mail.id=Guid.NewGuid().ToString("N");mail.baseAttack+=5;p.Profile.pendingLoot.Add(mail);p.Save();C(p.ClaimPendingLoot(mail.id)&&p.LastRewardMoment.Sequence==seq,"mailbox transfer never replays acquisition celebration");
+   var mail=Copy(gain);mail.id=Guid.NewGuid().ToString("N");mail.baseAttack+=5;p.Profile.pendingLoot.Add(mail);p.Save();C(!p.ClaimPendingLoot(mail.id)&&p.Profile.inventory.Exists(x=>x.id==mail.id)&&p.LastRewardMoment.Sequence==seq,"mailbox transfer never replays acquisition celebration");
   }
   {
    var p=New(root);p.Profile.level=45;p.Profile.bestFloor=5;p.Profile.highestAdventureTier=5;p.Profile.clearedRuns=1;p.Profile.pendingFirstClearReward=true;p.Profile.mechanicMaterials=100;p.Save();

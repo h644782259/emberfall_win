@@ -9,7 +9,7 @@ def member(sig):
 shell=r'''
 using System;using System.IO;using Emberfall;
 namespace Emberfall{public class TrialSession{public ProgressionService Progression;public object Player=new object();public bool Blocked;public void SetUIBlocking(bool v){Blocked=v;}public void LogSystem(string s){}}
-public partial class GameUI{enum Panel{Chests,Fashion}Panel panel=Panel.Chests;TrialSession session;bool ChestAnimationDone=true,mobileFashionPreview,inventoryFashionOpen,inventoryComparisonOpen;string chestRevealResult="saved";object collectionOwner;CollectionViewingState collectionViewing=new CollectionViewingState();int trials,blocks;
+public partial class GameUI{bool MerchantServiceActive=>true;enum Panel{Chests,Fashion,Skills}Panel panel=Panel.Chests;TrialSession session;bool ChestAnimationDone=true,mobileFashionPreview,inventoryFashionOpen,inventoryComparisonOpen;string chestRevealResult="saved";object collectionOwner;CollectionViewingState collectionViewing=new CollectionViewingState();int trials,blocks;
 void Feedback(bool ok,string why){}void ResetChestReveal(){chestRevealResult=null;}void TrialFashion(FashionSlot slot,Rarity rarity){trials++;collectionViewing.TryOn(new FashionData{slot=slot,rarity=rarity});}void BlockUITransition(){blocks++;}
 CAN
 ACCEPT

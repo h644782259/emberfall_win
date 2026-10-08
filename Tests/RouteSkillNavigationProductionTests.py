@@ -22,8 +22,8 @@ public class Profile{public bool pendingFashionChest,pendingChestReveal;public i
 public class ProgressionService{public string CurrentSlotId="slot-a";public Profile Profile=new Profile();public bool SaveSucceeds=true;public string LastError;public bool LearnSkill(int skill){LastError=SaveSucceeds?null:"SAVE_FAILED_FOR_SKILL_"+skill;if(SaveSucceeds)Profile.skillRanks[skill]++;return SaveSucceeds;}}
 public class Session{public bool IsInCamp=true,HasStarted=true,Blocked=true;public ProgressionService Progression=new ProgressionService();public void SetUIBlocking(bool b){Blocked=b;}public void SetPaused(bool b){}}
 public partial class GameUI{
-enum Panel{None,Skills,Camp,Inventory,SaveSelection,Chests,Fashion,PotionAssignment,Bindings,SaveLocation,Controls}
-Panel panel=Panel.Camp,bindingReturnPanel;Session session=new Session();int campTab=2,selectedSkill,desktopDetailSkill=-1,rebindingSlot,blocks;
+bool MerchantServiceActive=>true;enum Panel{None,Skills,Camp,Inventory,SaveSelection,Chests,Fashion,PotionAssignment,Bindings,SaveLocation,Controls}
+Panel panel=Panel.Camp,bindingReturnPanel;Session session=new Session();int campTab=2,skillSection,selectedSkill,desktopDetailSkill=-1,rebindingSlot,blocks;
 bool presetSaleOpen;bool mobileSkillDetail,saveSelectionFromPause,chestDetails,bindingReturnPause,saveReturnPause,controlsReturnPause;bool ChestAnimationDone=true;float chestRevealedAt,ChestDuration=1;
 ProgressionService mobileSkillsService;string mobileSkillsSlot,mobileSkillStatus;bool mobileSkillStatusFailed;Vector2 mobileSkillListScroll=new Vector2(0,173),mobileSkillDetailScroll=new Vector2(0,300),desktopDetailScroll=new Vector2(0,260);Vector2[] mobileWorkshopScroll={new Vector2(0,93),new Vector2(0,143),new Vector2(0,271),new Vector2(0,12)};
 bool CloseChapterSelection()=>false;bool CloseMobileInventoryDetail()=>false;bool CloseMobileSkillDetail(){if(!mobileSkillDetail)return false;mobileSkillDetail=false;return true;}bool CloseProgressionGoalSurface()=>false;bool CloseClassSwitchSurface()=>false;bool CloseBuildPlanSurface()=>false;bool CloseTravelMap()=>false;bool CancelSaveDeletion()=>false;bool CancelActiveSaveFlow()=>false;

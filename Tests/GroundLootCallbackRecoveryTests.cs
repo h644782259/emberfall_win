@@ -11,7 +11,7 @@ static void Main(string[] args){bool defense=args.Length>1;
   Check(later==(defense?0:1),"later loot subscriber follows isolation contract");
   if(!defense)Check(UnityEngine.Debug.Warnings.Count>warnings&&UnityEngine.Debug.Warnings.Exists(w=>w.Contains("change observer failed")),"normal loot callback fault logged");
   Check(!game.IsCollecting(item.id)&&game.PendingCount==0&&pickup.Retired,"committed callback failure retires pickup and unlocks pending receipt");
-  Check(sold?p.Profile.gold>gold:p.Profile.inventory.Count(x=>x.id==item.id)==1,"committed item or sale remains credited once");
+  Check(p.Profile.gold==gold&&p.Profile.inventory.Count(x=>x.id==item.id)==1,"committed item or sale remains credited once");
   string disk=File.ReadAllText(p.SaveFilePath);int credited=p.Profile.gold;Check(!game.TryCollectGroundLoot(item.id)&&p.Profile.gold==credited&&File.ReadAllText(p.SaveFilePath)==disk,"retry cannot award committed pickup again");
   Check(p.LoadSlot(p.CurrentSlotId)&&(sold?p.Profile.gold==credited:p.Profile.inventory.Count(x=>x.id==item.id)==1),"credit survives real reload");
  }

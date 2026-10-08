@@ -19,7 +19,7 @@ namespace Emberfall{
     var before=p.Profile;string disk=File.ReadAllText(p.SaveFilePath);int changed=0;p.Changed+=()=>changed++;
     ui.OpenClassSwitch();ui.ClassClick("当前 · "+GameBalance.ClassName(HeroClass.Vanguard));C(ui.classSwitchPreview==null&&changed==0,"active class button disabled");
     ui.ClassClick("预览 · "+GameBalance.ClassName((HeroClass)target));C(ui.classSwitchPreview!=null&&ReferenceEquals(before,p.Profile)&&File.ReadAllText(p.SaveFilePath)==disk&&changed==0,"preview does not persist or switch");
-    ui.ClassClick("取消 · 返回工坊");C(!ui.classSwitchOpen&&ui.session.SwitchCalls==0&&ReferenceEquals(before,p.Profile),"actual cancel does not call runtime");
+    ui.ClassClick("取消 · 返回技能");C(!ui.classSwitchOpen&&ui.session.SwitchCalls==0&&ReferenceEquals(before,p.Profile),"actual cancel does not call runtime");
     ui.OpenClassSwitch();ui.ClassClick("预览 · "+GameBalance.ClassName((HeroClass)target));p.Profile.gold++;ui.ClassClick("重新核对");C(ui.session.SwitchCalls==0&&ui.classSwitchPreview!=null,"stale confirm only refreshes preview");
     Directory.CreateDirectory(p.SaveFilePath+".tmp");ui.ClassClick("确认切换为"+GameBalance.ClassName((HeroClass)target));Directory.Delete(p.SaveFilePath+".tmp");C(ui.classSwitchOpen&&ui.classSwitchMessage!=null&&ReferenceEquals(before,p.Profile)&&changed==0,"failed save stays reviewable without publication");
     ui.OpenBuildPlans();ui.practiceChoicesOpen=true;ui.buildPlanDetails=1;ui.ClassClick("确认切换为"+GameBalance.ClassName((HeroClass)target));C(!ui.classSwitchOpen&&!ui.buildPlansOpen&&!ui.practiceChoicesOpen&&ui.buildPlanDetails==-1&&ui.inputResets==1&&changed==1&&p.Profile.heroClass==(HeroClass)target,"successful UI rebind resets build-plan surface once");

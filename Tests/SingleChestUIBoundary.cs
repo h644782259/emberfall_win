@@ -13,7 +13,7 @@ namespace Emberfall{
  public enum SoundCue{UI,Cast,Loot,LevelUp,Victory}public static class GameAudio{public static void Play(SoundCue s){}}
  public class GameSession{public ProgressionService Progression;public void LogSystem(string s){}public void SetUIBlocking(bool b){}public void SetPaused(bool b){}}
  public sealed partial class GameUI{
-  enum Panel{None,Chests,Camp}Panel panel=Panel.Chests;GameSession session;float width,height,TouchRatio=1;Color gold,jade,pale,muted;
+  bool MerchantServiceActive=>true;enum Panel{None,Chests,Camp,Skills}Panel panel=Panel.Chests;GameSession session;float width,height,TouchRatio=1;Color gold,jade,pale,muted;
   bool chestDetails,chestOpening,rewardSoundPlayed;int revealedChest=-1;string chestRevealResult,chestReceiptId,mobileChestError;float chestRevealedAt;Rect chestRevealOrigin;Vector2 desktopChestResultScroll,mobileChestScroll,mobileChestArtScroll;
   readonly List<(string caption,Rect bounds)> buttons=new List<(string,Rect)>();string click;bool clicked;int scrollDepth;
   bool Button(Rect r,string s,Color c,bool enabled=true,string reason=null,bool highlight=false){buttons.Add((s,r));if(!enabled||clicked||click!=s)return false;clicked=true;return true;}

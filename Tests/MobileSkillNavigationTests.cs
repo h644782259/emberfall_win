@@ -12,7 +12,7 @@ namespace Emberfall
  public static class MobileControls{public static bool Active=true;public sealed class LayoutValue{public float Width=568;}public static LayoutValue Layout=new LayoutValue();}
  public sealed partial class GameUI
  {
-  private enum Panel{Skills,Inventory}private Panel panel=Panel.Skills;private bool mobileSkillDetail;private int touchScrollSuppressed=-1,blocks,cancels;private object invisibleButton;
+  private bool MerchantServiceActive=>true;enum Panel{Skills,Inventory}private Panel panel=Panel.Skills;private bool mobileSkillDetail;private int touchScrollSuppressed=-1,blocks,cancels;private object invisibleButton;
   private object routeSkillOwner;private string routeSkillSlot;
   private float mobileSkillListScroll=173,mobileSkillDetailScroll=81;
   private void CancelMobileScroll(){cancels++;}private void BlockUITransition(){blocks++;}

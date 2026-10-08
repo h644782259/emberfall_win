@@ -8,7 +8,7 @@ files=[r/'Assets/Scripts/Core'/f'{x}.cs' for x in core]+[r/'Assets/Scripts/UI'/f
 recap=(r/'Assets/Scripts/UI/GameUI.RunRecap.cs').read_text()
 calls=re.findall(r'CurrentProgressionGoalStatus\(data.Snapshot.RewardMaterials\)',recap)
 assert len(calls)==2,'recap draw and height must both use shared actual-context formatter'
-for file in ['GameUI.Expedition.cs','GameUI.MobileWorkshop.cs']:
+for file in ['GameUI.ProgressionGoal.cs']:
  assert 'CurrentProgressionGoalStatus()' in (r/'Assets/Scripts/UI'/file).read_text(),file
 with tempfile.TemporaryDirectory(prefix='economy-goal-ui-') as t:
  o=Path(t);local=[]
@@ -16,7 +16,7 @@ with tempfile.TemporaryDirectory(prefix='economy-goal-ui-') as t:
   p=o/source.name;p.write_text(source.read_text());local.append(p)
  # Replay the exact production formatter call expressions from recap draw and measurement.
  p=o/'RecapCalls.cs';p.write_text('namespace Emberfall {public sealed partial class GameUI {class SnapshotShell {public int RewardMaterials;} class RecapShell {public SnapshotShell Snapshot;}'+''.join('string '+name+'(int materials){var data=new RecapShell{Snapshot=new SnapshotShell{RewardMaterials=materials}};return '+call+';}' for name,call in zip(['ReplayRecapDraw','ReplayRecapMeasure'],calls))+'}}');local.append(p)
- desktop=next(line for line in (r/'Assets/Scripts/UI/GameUI.Expedition.cs').read_text().splitlines() if '可用点数 ' in line and 'Text(new Rect' in line)
+ desktop=next(line for line in (r/'Assets/Scripts/UI/GameUI.SkillIntegration.cs').read_text().splitlines() if '可用点数 ' in line and 'Text(new Rect' in line)
  mobile=next(line for line in (r/'Assets/Scripts/UI/GameUI.MobileWorkshop.cs').read_text().splitlines() if '精通与技能共用点数' in line)
  desktop_expression=re.search(r'Text\(new Rect\(.*?\),(.+),12,muted\);',desktop).group(1)
  mobile_expression=re.search(r'MobileWorkshopParagraph\(ref y, width, (.+), jade, draw\);',mobile).group(1)

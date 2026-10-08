@@ -16,7 +16,7 @@ public static class MobileControls{public static bool Active=true;public static 
 public class Session{public bool HasStarted=true,IsDead,Paused,Blocked=true;public Progression Progression=new Progression();public void SetUIBlocking(bool b){Blocked=b;}public void SetPaused(bool b){Paused=b;}}
 public class Progression{public Profile Profile=new Profile();}public class Profile{public bool pendingFashionChest,pendingChestReveal;}
 public partial class GameUI {
-enum Panel{None,Skills,Inventory,SaveSelection,Chests,Fashion,PotionAssignment,Bindings,SaveLocation,Controls}
+bool MerchantServiceActive=>true;enum Panel{None,Skills,Inventory,SaveSelection,Chests,Fashion,PotionAssignment,Bindings,SaveLocation,Controls}
 Panel panel=Panel.Skills,bindingReturnPanel;Session session=new Session();bool presetSaleOpen;bool mobileSkillDetail=true,saveSelectionFromPause,chestDetails,bindingReturnPause,saveReturnPause,controlsReturnPause;int rebindingSlot,blocks,cancels;float chestRevealedAt,ChestDuration=1;bool ChestAnimationDone=true;float listScroll=173,detailScroll=81;
 object routeSkillOwner;string routeSkillSlot;bool CloseMobileInventoryDetail()=>false;bool CloseChapterSelection()=>false;bool CloseRouteSkill()=>false;bool CloseProgressionGoalSurface()=>false;bool CloseClassSwitchSurface()=>false;bool CloseBuildPlanSurface()=>false;bool CloseTravelMap()=>false;bool CancelSaveDeletion()=>false;bool CancelActiveSaveFlow()=>false;
 void CancelMobileScroll(){cancels++;}void BlockUITransition(){blocks++;}void FinishChestReveal(){}void ReturnToInventory(){}

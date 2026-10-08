@@ -9,7 +9,7 @@ def member(s,sig):
  while d:d+=(s[b]=='{')-(s[b]=='}');b+=1
  return s[a:b]
 fixture=ast.parse((root/'Tests/DesktopOpportunityHotbarProductionTests.py').read_text());shell=next(ast.literal_eval(n.value) for n in fixture.body if isinstance(n,ast.Assign) and any(isinstance(t,ast.Name) and t.id=='shell' for t in n.targets))
-shell=shell.replace('public enum Panel{Inventory,Skills}','public enum Panel{None,Inventory,Skills}')
+shell=shell.replace('bool MerchantServiceActive=>true;public enum Panel{Inventory,Skills}','bool MerchantServiceActive=>true;public enum Panel{None,Inventory,Skills}')
 shell=shell.replace('public SkillChargeController Charge=', 'public SkillTargetingController Targeting=new SkillTargetingController();public SkillChargeController Charge=').replace('=>Charge as T;','=>typeof(T)==typeof(SkillTargetingController)?Targeting as T:Charge as T;')
 shell=shell.replace(' public class Progression{',' public class SkillTargetingController{public int Casts;public bool Begin(int s){Casts++;return true;}}\n public static class GameAudio{public static void Play(SoundCue c){}}public enum SoundCue{UI}\n public class Progression{')
 shell=shell.replace('public bool HasStarted=true;', 'public bool Paused,IsDead;public bool CanChangeLoadout=>HasStarted&&!IsDead;public void SetUIBlocking(bool b){InputBlocked=b;}public int Moves,Assigns,Potions;public bool MoveHotbarSkill(int a,int b){Moves++;return true;}public bool AssignSkill(int a,int b){Assigns++;return true;}public void UseHotbarConsumable(){Potions++;}public bool HasStarted=true;')

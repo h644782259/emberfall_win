@@ -24,7 +24,7 @@ with tempfile.TemporaryDirectory(prefix='whole-plan-geometry-') as d:
  s=s.replace('public bool PracticeActive;', 'public bool PracticeActive;public CampPracticeRecord PracticeRecord,PreviousPracticeRecord;public bool BeginPractice(CampPracticeScenario s,int seconds,ProgressionService.BuildDraft d)=>false;public bool PinPracticeBaseline()=>false;public bool StartPractice()=>false;public bool RestartPractice()=>false;public void EndPractice(string reason){}')
  s=s.replace('bool practiceChoicesOpen;int TouchFont(int size)=>(int)(size*TouchRatio);','')
  s=s.replace('private void DrawPracticeChoices(ref float y,float width,float unit,bool draw,bool enabled,ProgressionService.BuildDraft draft){}','')
- s=s.replace('enum Panel{Camp,Inventory}', 'enum Panel{Camp,Inventory,None}')
+ s=s.replace('bool MerchantServiceActive=>true;enum Panel{Camp,Inventory,Skills}', 'bool MerchantServiceActive=>true;enum Panel{Camp,Inventory,None,Skills}')
  s=s.replace('float width=1000,height=700,TouchRatio=1;', 'float width=1000,height=700;')
  s=s.replace('TouchRatio=mobile?2:1,','')
  s=s.replace('labels.Add(s);if(click==null', 'labels.Add(s);GeometryButton(r,s);if(click==null')

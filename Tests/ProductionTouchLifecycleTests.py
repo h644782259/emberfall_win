@@ -73,7 +73,7 @@ namespace Emberfall {
   RESET_METHOD
  }
  public sealed class GameUI {private float lastBlessingClick=-100;
-  private GameSession session;private int rebindingSlot;private enum Panel{None,Camp}private Panel panel;
+  private GameSession session;private int rebindingSlot;private bool MerchantServiceActive=>true;enum Panel{None,Camp,Skills}private Panel panel;
   private readonly TouchReleaseLatch lifecycleRelease=new TouchReleaseLatch(),uiTransition=new TouchReleaseLatch();
   private readonly TouchViewportState touchViewport=new TouchViewportState();
   private void CancelHotbarPointer(){}public void CancelMobileCast(){}private void OpenNearbyHubNpc(){}

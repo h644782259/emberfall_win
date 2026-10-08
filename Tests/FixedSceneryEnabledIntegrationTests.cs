@@ -22,7 +22,8 @@ class FixedSceneryEnabledIntegrationTests
  {"STAR CORE plinth","FacilityBase"},{"APPRENTICE plinth","FacilityBase"},{"CODEX plinth","FacilityBase"},{"CLASS TRIAL plinth","FacilityBase"},
  {"STAR CORE fixed crest","CoreCrest"},{"APPRENTICE fixed crest","ApprenticeCrest"},{"CODEX fixed crest","CodexCrest"},{"CLASS TRIAL fixed crest","TrialCrest"}};
  static readonly string npc="NpcTunic:3,NpcHead:3,NpcBoot:6,NpcSleeve:6,MerchantCap:1,Shelf:2,Apron:1,Stump:1,Anvil:1,Lectern:1";
- static readonly string[] expected={"ColumnBase:1,FlutedColumn:1,Capital:1,Collar:1,ColumnBand:1","GatePlinth:1,GateFrame:1","RoofTiles:12,Eave:12,Ridge:6,ChimneyCap:6,GatePlinth:1,GateFrame:1,"+npc,"ObservatoryDais:1,GatePlinth:1,GateFrame:1,"+npc,"FacilityBase:4,CoreCrest:1,ApprenticeCrest:1,CodexCrest:1,TrialCrest:1",npc};
+ static readonly string npcTown="NpcTunic:2,NpcHead:2,NpcBoot:4,NpcSleeve:4,MerchantCap:1,Shelf:2,Apron:1,Stump:1,Anvil:1";
+ static readonly string[] expected={"ColumnBase:1,FlutedColumn:1,Capital:1,Collar:1,ColumnBand:1","GatePlinth:1,GateFrame:1","RoofTiles:12,Eave:12,Ridge:6,ChimneyCap:6,GatePlinth:1,GateFrame:1,"+npcTown,"ObservatoryDais:1,GatePlinth:1,GateFrame:1,"+npcTown,"FacilityBase:4,CoreCrest:1,ApprenticeCrest:1,CodexCrest:1,TrialCrest:1",npcTown};
  static Dictionary<string,int> Counts(int group)=>expected[group].Split(',').Select(x=>x.Split(':')).ToDictionary(x=>x[0],x=>int.Parse(x[1]));
  class Part{public string Name,Key,Mesh,Pose,Materials,Parent;public bool Authored;}
  class Snapshot{public string Nav,Marks,Physics,Dynamic;public Dictionary<string,Part> Parts;}

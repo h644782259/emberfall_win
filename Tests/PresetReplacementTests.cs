@@ -32,7 +32,7 @@ namespace UnityEngine{public struct Vector2{public static Vector2 zero=>new Vect
 namespace Emberfall{
  public class PlayerController{}public class TestPlanSession{public ProgressionService Progression;public PlayerController Player=new PlayerController();public bool IsInCamp=true,IsDead,PracticeActive;public void Notify(string s){}}
  public partial class GameUI{
- enum BuildPlanAction{None,Reset,Save,Apply,Replace}enum Panel{Camp,Inventory}Panel panel=Panel.Camp;object allocationDraft=null;
+ enum BuildPlanAction{None,Reset,Save,Apply,Replace}bool MerchantServiceActive=>true;enum Panel{Camp,Inventory,Skills}Panel panel=Panel.Camp;object allocationDraft=null;
  bool buildPlansOpen,buildPlanChoosing,practiceChoicesOpen;int buildPlanDetails=-1;ItemSlot buildPlanPart;ProgressionService.PresetEquipmentQuote buildPlanReplacement;string buildPlanFingerprint;BuildPlanAction buildPlanAction;int buildPlanSlot;ProgressionService buildPlanOwner;PlayerController buildPlanHero;string buildPlanCharacterId;GameProfile buildPlanSource;string buildPlanPreview,buildPlanError;Vector2 buildPlanScroll;TestPlanSession session;
  Vector2 presetSaleScroll;bool presetSaleOpen,presetSaleBulk;string presetSaleId,presetSaleState,presetSaleImpact,presetSaleError;ProgressionService presetSaleOwner;void Feedback(bool success,string message){}void SellInventoryItem(string id,bool confirmed){throw new Exception("unexpected unreferenced sale");}void RebuildBagItems(){}void ResolveSelectedItem(){}
  public void AskSale(string id){RequestPresetSale(id);}public void ConfirmSale(){ConfirmPresetSale();}public void CancelSale(){CancelPresetSale();}

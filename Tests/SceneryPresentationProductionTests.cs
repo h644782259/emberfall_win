@@ -93,7 +93,7 @@ class SceneryPresentationProductionTests {
     CameraOcclusionSurface.RestoreAll();Check(upper.Select((v,i)=>ReferenceEquals(v.sharedMaterial,originals[i])).All(x=>x)&&!line.enabled,"building restore returns every original material and hides outline");
    }
    Check(Registry.Count==(hub==1?63:36)&&Registry.Count<CameraVisibilityRules.MaximumSurfaces,"complete town registry includes all buildings within bounded cap");
-   Check(WorldTraversal.boxes.Count==(hub==1?11:9)&&WorldTraversal.circles.Count==(hub==1?3:4),"full town navigation has only building forge or dais and NPC solids");
+   Check(WorldTraversal.boxes.Count==(hub==1?10:8)&&WorldTraversal.circles.Count==(hub==1?2:3),"full town navigation has only building forge or dais and NPC solids");
    var townRenderers=Visuals(root);Check(townRenderers.Where(v=>new[]{"Pitched workshop roof module","Workshop projecting eave","Workshop ridge cap","Kiln chimney","Kiln chimney cap","Astral dome","Arcade wall pilaster","Observatory roof spire","Weathered wall footing","Lit doorway"}.Contains(v.transform.name)).All(v=>v.transform.parent.GetComponent<BuildingOcclusionGroup>()!=null),"no building decoration escapes grouped root");
    root.SetActive(false);Check(Registry.Count==0,"whole town disable clears registry");root.SetActive(true);Check(Registry.Count==(hub==1?63:36),"whole town enable restores full registry");Dispose(root);
   }
@@ -104,8 +104,8 @@ class SceneryPresentationProductionTests {
    Check(WorldTraversal.boxes.Count==0&&WorldTraversal.circles.Count==0&&Registry.Count==0,"ground and bank detail do not mutate navigation or occlusion");
    Check(Named(host,"Flush road edge stone").Length==48&&Named(host,"Observatory perimeter mosaic").Length==(hub==2?16:0),"distinct town cosmetic ground recipes stay bounded");
    Check(Named(host,"Brook reed clump").Length==6&&Named(host,"Brook reed clump").All(t=>Surface(t.GetComponent<Renderer>())==VisualSurface.Foliage),"actual bank detail retains Foliage reeds");Dispose(host);}
-  var root=Host("actual NPC rigs");var resources=Resources(root);WorldTraversal.Reset(ZoneKind.Wilderness);WorldBuilder.TestNpcs(root.transform,resources);var npcs=root.GetComponentsInChildren<HubNpcIdle>(false);Check(npcs.Length==3,"three actual role NPC rigs constructed");
-  for(int i=0;i<3;i++){
+  var root=Host("actual NPC rigs");var resources=Resources(root);WorldTraversal.Reset(ZoneKind.Wilderness);WorldBuilder.TestNpcs(root.transform,resources);var npcs=root.GetComponentsInChildren<HubNpcIdle>(false);Check(npcs.Length==2,"three actual role NPC rigs constructed");
+  for(int i=0;i<2;i++){
    var npc=npcs[i];var p=HubSettlementPlan.Npc(i);var head=Named(npc.gameObject,"NPC head").Single();
    Check(Near(GameSession.HubNpcPosition(i),p)&&Near(head.localPosition,p+Vector3.up*1.66f),"NPC rendering and session interaction share authored positions");
    Check(WorldTraversal.circles.Count(c=>Near(c.p,p)&&Near(c.radius,.43f))==1&&WorldTraversal.boxes.Count(b=>Near(b.p,p+new Vector3(0,0,.65f))&&Near(b.size.x,1.4f)&&Near(b.size.y,.5f))==1,"each NPC registers body and role-prop footprint exactly once");
@@ -125,7 +125,7 @@ class SceneryPresentationProductionTests {
    SetField(npc,"age",age);SetField(npc,"angle",savedAngle);Time.time=20000;GameObject.Call(npc,"Update");
    Check(Near(resumedArm,arm.localRotation*Vector3.forward)&&Near(resumedLeft,left.localRotation*Vector3.forward)&&(dial==null||Near(resumedDial,dial.localRotation*Vector3.forward)),"same NPC simulation state ignores wall clock during active idle");
   }
-  Check(WorldTraversal.circles.Count==3&&WorldTraversal.boxes.Count==3&&Registry.Count==0,"NPC navigation registered once with no scenery occluders");Dispose(root);
+  Check(WorldTraversal.circles.Count==2&&WorldTraversal.boxes.Count==2&&Registry.Count==0,"NPC navigation registered once with no scenery occluders");Dispose(root);
   Console.WriteLine("PASS: hub partition "+(n-start)+" production NPC/props/pause/cosmetic-ground checks");
  }
  static void Main(string[] args){string scope=args.Length==0?"all":args[0];if(scope=="all"||scope=="environment")Environment();if(scope=="all"||scope=="town")Town();if(scope=="all"||scope=="hub")Hub();Console.WriteLine("PASS: "+n+" total production scenery assertions; managed Unity APIs, no rendered/GPU/pathfinding acceptance");}

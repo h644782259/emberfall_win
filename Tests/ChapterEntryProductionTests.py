@@ -37,7 +37,7 @@ namespace Emberfall {
  public sealed partial class GameUI {
   // This chapter navigation fixture never opens the inventory preset-sale dialog.
   bool presetSaleOpen=>false;void CancelPresetSale(){throw new InvalidOperationException("chapter-only fixture entered preset-sale cancellation");}
-  enum Panel{None,Chapter,Camp,Inventory,Skills,Chests,Fashion,PotionAssignment,Bindings,SaveLocation,SaveSelection,Controls,TravelMap}
+  bool MerchantServiceActive=>true;enum Panel{None,Chapter,Camp,Inventory,Skills,Chests,Fashion,PotionAssignment,Bindings,SaveLocation,SaveSelection,Controls,TravelMap}
   int ordinaryDeaths;void DrawDeath(){ordinaryDeaths++;}void ReplayDeadSurface() DEAD_DISPATCH
   Panel panel,bindingReturnPanel;SessionStub session;int campTab,rebindingSlot,blocks,cancels;
   bool opaqueFrame;bool UITransitionBlocked=false,saveSelectionFromPause,chestDetails,bindingReturnPause,saveReturnPause,controlsReturnPause;float chestRevealedAt;const float ChestDuration=1;bool ChestAnimationDone=>true;

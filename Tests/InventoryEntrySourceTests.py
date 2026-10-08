@@ -17,17 +17,17 @@ for name in ['GameUI.MobileWorkshop.cs','GameUI.Expedition.cs','GameUI.Inventory
     source=(r/name).read_text()
     for call in ['RequestPresetSale(', 'SellInventoryItem(', '.Sell(', '.BulkSellLowQuality(', '.SetAutoSell(']:
         assert call not in source,(name,call)
-hub=(r/'GameUI.HubServices.cs').read_text()
-assert 'if(bulkSale)RequestPresetSale(null,true);' in hub
-assert 'bool bulkSale=DangerButton' in hub
-assert 'Rarity.Common,!p.Profile.autoSellCommon' in hub and 'Rarity.Rare,!p.Profile.autoSellRare' in hub
-assert 'ClaimMobileWorkshopLoot' in (r/'GameUI.MobileWorkshop.cs').read_text()
-assert 'ClaimPendingLoot(item.id)' in (r/'GameUI.Expedition.cs').read_text()
-print('PASS merchant-only sale/settings entry audit, pending/recovery claims retained (source contract, not Unity execution)')
-
+merchant=(r/'GameUI.Merchant.cs').read_text()
+smith=(r/'GameUI.Smith.cs').read_text()
+assert '"购买 / 兑换"' in merchant and '"出售"' in merchant
+assert '!gear.locked&&!IsEquipped(gear)' in merchant and 'SellInventoryItem(saleItems[merchantSelection].id)' in merchant
+assert '.SetAutoSell(' not in merchant and '.BulkSellLowQuality(' not in merchant
+assert 'ClaimMobileWorkshopLoot' not in (r/'GameUI.MobileWorkshop.cs').read_text()
+assert 'ClaimPendingLoot(item.id)' not in (r/'GameUI.Expedition.cs').read_text()
+assert 'ToggleAttachmentVariant' in smith and 'SetAttachmentMounted' in smith
+print('PASS merchant explicit-sale/exchange and smith attachment entry audit; no auto-sale or pending-claim controls')
 workshop=(r/'GameUI.MobileWorkshop.cs').read_text()
-assert 'layout.Tab(i, tabs.Length)' not in workshop and 'layout.FooterButton(' not in workshop
-assert 'QuietAction(tab,tabs[i],true,null,campTab==i)' in workshop
+assert 'layout.FooterButton(' not in workshop
 assert 'DrawEquipmentIconGrid(MobilePanelRect(viewport),ref mobileInventoryListScroll,TouchRatio)' in grid
 assert 'DrawInventoryIcon(tile,item,u)' in grid and 'OpenInventoryPopup(chosen,anchor)' in grid
 assert 'pip<=(int)item.rarity' in grid and '"L"+item.level' in grid

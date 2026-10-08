@@ -5,7 +5,7 @@ r=Path(__file__).resolve().parents[1]
 source=(r/'Assets/Scripts/UI/GameUI.cs').read_text();assert source.count('if(CloseMobileInventoryDetail())return;')==1
 shell='''using System;namespace Emberfall{
 public sealed partial class GameUI{
-enum Panel{None,Inventory,Skills}class Session{public bool Paused;}
+bool MerchantServiceActive=>true;enum Panel{None,Inventory,Skills}class Session{public bool Paused;}
 private Panel panel=Panel.Inventory;private Session session=new Session();private bool inventoryFashionOpen,inventoryComparisonOpen,mobileInventoryDetail;private object collectionTrial;private int cancels,blocks;
 private void CancelMobileScroll(){cancels++;}private void BlockUITransition(){blocks++;}
 static void Check(bool b,string s){if(!b)throw new Exception(s);}

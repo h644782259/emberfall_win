@@ -20,7 +20,7 @@ with tempfile.TemporaryDirectory(prefix='reforge-selection-') as t:
   v=subprocess.run(run+[str(o/f'mutant{index}')],env=env,capture_output=True,text=True)
   assert v.returncode!=0 and expected in v.stdout+v.stderr,v.stdout+v.stderr
   f.write_text(original);print('PASS compiled reforge regression rejected at: '+expected)
-assert 'OpenReforgeSurface(equipped.id)' in (r/'Assets/Scripts/UI/GameUI.Expedition.cs').read_text()
-assert '()=>OpenReforgeSurface(id)' in (r/'Assets/Scripts/UI/GameUI.MobileWorkshop.cs').read_text()
+assert 'GoalOption(ref y,w,u,"重铸至 ' in (r/'Assets/Scripts/UI/GameUI.ProgressionGoal.cs').read_text()
+assert 'case ProgressionGoalAction.Reforge:return ReforgeMechanic(goal.ReforgeQuote,inCamp);' in (r/'Assets/Scripts/Core/ProgressionService.cs').read_text()
 assert 'if(CloseReforgeSurface())return true;' in (r/'Assets/Scripts/UI/GameUI.ProgressionGoal.cs').read_text()
 print('PASS actual desktop/mobile entry and existing Back routing connect to the tested surface')

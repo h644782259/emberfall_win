@@ -45,7 +45,7 @@ namespace Emberfall {
  }
  public sealed class ExitStub {public bool Open;public void Cancel(){Open=false;}}
  public sealed partial class GameUI {
-  private enum Panel {None,Chapter,Controls,Chests,Skills,SaveSelection,SaveLocation,Bindings,PotionAssignment,Camp,TravelMap,Notice,Inventory,HubDialogue}
+  private bool MerchantServiceActive=>true;enum Panel{None,Chapter,Controls,Chests,Skills,SaveSelection,SaveLocation,Bindings,PotionAssignment,Camp,TravelMap,Notice,Inventory,HubDialogue}
   private Panel panel=Panel.Chests;private SessionStub session=new SessionStub();
   private int mobilePausePage,transitionBlocks,backConsumedFrame=-1,rebindingSlot=-1;
   private int mobileCastFinger=-1000,hotbarPointerSlot=-1,hotbarPointerPage=0,selectedSkill=0,closeCalls,resetCalls;

@@ -15,7 +15,7 @@ namespace Emberfall{
  public enum CollectionPreviewComposition{Full,Weapon,Back}public class CollectionModelPreview{public static int Renders,Disposed,Slot;public static ItemData Shown;public void Dispose(){Disposed++;}public void SetComposition(CollectionPreviewComposition c){}public void SetEquipmentFraming(bool a,bool b){}public void SetEquipmentHighlight(int slot){Slot=slot;}public void SetYaw(float y){}public void SetViewport(float w,float h,bool mobile){}public Texture RenderSafe(HeroClass hero,ItemData a,ItemData b,ItemData c,FashionData d,FashionData e){Renders++;Shown=Slot==0?a:Slot==1?b:c;return new Texture();}}
  public class GameSession{public bool IsInCamp=true,Paused,IsDead,PracticeActive;public ProgressionService Progression;public void LogSystem(string s){}public void SetUIBlocking(bool b){}public void SetPaused(bool b){}}
  public sealed partial class GameUI{
-  enum Panel{None,Chests,Camp,Fashion,Inventory}Panel panel=Panel.Chests;GameSession session;float width,height,TouchRatio=1;Color gold,jade,pale,muted;Vector2 Mouse,mobileChestArtScroll;string collectionReceiptKey;
+  bool MerchantServiceActive=>true;enum Panel{None,Chests,Camp,Fashion,Inventory,Skills}Panel panel=Panel.Chests;GameSession session;float width,height,TouchRatio=1;Color gold,jade,pale,muted;Vector2 Mouse,mobileChestArtScroll;string collectionReceiptKey;
  readonly List<Rect> actualModels=new List<Rect>();readonly List<(Rect bounds,int font,string text)> actualNumbers=new List<(Rect,int,string)>();
  void SetCollectionAngle(FashionSlot slot){}void DrawCollectionModel(Rect r,FashionData f,bool controls){actualModels.Add(r);}
  void DrawRewardRadiance(Rect r,Color c,float progress){}

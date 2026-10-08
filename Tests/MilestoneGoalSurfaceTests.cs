@@ -17,7 +17,7 @@ namespace Emberfall
  public static class MobileControls{public static bool Active=true;}
  public sealed partial class GameUI
  {
-  enum Panel{None,Skills,Camp,Inventory} Panel panel=Panel.Camp;
+  bool MerchantServiceActive=>true;enum Panel{None,Skills,Camp,Inventory} Panel panel=Panel.Camp;
   sealed class Context{public ProgressionService Progression;public bool IsInCamp=true,Blocked;public void SetUIBlocking(bool v){Blocked=v;}}
   Context session;float TouchRatio=1,width=568,height=320;Color jade,pale,gold,muted;
   List<Rect> blockedRects=new List<Rect>();List<string> shown=new List<string>();string click;int presetOpened;
