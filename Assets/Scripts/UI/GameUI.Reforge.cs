@@ -39,7 +39,10 @@ namespace Emberfall
             DrawReforgeOptions(bodyWidth,u,true);EndTouchScroll();
             var preview=reforgeOwner.PreviewReforge(reforgeSelected);string reason=reforgeOwner.ReforgeLockReason(reforgeSelected,session.IsInCamp);
             if(Button(BuildPlanRect(l.FooterButton(0,3),u),"追踪此目标",jade,preview!=null))ExecuteReforgeSelection(true);
-            if(Button(BuildPlanRect(l.FooterButton(1,3),u),"重铸 · "+(reforgeSelected==null?0:reforgeSelected.GoldCost)+"金",gold,reason.Length==0,reason))ExecuteReforgeSelection(false);
+            Rect reforgeAction=BuildPlanRect(l.FooterButton(1,3),u);
+            if(Button(reforgeAction,"",gold,reason.Length==0,reason))ExecuteReforgeSelection(false);
+            Text(new Rect(reforgeAction.x+8*u,reforgeAction.y,reforgeAction.width-92*u,reforgeAction.height),"重铸",Mathf.RoundToInt(13*u),gold,true);
+            DrawPrice(new Rect(reforgeAction.xMax-84*u,reforgeAction.y+4*u,76*u,reforgeAction.height-8*u),reforgeSelected==null?0:reforgeSelected.GoldCost,false,u);
             if(NavigationButton(BuildPlanRect(l.FooterButton(2,3),u), "返回工坊", jade))CloseReforgeSurface();return true;
         }
         private float DrawReforgeOptions(float w,float u,bool draw)
@@ -48,13 +51,18 @@ namespace Emberfall
             foreach(var choice in reforgeChoices)
             {
                 bool selected=reforgeSelected==choice.Quote;
-                string label=choice.Label+" → "+choice.Quote.TargetLevel+"级 · "+choice.Quote.GoldCost+"金币"+(selected?" ✓":"");
-                if(draw&&TabButton(new Rect(4*u,y*u,(w-8)*u,44*u), label, selected))
-                {reforgeSelected=choice.Quote;reforgeNotice=null;BlockUITransition();}
+                string label=choice.Label+" → "+choice.Quote.TargetLevel+"级"+(selected?" ✓":"");
+                if(draw)
+                {
+                    Rect option=new Rect(4*u,y*u,(w-8)*u,44*u);
+                    if(TabButton(option,"",selected)){reforgeSelected=choice.Quote;reforgeNotice=null;BlockUITransition();}
+                    Text(new Rect(option.x+8*u,option.y,option.width-110*u,option.height),label,Mathf.RoundToInt(13*u),selected?gold:pale,true);
+                    DrawPrice(new Rect(option.xMax-100*u,option.y+8*u,92*u,28*u),choice.Quote.GoldCost,false,u);
+                }
                 y+=50;
             }
             var before=reforgeOwner.Profile.inventory.Find(x=>x.id==reforgeItem);var after=reforgeOwner.PreviewReforge(reforgeSelected);
-            string text=after==null?"报价已失效，请返回重新选择。":"固定 "+reforgeSelected.FromLevel+" → "+reforgeSelected.TargetLevel+"级 · "+reforgeSelected.GoldCost+"金币\n"+
+            string text=after==null?"报价已失效，请返回重新选择。":"固定 "+reforgeSelected.FromLevel+" → "+reforgeSelected.TargetLevel+"级\n"+
                 "攻击 "+before.attack+" → "+after.attack+" · 防御 "+before.defense+" → "+after.defense+" · 生命 "+before.health+" → "+after.health+"\n"+
                 (reforgeOwner.Profile.gold>=reforgeSelected.GoldCost?"执行后余金 "+(reforgeOwner.Profile.gold-reforgeSelected.GoldCost):"金币不足 · 仍缺 "+(reforgeSelected.GoldCost-reforgeOwner.Profile.gold))+"\n保留身份、品质、机制变体与部位强化；分段总价相同。";
             if(!string.IsNullOrEmpty(reforgeNotice))text+="\n"+reforgeNotice;

@@ -727,7 +727,7 @@ namespace Emberfall
             Box(playerRect, accent);
             Fill(new Rect(16, 16, 2, 88), accent);
             Text(new Rect(28, 24, 139, 22), GameBalance.ClassName(p.heroClass) + " · Lv." + p.level, 16, pale, true);
-            Text(new Rect(169, 26, 74, 20), Money(p.gold) + " 金", 12, gold, true, false, TextAnchor.UpperRight);
+            DrawPrice(new Rect(169,26,74,20),p.gold,false,1);
             float hp = session.Player == null ? 0 : session.Player.Health;
             float maxHp = session.Player == null ? 1 : session.Player.MaxHealth;
             Bar(new Rect(28, 54, 216, 10), hp / Mathf.Max(1, maxHp), new Color(.26f, .77f, .61f));
@@ -1234,7 +1234,7 @@ namespace Emberfall
             Text(new Rect(w.x + 24, w.y + 59, 238, 31), HubInventoryHint, 11, muted, false, true);
             Text(new Rect(w.x + 530, w.y + 55, 600, 31), HubNpcServiceSubtitle(""), 13, pale, false, true);
             if (NavigationButton(new Rect(w.xMax - 69, w.y + 20, 44, 32), "×", jade)) ClosePanel();
-            Text(new Rect(w.x + 789, w.y + 28, 268, 30), Money(p.gold) + " 金币", 21, gold, true, false, TextAnchor.MiddleRight);
+            DrawPrice(new Rect(w.x + 921, w.y + 28, 136, 30),p.gold,false,1);
             float left = w.x + 24;
             Text(new Rect(left, w.y + 112, 112, 23), "身上装备", 16, jade, true);
             DrawCurrentWear(new Rect(left,w.y+148,232,232),1);
@@ -1545,34 +1545,39 @@ namespace Emberfall
             if (DrawSaveFlowConfirmation()) return;
             if (panel == Panel.SaveSelection) { DrawSaveSelection(); return; }
             if (MobileControls.Active) { DrawMobilePause(); return; }
-            Rect w = Modal(600, 620, "冒险暂停", "手动保存需确认覆盖");
+            Rect w = Modal(780, 620, "冒险暂停", "手动保存需确认覆盖");
+            Rect close=new Rect(w.xMax-60,w.y+20,44,44);
+            DrawIcon(new Rect(close.center.x-9,close.center.y-9,18,18),UIIconAtlas.Utility("cancel"),jade);
+            if(QuietAction(close,"",true,"关闭暂停菜单")){session.SetPaused(false);BlockUITransition();return;}
             string[] tabs = { "冒险", "声音与画面", "键盘与操作" };
+            Fill(new Rect(w.x+24,w.y+110,152,470),new Color(.025f,.05f,.065f,.65f));
             for (int i = 0; i < tabs.Length; i++)
-                if (TabButton(new Rect(w.x + 32 + i * 182, w.y + 110, 172, 42), tabs[i], desktopPauseTab == i) && desktopPauseTab != i)
+                if (PauseSidebarTab(new Rect(w.x+24,w.y+110+i*54,152,48), tabs[i], desktopPauseTab == i,1) && desktopPauseTab != i)
                 { desktopPauseTab = i; BlockUITransition(); }
-            Text(new Rect(w.x + 32, w.y + 164, 536, 30), session.ZoneName + "  ·  " + ActiveCharacterName(), 17, jade, true, false, TextAnchor.MiddleCenter);
+            Text(new Rect(w.x + 212, w.y + 164, 536, 30), session.ZoneName + "  ·  " + ActiveCharacterName(), 17, jade, true, false, TextAnchor.MiddleCenter);
             if (desktopPauseTab == 0)
             {
-                if (Button(new Rect(w.x + 32, w.y + 210, 536, 48), "继续冒险", jade, true, "Esc 也可继续冒险。", true)) session.SetPaused(false);
-                if (Button(new Rect(w.x + 32, w.y + 272, 260, 48), "保存", gold)) RequestManualSave();
-                if (NavigationButton(new Rect(w.x + 308, w.y + 272, 260, 48), "读取存档", jade)) OpenSaveSelection();
-                if (DangerButton(new Rect(w.x + 32, w.y + 334, 536, 44), "返回主菜单", muted)) RequestExit(true);
-                if (NavigationButton(new Rect(w.x + 32, w.y + 396, 260, 42), "存档位置 / 迁移", jade))
+                if (Button(new Rect(w.x + 212, w.y + 210, 260, 48), "保存", gold)) RequestManualSave();
+                if (NavigationButton(new Rect(w.x + 488, w.y + 210, 260, 48), "读取存档", jade)) OpenSaveSelection();
+                if (DangerButton(new Rect(w.x + 212, w.y + 272, 536, 44), "返回主菜单", muted)) RequestExit(true);
+                if (NavigationButton(new Rect(w.x + 212, w.y + 334, 260, 42), "存档位置 / 迁移", jade))
                 { saveReturnPause = true; panel = Panel.SaveLocation; session.SetUIBlocking(true); session.SetPaused(false); }
 #if !UNITY_IOS && !UNITY_ANDROID
-                if (DangerButton(new Rect(w.x + 32, w.y + 450, 536, 44), "退出游戏", muted)) RequestExit(false);
+                if (DangerButton(new Rect(w.x + 212, w.y + 388, 536, 44), "退出游戏", muted)) RequestExit(false);
 #endif
             }
             else if (desktopPauseTab == 1)
             {
-                if (ToggleButton(new Rect(w.x + 32, w.y + 210, 260, 42), GameAudio.Muted ? "声音：已静音" : "声音：已开启", !GameAudio.Muted))
+                if (ToggleButton(new Rect(w.x + 212, w.y + 210, 260, 42), GameAudio.Muted ? "声音：已静音" : "声音：已开启", !GameAudio.Muted))
                 { GameAudio.Muted = !GameAudio.Muted; if (!GameAudio.Muted) GameAudio.Play(SoundCue.UI); }
-                DrawAccessibilityStrip(new Rect(w.x + 32, w.y + 280, 536, 35));
+                DrawAccessibilityStrip(new Rect(w.x + 212, w.y + 280, 536, 35));
             }
             else
             {
-                if (NavigationButton(new Rect(w.x + 32, w.y + 210, 260, 42), "自定义快捷键", gold)) OpenBindings();
-                if (NavigationButton(new Rect(w.x + 308, w.y + 210, 260, 42), "操作指南", jade)) OpenControls();
+                if (NavigationButton(new Rect(w.x + 212, w.y + 210, 260, 42), "自定义快捷键", gold)) OpenBindings();
+                if (NavigationButton(new Rect(w.x + 488, w.y + 210, 260, 42), "操作指南", jade)) OpenControls();
+                if (NavigationButton(new Rect(w.x+212,w.y+272,536,44),"技能按键配置",jade))
+                {session.SetPaused(false);skillSection=0;TogglePanel(Panel.Skills);BlockUITransition();}
             }
         }
 

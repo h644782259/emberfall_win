@@ -422,6 +422,7 @@ public static class UpgradeProgressionTests
         Directory.CreateDirectory(blocked);
         Check(!service.Upgrade(candidate.id) && service.Profile.gold == oldGold && service.SlotUpgradeRank(ItemSlot.Weapon) == oldRank && original.attack == oldAttack && events == 0, "failed slot-training write rolls back charge, rank, equipped stats and event");
         Check(!service.Equip(candidate.id) && service.Equipped(ItemSlot.Weapon).id == originalId && original.attack == oldAttack && original.upgradeLevel == oldRank && candidate.upgradeLevel == 0 && candidate.attack == 200 && events == 0, "failed equip write restores both enhancement caches and equipment identity");
+        Check(!service.Unequip(ItemSlot.Weapon) && service.Equipped(ItemSlot.Weapon).id == originalId && service.SlotUpgradeRank(ItemSlot.Weapon) == oldRank && events == 0, "failed unequip preserves equipment, training and event");
         Check(File.ReadAllText(service.SaveFilePath) == saved, "failed training or equip leaves previous durable save intact");
         Directory.Delete(blocked);
         int price = service.UpgradeCost(candidate);
@@ -430,6 +431,12 @@ public static class UpgradeProgressionTests
         Check(service.Equip(candidate.id) && candidate.attack == expected.attack && candidate.upgradeLevel == expected.upgradeLevel && events == 2, "retry applies prospective exact stats once");
         service = Reload(service);
         Check(service.Equipped(ItemSlot.Weapon).id == candidate.id && service.SlotUpgradeRank(ItemSlot.Weapon) == oldRank + 1 && service.Equipped(ItemSlot.Weapon).attack == expected.attack, "atomic slot operation survives another load without duplicated growth");
+        candidate=service.Equipped(ItemSlot.Weapon); int count=service.Profile.inventory.Count;
+        Check(service.Unequip(ItemSlot.Weapon) && service.Equipped(ItemSlot.Weapon)==null && service.Profile.inventory.Count==count && service.SlotUpgradeRank(ItemSlot.Weapon)==oldRank+1, "unequip preserves ownership and permanent training");
+        Check(service.Profile.inventory.Find(x=>x.id==candidate.id).upgradeLevel==0, "unequipped item returns to its base stats");
+        service=Reload(service);
+        Check(service.Equipped(ItemSlot.Weapon)==null && service.Equip(candidate.id) && service.Equipped(ItemSlot.Weapon).attack==expected.attack, "empty slot persists and re-equip inherits training exactly once");
+
     }
 
     private static bool Near(float first, float second) { return Math.Abs(first - second) < .01f; }

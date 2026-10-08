@@ -10,6 +10,22 @@ namespace Emberfall
         private static readonly int[] activeSkills={0,1,2,4,5,6,7,9};
         public static int SkillAtButton(int button,int page=0)
         {if(button<0||button>=ButtonCount||page<0||page>=PageCount)return -1;if(button==4)return 9;int index=page*4+button;return index<7?activeSkills[index]:-1;}
+        public static int[] DefaultBindings(){return new[]{0,1,2,4,5,6,7,-1,9};}
+        public static bool ValidBindings(int[] values)
+        {
+            if(values==null||values.Length!=9||values[8]!=9)return false;
+            var seen=new HashSet<int>();
+            foreach(int value in values)if(value!=-1&&!IsActiveSkill(value)||!seen.Add(value))return false;
+            return true;
+        }
+        public static int BindingIndex(int button,int page)
+        {return button<0||button>=5||page<0||page>=2?-1:button==4?8:page*4+button;}
+        public static bool SwapBinding(int[] values,int index,int skill)
+        {
+            if(!ValidBindings(values)||index<0||index>=8||skill==9)return false;
+            int source=Array.IndexOf(values,skill);if(source<0)return false;
+            int previous=values[index];values[index]=skill;values[source]=previous;return true;
+        }
         public static bool IsActiveSkill(int skill){return skill>=0&&skill<10&&skill!=3&&skill!=8;}
         public struct Candidate
         {

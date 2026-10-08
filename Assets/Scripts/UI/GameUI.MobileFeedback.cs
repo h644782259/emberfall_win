@@ -34,7 +34,7 @@ namespace Emberfall
             var window=session.Player==null?default(CombatOpportunityState):session.Player.SkillOpportunityWindow(skill);
             var meter=mobileOpportunityMeters[skill]??(mobileOpportunityMeters[skill]=new MobileOpportunityMeter());
             // Pause hides observation without treating a still-live timer as expired.
-            if(!session.InputBlocked)meter.Draw(TouchRect(MobileControls.Layout.SkillOpportunities[skill]),window,session.Player,
+            if(!session.InputBlocked)meter.Draw(TouchRect(MobileOpportunityArea(skill)),window,session.Player,
                 session.Player==null?-1:session.Player.CombatEpoch,TouchRatio,EffectPreferences.TouchOpacity);
 
             string targetReason=state.Length==0&&session.Player!=null?session.Player.MobilePinnedActionReason(skill):"";

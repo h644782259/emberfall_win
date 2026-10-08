@@ -141,11 +141,13 @@ namespace Emberfall
         {
             bool mobile = MobileControls.Active;
             float u = mobile ? TouchRatio : 1.35f;
-            float w = 520 * u, h = 306 * u;
+            float w = 520 * u, h = (travelReturnPause?306:252) * u;
             Rect r = new Rect((width - w) * .5f, (height - h) * .5f, w, h);
-            Fill(new Rect(0, 0, width, height), new Color(.01f, .025f, .045f, .96f));
             Box(r, jade);
-            Text(new Rect(r.x + 16*u, r.y + 10*u, 488*u, 28*u), "城镇旅行 · " + HubTravelRules.Name(session.CurrentHub),
+            Rect close=new Rect(r.xMax-52*u,r.y+6*u,44*u,44*u);
+            DrawIcon(new Rect(close.center.x-9*u,close.center.y-9*u,18*u,18*u),UIIconAtlas.Utility("cancel"),jade);
+            if(QuietAction(close,"",!UITransitionBlocked,"关闭城镇旅行")){CloseTravelMap();return;}
+            Text(new Rect(r.x + 16*u, r.y + 10*u, 436*u, 28*u), "城镇旅行 · " + HubTravelRules.Name(session.CurrentHub),
                 Mathf.RoundToInt(21*u), pale, true);
             string hint = !string.IsNullOrEmpty(travelError) ? travelError : !session.CanOpenTravelMap ?
                 "挑战中或附近有敌人时不能旅行，请先安全返回营地。" : "M旅行地图 · 城镇逐站传送 · 地面青色符文为旅行站";

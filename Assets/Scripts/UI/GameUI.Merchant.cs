@@ -70,6 +70,13 @@ namespace Emberfall
                 if(count==0)Text(BuildPlanRect(l.Body,u),"没有可出售装备。",Mathf.RoundToInt(16*u),jade);
             }
         }
+        private bool ServiceCostAction(Rect r,string caption,int cost,bool material,float u,bool enabled,string reason=null)
+        {
+            bool clicked=Button(r,"",jade,enabled,reason);
+            Text(new Rect(r.x+10*u,r.y,r.width-104*u,r.height),caption,Mathf.RoundToInt(13*u),enabled?pale:muted,true,false,TextAnchor.MiddleLeft);
+            DrawPriceTint(new Rect(r.xMax-92*u,r.y+6*u,82*u,r.height-12*u),cost,material,u,enabled?gold:muted);
+            return clicked;
+        }
         private void DrawServiceBalances(Rect r,float unit)
         {
             float half=r.width*.5f;
@@ -80,8 +87,10 @@ namespace Emberfall
         {DrawPriceTint(r,amount,material,unit,gold);}
         private void DrawPriceTint(Rect r,int amount,bool material,float unit,Color tint)
         {
-            DrawIcon(new Rect(r.x,r.center.y-10*unit,20*unit,20*unit),UIIconAtlas.Utility(material?"shard":"coin"),gold);
-            Text(new Rect(r.x+23*unit,r.y,r.width-23*unit,r.height),amount.ToString(),Mathf.RoundToInt(13*unit),tint,true,false,TextAnchor.MiddleLeft);
+            Fill(r,new Color(.14f,.115f,.055f,.55f));
+            Border(r,new Color(tint.r,tint.g,tint.b,.25f));
+            DrawIcon(new Rect(r.x+4*unit,r.center.y-9*unit,18*unit,18*unit),UIIconAtlas.Utility(material?"shard":"coin"),gold);
+            Text(new Rect(r.x+27*unit,r.y,r.width-31*unit,r.height),amount.ToString(),Mathf.RoundToInt(13*unit),tint,true,false,TextAnchor.MiddleLeft);
         }
     }
 }

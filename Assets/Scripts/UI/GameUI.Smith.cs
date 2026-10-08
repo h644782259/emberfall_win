@@ -71,14 +71,15 @@ namespace Emberfall
                     if(draw&&QuietAction(new Rect(8*u,y*u,(width-16)*u,40*u),a.mounted?"卸下挂件":"镶嵌 / 更换挂件",SmithServiceActive))
                     {Feedback(p.SetAttachmentMounted(mechanic,!a.mounted,SmithServiceActive),"挂件装配已保存");BlockUITransition();}y+=48;
                     string reason=p.AttachmentUpgradeLock(mechanic,SmithServiceActive);
-                    if(draw&&QuietAction(new Rect(8*u,y*u,(width-16)*u,40*u),"挂件升阶 · 6碎片",reason.Length==0,reason))
+                    if(draw&&ServiceCostAction(new Rect(8*u,y*u,(width-16)*u,40*u),"挂件升阶",6,true,u,reason.Length==0,reason))
                     {Feedback(p.UpgradeAttachment(mechanic,SmithServiceActive),"挂件升阶已保存");BlockUITransition();}y+=48;
                     if(BuildCatalog.HasMechanicVariant(mechanic))
                     {
-                        if(draw&&QuietAction(new Rect(8*u,y*u,(width-16)*u,40*u),a.variantUnlocked?"切换变体 A / B":"解锁变体 · 4碎片",SmithServiceActive&&(a.variantUnlocked||p.Profile.mechanicMaterials>=4)))
-                        {Feedback(p.ToggleAttachmentVariant(mechanic,SmithServiceActive),"挂件变体已保存");BlockUITransition();}y+=48;
+                        if(draw&&(a.variantUnlocked?QuietAction(new Rect(8*u,y*u,(width-16)*u,40*u),"切换变体 A / B",SmithServiceActive):ServiceCostAction(new Rect(8*u,y*u,(width-16)*u,40*u),"解锁变体",4,true,u,SmithServiceActive&&p.Profile.mechanicMaterials>=4)))
+                        {Feedback(p.ToggleAttachmentVariant(mechanic,SmithServiceActive),"挂件变体已保存");BlockUITransition();}
+                        y+=48;
                     }
-                    if(draw&&QuietAction(new Rect(8*u,y*u,(width-16)*u,40*u),a.rarity==Rarity.Legendary?"已升华":"升华 · 24碎片",SmithServiceActive&&a.rarity==Rarity.Epic&&p.HighestAdventureTier>=5&&p.Profile.mechanicMaterials>=24))
+                    if(draw&&ServiceCostAction(new Rect(8*u,y*u,(width-16)*u,40*u),a.rarity==Rarity.Legendary?"已升华":"升华",24,true,u,SmithServiceActive&&a.rarity==Rarity.Epic&&p.HighestAdventureTier>=5&&p.Profile.mechanicMaterials>=24))
                     {Feedback(p.AscendAttachment(mechanic,SmithServiceActive),"挂件升华已保存");BlockUITransition();}y+=48;
                 }
 
