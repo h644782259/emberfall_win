@@ -13,7 +13,7 @@ with tempfile.TemporaryDirectory(prefix='reforge-selection-') as t:
  c=o/'NuGet.Config';c.write_text('<configuration><packageSources><clear /></packageSources></configuration>');env=dict(os.environ,DOTNET_CLI_HOME=str(o/'cli'),DOTNET_NOLOGO='1');build=[dotnet,'build',str(p),'--configfile',str(c),'-v:q'];run=[dotnet,str(p.parent/'bin/Debug/net8.0/Validation.dll')]
  subprocess.run(build,env=env,check=True);subprocess.run(run+[str(o/'save')],env=env,check=True)
  for index,(name,old,new,expected) in enumerate([
-  ('ProgressionService.cs','(targetLevel==0?Profile.level:targetLevel)','Profile.level','actual track button freezes chosen30 not player50'),
+  ('ProgressionService.cs','EquipmentGenerationLevel(targetLevel==0?Profile.level:targetLevel)','EquipmentGenerationLevel(Profile.level)','actual track button freezes chosen30 not player50'),
   ('ProgressionService.Reforge.cs','target=low;','target=Profile.level;','three distinct actual choices'),
   ('ProgressionService.Reforge.cs','ApplyReforgeStats(Profile,preview,quote.TargetLevel);','preview.level=quote.TargetLevel;','UI commit matches actual preview and charges1220 once')]):
   f=o/name;original=f.read_text();assert old in original;f.write_text(original.replace(old,new));subprocess.run(build,env=env,check=True)
