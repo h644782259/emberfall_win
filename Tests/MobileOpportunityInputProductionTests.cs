@@ -10,6 +10,7 @@ public static class MobileOpportunityInputProductionTests
   {
    MobileControls.ResetInput();MobileControls.Layout=new MobileControlLayout(568,320,163,preset);
    var session=new GameSession();var hero=new PlayerController(session);var ui=new GameUI{mobileSkillPage=slot>=5&&slot<9?1:0};var controls=new MobileControls(session,ui);var enemy=new EnemyController(8);session.Enemies.Add(enemy);hero.PinMobileTarget(enemy);
+   if(slot==0){C(ui.SwapBindingForFixture(3,0),"valid binding swap");var moved=ui.MobileOpportunityArea(0);C(moved.X==MobileControls.Layout.Skills[3].X,"hint follows remapped physical slot");}
    var area=slot<10?ui.MobileOpportunityArea(slot):slot==10?MobileControls.Layout.CounterOpportunity:MobileControls.Layout.ComboOpportunity;
    if(area.Width==0||area.Height==0){C(slot==3||slot==8,"only hidden passive identities have no opportunity hit area");continue;}
    foreach(var skillBox in MobileControls.Layout.Skills)C(!area.Overlaps(skillBox),"hint interception never enlarges or replaces a skill button");
