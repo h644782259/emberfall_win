@@ -13,7 +13,7 @@ public static class ServiceIntegrationTests
     public static string Run(string directory)
     {
         root=Path.Combine(directory,"services-"+Guid.NewGuid().ToString("N"));assertions=scenarios=0;
-        SmithQuotes();MerchantQuotes();MigrationAndAttachments();Layouts();
+        SmithQuotes();ResourceBoundaries();MerchantQuotes();MigrationAndAttachments();Layouts();
         return "PASS: "+assertions+" smith/merchant state and measured-layout assertions in "+scenarios+" isolated scenarios";
     }
     private static void SmithQuotes()
@@ -32,6 +32,24 @@ public static class ServiceIntegrationTests
         string original=p.Profile.inventory.First(x=>x.slot==ItemSlot.Weapon&&x.id!=other.id).id;
         for(int i=0;i<5;i++){C(p.Equip(original)&&p.Equip(other.id)&&p.Equipped(ItemSlot.Weapon).attack==attack&&p.Profile.gold==gold,"free inheritance recomputes new base without compounding or fees");p.Save();C(p.LoadSlot(p.CurrentSlotId)&&p.Equipped(ItemSlot.Weapon).attack==attack,"reload preserves exact inherited strength");}
         C(p.SlotUpgradeRank(ItemSlot.Armor)==0&&p.SlotUpgradeRank(ItemSlot.Relic)==0,"independent slot investments never transfer to other slots");
+    }
+    private static void ResourceBoundaries()
+    {
+        var p=Fresh();var item=p.Equipped(ItemSlot.Weapon);int cost=p.UpgradeCost(item);
+        p.Profile.gold=cost-1;p.Save();string before=State(p);
+        C(p.PrepareSmithUpgrade(ItemSlot.Weapon,true)==null&&State(p)==before,"one-coin short prevents upgrade without mutation");
+        p.Profile.gold=cost;p.Save();var quote=p.PrepareSmithUpgrade(ItemSlot.Weapon,true);
+        C(quote!=null&&p.UpgradeAtSmith(quote,true)&&p.Profile.gold==0&&p.SlotUpgradeRank(ItemSlot.Weapon)==1,"exact affordable fee immediately updates balance and rank");
+        C(!p.UpgradeAtSmith(quote,true)&&p.Profile.gold==0,"repeated callback cannot spend again after exact balance is exhausted");
+        C(p.LoadSlot(p.CurrentSlotId)&&p.Profile.gold==0&&p.SlotUpgradeRank(ItemSlot.Weapon)==1,"updated balance and rank persist on reload");
+        p.Profile.gold=999999;p.Profile.slotUpgradeRanks[0]=ProgressionService.MaximumUpgrade;p.Save();
+        C(p.PrepareSmithUpgrade(ItemSlot.Weapon,true)==null,"maximum rank disables fee transaction despite sufficient funds");
+        p.Profile.weaponId=null;p.Save();C(p.PrepareSmithUpgrade(ItemSlot.Weapon,true)==null,"missing worn item cannot produce an actionable quote");
+        p.Profile.potions=99;p.Save();C(p.PrepareMerchantPurchase(EquipmentMechanic.None,true)==null,"full potion capacity disables purchase without hiding inspection");
+        p.Profile.potions=1;p.Profile.gold=ProgressionService.PotionPrice-1;p.Save();C(p.PrepareMerchantPurchase(EquipmentMechanic.None,true)==null,"purchase shortage is independent of exchange resources");
+        p.Profile.gold=ProgressionService.PotionPrice;p.Save();var buy=p.PrepareMerchantPurchase(EquipmentMechanic.None,true);
+        C(p.BuyAtMerchant(buy,true)&&p.Profile.gold==0&&p.Profile.potions==2,"exact potion price updates live balance once");
+        C(!p.BuyAtMerchant(buy,true)&&p.Profile.gold==0&&p.Profile.potions==2,"stale purchase quote cannot repeat the transaction");
     }
     private static void MerchantQuotes()
     {
@@ -72,10 +90,10 @@ public static class ServiceIntegrationTests
     {
         foreach(var size in new[]{(568f,320f),(812f,375f),(1024f,768f),(1366f,1024f)})
         {
-            var m=new MerchantServiceLayout(size.Item1,size.Item2);C(!Overlap(m.Balance,m.Close)&&!Overlap(m.Balance,m.Header)&&m.Balance.Width>=128,"multi-digit coin region is separate from title and close hitbox");
-            C(m.Action.Width<=136&&!Overlap(m.Info,m.Action)&&!Overlap(m.Tab(0),m.Tab(1)),"purchase/sale tabs and compact footer actions do not collide");
+            var m=new MerchantServiceLayout(size.Item1,size.Item2);C(!Overlap(m.Balance,m.Close)&&!Overlap(m.Balance,m.Header)&&m.Balance.Width>=224,"multi-digit coin region is separate from title and close hitbox");
+            C(m.Action.Width<=136&&!Overlap(m.Info,m.Action)&&!Overlap(m.Tab(0),m.Tab(1))&&!Overlap(m.Tab(1),m.Tab(2)),"purchase/sale tabs and compact footer actions do not collide");
             for(int j=0;j<9;j++){var a=m.Tile(j);C(a.Width<=132&&a.Width>=100&&a.X+a.Width<=m.Body.Width,"three-column compact products and price strips fit scroll width");for(int k=j+1;k<9;k++)C(!Overlap(a,m.Tile(k)),"product grid hitboxes are disjoint");}
-            var s=new SmithServiceLayout(size.Item1,size.Item2);C(!Overlap(s.Header,s.Close)&&!Overlap(s.Detail,s.Primary),"smith detail scroll cannot overlap primary/close");
+            var s=new SmithServiceLayout(size.Item1,size.Item2);C(!Overlap(s.Header,s.Close)&&!Overlap(s.Header,s.Balance)&&!Overlap(s.Balance,s.Close)&&s.Balance.Width>=224&&!Overlap(s.Detail,s.Primary),"smith detail scroll cannot overlap primary/close");
             for(int j=0;j<3;j++){C(!Overlap(s.Category(j),s.Detail)&&!Overlap(s.Equipment(j),s.Detail)&&s.Equipment(j).Height>=44,"categories and equipped-slot selectors stay separate and tappable");C(!Overlap(s.Equipment(j),s.Primary),"all three equipment slots fit above footer");}
         }
     }

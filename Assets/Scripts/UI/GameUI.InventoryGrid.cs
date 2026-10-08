@@ -3,6 +3,12 @@ namespace Emberfall
 {
     public sealed partial class GameUI
     {
+        private void SelectInventoryTab(int tab)
+        {
+            if(mobileInventoryTab==tab)return;
+            mobileInventoryTab=tab;mobileInventoryDetail=false;inventoryComparisonOpen=false;inventoryPopupItem=null;
+            CancelMobileScroll();BlockUITransition();
+        }
         private float inventoryActionUntil=-1;
         private bool inventoryComparisonOpen;
         private Vector2 inventoryComparisonScroll;

@@ -75,9 +75,9 @@ namespace Emberfall
             if(inventoryFashionOpen){mobileInventoryTab=3;inventoryFashionOpen=false;inventoryComparisonOpen=false;}
             Rect equipmentTab=MobilePanelRect(new MobilePanelLayout.Area(bag.X,bag.Y,52,44));
             Rect supplyTab=MobilePanelRect(new MobilePanelLayout.Area(bag.X+58,bag.Y,52,44));
-            if(QuietAction(equipmentTab,"装备",true,null,mobileInventoryTab==0)){mobileInventoryTab=0;mobileInventoryDetail=false;}
-            if(QuietAction(supplyTab,"补给",true,null,mobileInventoryTab==2)){mobileInventoryTab=2;mobileInventoryDetail=false;}
-            if(QuietAction(MobilePanelRect(new MobilePanelLayout.Area(bag.X+116,bag.Y,52,44)),"时装",true,null,mobileInventoryTab==3)){mobileInventoryTab=3;inventoryComparisonOpen=false;}
+            if(QuietAction(equipmentTab,"装备",true,null,mobileInventoryTab==0))SelectInventoryTab(0);
+            if(QuietAction(supplyTab,"补给",true,null,mobileInventoryTab==2))SelectInventoryTab(2);
+            if(QuietAction(MobilePanelRect(new MobilePanelLayout.Area(bag.X+116,bag.Y,52,44)),"时装",true,null,mobileInventoryTab==3))SelectInventoryTab(3);
             var content=new MobilePanelLayout.Area(bag.X,bag.Y+48,bag.Width,bag.Height-48);
             if(mobileInventoryTab==3){DrawBagFashion(content);return;}
             if(mobileInventoryTab==2)

@@ -10,7 +10,7 @@ namespace Emberfall
         private float collectionPreviewYaw=20;
         private void ReconcileCollectionPreview()
         {
-            if(session!=null&&(session.BackgroundPaused||session.Paused)){ReleaseCollectionModel();return;}
+            if(session!=null&&(session.BackgroundPaused||session.Paused&&panel!=Panel.Inventory)){ReleaseCollectionModel();return;}
             if(session==null || !session.HasStarted || session.IsDead || session.ModeFinished || session.DungeonSelectionOpen || session.RunChoices.AwaitingChoice || (panel!=Panel.Fashion&&panel!=Panel.Chests&&panel!=Panel.Inventory))ReleaseCollectionPreview();
             else if(collectionOwner!=session.Player){ReleaseCollectionPreview();collectionOwner=session.Player;}
         }

@@ -273,7 +273,7 @@ namespace Emberfall
             GUI.matrix = Matrix4x4.TRS(guiOffset, Quaternion.identity, new Vector3(scale, scale, 1));
             GUI.color = Color.white;
             GUI.contentColor = Color.white;
-            GUI.enabled = !session.BackgroundPaused && !LifecycleTouchBlocked && !UITransitionBlocked;
+            GUI.enabled = !session.BackgroundPaused && !LifecycleTouchBlocked && MerchantServiceLayout.StablePanelEvent(UITransitionBlocked,panel==Panel.Inventory,Event.current.type==EventType.Repaint||Event.current.type==EventType.Layout);
             blockedRects.Clear();
             tooltip = null;
             if(exitRequest.Open)
@@ -1261,9 +1261,9 @@ namespace Emberfall
             float middle = w.x + 272;
             Rect bagArea=new Rect(middle,w.y+144,864,462);
             if(inventoryFashionOpen){mobileInventoryTab=3;inventoryFashionOpen=false;inventoryComparisonOpen=false;}
-            if(QuietAction(new Rect(middle+460,w.y+108,64,32),"装备",true,null,mobileInventoryTab==0))mobileInventoryTab=0;
-            if(QuietAction(new Rect(middle+532,w.y+108,64,32),"补给",true,null,mobileInventoryTab==2))mobileInventoryTab=2;
-            if(QuietAction(new Rect(middle+604,w.y+108,64,32),"时装",true,null,mobileInventoryTab==3))mobileInventoryTab=3;
+            if(QuietAction(new Rect(middle+460,w.y+108,64,32),"装备",true,null,mobileInventoryTab==0))SelectInventoryTab(0);
+            if(QuietAction(new Rect(middle+532,w.y+108,64,32),"补给",true,null,mobileInventoryTab==2))SelectInventoryTab(2);
+            if(QuietAction(new Rect(middle+604,w.y+108,64,32),"时装",true,null,mobileInventoryTab==3))SelectInventoryTab(3);
             if(mobileInventoryTab==3){DrawBagFashion(InventoryArea(bagArea));return;}
             if(mobileInventoryTab==2){DrawBagSupplies(InventoryArea(bagArea));return;}
             Text(new Rect(middle, w.y + 112, 280, 23), "装备 · " + bagItems.Count + " 件", 16, jade, true);
@@ -1344,8 +1344,8 @@ namespace Emberfall
             if(!MerchantServiceActive){Feedback(false,"请在商人处选择并出售装备。");return;}
             if(!confirmed&&session.Progression.PresetReferences(id).Length>0){RequestPresetSale(id);return;}
             int row = bagItems.FindIndex(item => item.id == id);
-            if (row < 0) return;
-            ItemData item = bagItems[row];
+            ItemData item = session.Progression.Profile.inventory.Find(entry=>entry!=null&&entry.id==id);
+            if(item==null)return;
             if (IsEquipped(item)) return;
             int before = session.Progression.Profile.gold;
             bool sold = session.Progression.Sell(id,confirmed);
@@ -1355,7 +1355,7 @@ namespace Emberfall
             bool replaceSelection = selectedItem == id;
             RebuildBagItems();
             if (replaceSelection)
-                selectedItem = bagItems.Count == 0 ? null : bagItems[Mathf.Min(row, bagItems.Count - 1)].id;
+                selectedItem = bagItems.Count == 0 ? null : bagItems[Mathf.Clamp(row,0,bagItems.Count-1)].id;
             ResolveSelectedItem();
             inventoryScroll.y = Mathf.Clamp(inventoryScroll.y, 0, Mathf.Max(0, bagItems.Count * 76 + 4 - 330));
         }
