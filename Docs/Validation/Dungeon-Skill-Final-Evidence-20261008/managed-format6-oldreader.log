@@ -1,0 +1,21 @@
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.18
+PASS current writer: 4098 owned items, format6, bounded atomic clear reward
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.24
+PASS frozen format5 reader: refuses format6; load/save attempts preserve exact primary and backup bytes
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.18
+PASS current reload: all4098 owned items remain after old reader refused; managed serialization, not Unity JsonUtility

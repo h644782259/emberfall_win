@@ -25,3 +25,11 @@ Normal merges preserve Windows main fb6291a31d5eed90972a47dff03eea1d4e07a074 and
 Managed cross-version probes compile the current writer, frozen stage-one format-5 reader, and current reader separately. Both platforms write 4098 owned items as format 6; old-reader load and save attempts refuse and preserve exact primary and backup bytes; the current reader subsequently retains every item. Additional tests cover a failed format-5 to format-6 write preserving profile and both files, bounded file size, successful retry, and explicit cleanup returning saves to format 5. This is managed serialization coverage, not actual Unity JsonUtility migration or device acceptance.
 
 Final full-suite results are recorded after the frozen combined-source run. Windows stage-one baseline has 14 failures (13 existing plus obsolete merchant title guard); iOS baseline has only that obsolete guard. The merchant guard is now checked against the actual three-tab interface.
+
+## Final frozen-source result
+
+Tested source commit: `dada047884151b1a5cd3e9e96959eb4328ace222`. 290/304 full checks passed; sourceChangedDuringRun is empty. Both platform runtime API compilations pass. Evidence is in `Dungeon-Skill-Final-Evidence-20261008/full-report.json` and `managed-format6-oldreader.log`. The subsequent evidence commit changes Docs only; Assets/Tests/Tools trees are identical to the tested commit.
+
+Windows retains 13 stage-one baseline failures with identical normalized failure signatures (see baseline-failure-comparison.json). The full run additionally failed companion-path-allocation: legacy allocation was 256 bytes above its expected multiple, with all exact target/direction traces unchanged. Its source and fixture dependencies are identical to stage one. An unchanged-source isolated rerun passes 1/1; original failure, rerun log and separate report are preserved. The raw full count remains 290/304, not rewritten as 291/304.
+
+No actual Unity Editor, Unity JsonUtility migration, rendered UI, GPU validation, Windows player build or iOS package/device execution was performed. UI acceptance and real-engine save migration remain user validation requirements; main is not updated by this follow-up.
