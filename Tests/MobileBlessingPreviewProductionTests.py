@@ -46,6 +46,8 @@ namespace Emberfall {
  void Fill(Rect r,Color c){}void Border(Rect r,Color c){}void Rule(float x,float y,float w,Color c){}void ClosePanel(){}void BlockUITransition(){}void CancelMobileScroll(){}
  void Text(Rect r,string s,int size,Color c,bool bold=false,bool wrap=false,TextAnchor anchor=TextAnchor.UpperLeft){drawn.Add((s,r,scrolling,wrap));}
  bool Button(Rect r,string s,Color c,bool enabled=true){if(s=="确认祝福并继续"||s=="暂停 / 存档")footer.Add(r);if(enabled&&click==s){click=null;return true;}return false;}
+ bool PopupCloseButton(Rect r,bool enabled=true)=>false;
+ 
  bool NavigationButton(Rect r,string s,Color c,bool enabled=true)=>Button(r,s,c,enabled);bool PrimaryButton(Rect r,string s,Color c,bool enabled=true)=>Button(r,s,c,enabled);
  Vector2 BeginTouchScroll(string key,Rect viewport,Vector2 p,Rect content){scrolling=true;scrollViewport=viewport;scrollContent=content;return p;}void EndTouchScroll(){scrolling=false;}
  METHODS

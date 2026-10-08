@@ -29,7 +29,7 @@ namespace UnityEngine{
  public static class GUI{public static Matrix4x4 matrix;public static Color color=Color.white;public static System.Collections.Generic.List<Rect> Draws=new System.Collections.Generic.List<Rect>();public static void DrawTexture(Rect r,Texture2D t){Draws.Add(r);}}
 }
 namespace Emberfall{
- public static class EffectPreferences{public static int TouchPosition;public static bool ReducedEffects;}
+ public static class EffectPreferences{public static int TouchPosition;public static float InterfaceTextScale=1;public static bool ReducedEffects;}
  public static class MobileSkillPolicy{public const int ButtonCount=5;}
  public static class MobileControls{
  public static bool Active=true,IPad=true;public static Rect SafeArea;public static bool IsIPad=>IPad;
