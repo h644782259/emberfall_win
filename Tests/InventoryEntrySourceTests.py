@@ -52,7 +52,7 @@ assert 'DrawServiceBalances(BuildPlanRect(l.Balance,u),u)' in merchant and 'Draw
 assert 'merchantMode==2' in merchant and 'merchantMode==1?mechanics[index]' in merchant and 'merchantMode==0?1' in merchant
 assert 'merchantSaleId=null;merchantSelection=-1' in merchant and 'StartMerchantAction()' in merchant
 assert 'UIIconAtlas.Utility("confirm")' in merchant and '已选中' in merchant
-assert 'TextAnchor.MiddleLeft' in merchant and 'r.x+23*unit' in merchant
+assert 'TextAnchor.MiddleLeft' in merchant and 'r.x+27*unit' in merchant
 assert '费用：' not in smith and '永久提升此部位' not in smith and '兑换请找商人' not in smith and '此部位暂无已拥有' not in smith and '挂件与装备基础属性分开保留' not in smith
 assert 'if(!capped)DrawPriceTint' in smith and 'affordable?gold:new Color(.98f,.28f,.24f)' in smith
 assert smith.index('if(PrimaryButton(action,"",gold,quote!=null))')<smith.index('if(!capped)DrawPriceTint')
