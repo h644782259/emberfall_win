@@ -42,8 +42,9 @@ namespace Emberfall
             CollectionPreviewLayout controls=rotate&&!MobileControls.Active?CollectionPreviewLayout.Desktop(new MobilePanelLayout.Area(area.x,area.y,area.width,area.height)):null;
             Rect viewport=controls==null?area:PreviewControlRect(controls.Model,Vector2.zero,1);
             collectionModel.SetViewport(viewport.width*Mathf.Abs(GUI.matrix.m00),viewport.height*Mathf.Abs(GUI.matrix.m11),MobileControls.Active);
-            Texture image=collectionModel.Render(progression.Profile.heroClass,progression.Equipped(ItemSlot.Weapon),progression.Equipped(ItemSlot.Armor),progression.Equipped(ItemSlot.Relic),wings,weapon);
+            Texture image=collectionModel.RenderSafe(progression.Profile.heroClass,progression.Equipped(ItemSlot.Weapon),progression.Equipped(ItemSlot.Armor),progression.Equipped(ItemSlot.Relic),wings,weapon);
             Fill(area,new Color(.035f,.06f,.09f));if(image!=null)GUI.DrawTexture(viewport,image,ScaleMode.ScaleToFit,false);
+            if(image==null&&collectionModel.LastError!=null)Text(viewport,"预览暂不可用，其他操作可继续",14,muted,false,true);
             if(controls!=null)DrawCollectionControls(controls,Vector2.zero,1);
         }
         private static Rect PreviewControlRect(MobilePanelLayout.Area area,Vector2 origin,float scale)

@@ -14,9 +14,9 @@ namespace Emberfall
             Rect viewport=new Rect(area.x+38*u,area.y,area.width-38*u,Mathf.Max(64*u,area.height-48*u));
             wearModel.SetComposition(CollectionPreviewComposition.Full);wearModel.SetYaw(inventoryFashionOpen&&collectionTrial!=null&&collectionTrial.slot==FashionSlot.Wings?160:20);
             wearModel.SetViewport(viewport.width*Mathf.Abs(GUI.matrix.m00),viewport.height*Mathf.Abs(GUI.matrix.m11),MobileControls.Active);
-            Texture current=wearModel.Render(p.Profile.heroClass,p.Equipped(ItemSlot.Weapon),p.Equipped(ItemSlot.Armor),p.Equipped(ItemSlot.Relic),inventoryFashionOpen&&collectionTrial!=null&&collectionTrial.slot==FashionSlot.Wings?collectionTrial:p.EquippedFashion(FashionSlot.Wings),inventoryFashionOpen&&collectionTrial!=null&&collectionTrial.slot==FashionSlot.Weapon?collectionTrial:p.EquippedFashion(FashionSlot.Weapon));
+            Texture current=wearModel.RenderSafe(p.Profile.heroClass,p.Equipped(ItemSlot.Weapon),p.Equipped(ItemSlot.Armor),p.Equipped(ItemSlot.Relic),inventoryFashionOpen&&collectionTrial!=null&&collectionTrial.slot==FashionSlot.Wings?collectionTrial:p.EquippedFashion(FashionSlot.Wings),inventoryFashionOpen&&collectionTrial!=null&&collectionTrial.slot==FashionSlot.Weapon?collectionTrial:p.EquippedFashion(FashionSlot.Weapon));
             if(current!=null)GUI.DrawTexture(viewport,current,ScaleMode.ScaleToFit,false);
-            else Text(viewport,"角色预览正在恢复",Mathf.RoundToInt(11*u),muted,false,true);
+            else Text(viewport,wearModel.LastError==null?"角色预览正在恢复":"预览暂不可用，其他操作可继续",Mathf.RoundToInt(11*u),muted,false,true);
             if(inventoryFashionOpen&&collectionTrial!=null)Text(new Rect(viewport.x,viewport.y,viewport.width,20*u),"试穿 · 未保存",Mathf.RoundToInt(11*u),gold,true);
             for(int slot=0;slot<3;slot++)
             {

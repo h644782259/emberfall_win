@@ -77,7 +77,7 @@ namespace Emberfall
                 rewardMomentModel.SetComposition(CollectionPreviewComposition.Full);rewardMomentModel.SetEquipmentFraming(item!=null,true);rewardMomentModel.SetEquipmentHighlight(item==null?-1:(int)item.slot);rewardMomentModel.SetYaw(20);
                 Rect art=new Rect(body.x,body.y,body.width,Mathf.Max(1,body.height-resources));
                 rewardMomentModel.SetViewport(art.width*Mathf.Abs(GUI.matrix.m00),art.height*Mathf.Abs(GUI.matrix.m11),MobileControls.Active);
-                var texture=rewardMomentModel.Render(p.Profile.heroClass,weapon,armor,relic,wings,wornWeapon);
+                var texture=rewardMomentModel.RenderSafe(p.Profile.heroClass,weapon,armor,relic,wings,wornWeapon);
                 if(texture!=null)GUI.DrawTexture(art,texture,ScaleMode.ScaleToFit,false);
                 if(!EffectPreferences.ReducedEffects)DrawRewardRadiance(art,accent,Mathf.Clamp01((Time.unscaledTime-rewardMomentStarted)/1.2f));
             }

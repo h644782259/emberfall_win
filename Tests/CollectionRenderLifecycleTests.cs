@@ -14,10 +14,13 @@ public static class CollectionRenderLifecycleTests
     static int Live<T>()where T:UnityEngine.Object {int n=0;foreach(var item in UnityEngine.Object.Registry)if(item is T&&!item.Destroyed)n++;return n;}
     public static string Run()
     {
-        checks=0;Time.unscaledDeltaTime=0;Time.frameCount=10;Event.current=new Event{type=EventType.Repaint};
+        checks=0;GameObject.PrimitiveCalls=0;GameObject.StripPrimitiveColliders=true;Time.unscaledTime=0;Time.unscaledDeltaTime=0;Time.frameCount=10;Event.current=new Event{type=EventType.Repaint};
         Camera.Renders=CombatModel.Builds=0;RenderTexture.FailCreate=false;
         var preview=new CollectionModelPreview();var first=Draw(preview);
         Check(first!=null&&first.Populated&&Camera.Renders==1&&CombatModel.Builds==1,"initial repaint builds and populates one texture");
+        Check(GameObject.PrimitiveCalls==0&&Live<Collider>()==0,"preview renders without creating primitives or requiring any collider");
+        var contact=UnityEngine.Object.Registry.OfType<Mesh>().Single(m=>!m.Destroyed);
+        Check(contact.vertices.Length==4&&contact.uv.Length==4&&contact.triangles.SequenceEqual(new[]{0,2,1,2,3,1})&&contact.normals.All(n=>n.z==-1),"owned contact quad preserves UVs and upward-facing winding after rotation");
         Draw(preview);Time.frameCount++;Draw(preview);
         Check(Camera.Renders==1,"unchanged texture remains cached across repaint calls/frames");
         preview.Rotate(45);Draw(preview);
@@ -42,7 +45,7 @@ public static class CollectionRenderLifecycleTests
         preview.Dispose();var next=Draw(preview);
         Check(next!=first&&next.Populated&&CombatModel.Builds==2,"repeated dispose is safe and later render recreates resources");
         preview.Dispose();
-        Check(Live<RenderTexture>()==0&&Live<Material>()==0&&Live<Texture2D>()==0&&Live<Light>()==0,"all initial preview resources disposed");
+        Check(Live<RenderTexture>()==0&&Live<Mesh>()==0&&Live<Material>()==0&&Live<Texture2D>()==0&&Live<Light>()==0,"all initial preview resources disposed");
         var world=new GameObject("World light").AddComponent<Light>();world.cullingMask=-1;
         var originalAmbient=new Color(.1f,.2f,.3f);RenderSettings.ambientLight=originalAmbient;RenderSettings.ambientMode=UnityEngine.Rendering.AmbientMode.Skybox;RenderSettings.fog=true;
         SystemInfo.SupportedSamples=1;Time.unscaledDeltaTime=1f/60;Camera.Renders=CombatModel.Builds=0;
@@ -83,11 +86,11 @@ public static class CollectionRenderLifecycleTests
         Check(preview.PreviewAction==CollectionPreviewAction.Idle,"short preview action returns to idle without gameplay dispatch");
         Check(CombatModel.Samples-samples<=31&&CombatModel.Builds==builds&&RenderTexture.Instances==surfaces,"local pose motion reuses model texture and cached framing");
         preview.Play(CollectionPreviewAction.Attack);Time.frameCount++;Draw(preview);Check(CombatModel.LastAction==CollectionPreviewAction.Attack&&CombatModel.LastTime>0,"actual preview host samples selected action on its local clock");
-        preview.Dispose();Check(Live<Material>()==0&&Live<Texture2D>()==0&&Live<RenderTexture>()==0&&Live<Light>()==1,"dispose after animation/resize/render exception returns all owned resource counts to zero");
+        preview.Dispose();Check(Live<Mesh>()==0&&Live<Material>()==0&&Live<Texture2D>()==0&&Live<RenderTexture>()==0&&Live<Light>()==1,"dispose after animation/resize/render exception returns all owned resource counts to zero");
         for(int i=0;i<20;i++)
         {
             Time.frameCount++;Draw(preview);preview.Dispose();
-            Check(Live<Material>()==0&&Live<Texture2D>()==0&&Live<RenderTexture>()==0&&Live<Light>()==1,"repeated reopen/close never retains native stand-ins");
+            Check(Live<Mesh>()==0&&Live<Material>()==0&&Live<Texture2D>()==0&&Live<RenderTexture>()==0&&Live<Light>()==1,"repeated reopen/close never retains native stand-ins");
         }
         // Fail both the first and second contact material allocation, including consecutive retries.
         // The second failure occurs after the first material/quad are already owned by the stage.
@@ -98,14 +101,14 @@ public static class CollectionRenderLifecycleTests
                 Time.frameCount++;Material.FailAfterSuccessfulCreates=materialIndex;bool stageFailed=false;
                 try{Draw(preview);}catch(InvalidOperationException error){stageFailed=ReferenceEquals(error,Material.AllocationFailure);}
                 Check(stageFailed,"stage creation preserves the original allocation exception");
-                Check(Live<Material>()==0&&Live<Texture2D>()==0&&Live<RenderTexture>()==0&&Live<Light>()==1,
+                Check(Live<Mesh>()==0&&Live<Material>()==0&&Live<Texture2D>()==0&&Live<RenderTexture>()==0&&Live<Light>()==1,
                     "failed stage creation releases partial lights, materials and contact texture immediately");
             }
             Time.frameCount++;var afterStageFailure=Draw(preview);
             Check(afterStageFailure!=null&&afterStageFailure.Populated,
                 "next repaint rebuilds and renders after consecutive stage allocation failures");
             preview.Dispose();preview.Dispose();
-            Check(Live<Material>()==0&&Live<Texture2D>()==0&&Live<RenderTexture>()==0&&Live<Light>()==1,
+            Check(Live<Mesh>()==0&&Live<Material>()==0&&Live<Texture2D>()==0&&Live<RenderTexture>()==0&&Live<Light>()==1,
                 "recovered stage has normal idempotent disposal ownership");
         }
         CombatModel.ImportedGroups=true;
@@ -154,6 +157,17 @@ public static class CollectionRenderLifecycleTests
         Check(chosenPart.Properties.Values["_Color"].r==.2f,"render exception restores selected part tint");Camera.ThrowOnRender=false;Camera.DuringRender=null;
         Check(!CollectionModelPreview.EquipmentPart("body",0)&&!CollectionModelPreview.EquipmentPart("Equipped Armor",0)&&!CollectionModelPreview.EquipmentPart("Equipped Relic",1),"unrelated body/slots never highlighted");
         equipment.SetEquipmentFraming(true,true);Time.frameCount++;Draw(equipment);Check(equipmentCamera.orthographic,"showcase is distinct fixed orthographic view");equipment.Dispose();
+        var safe=new CollectionModelPreview();Camera.ThrowOnRender=true;int logged=Debug.Exceptions;
+        Check(safe.RenderSafe(HeroClass.Arcanist,null,null,null,null,null)==null&&safe.LastError!=null,"safe preview failure returns placeholder so inventory drawing can continue");
+        int renders=Camera.Attempts;
+        for(int i=0;i<20;i++)Check(safe.RenderSafe(HeroClass.Arcanist,null,null,null,null,null)==null,"failed preview remains a non-throwing placeholder");
+        Check(Camera.Attempts==renders&&Debug.Exceptions==logged+1,"preview retry is throttled and failure is logged once");
+        Check(Live<Mesh>()==0&&Live<RenderTexture>()==0&&Live<Material>()==0,"safe failure retires owned native resources");
+        Time.unscaledTime+=2.1f;Time.frameCount++;safe.RenderSafe(HeroClass.Arcanist,null,null,null,null,null);
+        Check(Camera.Attempts==renders+1&&Debug.Exceptions==logged+1,"persistent failure retries without log spam");
+        Camera.ThrowOnRender=false;Time.unscaledTime+=2.1f;Time.frameCount++;
+        Check(safe.RenderSafe(HeroClass.Arcanist,null,null,null,null,null)!=null&&safe.LastError==null,"safe preview recovers after transient render failure");
+        safe.Dispose();Check(Live<Mesh>()==0,"safe preview recovery releases contact mesh on close");
         UnityEngine.Object.Destroy(world.gameObject);Time.unscaledDeltaTime=0;SystemInfo.SupportedSamples=4;
         return "PASS: "+checks+" production preview lifecycle checks (managed resource fixture, not Unity rendering)";
     }
@@ -204,7 +218,8 @@ namespace UnityEngine
         public T GetComponent<T>()where T:class{foreach(var c in Components)if(c is T t&&!c.Destroyed)return t;return null;}
         public T[] GetComponentsInChildren<T>(bool all)where T:class
         {var result=new List<T>();foreach(var c in Components)if(c is T t&&!c.Destroyed)result.Add(t);foreach(var child in transform.children)if(!child.gameObject.Destroyed)result.AddRange(child.gameObject.GetComponentsInChildren<T>(all));return result.ToArray();}
-        public static GameObject CreatePrimitive(PrimitiveType type){var go=new GameObject();go.AddComponent<Renderer>();go.AddComponent<Collider>();return go;}
+        public static bool StripPrimitiveColliders;public static int PrimitiveCalls;
+        public static GameObject CreatePrimitive(PrimitiveType type){PrimitiveCalls++;var go=new GameObject();go.AddComponent<Renderer>();if(!StripPrimitiveColliders)go.AddComponent<Collider>();return go;}
         public void SetActive(bool value){active=value;}
     }
     public class Transform:Component
@@ -239,12 +254,15 @@ namespace UnityEngine
     }
     public class Camera:MonoBehaviour
     {
-        public static int Renders;public static bool ThrowOnRender;public static Action DuringRender;
+        public static int Renders,Attempts;public static bool ThrowOnRender;public static Action DuringRender;
         public bool useOcclusionCulling;public bool orthographic,allowHDR,allowMSAA;public float aspect,orthographicSize,nearClipPlane,farClipPlane,fieldOfView;
         public CameraClearFlags clearFlags;public Color backgroundColor;public int cullingMask;public RenderTexture targetTexture;
-        public void Render(){if(!targetTexture.IsCreated())throw new Exception("render to uncreated texture");DuringRender?.Invoke();if(ThrowOnRender)throw new Exception("simulated native render failure");Renders++;targetTexture.Populated=true;}
+        public void Render(){Attempts++;if(!targetTexture.IsCreated())throw new Exception("render to uncreated texture");DuringRender?.Invoke();if(ThrowOnRender)throw new Exception("simulated native render failure");Renders++;targetTexture.Populated=true;}
     }
     public class Light:Component{public LightType type;public float intensity;public Color color;public int cullingMask;public LightShadows shadows;}
+    public class Mesh:Object{public Vector3[] vertices,normals;public Vector2[] uv;public int[] triangles;public void RecalculateBounds(){}}
+    public class MeshFilter:Component{public Mesh sharedMesh;}public class MeshRenderer:Renderer{}
+    public static class Debug{public static int Exceptions;public static void LogException(Exception error){Exceptions++;}}
     public class Collider:Component{public bool enabled;}
     public class MaterialPropertyBlock {
         public Dictionary<string,Color> Values=new Dictionary<string,Color>();
@@ -262,7 +280,7 @@ public bool enabled=true,receiveShadows;public Material sharedMaterial;public Re
     public enum TextureFormat{RGBA32}public enum TextureWrapMode{Clamp}public enum PrimitiveType{Quad}public enum RenderTextureFormat{ARGB32}
     public static class Random{public static int state;}
     public enum EventType{Layout,Repaint}public class Event{public static Event current;public EventType type;}
-    public static class Time{public static int frameCount;public static float unscaledDeltaTime;}
+    public static class Time{public static int frameCount;public static float unscaledDeltaTime,unscaledTime;}
     public struct Quaternion{public static Quaternion Euler(float x,float y,float z)=>new Quaternion();public static Quaternion Euler(Vector3 v)=>new Quaternion();}
     public struct Color{public float r,g,b,a;public Color(float r,float g,float b,float a=1){this.r=r;this.g=g;this.b=b;this.a=a;}}
     public struct Vector2{public float x,y;public Vector2(float x,float y){this.x=x;this.y=y;}public float magnitude=>(float)Math.Sqrt(x*x+y*y);}

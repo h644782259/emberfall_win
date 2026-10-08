@@ -14,6 +14,10 @@ namespace Emberfall
         RenderTexture texture;
         Material shadowMaterial,ringMaterial;
         Texture2D shadowTexture;
+        Mesh contactMesh;
+        float retryAt;
+        bool failureReported;
+        public string LastError {get;private set;}
         Renderer[] renderers;
         RendererGroupCache rendererGroup;
         int rendererRevision=-1;
@@ -72,7 +76,27 @@ namespace Emberfall
         {if(((int)value<0||(int)value>2)||composition==value)return;composition=value;framingDirty=true;state.SetYaw(CollectionPreviewFraming.DefaultYaw(value));state.Invalidate();}
         public void SetViewport(float pixelWidth,float pixelHeight,bool mobile)
         {requested=new CollectionPreviewSurface(pixelWidth,pixelHeight,mobile);}
-        public void Invalidate(){state.Invalidate();sceneLights=null;if(rendererGroup!=null)rendererGroup.Invalidate();}
+        public void Invalidate(){retryAt=0;state.Invalidate();sceneLights=null;if(rendererGroup!=null)rendererGroup.Invalidate();}
+        // Keep a failed visual preview from aborting the surrounding inventory/fashion UI.
+        // Strict Render remains available to diagnostics; failures are logged once until recovery.
+        public Texture RenderSafe(HeroClass hero,ItemData weapon,ItemData armor,ItemData relic,FashionData wings,FashionData fashionWeapon)
+        {
+            if(Time.unscaledTime<retryAt)return null;
+            try
+            {
+                var image=Render(hero,weapon,armor,relic,wings,fashionWeapon);
+                if(image!=null){LastError=null;failureReported=false;}
+                return image;
+            }
+            catch(Exception error)
+            {
+                float yaw=state.Yaw;var mode=composition;var surface=requested;
+                Dispose();state.SetYaw(yaw);composition=mode;requested=surface;
+                retryAt=Time.unscaledTime+2f;LastError=error.Message;
+                if(!failureReported){Debug.LogException(error);failureReported=true;}
+                return null;
+            }
+        }
         public Texture Render(HeroClass hero,ItemData weapon,ItemData armor,ItemData relic,FashionData wings,FashionData fashionWeapon)
         {
             if(Event.current==null||Event.current.type!=EventType.Repaint)return texture!=null&&texture.IsCreated()?texture:null;
@@ -222,9 +246,18 @@ namespace Emberfall
             {float distance=new Vector2((x-31.5f)/31.5f,(y-31.5f)/31.5f).magnitude;float a=Mathf.Clamp01(1-distance);pixels[y*64+x]=new Color(.005f,.01f,.015f,a*a*.4f);}
             shadowTexture.SetPixels(pixels);shadowTexture.Apply(false,true);
             shadowMaterial=new Material(Shader.Find("Sprites/Default")){hideFlags=HideFlags.HideAndDontSave,mainTexture=shadowTexture};
-            var shadow=GameObject.CreatePrimitive(PrimitiveType.Quad);shadow.name="Soft preview contact";shadow.layer=PreviewLayer;shadow.transform.SetParent(stage.transform,false);
+            // A visual-only quad: CreatePrimitive would implicitly require MeshCollider
+            // (which can be absent in an IL2CPP build). Own only the mesh and renderer.
+            contactMesh=new Mesh{name="Preview contact quad",hideFlags=HideFlags.HideAndDontSave};
+            contactMesh.vertices=new[]{new Vector3(-.5f,-.5f,0),new Vector3(.5f,-.5f,0),new Vector3(-.5f,.5f,0),new Vector3(.5f,.5f,0)};
+            contactMesh.normals=new[]{new Vector3(0,0,-1),new Vector3(0,0,-1),new Vector3(0,0,-1),new Vector3(0,0,-1)};
+            contactMesh.uv=new[]{new Vector2(0,0),new Vector2(1,0),new Vector2(0,1),new Vector2(1,1)};
+            contactMesh.triangles=new[]{0,2,1,2,3,1};contactMesh.RecalculateBounds();
+            var shadow=new GameObject("Soft preview contact");shadow.layer=PreviewLayer;shadow.transform.SetParent(stage.transform,false);
             shadow.transform.localPosition=Vector3.up*.015f;shadow.transform.localRotation=Quaternion.Euler(90,0,0);shadow.transform.localScale=new Vector3(2.3f,1.6f,1);
-            shadow.GetComponent<Collider>().enabled=false;shadow.GetComponent<Renderer>().sharedMaterial=shadowMaterial;
+            shadow.AddComponent<MeshFilter>().sharedMesh=contactMesh;
+            var contactRenderer=shadow.AddComponent<MeshRenderer>();contactRenderer.sharedMaterial=shadowMaterial;
+            contactRenderer.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;contactRenderer.receiveShadows=false;
             var ring=new GameObject("Preview turn arc");ring.layer=PreviewLayer;ring.transform.SetParent(stage.transform,false);turnRing=ring.transform;
             var line=ring.AddComponent<LineRenderer>();ringMaterial=new Material(Shader.Find("Sprites/Default")){hideFlags=HideFlags.HideAndDontSave,color=new Color(.4f,.6f,.72f,.35f)};
             line.sharedMaterial=ringMaterial;line.useWorldSpace=false;line.positionCount=49;line.startWidth=line.endWidth=.018f;
@@ -245,8 +278,9 @@ namespace Emberfall
             if(camera!=null)camera.targetTexture=null;
             if(stage!=null){stage.SetActive(false);UnityEngine.Object.Destroy(stage);}
             if(texture!=null){texture.Release();UnityEngine.Object.Destroy(texture);}
+            if(contactMesh!=null)UnityEngine.Object.Destroy(contactMesh);
             if(shadowMaterial!=null)UnityEngine.Object.Destroy(shadowMaterial);if(ringMaterial!=null)UnityEngine.Object.Destroy(ringMaterial);if(shadowTexture!=null)UnityEngine.Object.Destroy(shadowTexture);
-            stage=null;avatar=null;model=null;camera=null;texture=null;turnRing=null;shadowMaterial=ringMaterial=null;shadowTexture=null;renderers=null;sceneLights=null;sceneMasks=null;surfaceFrame=-1;
+            stage=null;avatar=null;model=null;camera=null;texture=null;turnRing=null;shadowMaterial=ringMaterial=null;shadowTexture=null;contactMesh=null;renderers=null;sceneLights=null;sceneMasks=null;surfaceFrame=-1;
             state=new CollectionPreviewState();motion=new CollectionPreviewMotion();framingDirty=true;savedHighlightBlocks=null;highlighted=null;
         }
     }
