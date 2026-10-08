@@ -26,7 +26,7 @@ Executable geometry cases cover 2266×1488, 2048×1536, 2360×1640, 2388×1668, 
 
 Equipment atlas cache keys include slot, class, level band and rarity. Ten-level detail layers, quality facets and two legendary crown edges change actual meshes as well as raster silhouettes. Fashion uses its stored appearanceTier and remains Legendary quality; old designs are never relabeled as lower quality. Bag, equipped item, loot, merchant, smith, preview and receipt paths use the same identity atlas. Action pictograms retain tooltips and text state explanations.
 
-Title textures are built once at 256×128 and 128×32 with CPU storage released, with three mist layers and 28 embers (eight static embers with reduced effects). The drawing budget is at most 34 calls; no camp scene is constructed or simulated for the title. Animation freezes on background suspension; textures release on leaving title and destruction. Opaque coverage is independent of safe area. Gear adds at most five solid inlays, two quality facets and two crown edges, with no new trails, lights or particles. Fashion wings stay within twenty meshes and retain existing mobile trail limits.
+Title textures are built once at 256×128 and 128×32 with CPU storage released, with three mist layers and 28 embers (eight static embers with reduced effects). The drawing budget is at most 34 calls; no camp scene is constructed or simulated for the title. Animation freezes on background suspension; textures release on leaving title and destruction. Opaque coverage is independent of safe area. Gear adds at most five solid inlays, two quality facets and two crown edges, with no new trails, lights or particles. Each added detail uses twelve triangles; the production loaded-weapon test retains its existing total 800-triangle cap and validates attack/ribbon anchors. Fashion wings stay within twenty meshes and retain existing mobile trail limits.
 
 ## Reward and progression protection
 
@@ -35,7 +35,7 @@ The existing visible equipment capacity is 256; protected saved equipment limit 
 ## Executable validation
 
 - UnifiedUiIntegrationTests.py: 12,545 actual layout/input, backdrop lifecycle, roll reachability and atlas pixel assertions, managed engine boundaries.
-- EquipmentVisualIdentityProductionTests.py: 3,296 actual gear geometry, legacy fashion identity and budget assertions.
+- EquipmentVisualIdentityProductionTests.py: 3,824 actual gear geometry, legacy fashion identity and budget assertions.
 - MandatoryChestServiceTests.py: 23 actual save transaction/capacity/restart/fault assertions.
 - SingleChestUIProductionTests.py: 120 actual desktop/mobile opener and acknowledgment assertions plus compiled negative controls.
 - ChestPauseBackProductionTests.py: 85 production Update pause/back assertions; engine/session/persistence are explicit boundaries.

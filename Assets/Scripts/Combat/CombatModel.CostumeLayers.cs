@@ -70,12 +70,12 @@ namespace Emberfall
             }
             else if(bowRig!=null)
                 for(int side=-1;side<=1;side+=2)
-                    CostumeMesh("Fashion bow limb crest",style,fashionWeapon,new Vector3(.025f,side*weaponStructure.BowReach*.84f,.10f),new Vector3(.5f,.26f,.5f),accent,style==WingSilhouette.Crystal?VisualSurface.Crystal:VisualSurface.Wood).localRotation=Quaternion.Euler(0,0,side<0?180:0);
+                    FashionBowCrest("Fashion bow limb crest",style,fashionWeapon,new Vector3(.025f,side*weaponStructure.BowReach*.84f,.10f),new Vector3(.5f,.26f,.5f),accent,style==WingSilhouette.Crystal?VisualSurface.Crystal:VisualSurface.Wood).localRotation=Quaternion.Euler(0,0,side<0?180:0);
             if(fashion.rarity==Rarity.Legendary)
             {
                 Vector3 at=swordRig!=null?WeaponAnchorLocal(WeaponVisualAnchor.SwordGuard):staffRig!=null?WeaponAnchorLocal(WeaponVisualAnchor.StaffCore):new Vector3(0,0,.2f);
                 for(int side=-1;side<=1;side+=2)
-                    CostumeMesh("Legendary weapon suncrest",WingSilhouette.Crystal,fashionWeapon,bowRig!=null?new Vector3(.03f,side*weaponStructure.BowReach*.78f,.20f):at+new Vector3(side*.12f,.035f,.025f),new Vector3(.24f,.23f,.20f),Color.Lerp(accent,Color.white,.4f),VisualSurface.Crystal).localRotation=Quaternion.Euler(0,0,-side*(18+(int)fashion.AppearanceRarity*7));
+                    GearSuncrest("Legendary weapon suncrest",fashionWeapon,bowRig!=null?new Vector3(.03f,side*weaponStructure.BowReach*.78f,.20f):at+new Vector3(side*.12f,.035f,.025f),new Vector3(.24f,.23f,.20f),Color.Lerp(accent,Color.white,.4f),VisualSurface.Crystal).localRotation=Quaternion.Euler(0,0,-side*(18+(int)fashion.AppearanceRarity*7));
             }
             int rank=(int)fashion.AppearanceRarity;
             if(staffRig!=null&&heroClass==HeroClass.Summoner)
@@ -121,12 +121,48 @@ namespace Emberfall
             // At most five solid inlays, two quality facets and two crown prongs; no particles, lights or transparent shell.
             int layers=(look.LevelBand+1)/2;
             for(int i=0;i<layers;i++)
-                Part("Ten-level inlay "+look.LevelBand,PrimitiveType.Cube,centre+new Vector3((i-2)*.034f,0,.045f),
+                GearDetailBox("Ten-level inlay "+look.LevelBand,centre+new Vector3((i-2)*.034f,0,.045f),
                     new Vector3(.025f,.035f+look.LevelBand*.0012f,.018f),i%2==0?look.Metal:look.Accent,parent,VisualSurface.Metal);
-            if(look.RarityRank>=1)for(int side=-1;side<=1;side+=2)
-                Part("Quality-set facet",PrimitiveType.Cube,centre+new Vector3(side*.072f,-.035f,.042f),new Vector3(.024f,.024f+look.RarityRank*.012f,.020f),look.Accent,parent,VisualSurface.Crystal).localRotation=Quaternion.Euler(0,0,side*35);
+            if(look.RarityRank>=1&&look.RarityRank<3)for(int side=-1;side<=1;side+=2)
+                GearDetailBox("Quality-set facet",centre+new Vector3(side*.072f,-.035f,.042f),new Vector3(.024f,.024f+look.RarityRank*.012f,.020f),look.Accent,parent,VisualSurface.Crystal).localRotation=Quaternion.Euler(0,0,side*35);
             if(look.RarityRank==3)for(int side=-1;side<=1;side+=2)
-                GlowingPart("Legendary crown edge",PrimitiveType.Cube,centre+new Vector3(side*.10f,.035f,.025f),new Vector3(.022f,.10f,.022f),look.Glow,parent).localRotation=Quaternion.Euler(0,0,side*25);
+                GearDetailBox("Legendary crown edge",centre+new Vector3(side*.10f,.035f,.025f),new Vector3(.022f,.10f,.022f),look.Glow,parent,VisualSurface.Crystal).localRotation=Quaternion.Euler(0,0,side*25);
+        }
+        // Twelve triangles per detail, instead of the shared 300-triangle bevel box.
+        private Transform GearDetailBox(string name,Vector3 at,Vector3 size,Color color,Transform parent,VisualSurface surface)
+        {
+            var part=MeshPart(name,parent,at,new[]{
+                new Vector3(-.5f,-.5f,-.5f),new Vector3(.5f,-.5f,-.5f),new Vector3(.5f,.5f,-.5f),new Vector3(-.5f,.5f,-.5f),
+                new Vector3(-.5f,-.5f,.5f),new Vector3(.5f,-.5f,.5f),new Vector3(.5f,.5f,.5f),new Vector3(-.5f,.5f,.5f)},
+                new[]{0,2,1,0,3,2,4,5,6,4,6,7,0,1,5,0,5,4,3,7,6,3,6,2,0,4,7,0,7,3,1,2,6,1,6,5},color,surface);
+            part.localScale=size;return part;
+        }
+        private Transform GearSuncrest(string name,Transform parent,Vector3 at,Vector3 size,Color color,VisualSurface surface)
+        {
+            var part=MeshPart(name,parent,at,new[]{Vector3.up*.8f,Vector3.down*.3f,Vector3.left*.2f,Vector3.forward*.2f,Vector3.right*.2f,Vector3.back*.2f},
+                new[]{0,3,2,0,4,3,0,5,4,0,2,5,1,2,3,1,3,4,1,4,5,1,5,2},color,surface);
+            part.localScale=size;return part;
+        }
+        private Transform FashionBowCrest(string name,WingSilhouette style,Transform parent,Vector3 at,Vector3 size,Color color,VisualSurface surface)
+        {
+            if(style!=WingSilhouette.Mechanical)return CostumeMesh(name,style,parent,at,size,color,surface);
+            // A double-faced hexagonal metal annulus: 24 triangles, no dense hidden tube.
+            var vertices=new Vector3[48];var triangles=new int[72];
+            for(int i=0;i<6;i++)
+            {
+                float a=i*Mathf.PI/3,b=(i+1)*Mathf.PI/3;int v=i*8,t=i*12;
+                for(int side=0;side<2;side++)
+                {
+                    float z=side==0?.025f:-.025f;int k=v+side*4;
+                    vertices[k]=new Vector3(Mathf.Cos(a)*.855f,Mathf.Sin(a)*.855f,z);
+                    vertices[k+1]=new Vector3(Mathf.Cos(b)*.855f,Mathf.Sin(b)*.855f,z);
+                    vertices[k+2]=new Vector3(Mathf.Cos(b)*.745f,Mathf.Sin(b)*.745f,z);
+                    vertices[k+3]=new Vector3(Mathf.Cos(a)*.745f,Mathf.Sin(a)*.745f,z);
+                }
+                int[] face={v,v+1,v+2,v,v+2,v+3,v+4,v+6,v+5,v+4,v+7,v+6};
+                for(int j=0;j<12;j++)triangles[t+j]=face[j];
+            }
+            var part=MeshPart(name,parent,at,vertices,triangles,color,surface);part.localScale=size;return part;
         }
         private void BuildRareWeaponFashion(Color accent)
         {

@@ -25,6 +25,7 @@ public static class EquipmentVisualIdentityProductionTests
                 C(look.LevelBand==band,"actual appearance preserves each ten-level band");
                 C(identities.Add(Geometry(root)),"each level/quality changes actual mesh geometry, not only frame color: "+hero+"/"+slot+"/"+band+"/"+rarity);
                 var parts=root.GetComponentsInChildren<MeshFilter>(false);
+                C(parts.Where(p=>p.transform.name.StartsWith("Ten-level inlay")||p.transform.name=="Quality-set facet"||p.transform.name=="Legendary crown edge").All(p=>p.sharedMesh.triangles.Length==36),"each added solid detail stays at twelve triangles");
                 C(parts.Length<110&&root.GetComponentsInChildren<TrailRenderer>(true).Length==0,"solid gear stays bounded without particles or trails");
                 C(root.GetComponentsInChildren<Transform>(true).Count(t=>t.name.StartsWith("Ten-level inlay"))==(band+1)/2,"detail layer count grows monotonically and never exceeds five");
                 C(root.GetComponentsInChildren<Transform>(true).Count(t=>t.name=="Legendary crown edge")==((int)rarity==3?2:0),"legendary uses real crown geometry");

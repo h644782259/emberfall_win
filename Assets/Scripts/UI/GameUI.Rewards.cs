@@ -23,7 +23,7 @@ namespace Emberfall
             // Only an explicit failure-recovery action may visit the merchant; eligibility stays persisted.
             if(session.InDungeon)session.ReturnToCamp();
             if(!HubServicesAvailable)return;
-            chestRecoveryService=true;merchantShopOpen=true;smithShopOpen=false;inventoryHubNpc=HubNpcKind.Merchant;
+            chestRecoveryService=true;merchantExchangeOpen=false;inventoryHubNpc=HubNpcKind.Merchant;
             SelectMerchantMode(2,true);panel=Panel.Inventory;session.SetUIBlocking(true);BlockUITransition();
         }
         private void EnsurePendingChestPanel()
@@ -31,7 +31,7 @@ namespace Emberfall
             if(session==null||!session.HasStarted||session.Paused||session.IsDead)return;
             var profile=session.Progression.Profile;
             if(!profile.pendingFashionChest&&!profile.pendingChestReveal){chestRecoveryService=false;return;}
-            if(chestRecoveryService&&panel==Panel.Inventory&&merchantShopOpen)return;
+            if(chestRecoveryService&&panel==Panel.Inventory&&MerchantServiceActive)return;
             chestRecoveryService=false;
             if(panel!=Panel.None&&panel!=Panel.Chests&&panel!=Panel.Summary)return;
             if(panel!=Panel.Chests||chestQualificationId!=profile.pendingChestQualificationId)
