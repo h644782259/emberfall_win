@@ -1,3 +1,4 @@
+from MobileBindingFixtureSources import include_mobile_binding_sources
 #!/usr/bin/env python3
 """Execute actual slot/basic/meter methods against a recording GUI boundary."""
 from pathlib import Path
@@ -6,6 +7,7 @@ root=Path(__file__).resolve().parents[1];dotnet=sys.argv[1] if len(sys.argv)>1 e
 with tempfile.TemporaryDirectory(prefix='mobile-opportunity-h05-') as t:
  p=Path(t)
  for name in ['Core/CombatOpportunityState','UI/MobileCombatPresentation','UI/MobileControlLayout','UI/MobileOpportunityMeter','UI/MobileControls.Feedback','UI/GameUI.MobileFeedback']:(p/(Path(name).name+'.cs')).write_text((root/'Assets/Scripts'/(name+'.cs')).read_text())
+ include_mobile_binding_sources(p,root)
  # Stock badge has its own actual-production HUD suite; this fixture records opportunity draws only.
  stock=p/'GameUI.MobileFeedback.cs';body=stock.read_text();a=body.index('        private void DrawSkillStock(');b=body.index('{',a)+1;depth=1
  while depth:depth+=(body[b]=='{')-(body[b]=='}');b+=1

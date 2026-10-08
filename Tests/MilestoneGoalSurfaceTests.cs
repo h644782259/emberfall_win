@@ -20,13 +20,13 @@ namespace Emberfall
   bool MerchantServiceActive=>true;enum Panel{None,Skills,Camp,Inventory} Panel panel=Panel.Camp;
   sealed class Context{public ProgressionService Progression;public bool IsInCamp=true,Blocked;public void SetUIBlocking(bool v){Blocked=v;}}
   Context session;float TouchRatio=1,width=568,height=320;Color jade,pale,gold,muted;
-  List<Rect> blockedRects=new List<Rect>();List<string> shown=new List<string>();string click;int presetOpened;
+  List<Rect> blockedRects=new List<Rect>();List<string> shown=new List<string>();string click;int clickReforgeOption=-1;bool clickReforgeExecute;int presetOpened;
   void DrawPrice(Rect r,int amount,bool materials,float u){shown.Add(amount.ToString());}void CancelMobileScroll(){}void BlockUITransition(){}void Fill(Rect r,Color c){}void Box(Rect r,Color c,bool b){}
   void Text(Rect r,string s,int size,Color c,bool bold=false,bool wrap=false){shown.Add(s);}
   GUIStyle Style(int size,bool bold,bool wrap)=>new GUIStyle();
   Rect BuildPlanRect(MobilePanelLayout.Area r,float u)=>new Rect(r.X*u,r.Y*u,r.Width*u,r.Height*u);
   Vector2 BeginTouchScroll(string key,Rect r,Vector2 scroll,Rect content)=>scroll;void EndTouchScroll(){}
-  bool Button(Rect r,string s,Color c,bool enabled=true,string hint=null){shown.Add(s);if(enabled&&click!=null&&s.StartsWith(click)){click=null;return true;}return false;}
+  bool Button(Rect r,string s,Color c,bool enabled=true,string hint=null){shown.Add(s);if(s==""&&enabled){if(clickReforgeOption>=0&&r.x==4&&r.y==4+50*clickReforgeOption&&r.height==44){clickReforgeOption=-1;return true;}if(clickReforgeExecute&&r.height==48){clickReforgeExecute=false;return true;}}if(enabled&&click!=null&&s.StartsWith(click)){click=null;return true;}return false;}
   int buildPlanDetails,skillSection,merchantNavigations,smithNavigations;void NavigateMerchantExchange(){merchantNavigations++;}void NavigateSmithAttachment(ProgressionGoalState g){smithNavigations++;}
   bool DrawAutomaticGrowthSurface()=>throw new Exception("Automatic surface is outside this manual-goal fixture");
   bool NavigationButton(Rect r,string s,Color c,bool enabled=true,string hint=null)=>Button(r,s,c,enabled,hint);

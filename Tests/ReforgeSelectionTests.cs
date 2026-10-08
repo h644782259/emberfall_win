@@ -17,14 +17,14 @@ namespace Emberfall
    var preview=p.PreviewReforge(choices[1].Quote);check(preview.level==19&&preview.id==gear.id&&preview.mechanicVariant==1&&preview.upgradeLevel==4,"preview keeps real identity variant slot upgrade");
    check(initial==JsonUtility.ToJson(p.Profile,true)&&initialDisk==File.ReadAllText(p.SaveFilePath)&&events==0,"choices and preview never mutate persistence");
    var ui=new GameUI{session=new Context{Progression=p}};ui.OpenReforgeSurface(gear.id);check(ui.reforgeSelected.TargetLevel==15,"desktop mobile shared open defaults plus5");
-   ui.click="追平角色等级";ui.DrawReforgeSurface();check(ui.reforgeSelected.TargetLevel==50,"catchup may be inspected without buying");ui.click="重铸 · ";ui.DrawReforgeSurface();check(events==0&&p.Profile.gold==500,"unaffordable execution button disabled");ui.click=null;
-   ui.click="当前金币可达";ui.DrawReforgeSurface();check(ui.reforgeSelected.TargetLevel==19,"actual choice button selects affordable quote");
+   ui.clickReforgeOption=2;ui.DrawReforgeSurface();check(ui.reforgeSelected.TargetLevel==50,"catchup may be inspected without buying");ui.clickReforgeExecute=true;ui.DrawReforgeSurface();check(events==0&&p.Profile.gold==500,"unaffordable execution button disabled");ui.click=null;ui.clickReforgeExecute=false;
+   ui.clickReforgeOption=1;ui.DrawReforgeSurface();check(ui.reforgeSelected.TargetLevel==19,"actual choice button selects affordable quote");
    ui.shown.Clear();ui.DrawReforgeSurface();check(ui.shown.Exists(x=>x.Contains("执行后余金 50")&&x.Contains("攻击")&&x.Contains("防御")&&x.Contains("生命")),"actual preview displays stats and remaining gold");
    ui.click="追踪此目标";ui.DrawReforgeSurface();check(p.Profile.progressionGoalLevel==19&&p.SelectedProgressionGoal(true).GoldCost==450,"actual track button freezes chosen19 not player50");
    p.Profile.level=60;p.Save();check(p.SelectedProgressionGoal(true).ReforgeQuote.TargetLevel==19,"levelup never raises tracked target");
    string before=JsonUtility.ToJson(p.Profile,true),disk=File.ReadAllText(p.SaveFilePath);int beforeEvents=events;
    Directory.CreateDirectory(p.SaveFilePath+".tmp");check(!ui.ExecuteReforgeSelection(false)&&before==JsonUtility.ToJson(p.Profile,true)&&disk==File.ReadAllText(p.SaveFilePath)&&events==beforeEvents&&ui.reforgeSelected.TargetLevel==19,"save failure keeps selected quote money item and retry surface");Directory.Delete(p.SaveFilePath+".tmp");
-   var quote=ui.reforgeSelected;ui.click="重铸 · ";ui.DrawReforgeSurface();var actual=p.Profile.inventory.Find(x=>x.id==gear.id);
+   var quote=ui.reforgeSelected;ui.clickReforgeExecute=true;ui.DrawReforgeSurface();var actual=p.Profile.inventory.Find(x=>x.id==gear.id);
    check(actual.level==19&&p.Profile.gold==50&&actual.attack==preview.attack&&actual.defense==preview.defense&&actual.health==preview.health,"UI commit matches actual preview and charges450 once");
    check(actual.id==gear.id&&actual.mechanicVariant==1&&actual.upgradeLevel==4&&ui.reforgeOwner==null,"successful commit preserves identity and closes stale surface");
    before=JsonUtility.ToJson(p.Profile,true);check(!p.ReforgeMechanic(quote,true)&&before==JsonUtility.ToJson(p.Profile,true),"stale old quote rejected without charge");

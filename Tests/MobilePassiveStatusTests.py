@@ -1,3 +1,4 @@
+from MobileBindingFixtureSources import include_mobile_binding_sources
 """Execute production mobile HUD methods with managed drawing boundaries, not Unity rendering."""
 from pathlib import Path
 import subprocess,tempfile,sys,os
@@ -16,6 +17,7 @@ modes=(root/'Assets/Scripts/UI/GameUI.Modes.cs').read_text()
 assert 'Box(r' not in method(modes,'private void DrawMobileModeStatus(')
 with tempfile.TemporaryDirectory(prefix='mobile-hud-') as tmp:
  p=Path(tmp)
+ include_mobile_binding_sources(p,root)
  for rel in ['UI/MobileControlLayout','Combat/MobileSkillPolicy']:(p/(Path(rel).name+'.cs')).write_text((root/'Assets/Scripts'/(rel+'.cs')).read_text())
  (p/'Methods.cs').write_text('using UnityEngine;namespace Emberfall{partial class GameUI{'+''.join(method(mobile,k) for k in ['private void DrawMobileHotbar(','private void DrawMobileControlSurface(','private void DrawMobileVitals(','private void DrawMobileObjectiveText(','private bool BeginMobileCast(','private void ContinueMobileCast(','public void CancelMobileCast(','public bool MobileSkillVisible('])+method(feedback,'private void DrawSkillStock(')+'}public static class SkillStockRules{'+method(rules,'public static int Skill(HeroClass hero)')+'}}')
  (p/'Fixture.cs').write_text(r"""

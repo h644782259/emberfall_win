@@ -6,7 +6,7 @@ namespace UnityEngine {
  public struct Rect{public float x,y,width,height;public float xMax=>x+width;public float yMax=>y+height;public Vector2 center=>new Vector2(x+width/2,y+height/2);public Rect(float x,float y,float w,float h){this.x=x;this.y=y;width=w;height=h;}}
  public struct Color{public float r,g,b,a;public Color(float r,float g,float b,float a=1){this.r=r;this.g=g;this.b=b;this.a=a;}public static Color white=>new Color(1,1,1);}
  public enum TextAnchor{MiddleCenter}public enum FontStyle{Bold}public class Font{}
- public class GUIStyleState{public Color textColor;}public class GUIStyle{public GUIStyle(){}public GUIStyle(GUIStyle s){}public TextAnchor alignment;public int fontSize;public FontStyle fontStyle;public Font font;public GUIStyleState normal=new GUIStyleState();}
+ public enum TextClipping{Clip,Overflow}public class GUIStyleState{public Color textColor;}public class GUIStyle{public GUIStyle(){}public GUIStyle(GUIStyle s){}public bool wordWrap;public TextClipping clipping;public TextAnchor alignment;public int fontSize;public FontStyle fontStyle;public Font font;public GUIStyleState normal=new GUIStyleState();}
  public class Skin{public GUIStyle label=new GUIStyle();}public class Texture2D{public static Texture2D whiteTexture=new Texture2D();}
  public static class GUI{public struct Draw{public Rect Rect;public string Text;public Color Color;public int Font;public float EffectiveAlpha;}public static List<Draw> Fills=new List<Draw>();public static List<Draw> Draws=new List<Draw>();public static Skin skin=new Skin();public static Color color;public static void DrawTexture(Rect r,Texture2D t){Fills.Add(new Draw{Rect=r,Color=color});}public static void Label(Rect r,string text,GUIStyle style){Draws.Add(new Draw{Rect=r,Text=text,Color=style.normal.textColor,Font=style.fontSize,EffectiveAlpha=style.normal.textColor.a*color.a});}}
  public class Camera{public static Camera main;public float nearClipPlane;public Vector3 WorldToScreenPoint(Vector3 p)=>p;}public static class Time{public static float unscaledTime;}
@@ -37,7 +37,7 @@ namespace Emberfall {
 }
 
 namespace Emberfall {
- public sealed partial class GameUI {
+ public sealed partial class GameUI {int mobileSkillPage;
  internal GameSession session=new GameSession();float TouchRatio=1;Color gold=new Color(1,.8f,.2f),jade=new Color(.2f,.8f,.5f);
  Rect TouchRect(MobileControlLayout.Area a)=>new Rect(a.X*TouchRatio,a.Y*TouchRatio,a.Width*TouchRatio,a.Height*TouchRatio);
  int TouchFont(float s)=>Mathf.RoundToInt(s*TouchRatio);
