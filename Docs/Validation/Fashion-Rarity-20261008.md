@@ -6,6 +6,8 @@ Wings use 3/4/5/6 paired feathers and root scales 0.48/0.72/0.96/1.22 for common
 
 Trails: common/rare none; epic two; legendary desktop four and mobile two; reduced-effects construction none. Width 0.028, lifetime desktop 0.14 seconds/mobile 0.08 seconds, minimum vertex distance 0.15, no cap/corner subdivisions or shadows. Teleport movements over 1.5 units clear trail history; enabling reduced effects suppresses existing trails. These are authored limits, not measured GPU/frame-time results. Rendering and hazard/HUD readability need user device acceptance.
 
+Weapon accents use low-poly faceted crests, leaves and antlers; sword guards use pointed crystals instead of dense rings. The unchanged <=800-triangle loaded-weapon budget also covers the starter sword without equipment.
+
 Weapons retain class anchors and equipped weapon structure. Vanguard gains blade flares, Ranger outward limb crests, Arcanist crystal crown prisms, Summoner antler/leaf branches. Epic and legendary add two and three pairs. Expanded construction tests verify grip clearances across all classes, four equipment tiers and four rarities; adjustments also keep legendary guard rings out of the sword grip and bow hand opening.
 
 Weapon names (common → legendary):

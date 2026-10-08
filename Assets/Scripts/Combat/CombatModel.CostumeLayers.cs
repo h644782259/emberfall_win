@@ -60,7 +60,7 @@ namespace Emberfall
             if(swordRig!=null)
             {
                 for(int side=-1;side<=1;side+=2)
-                    CostumeMesh("Fashion sword guard",style,fashionWeapon,WeaponAnchorLocal(WeaponVisualAnchor.SwordGuard)+new Vector3(side*.17f,style==WingSilhouette.Mechanical?.24f:.12f,0),new Vector3(.5f,.28f,.5f),accent,VisualSurface.Metal).localRotation=Quaternion.Euler(0,0,-side*65);
+                    CostumeMesh("Fashion sword guard",style==WingSilhouette.Mechanical?WingSilhouette.Crystal:style,fashionWeapon,WeaponAnchorLocal(WeaponVisualAnchor.SwordGuard)+new Vector3(side*.17f,style==WingSilhouette.Mechanical?.24f:.12f,0),new Vector3(.5f,.28f,.5f),accent,VisualSurface.Metal).localRotation=Quaternion.Euler(0,0,-side*65);
             }
             else if(staffRig!=null)
             {
@@ -78,8 +78,8 @@ namespace Emberfall
                 for(int side=-1;side<=1;side+=2)
                 {
                     Vector3 at=WeaponAnchorLocal(WeaponVisualAnchor.StaffCore)+new Vector3(side*(.17f+rank*.025f),.05f,0);
-                    Part("Spirit fashion antler",PrimitiveType.Capsule,at,new Vector3(.06f,.30f+rank*.06f,.06f),new Color(.34f,.22f,.1f),fashionWeapon,VisualSurface.Wood).localRotation=Quaternion.Euler(0,0,-side*28);
-                    CostumeMesh("Spirit fashion leaf",WingSilhouette.Feather,fashionWeapon,at,new Vector3(.6f,.27f+rank*.05f,.6f),new Color(.25f,.75f,.5f),VisualSurface.Foliage).localRotation=Quaternion.Euler(0,0,-side*48);
+                    CostumeMesh("Spirit fashion antler",WingSilhouette.Crystal,fashionWeapon,at,new Vector3(.06f,.30f+rank*.06f,.06f),new Color(.34f,.22f,.1f),VisualSurface.Wood).localRotation=Quaternion.Euler(0,0,-side*28);
+                    CostumeMesh("Spirit fashion leaf",WingSilhouette.Crystal,fashionWeapon,at,new Vector3(.6f,.27f+rank*.05f,.6f),new Color(.25f,.75f,.5f),VisualSurface.Foliage).localRotation=Quaternion.Euler(0,0,-side*48);
                 }
             }
             if(rank>=2)
@@ -95,7 +95,7 @@ namespace Emberfall
                     else if(bowRig!=null)
                     {
                         Vector3 at=new Vector3(.035f,side*weaponStructure.BowReach*(.55f+layer*.13f),.17f);
-                        CostumeMesh("Rainbow bow flight crest",WingSilhouette.Feather,fashionWeapon,at,new Vector3(.5f,.3f,.5f),layer%2==0?accent:new Color(.2f,.85f,.9f),VisualSurface.Crystal).localRotation=Quaternion.Euler(0,0,side<0?245:65);
+                        CostumeMesh("Rainbow bow flight crest",WingSilhouette.Crystal,fashionWeapon,at,new Vector3(.5f,.3f,.5f),layer%2==0?accent:new Color(.2f,.85f,.9f),VisualSurface.Crystal).localRotation=Quaternion.Euler(0,0,side<0?245:65);
                     }
                     else if(staffRig!=null&&heroClass==HeroClass.Arcanist)
                     {
@@ -105,7 +105,7 @@ namespace Emberfall
                     else if(staffRig!=null)
                     {
                         Vector3 at=WeaponAnchorLocal(WeaponVisualAnchor.StaffCore)+new Vector3(side*(.22f+layer*.06f),.12f+layer*.12f,.04f);
-                        CostumeMesh("Ancestral crown leaf",WingSilhouette.Feather,fashionWeapon,at,new Vector3(.5f,.3f,.5f),layer%2==0?accent:new Color(.45f,1,.7f),VisualSurface.Foliage).localRotation=Quaternion.Euler(0,0,-side*(35+layer*16));
+                        CostumeMesh("Ancestral crown leaf",WingSilhouette.Crystal,fashionWeapon,at,new Vector3(.5f,.3f,.5f),layer%2==0?accent:new Color(.45f,1,.7f),VisualSurface.Foliage).localRotation=Quaternion.Euler(0,0,-side*(35+layer*16));
                     }
                 }
             }
