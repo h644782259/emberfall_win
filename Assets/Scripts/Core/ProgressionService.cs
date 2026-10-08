@@ -69,10 +69,14 @@ namespace Emberfall
             return null;
         }
 
-        public static string FashionName(FashionSlot slot, Rarity rarity)
+        public static string FashionName(FashionSlot slot,Rarity rarity)
+        {return FashionName(slot,rarity,HeroClass.Vanguard);}
+        public static string FashionName(FashionSlot slot,Rarity rarity,HeroClass hero)
         {
-            string prefix = new[] { "流光", "星纹", "苍穹", "烬王" }[(int)rarity];
-            return prefix + (slot == FashionSlot.Wings ? "之翼" : "兵装");
+            int rank=Clamp((int)rarity,0,3);
+            if(slot==FashionSlot.Wings)return new[]{"雾羽轻翼","潮光双翼","晶虹幻翼","日冕天翼"}[rank];
+            string[][] names={new[]{"灰羽誓锋剑","霜岚仪典剑","星狱断章剑","曜冕天衡剑"},new[]{"萤砂引星杖","霜环奏鸣杖","紫曜织界杖","日冕司辰杖"},new[]{"林露轻歌弓","月潮逐风弓","虹羽巡天弓","九曜破晓弓"},new[]{"苔芽契灵杖","青枝唤魂杖","幽莲归梦杖","万灵祖庭杖"}};
+            return names[Clamp((int)hero,0,3)][rank];
         }
 
         public static string FashionBonus(FashionSlot slot, Rarity rarity)
@@ -1781,7 +1785,7 @@ namespace Emberfall
             RestorePendingChestRoll();if(pendingChestRoll!=null)return Fail("请先继续开启已冻结的宝箱。");
             if (Profile.fashionThreads < FashionChoiceCost) return Fail("需要30缕星纹；每次开箱+1，重复时装额外增加。");
             GameProfile candidate = Snapshot(); candidate.fashionThreads -= FashionChoiceCost;
-            candidate.fashions.Add(new FashionData { id = id, slot = slot, rarity = Rarity.Legendary, name = FashionName(slot, Rarity.Legendary) });
+            candidate.fashions.Add(new FashionData { id = id, slot = slot, rarity = Rarity.Legendary, name = FashionName(slot, Rarity.Legendary,Profile.heroClass) });
             if(!CommitCandidate(candidate))return false;
             PublishRewardMoment(RewardMomentKind.FashionExchange,fashion:candidate.fashions.Find(f=>f.id==id),threads:-FashionChoiceCost);return true;
         }
@@ -1871,7 +1875,7 @@ namespace Emberfall
                 bool weapon=profile.fashions.Exists(x=>x.slot==FashionSlot.Weapon&&x.rarity==rarity.Value);
                 bool wings=profile.fashions.Exists(x=>x.slot==FashionSlot.Wings&&x.rarity==rarity.Value);
                 FashionSlot slot=weapon&&!wings?FashionSlot.Wings:wings&&!weapon?FashionSlot.Weapon:(FashionSlot)slotRoll;
-                roll.slotIndex=(int)slot;roll.duplicate=weapon&&wings;roll.name=FashionName(slot,rarity.Value);
+                roll.slotIndex=(int)slot;roll.duplicate=weapon&&wings;roll.name=FashionName(slot,rarity.Value,profile.heroClass);
             }
             return roll;
         }
@@ -1917,7 +1921,7 @@ namespace Emberfall
                 FashionSlot slot=roll.rulesRevision>=2?(FashionSlot)roll.slotIndex:roll.choice==0?FashionSlot.Weapon:FashionSlot.Wings;
                 string id="fashion-"+(int)slot+"-"+(int)rarity.Value;
                 bool owned=candidate.fashions.Exists(x=>x.id==id);
-                receipt.rarityIndex=(int)rarity.Value;receipt.slotIndex=(int)slot;receipt.name=FashionName(slot,rarity.Value);
+                receipt.rarityIndex=(int)rarity.Value;receipt.slotIndex=(int)slot;receipt.name=FashionName(slot,rarity.Value,candidate.heroClass);
                 receipt.duplicate=roll.rulesRevision>=2?roll.duplicate:owned;
                 if(!receipt.duplicate&&owned){Fail("冻结奖励的收藏状态已改变，请保留存档并恢复原资格；不会重抽。");return null;}
                 if(receipt.duplicate)
@@ -3082,7 +3086,7 @@ namespace Emberfall
                 if(receipt.rulesRevision<2)receipt.choice = Clamp(receipt.choice, 0, 2);
                 else if(receipt.rulesRevision!=2||receipt.rewardKind!=ChestRewardKind.SingleChest||receipt.choice!=-1||receipt.materialKind!=RewardMaterialKind.StarAshFragment||receipt.materialsDelta<0||receipt.materialsDelta>1)throw new ArgumentException("宝箱回执类型或增量无效。");
                 if (receipt.rarityIndex < 0) { receipt.slotIndex = -1; receipt.duplicate = false; receipt.name = receipt.rulesRevision>=2?"通关资源":"金币"; }
-                else receipt.name = FashionName((FashionSlot)receipt.slotIndex, (Rarity)receipt.rarityIndex);
+                else receipt.name = FashionName((FashionSlot)receipt.slotIndex, (Rarity)receipt.rarityIndex,profile.heroClass);
                 if (string.IsNullOrWhiteSpace(receipt.summary)) receipt.summary = receipt.name + " · " + receipt.gold + " 金币";
                 if (receipt.summary.Length > 240) receipt.summary = receipt.summary.Substring(0, 240);
             }
@@ -3194,7 +3198,7 @@ namespace Emberfall
                 string expectedId = "fashion-" + (int)fashion.slot + "-" + (int)fashion.rarity;
                 if (!fashionIds.Add(expectedId)) continue;
                 fashion.id = expectedId;
-                fashion.name = FashionName(fashion.slot, fashion.rarity);
+                fashion.name = FashionName(fashion.slot, fashion.rarity,profile.heroClass);
                 validFashions.Add(fashion);
             }
             profile.fashions = validFashions;

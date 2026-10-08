@@ -23,6 +23,20 @@ namespace Emberfall
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void Reset(){for(int i=0;i<meshes.Length;i++){if(meshes[i]!=null)Object.Destroy(meshes[i]);meshes[i]=null;}}
     }
+    internal sealed class FashionTrailBudget : MonoBehaviour
+    {
+        private TrailRenderer trail;private Vector3 previous;
+        public void Initialize(TrailRenderer value){trail=value;previous=transform.position;trail.time=CostumeRecipes.WingTrailSeconds(Application.isMobilePlatform);trail.emitting=false;}
+        private void Update()
+        {
+            if(trail==null)return;
+            // Short, narrow world-space glimmers only; teleport/preview jumps cannot paint long ribbons.
+            if((transform.position-previous).sqrMagnitude>2.25f)trail.Clear();previous=transform.position;
+            trail.time=CostumeRecipes.WingTrailSeconds(Application.isMobilePlatform);
+            trail.emitting=Time.deltaTime>0&&!EffectPreferences.ReducedEffects;
+            if(!trail.emitting)trail.Clear();
+        }
+    }
     internal sealed class FashionOrbit : MonoBehaviour
     {
         private float angle;

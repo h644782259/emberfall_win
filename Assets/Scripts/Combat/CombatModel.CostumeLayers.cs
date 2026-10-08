@@ -53,14 +53,14 @@ namespace Emberfall
         }
         private void BuildWeaponFashionShape(FashionData fashion)
         {
-            Color accent=GameBalance.RarityColor(fashion.rarity);
+            Color accent=Color.Lerp(GameBalance.ClassColor(heroClass),GameBalance.RarityColor(fashion.rarity),.55f);
             WingSilhouette style=CostumeRecipes.WingStyle(fashion.rarity);
             if(fashion.rarity==Rarity.Rare)BuildRareWeaponFashion(accent);
             // Small structural ornaments echo the back silhouette; the blade, string and core stay readable.
             if(swordRig!=null)
             {
                 for(int side=-1;side<=1;side+=2)
-                    CostumeMesh("Fashion sword guard",style,fashionWeapon,WeaponAnchorLocal(WeaponVisualAnchor.SwordGuard)+new Vector3(side*.17f,0,0),new Vector3(.5f,.28f,.5f),accent,VisualSurface.Metal).localRotation=Quaternion.Euler(0,0,-side*65);
+                    CostumeMesh("Fashion sword guard",style,fashionWeapon,WeaponAnchorLocal(WeaponVisualAnchor.SwordGuard)+new Vector3(side*.17f,style==WingSilhouette.Mechanical?.24f:.12f,0),new Vector3(.5f,.28f,.5f),accent,VisualSurface.Metal).localRotation=Quaternion.Euler(0,0,-side*65);
             }
             else if(staffRig!=null)
             {
@@ -70,7 +70,45 @@ namespace Emberfall
             }
             else if(bowRig!=null)
                 for(int side=-1;side<=1;side+=2)
-                    CostumeMesh("Fashion bow limb crest",style,fashionWeapon,new Vector3(.025f,side*weaponStructure.BowReach*.78f,.10f),new Vector3(.5f,.26f,.5f),accent,style==WingSilhouette.Crystal?VisualSurface.Crystal:VisualSurface.Wood).localRotation=Quaternion.Euler(0,0,side<0?180:0);
+                    CostumeMesh("Fashion bow limb crest",style,fashionWeapon,new Vector3(.025f,side*weaponStructure.BowReach*.84f,.10f),new Vector3(.5f,.26f,.5f),accent,style==WingSilhouette.Crystal?VisualSurface.Crystal:VisualSurface.Wood).localRotation=Quaternion.Euler(0,0,side<0?180:0);
+            int rank=(int)fashion.rarity;
+            if(staffRig!=null&&heroClass==HeroClass.Summoner)
+            {
+                // Contract staff uses branching wood/leaf forms, distinct from the elementalist's crystal astrolabe.
+                for(int side=-1;side<=1;side+=2)
+                {
+                    Vector3 at=WeaponAnchorLocal(WeaponVisualAnchor.StaffCore)+new Vector3(side*(.17f+rank*.025f),.05f,0);
+                    Part("Spirit fashion antler",PrimitiveType.Capsule,at,new Vector3(.06f,.30f+rank*.06f,.06f),new Color(.34f,.22f,.1f),fashionWeapon,VisualSurface.Wood).localRotation=Quaternion.Euler(0,0,-side*28);
+                    CostumeMesh("Spirit fashion leaf",WingSilhouette.Feather,fashionWeapon,at,new Vector3(.6f,.27f+rank*.05f,.6f),new Color(.25f,.75f,.5f),VisualSurface.Foliage).localRotation=Quaternion.Euler(0,0,-side*48);
+                }
+            }
+            if(rank>=2)
+            {
+                int layers=rank==3?3:2;
+                for(int side=-1;side<=1;side+=2)for(int layer=0;layer<layers;layer++)
+                {
+                    if(swordRig!=null)
+                    {
+                        Vector3 at=WeaponAnchorLocal(WeaponVisualAnchor.SwordGuard)+new Vector3(side*(.13f+layer*.055f),.30f+layer*.20f,0);
+                        CostumeMesh("Prismatic oath blade flare",WingSilhouette.Crystal,fashionWeapon,at,new Vector3(.48f,.32f,.38f),layer%2==0?accent:Color.white,VisualSurface.Crystal).localRotation=Quaternion.Euler(0,0,-side*12);
+                    }
+                    else if(bowRig!=null)
+                    {
+                        Vector3 at=new Vector3(.035f,side*weaponStructure.BowReach*(.55f+layer*.13f),.17f);
+                        CostumeMesh("Rainbow bow flight crest",WingSilhouette.Feather,fashionWeapon,at,new Vector3(.5f,.3f,.5f),layer%2==0?accent:new Color(.2f,.85f,.9f),VisualSurface.Crystal).localRotation=Quaternion.Euler(0,0,side<0?245:65);
+                    }
+                    else if(staffRig!=null&&heroClass==HeroClass.Arcanist)
+                    {
+                        Vector3 at=WeaponAnchorLocal(WeaponVisualAnchor.StaffCore)+new Vector3(side*(.21f+layer*.07f),layer*.12f,0);
+                        CostumeMesh("Elemental crown prism",WingSilhouette.Crystal,fashionWeapon,at,new Vector3(.45f,.30f,.45f),layer%2==0?accent:new Color(.2f,.85f,1),VisualSurface.Crystal).localRotation=Quaternion.Euler(0,0,-side*(15+layer*12));
+                    }
+                    else if(staffRig!=null)
+                    {
+                        Vector3 at=WeaponAnchorLocal(WeaponVisualAnchor.StaffCore)+new Vector3(side*(.22f+layer*.06f),.12f+layer*.12f,.04f);
+                        CostumeMesh("Ancestral crown leaf",WingSilhouette.Feather,fashionWeapon,at,new Vector3(.5f,.3f,.5f),layer%2==0?accent:new Color(.45f,1,.7f),VisualSurface.Foliage).localRotation=Quaternion.Euler(0,0,-side*(35+layer*16));
+                    }
+                }
+            }
         }
         private void BuildRareWeaponFashion(Color accent)
         {
