@@ -156,9 +156,7 @@ namespace Emberfall
 
         private Transform HealthQuad(string title, Material material)
         {
-            GameObject obj = GameObject.CreatePrimitive(PrimitiveType.Quad);
-            obj.name = title;
-            Destroy(obj.GetComponent<Collider>());
+            GameObject obj = ProceduralVisuals.Create(title,PrimitiveType.Quad,material);
             obj.transform.SetParent(healthRoot,false);
             obj.GetComponent<Renderer>().sharedMaterial = material;
             return obj.transform;

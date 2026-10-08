@@ -526,9 +526,7 @@ namespace Emberfall
 
         private void BuildHealthBar()
         {
-            var obj = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            obj.name = "Companion health";
-            Destroy(obj.GetComponent<Collider>());
+            var obj = ProceduralVisuals.Create("Companion health",PrimitiveType.Cube,null);
             obj.transform.SetParent(transform, false);
             obj.transform.localPosition = Vector3.up * (Form == Kind.Treant ? 3.3f : 1.7f);
             healthBar = obj.transform;

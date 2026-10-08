@@ -26,8 +26,8 @@ namespace Emberfall
             string[] tabs = { "战技", "机制图鉴", "待领取", "实战试炼" };
             for (int i = 0; i < tabs.Length; i++)
             {
-                Rect tab = MobilePanelRect(layout.Tab(i, tabs.Length));
-                if (TabButton(tab, tabs[i], campTab == i) && campTab != i)
+                Rect tab = TouchRect(layout.Tabs.X+i*94,layout.Tabs.Y,88,44);
+                if (QuietAction(tab,tabs[i],true,null,campTab==i) && campTab != i)
                 { campTab = i; mobileWorkshopStatus = null; CancelMobileScroll(); BlockUITransition(); }
                 Badge(tab, i == 1 ? Attention.FirstClearClaimable : i == 2 && Attention.LootPending);
             }
@@ -37,13 +37,13 @@ namespace Emberfall
                 mobileWorkshopScroll[campTab], new Rect(0, 0, contentWidth * TouchRatio, Mathf.Max(contentHeight, layout.TabbedBody.Height) * TouchRatio));
             DrawMobileWorkshopContent(contentWidth, true);
             EndTouchScroll();
-            if (NavigationButton(MobilePanelRect(layout.FooterButton(0, 4)), "返回冒险", jade))
+            if (PrimaryButton(TouchRect(layout.Footer.X,layout.Footer.Y,112,48), "返回冒险", jade))
             { ClosePanel(); BlockUITransition(); return; }
-            if (NavigationButton(MobilePanelRect(layout.FooterButton(1, 4)), "技能树", jade))
+            if (QuietAction(TouchRect(layout.Footer.X+128,layout.Footer.Y,76,48), "技能树"))
             { panel = Panel.Skills; CancelMobileScroll(); BlockUITransition(); return; }
-            if (NavigationButton(MobilePanelRect(layout.FooterButton(2, 4)), "行囊", jade))
+            if (QuietAction(TouchRect(layout.Footer.X+212,layout.Footer.Y,64,48), "行囊"))
             { panel = Panel.Inventory; CancelMobileScroll(); BlockUITransition(); }
-            if (NavigationButton(MobilePanelRect(layout.FooterButton(3, 4)), "目标", jade))OpenProgressionGoals();
+            if (QuietAction(TouchRect(layout.Footer.X+284,layout.Footer.Y,64,48), "目标"))OpenProgressionGoals();
         }
 
         private float DrawMobileWorkshopContent(float width, bool draw)
@@ -64,7 +64,8 @@ namespace Emberfall
 
         private void MobileWorkshopAction(ref float y, float width, string caption, Color color, bool enabled, bool draw, Action action, ButtonRole role = ButtonRole.Action)
         {
-            if (draw && DrawButton(TouchRect(8, y, width - 16, 48), caption, role, enabled)) action();
+            float actionWidth=Mathf.Min(width-16,Mathf.Max(88,Style(TouchFont(12),false).CalcSize(new GUIContent(caption)).x/TouchRatio+24));
+            if (draw && QuietAction(TouchRect(8,y,actionWidth,48),caption,enabled)) action();
             y += 58;
         }
 

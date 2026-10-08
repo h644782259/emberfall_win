@@ -21,13 +21,13 @@ namespace Emberfall
             for(int slot=0;slot<3;slot++)
             {
                 var item=p.Equipped((ItemSlot)slot);Rect r=new Rect(area.x,area.y+slot*48*u,44*u,44*u);
-                if(Button(r,"",jade,item!=null))
+                if(QuietAction(r,"",item!=null))
                 {selectedItem=item.id;mobileInventoryTab=0;inventoryComparisonOpen=true;mobileInventoryDetailScroll=Vector2.zero;}
                 DrawIcon(new Rect(r.x+6*u,r.y+3*u,30*u,28*u),UIIconAtlas.EquipmentCardIcon((ItemSlot)slot),item==null?muted:GameBalance.RarityColor(item.rarity));
                 Text(new Rect(r.x,r.y+29*u,r.width,14*u),GameBalance.SlotName((ItemSlot)slot),Mathf.RoundToInt(9*u),jade,true,false,TextAnchor.MiddleCenter);
                 if(r.Contains(Mouse)&&item!=null)tooltip=item.name+" · 已穿戴";
             }
-            if(Button(new Rect(area.x,area.yMax-44*u,area.width,40*u),"时装穿戴",gold))
+            if(QuietAction(new Rect(area.x,area.yMax-44*u,Mathf.Min(area.width,100*u),44*u),"时装穿戴"))
             {inventoryFashionOpen=!inventoryFashionOpen;collectionTrial=null;mobileInventoryDetail=false;BlockUITransition();}
         }
         private void DrawBagFashion(MobilePanelLayout.Area area)

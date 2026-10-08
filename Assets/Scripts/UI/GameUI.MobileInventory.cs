@@ -6,6 +6,7 @@ namespace Emberfall
         private int mobileInventoryTab;
         private HubNpcKind mobileInventoryNpcRequest;
         private bool mobileInventoryDetail;
+        private int mobileInventoryPicker;
         private Vector2 mobileInventoryListScroll, mobileInventoryDetailScroll, mobileSupplyScroll;
         private string mobileInventoryProfile, mobileDetailItem;
         private string mobileInventoryStatus, mobileSupplyStatus;
@@ -72,11 +73,11 @@ namespace Emberfall
             var bag=new MobilePanelLayout.Area(wear.XMax+12,layout.Body.Y,layout.Body.Width-leftWidth-12,wear.Height);
             DrawCurrentWear(MobilePanelRect(wear),TouchRatio);
             if(inventoryFashionOpen){DrawBagFashion(bag);return;}
-            Rect equipmentTab=MobilePanelRect(new MobilePanelLayout.Area(bag.X,bag.Y,64,36));
-            Rect supplyTab=MobilePanelRect(new MobilePanelLayout.Area(bag.X+70,bag.Y,64,36));
-            if(TabButton(equipmentTab,"装备",mobileInventoryTab!=2)){mobileInventoryTab=0;mobileInventoryDetail=false;}
-            if(TabButton(supplyTab,"补给",mobileInventoryTab==2)){mobileInventoryTab=2;mobileInventoryDetail=false;}
-            var content=new MobilePanelLayout.Area(bag.X,bag.Y+42,bag.Width,bag.Height-42);
+            Rect equipmentTab=MobilePanelRect(new MobilePanelLayout.Area(bag.X,bag.Y,52,44));
+            Rect supplyTab=MobilePanelRect(new MobilePanelLayout.Area(bag.X+58,bag.Y,52,44));
+            if(QuietAction(equipmentTab,"装备",true,null,mobileInventoryTab!=2)){mobileInventoryTab=0;mobileInventoryDetail=false;}
+            if(QuietAction(supplyTab,"补给",true,null,mobileInventoryTab==2)){mobileInventoryTab=2;mobileInventoryDetail=false;}
+            var content=new MobilePanelLayout.Area(bag.X,bag.Y+48,bag.Width,bag.Height-48);
             if(mobileInventoryTab==2)
             {
                 DrawBagSupplies(content);
@@ -89,18 +90,28 @@ namespace Emberfall
                 content=new MobilePanelLayout.Area(content.X,content.Y,content.Width,content.Height-dock-6);
                 DrawInventoryComparison(MobilePanelRect(comparison),picked,TouchRatio);
             }
+            if(mobileInventoryPicker!=0)
+            {
+                string[] choices=mobileInventoryPicker==1?new[]{"全部","武器","护甲","饰品"}:new[]{"评分","等级","品质"};
+                for(int choice=0;choice<choices.Length;choice++)
+                {
+                    Rect target=MobilePanelRect(new MobilePanelLayout.Area(content.X+(choice%2)*100,content.Y+(choice/2)*50,92,44));
+                    if(QuietAction(target,choices[choice],true,null,mobileInventoryPicker==1?inventoryFilter==choice-1:inventorySort==choice)){if(mobileInventoryPicker==1)inventoryFilter=choice-1;else inventorySort=choice;mobileInventoryPicker=0;mobileInventoryListScroll=Vector2.zero;CancelMobileScroll();BlockUITransition();return;}
+                }
+                return;
+            }
             if(DrawMobileEquipmentGrid(content,false))return;
-            if(Button(MobilePanelRect(new MobilePanelLayout.Area(bag.X+140,bag.Y,90,36)),MobileInventoryFilterLabel,jade)){CycleMobileInventoryFilter();return;}
-            if(Button(MobilePanelRect(new MobilePanelLayout.Area(bag.X+236,bag.Y,Mathf.Max(66,bag.Width-236),36)),MobileInventorySortLabel,jade)){CycleMobileInventorySort();return;}
+            if(QuietAction(MobilePanelRect(new MobilePanelLayout.Area(bag.XMax-118,bag.Y,64,44)),MobileInventoryFilterLabel+" ▾")){CycleMobileInventoryFilter();return;}
+            if(DrawInventorySortIcon(MobilePanelRect(new MobilePanelLayout.Area(bag.XMax-44,bag.Y,44,44)))){CycleMobileInventorySort();return;}
 
         }
 
         private string MobileInventoryFilterLabel { get { return inventoryFilter < 0 ? "全部" : GameBalance.SlotName((ItemSlot)inventoryFilter); } }
         private string MobileInventorySortLabel { get { return inventorySort == 1 ? "等级" : inventorySort == 2 ? "品质" : "评分"; } }
         private void CycleMobileInventoryFilter()
-        { inventoryFilter = inventoryFilter >= 2 ? -1 : inventoryFilter + 1; mobileInventoryListScroll = Vector2.zero; BlockUITransition(); }
+        { mobileInventoryPicker=1;CancelMobileScroll();BlockUITransition(); }
         private void CycleMobileInventorySort()
-        { inventorySort = (inventorySort + 1) % 3; mobileInventoryListScroll = Vector2.zero; BlockUITransition(); }
+        { mobileInventoryPicker=2;CancelMobileScroll();BlockUITransition(); }
 
         private bool DrawMobileInventoryList(MobilePanelLayout.Area viewport, bool wide)
         {

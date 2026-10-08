@@ -1259,15 +1259,15 @@ namespace Emberfall
             float middle = w.x + 272;
             Rect bagArea=new Rect(middle,w.y+144,864,462);
             if(inventoryFashionOpen){DrawBagFashion(InventoryArea(bagArea));return;}
-            if(TabButton(new Rect(middle+460,w.y+108,76,32),"装备",mobileInventoryTab!=2))mobileInventoryTab=0;
-            if(TabButton(new Rect(middle+544,w.y+108,76,32),"补给",mobileInventoryTab==2))mobileInventoryTab=2;
+            if(QuietAction(new Rect(middle+460,w.y+108,64,32),"装备",true,null,mobileInventoryTab!=2))mobileInventoryTab=0;
+            if(QuietAction(new Rect(middle+532,w.y+108,64,32),"补给",true,null,mobileInventoryTab==2))mobileInventoryTab=2;
             if(mobileInventoryTab==2){DrawBagSupplies(InventoryArea(bagArea));return;}
             Text(new Rect(middle, w.y + 112, 280, 23), "装备 · " + bagItems.Count + " 件", 16, jade, true);
             Text(new Rect(middle + 280, w.y + 117, 144, 17), "总容量 " + p.inventory.Count + " / " + ProgressionService.InventoryCapacity, 11, muted, false, false, TextAnchor.MiddleRight);
             bool changed = false;
             string[] filters = { "全部", "武器", "护甲", "饰品" };
             for (int i = 0; i < filters.Length; i++)
-                if (TabButton(new Rect(middle + i * 108, w.y + 144, 100, 27), filters[i], inventoryFilter == i - 1, true, null))
+                if (QuietAction(new Rect(middle + i * 76, w.y + 144, 68, 27),filters[i],true,null,inventoryFilter==i-1))
                 {
                     inventoryFilter = i - 1;
                     inventoryScroll = Vector2.zero;
@@ -1276,7 +1276,7 @@ namespace Emberfall
             Text(new Rect(middle, w.y + 184, 33, 18), "排序", 10, muted);
             string[] sorts = { "换装评分 ↓", "等级 ↓", "稀有度 ↓" };
             for (int i = 0; i < sorts.Length; i++)
-                if (TabButton(new Rect(middle + 38 + i * 129, w.y + 180, 121, 25), sorts[i], inventorySort == i, true, "评分按自动继承部位强化后的属性降序排列；同分依次按等级、稀有度与物品编号排序。"))
+                if (QuietAction(new Rect(middle + 38 + i * 96, w.y + 180, 88, 25),sorts[i],true,"评分按继承部位强化后的属性排序",inventorySort==i))
                 {
                     inventorySort = i;
                     inventoryScroll = Vector2.zero;
@@ -1295,15 +1295,16 @@ namespace Emberfall
                 Rect tile=new Rect(4+(index%columns)*(cellWidth+4),4+(index/columns)*cellHeight,cellWidth,94);
                 if(tile.yMax<inventoryScroll.y||tile.y>inventoryScroll.y+viewport.height)continue;
                 Color rarity=GameBalance.RarityColor(item.rarity);
-                if(DrawButton(new Rect(tile.x,tile.y,tile.width-44,48),"",selectedItem==item.id?ButtonRole.SelectedRow:ButtonRole.Row))
+                Fill(tile,selectedItem==item.id?new Color(.065f,.12f,.14f):card);
+                if(GUI.Button(new Rect(tile.x,tile.y,tile.width-44,48),GUIContent.none,invisibleButton))
                 {selectedItem=item.id;ReviewEquipment(item);}
                 if(DrawInventoryLock(new Rect(tile.xMax-44,tile.y,44,44),item.locked))Feedback(progression.SetItemLocked(item.id,!item.locked),"装备锁定状态已更新");
                 DrawIcon(new Rect(tile.x+8,tile.y+6,34,34),UIIconAtlas.EquipmentCardIcon(item.slot),rarity);
                 Text(new Rect(tile.x+46,tile.y+7,40,17),GameBalance.SlotName(item.slot),11,rarity,true);
                 Text(new Rect(tile.x+46,tile.y+25,40,17),"Lv."+item.level+(IsEquipmentUpgrade(item)?" ↑":""),11,item.level>p.level?gold:muted);
                 bool worn=IsEquipped(item);
-                if(InventoryAction(new Rect(tile.x+4,tile.y+49,(tile.width-12)*.5f,40),"穿戴",!worn&&item.level<=p.level,worn?"已穿戴":item.name))Feedback(progression.Equip(item.id),"装备已穿戴");
-                if(Button(new Rect(tile.center.x+2,tile.y+49,(tile.width-12)*.5f,40),"对比",jade)){selectedItem=item.id;inventoryComparisonOpen=true;}
+                if(QuietInventoryAction(new Rect(tile.x+4,tile.y+49,(tile.width-12)*.5f,40),"穿戴",!worn&&item.level<=p.level,worn?"已穿戴":item.name))Feedback(progression.Equip(item.id),"装备已穿戴");
+                if(QuietAction(new Rect(tile.center.x+2,tile.y+49,(tile.width-12)*.5f,40),"对比")){selectedItem=item.id;inventoryComparisonOpen=true;}
             }
             EndTouchScroll();
             picked = ResolveSelectedItem();

@@ -26,6 +26,14 @@ namespace Emberfall
         {
             Mesh mesh;
             if (shapes.TryGetValue(shape, out mesh) && mesh != null) return mesh;
+            if(shape==PrimitiveType.Quad)
+            {
+                mesh=new Mesh {name="Emberfall shared visual quad",
+                    vertices=new[]{new Vector3(-.5f,-.5f,0),new Vector3(.5f,-.5f,0),new Vector3(-.5f,.5f,0),new Vector3(.5f,.5f,0)},
+                    normals=new[]{Vector3.back,Vector3.back,Vector3.back,Vector3.back},
+                    uv=new[]{new Vector2(0,0),new Vector2(1,0),new Vector2(0,1),new Vector2(1,1)},triangles=new[]{0,2,1,2,3,1}};
+                mesh.RecalculateBounds();shapes[shape]=mesh;return mesh;
+            }
             VisualMeshData data = shape == PrimitiveType.Cube ? VisualMeshRecipes.BevelBox() :
                 shape == PrimitiveType.Cylinder ? VisualMeshRecipes.Cylinder(24) :
                 VisualMeshRecipes.RoundBody(shape == PrimitiveType.Capsule, 16, 12);

@@ -114,13 +114,10 @@ namespace Emberfall
 
         private Transform Part(string name, PrimitiveType shape, Vector3 position, Vector3 size, Material material = null)
         {
-            GameObject part = GameObject.CreatePrimitive(shape);
-            part.name = name;
+            GameObject part = ProceduralVisuals.Create(name,shape,material == null ? bodyMaterial : material);
             part.transform.SetParent(model, false);
             part.transform.localPosition = position;
             part.transform.localScale = size;
-            Collider collider = part.GetComponent<Collider>();
-            if (collider != null) { collider.enabled = false; Destroy(collider); }
             Renderer renderer = part.GetComponent<Renderer>();
             renderer.sharedMaterial = material == null ? bodyMaterial : material;
             renderer.shadowCastingMode = ShadowCastingMode.Off;

@@ -45,11 +45,8 @@ namespace Emberfall
             motes = new Transform[allowed?DecorationBudget.DeathMotes(boss,EffectPreferences.ReducedEffects):0];
             for (int i = 0; i < motes.Length; i++)
             {
-                GameObject mote = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                mote.name = "Evaporating Ash";
+                GameObject mote = ProceduralVisuals.Create("Evaporating Ash",PrimitiveType.Sphere,moteMaterial);
                 mote.transform.SetParent(moteRoot.transform, false);
-                Collider collider = mote.GetComponent<Collider>();
-                if (collider != null) Destroy(collider);
                 mote.GetComponent<Renderer>().sharedMaterial = moteMaterial;
                 mote.SetActive(false);
                 motes[i] = mote.transform;

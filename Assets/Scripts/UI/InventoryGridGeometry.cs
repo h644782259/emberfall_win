@@ -3,7 +3,7 @@ namespace Emberfall
 {
     public sealed class InventoryGridGeometry
     {
-        public const float RowHeight=98;
+        public const float RowHeight=94;
         public readonly int Columns;
         public readonly float CellWidth;
         public InventoryGridGeometry(float width)

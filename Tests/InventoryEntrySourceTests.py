@@ -24,3 +24,15 @@ assert 'Rarity.Common,!p.Profile.autoSellCommon' in hub and 'Rarity.Rare,!p.Prof
 assert 'ClaimMobileWorkshopLoot' in (r/'GameUI.MobileWorkshop.cs').read_text()
 assert 'ClaimPendingLoot(item.id)' in (r/'GameUI.Expedition.cs').read_text()
 print('PASS merchant-only sale/settings entry audit, pending/recovery claims retained (source contract, not Unity execution)')
+
+workshop=(r/'GameUI.MobileWorkshop.cs').read_text()
+assert 'layout.Tab(i, tabs.Length)' not in workshop and 'layout.FooterButton(' not in workshop
+assert 'QuietAction(tab,tabs[i],true,null,campTab==i)' in workshop
+assert 'QuietInventoryAction(TouchRect(x+4,y+44' in grid
+assert 'QuietAction(TouchRect(x+cellWidth*.5f+2,y+44' in grid
+assert 'Border(tile' not in grid and 'ButtonRole.SelectedRow' not in grid
+assert 'Mathf.Max(66,bag.Width-236)' not in bag
+print('PASS lightweight inventory/workshop wiring: inline actions retained, no nested tile frames or stretched navigation (source contract)')
+
+assert "DrawInventorySortIcon(MobilePanelRect(new MobilePanelLayout.Area(bag.XMax-44,bag.Y,44,44)))" in bag
+assert "inventorySort==choice" in bag
