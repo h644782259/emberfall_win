@@ -36,14 +36,16 @@ namespace UnityEngine {
  public class Material:Object {public Color color;public bool enableInstancing;public Material(Shader s){}public bool HasProperty(string n)=>true;public void SetFloat(string n,float v){}public void EnableKeyword(string s){}public void SetColor(string n,Color c){}}
  public class Mesh:Object {public Vector3[] vertices,normals;public Vector2[] uv;public int[] triangles;public void RecalculateNormals(){}public void RecalculateBounds(){}}
  public class MeshFilter:Component {public Mesh sharedMesh;}
+ public static class Application{public static bool isMobilePlatform;}
+ public class TrailRenderer:Renderer{public float time,startWidth,endWidth,minVertexDistance;public int numCapVertices,numCornerVertices,Clears;public bool emitting;public Color startColor,endColor;public void Clear(){Clears++;}}
  public class Renderer:Component {public bool enabled=true,receiveShadows;public Material sharedMaterial;public Rendering.ShadowCastingMode shadowCastingMode;}
  public class MeshRenderer:Renderer{}public class LineRenderer:Renderer {public bool useWorldSpace;public int positionCount;public float startWidth,endWidth;public Vector3[] points=new Vector3[3];public void SetPosition(int i,Vector3 p){points[i]=p;}}
  public enum PrimitiveType{Cube,Sphere,Capsule,Cylinder,Quad}public enum RuntimeInitializeLoadType{SubsystemRegistration}public class RuntimeInitializeOnLoadMethodAttribute:Attribute{public RuntimeInitializeOnLoadMethodAttribute(RuntimeInitializeLoadType t){}}
  public static class Random{public static float value=>.5f;}public static class Time{public static float deltaTime=.016f;}
  public static class Mathf{public const float PI=(float)Math.PI,Deg2Rad=PI/180;public static float Sin(float x)=>(float)Math.Sin(x);public static float Cos(float x)=>(float)Math.Cos(x);public static float Abs(float x)=>Math.Abs(x);public static int Min(int x,int y)=>Math.Min(x,y);public static int Clamp(int x,int a,int b)=>Math.Max(a,Math.Min(b,x));public static float Clamp(float x,float a,float b)=>Math.Max(a,Math.Min(b,x));public static float Repeat(float x,float y)=>x-(float)Math.Floor(x/y)*y;}
 }
-namespace UnityEngine.Rendering{public enum ShadowCastingMode{On}}
-namespace Emberfall {
+namespace UnityEngine.Rendering{public enum ShadowCastingMode{On,Off}}
+namespace Emberfall {public static class EffectPreferences{public static bool ReducedEffects;}
  public class TailoredCloth:MonoBehaviour{public HeroClass Profile;public void Initialize(Material m,HeroClass hero=HeroClass.Vanguard){Profile=hero;}}public class LargeBossRig:MonoBehaviour{}public class EnemyController:MonoBehaviour{}
  public static class ProgressionService{public const int MaximumLevel=100,MaximumUpgrade=10;}
  public static class GameBalance {public static Color ClassColor(HeroClass h)=>new Color(.2f+(int)h*.12f,.6f,.8f);public static Color RarityColor(Rarity r)=>new Color(.4f+(int)r*.15f,.7f,.3f);}

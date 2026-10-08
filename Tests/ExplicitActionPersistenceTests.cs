@@ -37,6 +37,16 @@ public static class ExplicitActionPersistenceTests
   Action<ProgressionService> fashion=p=>{p.Profile.fashions.Add(new FashionData{id="fashion-0-3",slot=FashionSlot.Wings,rarity=Rarity.Legendary,name="Fixture"});};
   test("fashion-equip",fashion,p=>p.EquipFashion("fashion-0-3"));
   test("fashion-unequip",p=>{fashion(p);p.Profile.wingsFashionId="fashion-0-3";},p=>p.UnequipFashion(FashionSlot.Wings));
+  var names=new HashSet<string>();
+  foreach(HeroClass hero in Enum.GetValues(typeof(HeroClass)))
+  {
+   var p=new ProgressionService(Path.Combine(root,"legacy-fashion-"+hero));Check(p.CreateNewSlot(hero),"legacy fashion profile created");p.Profile.fashions.Clear();
+   foreach(FashionSlot slot in Enum.GetValues(typeof(FashionSlot)))foreach(Rarity rarity in Enum.GetValues(typeof(Rarity)))p.Profile.fashions.Add(new FashionData{id="fashion-"+(int)slot+"-"+(int)rarity,slot=slot,rarity=rarity,name="旧兵装"});
+   p.Profile.wingsFashionId="fashion-0-3";p.Profile.weaponFashionId="fashion-1-3";var before=p.GetStats();p.Save();Check(p.Load(),"legacy fashion reload");
+   Check(p.Profile.fashions.Count==8&&p.Profile.wingsFashionId=="fashion-0-3"&&p.Profile.weaponFashionId=="fashion-1-3","migration preserves ownership and both equipped IDs");
+   foreach(var f in p.Profile.fashions){Check(f.id=="fashion-"+(int)f.slot+"-"+(int)f.rarity&&f.name==ProgressionService.FashionName(f.slot,f.rarity,hero)&&!f.name.Contains("兵装"),"display rename retains canonical identity");if(f.slot==FashionSlot.Weapon)Check(names.Add(f.name),"all sixteen class weapon fashion names are distinct");}
+   var after=p.GetStats();Check(before.Damage==after.Damage&&before.MaxHealth==after.MaxHealth&&before.Armor==after.Armor,"cosmetic migration preserves combat stats");
+  }
   return "PASS: "+checks+" explicit-action rollback/retry/durable-state assertions in14 fake fixtures";
  }
 }

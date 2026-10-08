@@ -118,10 +118,10 @@ namespace Emberfall
             var area=InventoryGridGeometry.Popup(new MobilePanelLayout.Area(bounds.x/u,bounds.y/u,bounds.width/u,bounds.height/u),new MobilePanelLayout.Area(inventoryPopupAnchor.x/u,inventoryPopupAnchor.y/u,inventoryPopupAnchor.width/u,inventoryPopupAnchor.height/u),inventoryPopupCompare);
             Rect r=inventoryPopupRect=new Rect(area.X*u,area.Y*u,area.Width*u,area.Height*u);
             Fill(r,new Color(.025f,.055f,.075f,.99f));Border(r,jade);
-            Text(new Rect(r.x+8*u,r.y+4*u,r.width-56*u,36*u),potion?"生命药剂 × "+session.Progression.Profile.potions:fashion?appearance.name:item.name,Mathf.RoundToInt(12*u),pale,true,true);
+            Text(new Rect(r.x+8*u,r.y+4*u,r.width-56*u,36*u),potion?"生命药剂 × "+session.Progression.Profile.potions:fashion?ProgressionService.FashionName(appearance.slot,appearance.rarity,session.Progression.Profile.heroClass):item.name,Mathf.RoundToInt(12*u),pale,true,true);
             bool prior=GUI.enabled;GUI.enabled=prior&&Time.frameCount!=inventoryPopupOpened;
             if(QuietAction(new Rect(r.xMax-44*u,r.y,44*u,44*u),"×")){inventoryComparisonOpen=false;BlockUITransition();}
-            string info=potion?"恢复50%生命":fashion?GameBalance.RarityName(appearance.rarity)+" · "+(appearance.slot==FashionSlot.Wings?"翅膀":"武器外观"):GameBalance.RarityName(item.rarity)+" · Lv."+item.level+" · 评分 "+EquipmentPreviewScore(item).ToString("0.#");
+            string info=potion?"恢复50%生命":fashion?"时装 · "+GameBalance.RarityName(appearance.rarity)+" · "+(appearance.slot==FashionSlot.Wings?"翅膀":"武器外观"):GameBalance.RarityName(item.rarity)+" · Lv."+item.level+" · 评分 "+EquipmentPreviewScore(item).ToString("0.#");
             Text(new Rect(r.x+8*u,r.y+42*u,r.width-16*u,22*u),info,Mathf.RoundToInt(10*u),muted);
             float actionWidth=(r.width-60*u)*.5f;
             if(potion)

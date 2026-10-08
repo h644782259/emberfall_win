@@ -11,6 +11,11 @@ namespace Emberfall
     public static class CostumeRecipes
     {
         public const int MaximumWingParts=40;
+        public static float WingScale(Rarity rarity){return new[]{.48f,.72f,.96f,1.22f}[Math.Max(0,Math.Min(3,(int)rarity))];}
+        public static int WingFeathers(Rarity rarity){return 3+Math.Max(0,Math.Min(3,(int)rarity));}
+        public static int WingTrailCount(Rarity rarity,bool mobile,bool reduced){return reduced||(int)rarity<(int)Rarity.Epic?0:rarity==Rarity.Legendary&&!mobile?4:2;}
+        public static float WingTrailSeconds(bool mobile){return mobile?.08f:.14f;}
+
         public static WingSilhouette WingStyle(Rarity rarity)
         {return rarity==Rarity.Legendary?WingSilhouette.Mechanical:rarity==Rarity.Epic?WingSilhouette.Crystal:WingSilhouette.Feather;}
         public static float ChestWidth(HeroClass hero,int tier)
