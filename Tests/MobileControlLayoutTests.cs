@@ -15,11 +15,11 @@ public static class MobileControlLayoutTests
             var targets=new List<MobileControlLayout.Area>{l.Joystick,l.Attack,l.Dodge,l.Potion,l.Jump,l.Menu,l.Inventory,l.SkillsMenu,l.Catalog,l.Interact,l.FocusCommand,l.RecallCommand};targets.AddRange(l.Skills);
             foreach(var r in targets)
             {
-                Check(r.Width>=48&&r.Height>=48,"minimum 48 logical-unit touch targets");
+                Check(r.Width>=(r.Width==l.Potion.Width?44:48)&&r.Height>=(r.Width==l.Potion.Width?44:48),"minimum 48 touch targets; compact potion retains 44");
                 Check(r.X>=0&&r.Y>=0&&r.X+r.Width<=l.Width+.01f&&r.Y+r.Height<=l.Height+.01f,"safe-area contained controls");
             }
             for(int i=0;i<targets.Count;i++)for(int j=i+1;j<targets.Count;j++)Check(!targets[i].Overlaps(targets[j]),"non-overlapping touch hitboxes "+i+"/"+j+" at "+d[0]);
-            Check(Math.Abs(l.PlayerStatus.X+l.PlayerStatus.Width/2-l.Width/2)<.01&&l.PlayerStatus.Width==160&&l.PlayerStatus.Height==18&&Math.Abs(l.Height-l.PlayerStatus.Y-l.PlayerStatus.Height-4)<.01,"compact centered bottom vitals");
+            Check(Math.Abs(l.PlayerStatus.X+l.PlayerStatus.Width/2-l.Width/2)<.01&&l.PlayerStatus.Width==160&&l.PlayerStatus.Height==18&&Math.Abs(l.Height-l.PlayerStatus.Y-l.PlayerStatus.Height-17)<.01,"compact centered bottom vitals");
             foreach(var target in targets)Check(!l.PlayerStatus.Overlaps(target),"vitals clear all action targets");
             foreach(var hint in l.SkillOpportunities)Check(!l.PlayerStatus.Overlaps(hint),"vitals clear opportunity captions");
             Check(!l.PlayerStatus.Overlaps(l.CounterOpportunity)&&!l.PlayerStatus.Overlaps(l.ComboOpportunity),"vitals clear attack feedback");
@@ -29,11 +29,12 @@ public static class MobileControlLayoutTests
             Check((l.CombatView.X+48)/l.Width>=.25f&&(l.CombatView.X+48)/l.Width<=.75f&&(l.CombatView.Y+32)/l.Height>=.25f&&(l.CombatView.Y+32)/l.Height<=.75f,"Anchor remains central without blind pan");
             Check(l.Skills.Length==8,"seven normal active skills and one ultimate; passive IDs excluded from action targets");
             Check(Math.Abs(l.Width-l.Dodge.X-l.Dodge.Width-6)<.01&&Math.Abs(l.Width-l.Jump.X-l.Jump.Width-6)<.01,"right controls use safe width once, with exactly six units inset");
-            Check(l.Height-l.Potion.Y-l.Potion.Height<=28&&l.Potion.Width==48,"potion stays compact near bottom edge");
+            Check(l.Height-l.Potion.Y-l.Potion.Height<=28&&l.Potion.Width==44,"potion stays compact near bottom edge");
+            Check(Math.Abs(l.Potion.X+l.Potion.Width+6-l.PlayerStatus.X)<.01&&Math.Abs(l.Potion.Y+l.Potion.Height/2-l.PlayerStatus.Y-l.PlayerStatus.Height/2)<.01,"potion hit area stays six units left of centered vitals");
             Check(l.AdventureStatus.X==12&&l.AdventureStatus.Y>=l.Map.Y+l.Map.Height,"objectives follow upper-left minimap");
             Check(l.Interact.X>=l.Width-108&&!l.Interact.Overlaps(l.Potion),"context stays on right edge away from potion");
             Check(l.Skills[7].Width<=l.Skills[0].Width+6,"ultimate identity uses color and ring instead of large size");
-            foreach(var skill in l.Skills)Check(skill.Y>=l.Height-217&&skill.X>=l.Width-315,"compact lower-right skill cluster");
+            foreach(var skill in l.Skills)Check(skill.Y>=l.Height-231&&skill.X>=l.Width-315,"compact lower-right skill cluster");
             for(int h=0;h<l.SkillOpportunities.Length;h++)foreach(var target in targets)Check(!l.SkillOpportunities[h].Overlaps(target),"opportunity affordance stays outside action targets");
             Check(l.Attack.X>l.Width/2&&l.Joystick.X<l.Width/2,"separate thumb zones");
             Check(l.Cancel.X==l.Jump.X&&l.Cancel.Y==l.Jump.Y,"cancel replaces jump without additional overlap");

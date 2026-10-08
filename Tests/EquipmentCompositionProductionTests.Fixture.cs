@@ -38,7 +38,7 @@ namespace UnityEngine {
  public class MeshFilter:Component {public Mesh sharedMesh;}
  public class Renderer:Component {public bool enabled=true,receiveShadows;public Material sharedMaterial;public Rendering.ShadowCastingMode shadowCastingMode;}
  public class MeshRenderer:Renderer{}public class LineRenderer:Renderer {public bool useWorldSpace;public int positionCount;public float startWidth,endWidth;public Vector3[] points=new Vector3[3];public void SetPosition(int i,Vector3 p){points[i]=p;}}
- public enum PrimitiveType{Cube,Sphere,Capsule,Cylinder}public enum RuntimeInitializeLoadType{SubsystemRegistration}public class RuntimeInitializeOnLoadMethodAttribute:Attribute{public RuntimeInitializeOnLoadMethodAttribute(RuntimeInitializeLoadType t){}}
+ public enum PrimitiveType{Cube,Sphere,Capsule,Cylinder,Quad}public enum RuntimeInitializeLoadType{SubsystemRegistration}public class RuntimeInitializeOnLoadMethodAttribute:Attribute{public RuntimeInitializeOnLoadMethodAttribute(RuntimeInitializeLoadType t){}}
  public static class Random{public static float value=>.5f;}public static class Time{public static float deltaTime=.016f;}
  public static class Mathf{public const float PI=(float)Math.PI,Deg2Rad=PI/180;public static float Sin(float x)=>(float)Math.Sin(x);public static float Cos(float x)=>(float)Math.Cos(x);public static float Abs(float x)=>Math.Abs(x);public static int Min(int x,int y)=>Math.Min(x,y);public static int Clamp(int x,int a,int b)=>Math.Max(a,Math.Min(b,x));public static float Clamp(float x,float a,float b)=>Math.Max(a,Math.Min(b,x));public static float Repeat(float x,float y)=>x-(float)Math.Floor(x/y)*y;}
 }

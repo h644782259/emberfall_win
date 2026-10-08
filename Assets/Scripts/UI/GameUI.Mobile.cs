@@ -268,23 +268,35 @@ namespace Emberfall
             if(NavigationButton(TouchRect(x,y+250,510,48), controlsReturnPause?"返回暂停菜单":"返回冒险", jade))ClosePanel();
         }
         private int mobilePausePage;
+        private readonly Vector2[] mobilePauseScroll = new Vector2[3];
         private void DrawMobilePause()
         {
             var layout = MobileControls.Layout;
-            float x = (layout.Width - 520) * .5f, y = (layout.Height - 306) * .5f;
+            float panelWidth=Mathf.Min(520,layout.Width-24),x=(layout.Width-panelWidth)*.5f,y=12;
+            float titleWidth=panelWidth-154;
+            float headerHeight=Mathf.Max(44,Style(TouchFont(23),true).CalcHeight(new GUIContent("冒险暂停"),titleWidth*TouchRatio)/TouchRatio+8);
             Fill(new Rect(0, 0, width, height), new Color(.012f, .025f, .04f, .94f));
-            Text(TouchRect(x + 12, y + 3, 342, 31), "冒险暂停", TouchFont(23), pale, true);
-            if (NavigationButton(TouchRect(x + 374, y, 134, 44), mobilePausePage == 0 ? "更多设置 ›" : mobilePausePage==1?"触控布局 ›":"‹ 返回", jade))
+            Text(TouchRect(x,y,titleWidth,headerHeight), "冒险暂停", TouchFont(23), pale, true);
+            if (NavigationButton(TouchRect(x+panelWidth-134,y,134,44), mobilePausePage == 0 ? "更多设置 ›" : mobilePausePage==1?"触控布局 ›":"‹ 返回", jade))
             { mobilePausePage = (mobilePausePage+1)%3; BlockUITransition(); }
-            if(mobilePausePage==2){DrawMobileControlPreferences(x,y);return;}
+            float bodyY=y+headerHeight+12,bodyHeight=Mathf.Max(48,layout.Height-bodyY-12),contentWidth=panelWidth-18;
+            string notice=string.IsNullOrEmpty(session.Notification)?"自动保存持续写入「"+ActiveCharacterName()+"」":PlatformText(session.Notification);
+            float noticeHeight=Mathf.Max(32,Style(TouchFont(11),false,true).CalcHeight(new GUIContent(notice),contentWidth*TouchRatio)/TouchRatio+8);
+            float contentHeight=mobilePausePage==0?116+noticeHeight:mobilePausePage==1?232:174;
+            mobilePauseScroll[mobilePausePage]=BeginTouchScroll("mobile-pause-"+mobilePausePage,TouchRect(x,bodyY,panelWidth,bodyHeight),mobilePauseScroll[mobilePausePage],new Rect(0,0,contentWidth*TouchRatio,Mathf.Max(bodyHeight,contentHeight)*TouchRatio));
+            try { DrawMobilePauseBody(contentWidth,notice,noticeHeight); }
+            finally { EndTouchScroll(); }
+        }
+        private void DrawMobilePauseBody(float contentWidth,string notice,float noticeHeight)
+        {
+            if(mobilePausePage==2){DrawMobileControlPreferences(0,0,contentWidth);return;}
             if (mobilePausePage == 1)
             {
+                float column=(contentWidth-12)*.5f;
                 string[] extra = { "存档位置", "声音：" + (GameAudio.Muted ? "关" : "开"), "飘字：" + (EffectPreferences.CombatTextScale > 1.5f ? "大" : "标准"),
                     "镜头反馈：" + (EffectPreferences.CameraShake ? "开" : "关"), "特效：" + (EffectPreferences.ReducedEffects ? "精简" : "完整"), "操作指南" };
                 for (int i = 0; i < extra.Length; i++)
-                    if (DrawButton(TouchRect(x + 12 + (i % 2) * 256, y + 57 + (i / 2) * 58, 240, 48), extra[i],
-                        i == 0 || i == 5 ? ButtonRole.Navigation : i == 2 ? ButtonRole.Action :
-                        (i == 1 ? !GameAudio.Muted : i == 3 ? EffectPreferences.CameraShake : !EffectPreferences.ReducedEffects) ? ButtonRole.ActiveToggle : ButtonRole.Toggle))
+                    if (Button(TouchRect((i%2)*(column+12),(i/2)*58,column,48),extra[i],jade))
                     {
                         if (i == 0) { saveReturnPause = true; panel = Panel.SaveLocation; session.SetUIBlocking(true); session.SetPaused(false); }
                         else if (i == 1) GameAudio.Muted = !GameAudio.Muted;
@@ -293,30 +305,25 @@ namespace Emberfall
                         else if (i == 4) EffectPreferences.EffectsScale = EffectPreferences.ReducedEffects ? 1f : .35f;
                         else OpenControls();
                     }
-                Text(TouchRect(x + 12, y + 245, 496, 39), string.IsNullOrEmpty(session.Notification)?"自动保存持续写入当前角色。\n如需手动保存，请返回上一页点击「保存」。":PlatformText(session.Notification), TouchFont(12), string.IsNullOrEmpty(session.Notification)?muted:gold, false, true);
+                Text(TouchRect(0,174,contentWidth,48),notice,TouchFont(12),muted,false,true);
                 return;
             }
-            string[] labels = { "继续冒险", "保存", "读取存档", "返回主菜单", "营地 / 撤离", "前往遗迹", "城镇旅行地图", "操作指南", "行囊", "图鉴 / 待领" };
+            string[] labels = { "继续冒险", "保存", "读取存档", "返回主菜单", "营地 / 撤离", "操作指南" };
+            float buttonWidth=(contentWidth-16)/3;
             for (int i = 0; i < labels.Length; i++)
             {
-                if(i==9)Badge(TouchRect(x+12+(i%3)*168,y+51+(i/3)*58,160,48),Attention.Rewards);
-                if (!DrawButton(TouchRect(x + 12 + (i % 3) * 168, y + 51 + (i / 3) * 58, 160, 48), labels[i],
-                    i == 0 ? ButtonRole.Primary : i == 3 ? ButtonRole.Danger : i == 1 ? ButtonRole.Action : ButtonRole.Navigation)) continue;
+                if (!DrawButton(TouchRect((i%3)*(buttonWidth+8),(i/3)*58,buttonWidth,48),labels[i],i==0||i==1?ButtonRole.Primary:i==3?ButtonRole.Danger:ButtonRole.Navigation)) continue;
                 switch (i)
                 {
-                    case 8: session.SetPaused(false);TogglePanel(Panel.Inventory);break;
-                    case 9: session.SetPaused(false);panel=Panel.Camp;campTab=1;session.SetUIBlocking(true);break;
                     case 0: session.SetPaused(false); break;
                     case 1: RequestManualSave(); break;
                     case 2: OpenSaveSelection(); break;
                     case 3: RequestExit(true); break;
                     case 4: LeaveMobilePauseForCamp(); break;
-                    case 5: LeaveMobilePauseForDungeon(); break;
-                    case 6: OpenTravelMap(); break;
-                    case 7: OpenControls(); break;
+                    case 5: OpenControls(); break;
                 }
             }
-            Text(TouchRect(x + 12, y + 280, 496, 18), string.IsNullOrEmpty(session.Notification)?"自动保存持续写入「" + ActiveCharacterName() + "」":PlatformText(session.Notification), TouchFont(11), string.IsNullOrEmpty(session.Notification)?muted:gold, false, false, TextAnchor.MiddleCenter);
+            Text(TouchRect(0,116,contentWidth,noticeHeight),notice,TouchFont(11),string.IsNullOrEmpty(session.Notification)?muted:gold,false,true,TextAnchor.MiddleCenter);
         }
     }
 }

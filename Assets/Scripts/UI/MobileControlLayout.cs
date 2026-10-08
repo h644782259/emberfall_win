@@ -34,8 +34,8 @@ namespace Emberfall
             Attack=Centered(Width-98,Height-55,76);
             Dodge=Centered(Width-30,Height-30,48);
             Jump=Centered(Width-30,Height-99,48);Cancel=Jump;
-            float bottomLift=Width<700?22:0;
-            Potion=Centered(214,Height-28-bottomLift,48);
+            float bottomLift=Width<700?36:0;
+            Potion=Centered(Width*.5f-108,Height-26,44);
             // Width already excludes Screen.safeArea insets. Never subtract them again.
             Menu=Centered(Width-30,32,48);Inventory=Centered(Width-84,32,48);
             SkillsMenu=Centered(Width-138,32,48);Catalog=Centered(Width-192,32,48);
@@ -55,7 +55,7 @@ namespace Emberfall
             CounterOpportunity=new Area(Attack.X,Attack.Y+Attack.Height+1,Attack.Width/2,13);
             ComboOpportunity=new Area(Attack.X+Attack.Width/2,Attack.Y+Attack.Height+1,Attack.Width/2,13);
             FocusCommand=new Area(204,Height-170-bottomLift,48,48);RecallCommand=new Area(204,Height-120-bottomLift,48,48);
-            PlayerStatus=new Area(Width*.5f-80,Height-22,160,18);
+            PlayerStatus=new Area(Width*.5f-80,Height-35,160,18);
             PlayerHealth=new Area(PlayerStatus.X,PlayerStatus.Y,160,12);
             PlayerEnergy=new Area(PlayerStatus.X,PlayerStatus.Y+15,160,3);Map=new Area(12,12,72,56);
             AdventureStatus=new Area(12,70,188,76);

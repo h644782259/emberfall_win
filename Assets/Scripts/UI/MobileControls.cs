@@ -236,12 +236,14 @@ namespace Emberfall
             SkillChargeController charge = session.Player.GetComponent<SkillChargeController>();
             Circle(Attack, AttackHeld ? new Color(.76f, .54f, .20f, .95f) : new Color(.43f, .31f, .15f, .9f), targeting != null && targeting.IsTargeting ? "confirm" : "attack");
             Circle(Dodge, new Color(.13f, .32f, .38f, .9f), "blink");
-            Circle(Potion, new Color(.18f, .38f, .27f, .9f), "potion");
+            Circle(PotionVisualRect(), new Color(.18f, .38f, .27f, .9f*EffectPreferences.TouchOpacity), "potion",false);
             if (CanCancel) Circle(Cancel, new Color(.48f, .17f, .20f, .94f), "cancel");
             else Circle(Jump, new Color(.22f, .27f, .40f, .9f), "jump");
             DrawAvailability();
             GUI.matrix = oldMatrix; GUI.color = oldColor;
         }
+        private Rect PotionVisualRect()
+        { Rect hit=Potion;float size=36*EffectPreferences.TouchVisualScale;return new Rect(hit.center.x-size*.5f,hit.center.y-size*.5f,size,size); }
         private void Circle(Rect rect, Color color, string icon,bool button=true)
         {
             if(button){rect=VisualRect(rect);color.a*=EffectPreferences.TouchOpacity;}

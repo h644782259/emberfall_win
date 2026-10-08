@@ -11,7 +11,8 @@ def member(path,sig):
 ui='\n'.join(member('UI/GameUI.Mobile.cs',x) for x in ['private void LeaveMobilePauseForCamp()','private void LeaveMobilePauseForDungeon()'])
 mobile=(root/'Assets/Scripts/UI/GameUI.Mobile.cs').read_text()
 assert 'case 4: LeaveMobilePauseForCamp(); break;' in mobile
-assert 'case 5: LeaveMobilePauseForDungeon(); break;' in mobile
+assert 'case 5: OpenControls(); break;' in mobile
+assert 'case 5: LeaveMobilePauseForDungeon(); break;' not in mobile
 host='\n'.join(member('Core/GameSession.cs',x) for x in ['public void ReturnToCamp()','public void EnterDungeon()'])
 shell='''using System;using System.Collections.Generic;
 namespace UnityEngine {public struct Vector3{public float x;public static float Distance(Vector3 a,Vector3 b)=>Math.Abs(a.x-b.x);}public static class Mathf{public static int Clamp(int v,int lo,int hi)=>Math.Max(lo,Math.Min(hi,v));}}
