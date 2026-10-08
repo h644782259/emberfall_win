@@ -12,66 +12,57 @@ namespace Emberfall
             var p=session.Progression;
             if(wearModel==null)wearModel=new CollectionModelPreview();
             Rect viewport=new Rect(area.x+38*u,area.y,area.width-38*u,Mathf.Max(64*u,area.height-48*u));
-            wearModel.SetComposition(CollectionPreviewComposition.Full);wearModel.SetYaw(inventoryFashionOpen&&collectionTrial!=null&&collectionTrial.slot==FashionSlot.Wings?160:20);
+            wearModel.SetComposition(CollectionPreviewComposition.Full);wearModel.SetYaw(20);
             wearModel.SetViewport(viewport.width*Mathf.Abs(GUI.matrix.m00),viewport.height*Mathf.Abs(GUI.matrix.m11),MobileControls.Active);
-            Texture current=wearModel.RenderSafe(p.Profile.heroClass,p.Equipped(ItemSlot.Weapon),p.Equipped(ItemSlot.Armor),p.Equipped(ItemSlot.Relic),inventoryFashionOpen&&collectionTrial!=null&&collectionTrial.slot==FashionSlot.Wings?collectionTrial:p.EquippedFashion(FashionSlot.Wings),inventoryFashionOpen&&collectionTrial!=null&&collectionTrial.slot==FashionSlot.Weapon?collectionTrial:p.EquippedFashion(FashionSlot.Weapon));
+            Texture current=wearModel.RenderSafe(p.Profile.heroClass,p.Equipped(ItemSlot.Weapon),p.Equipped(ItemSlot.Armor),p.Equipped(ItemSlot.Relic),p.EquippedFashion(FashionSlot.Wings),p.EquippedFashion(FashionSlot.Weapon));
             if(current!=null)GUI.DrawTexture(viewport,current,ScaleMode.ScaleToFit,false);
             else Text(viewport,wearModel.LastError==null?"角色预览正在恢复":"预览暂不可用，其他操作可继续",Mathf.RoundToInt(11*u),muted,false,true);
-            if(inventoryFashionOpen&&collectionTrial!=null)Text(new Rect(viewport.x,viewport.y,viewport.width,20*u),"试穿 · 未保存",Mathf.RoundToInt(11*u),gold,true);
             for(int slot=0;slot<3;slot++)
             {
                 var item=p.Equipped((ItemSlot)slot);Rect r=new Rect(area.x,area.y+slot*48*u,44*u,44*u);
                 if(QuietAction(r,"",item!=null))
-                {selectedItem=item.id;mobileInventoryTab=0;inventoryComparisonOpen=true;mobileInventoryDetailScroll=Vector2.zero;}
+                {mobileInventoryTab=0;OpenInventoryPopup(item.id,r);}
                 DrawIcon(new Rect(r.x+6*u,r.y+3*u,30*u,28*u),UIIconAtlas.EquipmentCardIcon((ItemSlot)slot),item==null?muted:GameBalance.RarityColor(item.rarity));
                 Text(new Rect(r.x,r.y+29*u,r.width,14*u),GameBalance.SlotName((ItemSlot)slot),Mathf.RoundToInt(9*u),jade,true,false,TextAnchor.MiddleCenter);
                 if(r.Contains(Mouse)&&item!=null)tooltip=item.name+" · 已穿戴";
             }
-            if(QuietAction(new Rect(area.x,area.yMax-44*u,Mathf.Min(area.width,100*u),44*u),"时装穿戴"))
-            {inventoryFashionOpen=!inventoryFashionOpen;collectionTrial=null;mobileInventoryDetail=false;BlockUITransition();}
         }
         private void DrawBagFashion(MobilePanelLayout.Area area)
         {
-            var p=session.Progression;float u=TouchRatio;
-            for(int slot=0;slot<2;slot++)
-                if(TabButton(MobilePanelRect(new MobilePanelLayout.Area(area.X+slot*90,area.Y,84,36)),slot==0?"翅膀":"武器外观",mobileFashionSlot==slot))
-                {mobileFashionSlot=slot;mobileFashionScroll=Vector2.zero;collectionTrial=null;}
-            if(Button(MobilePanelRect(new MobilePanelLayout.Area(area.XMax-94,area.Y,94,36)),"返回装备",jade))
-            {inventoryFashionOpen=false;collectionTrial=null;return;}
-            var body=new MobilePanelLayout.Area(area.X,area.Y+42,area.Width,area.Height-42);
-            float width=body.Width-18,cell=(width-8)*.5f;int trial=-1;string equip=null;
-            mobileFashionScroll=BeginTouchScroll("bag-fashion",MobilePanelRect(body),mobileFashionScroll,new Rect(0,0,width*u,Mathf.Max(body.Height,282)*u));
-            for(int rank=0;rank<4;rank++)
+            float u=MobileControls.Active?TouchRatio:1;Rect bounds=MobilePanelRect(area);
+            var owned=new System.Collections.Generic.List<FashionData>(session.Progression.Profile.fashions);
+            owned.RemoveAll(f=>f==null);owned.Sort((a,b)=>{int c=a.slot.CompareTo(b.slot);if(c==0)c=b.rarity.CompareTo(a.rarity);return c!=0?c:string.CompareOrdinal(a.id,b.id);});
+            var grid=new InventoryGridGeometry(bounds.width/u-18);float h=Mathf.Max(bounds.height,((owned.Count+grid.Columns-1)/grid.Columns)*48*u);
+            bool prior=GUI.enabled;GUI.enabled=prior&&!inventoryComparisonOpen&&inventoryPopupDismissed!=Time.frameCount;
+            Vector2 before=mobileFashionScroll;mobileFashionScroll=BeginTouchScroll("inventory-fashion-grid",bounds,mobileFashionScroll,new Rect(0,0,bounds.width-18*u,h));
+            string chosen=null;Rect anchor=default;
+            for(int i=0;i<owned.Count;i++)
             {
-                var slot=(FashionSlot)mobileFashionSlot;var rarity=(Rarity)rank;
-                string id="fashion-"+mobileFashionSlot+"-"+rank;
-                bool owned=p.Profile.fashions.Exists(f=>f!=null&&f.id==id);
-                var worn=p.EquippedFashion(slot);bool current=worn!=null&&worn.id==id;
-                float x=(rank%2)*(cell+8),y=(rank/2)*116;
-                Fill(TouchRect(x,y,cell,110),card);
-                Text(TouchRect(x+6,y+5,cell-12,25),ProgressionService.FashionName(slot,rarity),TouchFont(13),GameBalance.RarityColor(rarity),true);
-                Text(TouchRect(x+6,y+31,cell-12,23),current?"穿戴中":owned?"已拥有":"未解锁 · 可试穿",TouchFont(11),owned?jade:muted);
-                if(Button(TouchRect(x+4,y+59,cell*.5f-6,46),"试穿",jade))trial=rank;
-                if(Button(TouchRect(x+cell*.5f+2,y+59,cell*.5f-6,46),current?"已穿":"穿戴",gold,owned&&!current))equip=id;
+                var f=owned[i];var cell=grid.Tile(i);Rect tile=new Rect(cell.X*u,cell.Y*u,44*u,44*u);
+                if(tile.yMax<mobileFashionScroll.y||tile.y>mobileFashionScroll.y+bounds.height)continue;
+                Color rarity=GameBalance.RarityColor(f.rarity);Fill(tile,card);Border(tile,rarity);
+                if(f.slot==FashionSlot.Weapon)DrawIcon(new Rect(tile.x+5*u,tile.y+5*u,34*u,32*u),UIIconAtlas.EquipmentCardIcon(ItemSlot.Weapon),rarity);
+                else for(int feather=0;feather<4;feather++)
+                {float span=(17-feather*3)*u;Fill(new Rect(tile.center.x-span,tile.y+(10+feather*5)*u,span-2*u,3*u),rarity);Fill(new Rect(tile.center.x+2*u,tile.y+(10+feather*5)*u,span-2*u,3*u),rarity);}
+                for(int pip=0;pip<=(int)f.rarity;pip++)Fill(new Rect(tile.x+(3+pip*5)*u,tile.y+3*u,3*u,3*u),pale);
+                var worn=session.Progression.EquippedFashion(f.slot);bool equipped=worn!=null&&worn.id==f.id;
+                Text(new Rect(tile.x+2*u,tile.yMax-14*u,tile.width-4*u,14*u),(equipped?"✓ ":"")+(f.slot==FashionSlot.Wings?"翼":"刃"),Mathf.RoundToInt(9*u),pale,true,false,TextAnchor.MiddleRight);
+                if(GUI.Button(tile,GUIContent.none,invisibleButton)){chosen="@fashion:"+f.id;anchor=new Rect(bounds.x+tile.x,bounds.y+tile.y-mobileFashionScroll.y,tile.width,tile.height);}
             }
-            bool remove=Button(TouchRect(4,234,width-8,44),"卸下此部位时装",muted,p.EquippedFashion((FashionSlot)mobileFashionSlot)!=null);
-            EndTouchScroll();
-            if(trial>=0)TrialFashion((FashionSlot)mobileFashionSlot,(Rarity)trial);
-            if(equip!=null){MobileFashionResult(p.EquipFashion(equip),"外观已穿戴");collectionTrial=null;}
-            if(remove){MobileFashionResult(p.UnequipFashion((FashionSlot)mobileFashionSlot),"已卸下外观，收藏属性保留");collectionTrial=null;}
+            if(owned.Count==0)Text(new Rect(8*u,12*u,bounds.width-34*u,48*u),"暂无已拥有时装",Mathf.RoundToInt(13*u),muted);
+            EndTouchScroll();GUI.enabled=prior;if(before!=mobileFashionScroll)inventoryComparisonOpen=false;
+            if(chosen!=null)OpenInventoryPopup(chosen,anchor);DrawInventoryPopup(bounds,u);
         }
 
         private void DrawBagSupplies(MobilePanelLayout.Area area)
         {
-            var p=session.Progression;
-            float cell=Mathf.Min(138,area.Width-18);
-            DrawIcon(MobilePanelRect(new MobilePanelLayout.Area(area.X+6,area.Y+4,26,26)),UIIconAtlas.Utility("potion"),jade);
-            Text(MobilePanelRect(new MobilePanelLayout.Area(area.X+38,area.Y+4,cell-42,20)),"药剂 × "+p.Profile.potions,TouchFont(12),pale,true);
-            string reason=p.Profile.potions<=0?"暂无药剂":session.Player==null?"无法使用":session.Player.Health>=session.Player.MaxHealth-.5f?"已满血":"恢复50%生命";
-            Text(MobilePanelRect(new MobilePanelLayout.Area(area.X+6,area.Y+27,cell-12,17)),reason,TouchFont(10),muted);
-            if(InventoryAction(MobilePanelRect(new MobilePanelLayout.Area(area.X+4,area.Y+44,cell-8,44)),"使用",p.Profile.potions>0&&session.Player!=null&&session.Player.Health<session.Player.MaxHealth-.5f,reason))session.DrinkPotion();
-
+            float u=MobileControls.Active?TouchRatio:1;Rect bounds=MobilePanelRect(area);
+            Rect tile=new Rect(bounds.x,bounds.y,44*u,44*u);Fill(tile,card);Border(tile,jade);
+            DrawIcon(new Rect(tile.x+5*u,tile.y+3*u,34*u,32*u),UIIconAtlas.Utility("potion"),jade);
+            Text(new Rect(tile.x,tile.yMax-14*u,tile.width-2*u,14*u),session.Progression.Profile.potions.ToString(),Mathf.RoundToInt(9*u),pale,true,false,TextAnchor.MiddleRight);
+            bool prior=GUI.enabled;GUI.enabled=prior&&!inventoryComparisonOpen&&inventoryPopupDismissed!=Time.frameCount;
+            if(GUI.Button(tile,GUIContent.none,invisibleButton))OpenInventoryPopup("@potion",tile);
+            GUI.enabled=prior;DrawInventoryPopup(bounds,u);
         }
-
     }
 }

@@ -8,11 +8,9 @@ def method(s,signature):
  while n:n+=(s[b]=='{')-(s[b]=='}');b+=1
  return s[a:b]
 source=(root/'Assets/Scripts/UI/GameUI.CollectionPreview.cs').read_text()
-# Mobile production caller puts these exact layout rectangles in the detail scroll.
-assert 'CollectionPreviewLayout.Mobile(layout.BodyLeft,layout.BodyRight)' in source
-assert 'DrawCollectionModel(MobilePanelRect(previewLayout.Model),collectionTrial,true);' in source
-assert 'DrawCollectionControls(previewLayout,new Vector2(layout.BodyRight.X,layout.BodyRight.Y),TouchRatio);' in source
-assert source.index('DrawCollectionControls(previewLayout,')>source.index('mobilePreviewTextScroll=BeginTouchScroll(')
+# The inventory now uses the persistent wear model and owned-only icon grid.
+wear=(root/'Assets/Scripts/UI/GameUI.WearMap.cs').read_text()
+assert 'DrawBagFashion(' in wear and 'Profile.fashions' in wear and 'collectionTrial' not in wear
 body='using UnityEngine;namespace Emberfall{public sealed partial class GameUI{'+''.join(method(source,s) for s in ['private void DrawCollectionModel(','private static Rect PreviewControlRect(','private void DrawCollectionControls('])+'}}'
 with tempfile.TemporaryDirectory(prefix='compact-preview-') as directory:
  p=Path(directory)

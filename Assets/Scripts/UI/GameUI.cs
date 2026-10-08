@@ -18,7 +18,7 @@ namespace Emberfall
         private Vector2 saveSelectionScroll;
         private Vector2 inventoryScroll;
         private int inventoryFilter = -1;
-        private int inventorySort;
+        private int inventorySort=0;
         private int unequippedCount;
         private Vector2 skillScroll;
         private int selectedSkill;
@@ -1225,6 +1225,7 @@ namespace Emberfall
         {
             if(session.ActiveHubNpc==HubNpcKind.Merchant||session.ActiveHubNpc==HubNpcKind.Blacksmith){DrawHubEquipmentService();return;}
             if(MobileControls.Active){DrawMobileInventory();return;}
+            PrepareInventoryPopupInput();
             ProgressionService progression = session.Progression;
             GameProfile p = progression.Profile;
             RebuildBagItems();
@@ -1259,9 +1260,11 @@ namespace Emberfall
 
             float middle = w.x + 272;
             Rect bagArea=new Rect(middle,w.y+144,864,462);
-            if(inventoryFashionOpen){DrawBagFashion(InventoryArea(bagArea));return;}
-            if(QuietAction(new Rect(middle+460,w.y+108,64,32),"装备",true,null,mobileInventoryTab!=2))mobileInventoryTab=0;
+            if(inventoryFashionOpen){mobileInventoryTab=3;inventoryFashionOpen=false;inventoryComparisonOpen=false;}
+            if(QuietAction(new Rect(middle+460,w.y+108,64,32),"装备",true,null,mobileInventoryTab==0))mobileInventoryTab=0;
             if(QuietAction(new Rect(middle+532,w.y+108,64,32),"补给",true,null,mobileInventoryTab==2))mobileInventoryTab=2;
+            if(QuietAction(new Rect(middle+604,w.y+108,64,32),"时装",true,null,mobileInventoryTab==3))mobileInventoryTab=3;
+            if(mobileInventoryTab==3){DrawBagFashion(InventoryArea(bagArea));return;}
             if(mobileInventoryTab==2){DrawBagSupplies(InventoryArea(bagArea));return;}
             Text(new Rect(middle, w.y + 112, 280, 23), "装备 · " + bagItems.Count + " 件", 16, jade, true);
             Text(new Rect(middle + 280, w.y + 117, 144, 17), "总容量 " + p.inventory.Count + " / " + ProgressionService.InventoryCapacity, 11, muted, false, false, TextAnchor.MiddleRight);
@@ -1274,50 +1277,14 @@ namespace Emberfall
                     inventoryScroll = Vector2.zero;
                     changed = true;
                 }
-            Text(new Rect(middle, w.y + 184, 33, 18), "排序", 10, muted);
-            string[] sorts = { "换装评分 ↓", "等级 ↓", "稀有度 ↓" };
-            for (int i = 0; i < sorts.Length; i++)
-                if (QuietAction(new Rect(middle + 38 + i * 96, w.y + 180, 88, 25),sorts[i],true,"评分按继承部位强化后的属性排序",inventorySort==i))
-                {
-                    inventorySort = i;
-                    inventoryScroll = Vector2.zero;
-                    changed = true;
-                }
             if (changed) { RebuildBagItems(); ResolveSelectedItem(); }
-            Rect viewport = new Rect(middle, w.y + 213, inventoryComparisonOpen?424:864, 390);
-            Fill(viewport, new Color(.025f, .05f, .075f));
-            int columns=inventoryComparisonOpen?3:6;
-            float cellWidth=(viewport.width-24)/columns-4,cellHeight=100;
-            float contentHeight=Mathf.Max(viewport.height,((bagItems.Count+columns-1)/columns)*cellHeight+8);
-            inventoryScroll=BeginTouchScroll("inventory",viewport,inventoryScroll,new Rect(0,0,viewport.width-18,contentHeight));
-            for(int index=0;index<bagItems.Count;index++)
-            {
-                ItemData item=bagItems[index];
-                Rect tile=new Rect(4+(index%columns)*(cellWidth+4),4+(index/columns)*cellHeight,cellWidth,94);
-                if(tile.yMax<inventoryScroll.y||tile.y>inventoryScroll.y+viewport.height)continue;
-                Color rarity=GameBalance.RarityColor(item.rarity);
-                Fill(tile,selectedItem==item.id?new Color(.065f,.12f,.14f):card);
-                if(GUI.Button(new Rect(tile.x,tile.y,tile.width-44,48),GUIContent.none,invisibleButton))
-                {selectedItem=item.id;ReviewEquipment(item);}
-                if(DrawInventoryLock(new Rect(tile.xMax-44,tile.y,44,44),item.locked))Feedback(progression.SetItemLocked(item.id,!item.locked),"装备锁定状态已更新");
-                DrawIcon(new Rect(tile.x+8,tile.y+6,34,34),UIIconAtlas.EquipmentCardIcon(item.slot),rarity);
-                Text(new Rect(tile.x+46,tile.y+7,40,17),GameBalance.SlotName(item.slot),11,rarity,true);
-                Text(new Rect(tile.x+46,tile.y+25,40,17),"Lv."+item.level+(IsEquipmentUpgrade(item)?" ↑":""),11,item.level>p.level?gold:muted);
-                bool worn=IsEquipped(item);
-                if(QuietInventoryAction(new Rect(tile.x+4,tile.y+49,(tile.width-12)*.5f,40),"穿戴",!worn&&item.level<=p.level,worn?"已穿戴":item.name))Feedback(progression.Equip(item.id),"装备已穿戴");
-                if(QuietAction(new Rect(tile.center.x+2,tile.y+49,(tile.width-12)*.5f,40),"对比")){selectedItem=item.id;inventoryComparisonOpen=true;}
-            }
-            EndTouchScroll();
-            picked = ResolveSelectedItem();
-            if (bagItems.Count == 0)
-                Text(new Rect(middle + 22, w.y + 322, 380, 76), inventoryFilter < 0 ? "背包已整理完毕\n继续打怪或探索副本，收集新的战利品。" : "这个分类暂无闲置装备\n切换分类，或继续探索收集战利品。", 16, muted, false, true, TextAnchor.MiddleCenter);
-            if(inventoryComparisonOpen&&picked!=null)DrawInventoryComparison(new Rect(w.x+712,w.y+112,424,494),picked,1);
+            Rect viewport=new Rect(middle,w.y+180,864,426);
+            DrawEquipmentIconGrid(viewport,ref inventoryScroll,1);
         }
 
         private void DrawFashion()
         {
-            if(MobileControls.Active){DrawMobileFashion();return;}
-            DrawDesktopCollection();
+            panel=Panel.Inventory;inventoryFashionOpen=true;DrawInventory();
         }
 
         private void DrawPotionAssignment()
@@ -1361,10 +1328,7 @@ namespace Emberfall
 
         private int CompareInventoryItems(ItemData a, ItemData b)
         {
-            int category = a.slot.CompareTo(b.slot);
-            if (inventoryFilter < 0 && category != 0) return category;
-
-            int comparison = inventorySort == 1 ? b.level.CompareTo(a.level) : inventorySort == 2 ? b.rarity.CompareTo(a.rarity) : EquipmentPreviewScore(b).CompareTo(EquipmentPreviewScore(a));
+            int comparison=EquipmentPreviewScore(b).CompareTo(EquipmentPreviewScore(a));
             if (comparison != 0) return comparison;
             comparison = b.level.CompareTo(a.level);
             if (comparison != 0) return comparison;

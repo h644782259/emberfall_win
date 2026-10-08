@@ -3,21 +3,21 @@ namespace Emberfall
 {
     public sealed class InventoryGridGeometry
     {
-        public const float RowHeight=94;
+        public const float RowHeight=48;
         public readonly int Columns;
-        public readonly float CellWidth;
+        public readonly float CellWidth=44;
         public InventoryGridGeometry(float width)
-        {
-            width=Math.Max(220,width);
-            Columns=Math.Max(2,Math.Min(8,(int)Math.Floor((width+6)/110)));
-            CellWidth=(width-(Columns-1)*6)/Columns;
-        }
+        {Columns=Math.Max(1,(int)Math.Floor((Math.Max(44,width)+4)/48));}
         public MobilePanelLayout.Area Tile(int index,float top=0)
-        {return new MobilePanelLayout.Area((index%Columns)*(CellWidth+6),top+(index/Columns)*RowHeight,CellWidth,RowHeight-6);}
-        public MobilePanelLayout.Area Lock(int index,float top=0)
-        {var t=Tile(index,top);return new MobilePanelLayout.Area(t.XMax-44,t.Y,44,44);}
-        public MobilePanelLayout.Area Action(int index,bool compare,float top=0)
-        {var t=Tile(index,top);return new MobilePanelLayout.Area(compare?t.X+CellWidth*.5f+2:t.X+4,t.Y+44,(CellWidth-12)*.5f,44);}
-        public int FullyVisible(float height){return Columns*Math.Max(0,(int)Math.Floor(height/RowHeight));}
+        {return new MobilePanelLayout.Area((index%Columns)*48,top+(index/Columns)*48,44,44);}
+        public int FullyVisible(float height){return Columns*Math.Max(0,(int)Math.Floor((height+4)/48));}
+        public static MobilePanelLayout.Area Popup(MobilePanelLayout.Area bounds,MobilePanelLayout.Area anchor,bool comparison)
+        {
+            float w=Math.Min(250,Math.Max(160,bounds.Width-54)),h=Math.Min(comparison?230:120,bounds.Height);
+            float x=anchor.XMax+6;if(x+w>bounds.XMax)x=anchor.X-w-6;
+            x=Math.Max(bounds.X,Math.Min(bounds.XMax-w,x));
+            float y=Math.Max(bounds.Y,Math.Min(bounds.YMax-h,anchor.Y));
+            return new MobilePanelLayout.Area(x,y,w,h);
+        }
     }
 }

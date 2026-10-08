@@ -9,7 +9,7 @@ namespace Emberfall
         private float TouchRatio { get { return MobileControls.Layout.Scale/scale; } }
         private Rect TouchRect(MobileControlLayout.Area a) { float r=TouchRatio;return new Rect(a.X*r,a.Y*r,a.Width*r,a.Height*r); }
         private Rect TouchRect(float x,float y,float w,float h) { return TouchRect(new MobileControlLayout.Area(x,y,w,h)); }
-        private int TouchFont(float size) { return Mathf.RoundToInt(size*TouchRatio); }
+        private int TouchFont(float size) { return Mathf.RoundToInt(size*TouchRatio*EffectPreferences.InterfaceTextScale); }
         private bool MobileButton(MobileControlLayout.Area area,string label,Color color)
         { Rect r=TouchRect(area);blockedRects.Add(r);return Button(r,label,color); }
         private bool MobileIcon(MobileControlLayout.Area area,string icon,Color color)

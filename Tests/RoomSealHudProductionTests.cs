@@ -5,9 +5,9 @@ namespace UnityEngine
  public struct Vector2 {public float x,y;public Vector2(float x,float y){this.x=x;this.y=y;}}
  public struct Color {public float r,g,b,a;public Color(float r,float g,float b,float a=1){this.r=r;this.g=g;this.b=b;this.a=a;}}
  public enum TextAnchor {MiddleCenter,MiddleLeft,UpperCenter}
- public static class Mathf {public static int RoundToInt(float v)=>(int)Math.Round(v);public static int CeilToInt(float v)=>(int)Math.Ceiling(v);public static float Max(float a,float b)=>Math.Max(a,b);}
- public static class GUI {public static bool enabled=true;}
- public class GUIContent {public string text;public GUIContent(string s){text=s;}}
+ public static class Mathf {public static int RoundToInt(float v)=>(int)Math.Round(v);public static int CeilToInt(float v)=>(int)Math.Ceiling(v);public static float Max(float a,float b)=>Math.Max(a,b);public static float Min(float a,float b)=>Math.Min(a,b);}
+ public static class GUI {public static bool enabled=true;public static bool Button(Rect r,GUIContent c,object style)=>false;}
+ public class GUIContent {public string text;public GUIContent(string s){text=s;}public static GUIContent none=new GUIContent("");}
 }
 namespace Emberfall
 {
@@ -28,14 +28,14 @@ namespace Emberfall
  }
  public sealed partial class GameUI
  {
-  GameSession session=new GameSession();float TouchRatio=1;Color jade=new Color(0,1,0),gold=new Color(1,1,0),pale=new Color(1,1,1),muted=new Color(.5f,.5f,.5f);Vector2 Mouse=new Vector2(-100,-100);string tooltip;
+  GameSession session=new GameSession();float TouchRatio=1;Color jade=new Color(0,1,0),gold=new Color(1,1,0),pale=new Color(1,1,1),muted=new Color(.5f,.5f,.5f);Vector2 Mouse=new Vector2(-100,-100);string tooltip;object invisibleButton;void OpenTravelMap(){}
   List<Rect> blockedRects=new List<Rect>();public struct Label {public Rect Rect;public string Value;public bool Bold;public int Font;public Color Tint;}
   List<Label> labels=new List<Label>();List<Tuple<Rect,float>> bars=new List<Tuple<Rect,float>>();List<Rect> fills=new List<Rect>();
-  void Text(Rect r,string s,int size,Color c,bool bold=false,bool wrap=false,TextAnchor anchor=TextAnchor.MiddleCenter){labels.Add(new Label{Rect=r,Value=s,Bold=bold,Font=size,Tint=c});}
+  void Text(Rect r,string s,int size,Color c,bool bold=false,bool wrap=false,TextAnchor anchor=TextAnchor.MiddleCenter){if(c.r==0&&c.g==0&&c.b==0)return;labels.Add(new Label{Rect=r,Value=s,Bold=bold,Font=size,Tint=c});}
   void Fill(Rect r,Color c){fills.Add(r);}void Bar(Rect r,float value,Color c){bars.Add(Tuple.Create(r,value));}void Box(Rect r,Color c,bool unused){}int TouchFont(int size)=>Mathf.RoundToInt(size*TouchRatio);
   string PlatformText(string s)=>s;bool TryGrowthHudHint(out string a,out string b){a=b="";return false;}
-  class MeasuredStyle {public float CalcHeight(GUIContent content,float width)=>18;}
-  MeasuredStyle Style(int size,bool bold,bool wrap)=>new MeasuredStyle();
+  class MeasuredStyle {public int Size;public Vector2 CalcSize(GUIContent content)=>new Vector2(TextBudget(content.text,Size),Size+2);public float CalcHeight(GUIContent content,float width)=>(float)Math.Ceiling(TextBudget(content.text,Size)/width)*(Size+2);}
+  MeasuredStyle Style(int size,bool bold,bool wrap)=>new MeasuredStyle{Size=size};
   static int n;static void Check(bool b,string why){n++;if(!b)throw new Exception(why);}
   void Clear(){session.RoomAQueries=session.RoomBQueries=session.ChapterAQueries=session.ChapterBQueries=0;labels.Clear();bars.Clear();fills.Clear();blockedRects.Clear();}
   static bool Inside(Rect a,Rect b)=>a.x>=b.x-.001f&&a.y>=b.y-.001f&&a.xMax<=b.xMax+.001f&&a.yMax<=b.yMax+.001f;
@@ -52,12 +52,12 @@ namespace Emberfall
     var run=new RoomChainState(0);Register(run);for(int i=0;i<6;i++){run.AdvanceSeal(0,.25f,true,true,false);run.AdvanceSeal(1,.25f,true,true,false);}v.session.RoomChainRun=run;v.session.Occupied=occupied;v.session.Contested=1-occupied;
     v.Clear();v.DrawMobileModeStatus(card);
     Check(v.session.RoomAQueries==1&&v.session.RoomBQueries==1,"room snapshots read exactly once per mobile draw event");
-    Check(v.labels.Count==4&&v.bars.Count==3,"actual Purify draw contains title two seals support and three bars");
+    Check(v.labels.Count==4&&v.bars.Count==0,"actual Purify draw contains title two seal texts and support without bars");
     foreach(var label in v.labels){Check(Inside(label.Rect,card),"compact actual draw stays inside existing mode card");Check(TextBudget(label.Value,label.Font)<=label.Rect.width,"compact text stays within conservative glyph budget");}
     foreach(var bar in v.bars)Check(Inside(bar.Item1,card),"compact actual draw stays inside existing mode card");
     for(int i=0;i<v.labels.Count;i++)for(int j=i+1;j<v.labels.Count;j++)Check(!Overlap(v.labels[i].Rect,v.labels[j].Rect),"title seal text and support never overlap");
     foreach(var label in v.labels)foreach(var bar in v.bars)Check(!Overlap(label.Rect,bar.Item1),"text and capture bars never overlap");
-    var rows=v.labels.Where(l=>l.Value.Contains("/3秒")).ToArray();Check(rows.Length==2&&rows[occupied].Bold&&!rows[1-occupied].Bold&&rows[1-occupied].Value.Contains("争夺"),"actual rows preserve independent occupancy and contest");Check(v.bars.All(b=>b.Item2==.5f),"two partial rings and aggregate each render half progress");
+    var rows=v.labels.Where(l=>l.Value.Contains("/3秒")).ToArray();Check(rows.Length==2&&rows[occupied].Bold&&!rows[1-occupied].Bold&&rows[1-occupied].Value.Contains("争夺"),"actual rows preserve independent occupancy and contest");Check(v.bars.Count==0,"mobile text surface has no panel bars");
     v.session.Paused=true;v.session.Contested=-1;v.session.Occupied=1-occupied;v.Clear();v.DrawMobileModeStatus(card);
     Check(v.labels.Count(l=>l.Value.Contains("暂停"))==2&&v.labels.Where(l=>l.Value.Contains("/3秒")).ToArray()[1-occupied].Bold,"next event observes changed pause contest and occupancy without cached state");
     v.session.Paused=false;v.session.Contested=1-occupied;v.session.Occupied=occupied;
@@ -65,8 +65,8 @@ namespace Emberfall
     for(int i=0;i<6;i++){run.AdvanceSeal(1,.25f,true,true,false);run.AdvanceSeal(0,.25f,true,true,false);}v.Clear();v.DrawMobileModeStatus(card);Check(v.labels[0].Value=="双印完成 · 前往北门"&&v.labels.Count(l=>l.Value.Contains("完成"))==3,"completed room shows both identities and exit instruction");
     run.Fail();v.Clear();v.DrawMobileModeStatus(card);Check(!v.labels.Any(l=>l.Value.Contains("/3秒"))&&v.labels.Any(l=>l.Value=="远征失败"),"terminal event drops both rows rather than retaining previous snapshots");
    }
-   foreach(int seed in new[]{1,2}){v.session.RoomChainRun=new RoomChainState(seed);Register(v.session.RoomChainRun);v.Clear();v.DrawMobileModeStatus(new Rect(0,0,236,76));Check(!v.labels.Any(l=>l.Value.Contains("/3秒"))&&v.bars.Count==1,"Hunt and Escape keep original generic mode card");}
-   v.session.ChapterActive=true;v.session.ChapterOpen=true;v.TouchRatio=1;v.Clear();v.DrawMobileModeStatus(new Rect(0,0,188,76));Check(v.labels.Count==3&&v.bars.Count==2&&v.labels[1].Rect.y==24&&v.labels[2].Rect.y==46,"chapter seal drawing remains unchanged");Check(v.session.ChapterAQueries==1&&v.session.ChapterBQueries==1&&v.session.RoomAQueries==0,"chapter precedence reads only its own pair once");
+   foreach(int seed in new[]{1,2}){v.session.RoomChainRun=new RoomChainState(seed);Register(v.session.RoomChainRun);v.Clear();v.DrawMobileModeStatus(new Rect(0,0,236,76));Check(!v.labels.Any(l=>l.Value.Contains("/3秒"))&&v.bars.Count==0,"Hunt and Escape keep original generic mode card");}
+   v.session.ChapterActive=true;v.session.ChapterOpen=true;v.TouchRatio=1;v.Clear();v.DrawMobileModeStatus(new Rect(0,0,188,76));Check(v.labels.Count==3&&v.bars.Count==0&&v.labels[1].Rect.y>v.labels[0].Rect.yMax&&v.labels[2].Rect.y>v.labels[1].Rect.yMax,"chapter seal drawing remains unchanged");Check(v.session.ChapterAQueries==1&&v.session.ChapterBQueries==1&&v.session.RoomAQueries==0,"chapter precedence reads only its own pair once");
    v.session.ChapterOpen=false;v.Clear();v.DrawMobileModeStatus(new Rect(0,0,188,76));Check(v.bars.Count==0&&v.labels.Any(l=>l.Value=="章节目标"),"null chapter snapshot switches immediately to objective text");
    Console.WriteLine("PASS: "+n+" actual room HUD Draw/rectangle/state assertions; managed UI recorder, not Unity/font screenshots");
   }

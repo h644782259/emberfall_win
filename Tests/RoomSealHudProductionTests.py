@@ -10,7 +10,8 @@ def member(s,k):
  a=s.index(k);b=s.index('{',a)+1;n=1
  while n:n+=(s[b]=='{')-(s[b]=='}');b+=1
  return s[a:b]
-modes=member((root/'Assets/Scripts/UI/GameUI.Modes.cs').read_text(),'private void DrawMobileModeStatus(')
+modesSource=(root/'Assets/Scripts/UI/GameUI.Modes.cs').read_text()
+modes=member(modesSource,'private void DrawMobileModeStatus(')+member(modesSource,'private void DrawMobileSealText(')+member((root/'Assets/Scripts/UI/GameUI.Mobile.cs').read_text(),'private void DrawMobileObjectiveText(')
 desktop=(root/'Assets/Scripts/UI/GameUI.cs').read_text();a=desktop.index('            string objectiveText =');b=desktop.index('            DrawMinimap();',a);desktop=desktop[a:b]
 with tempfile.TemporaryDirectory(prefix='room-seal-hud-') as temporary:
  t=Path(temporary)
@@ -25,5 +26,5 @@ with tempfile.TemporaryDirectory(prefix='room-seal-hud-') as temporary:
  def build():
   q=subprocess.run([args.dotnet,'build',str(project),'--configfile',str(t/'NuGet.Config'),'-v:q'],env=env,capture_output=True,text=True);assert q.returncode==0,q.stdout+q.stderr
  build();q=subprocess.run([args.dotnet,str(t/'bin/Debug/net8.0/Tests.dll')],env=env,capture_output=True,text=True);print(q.stdout);assert q.returncode==0,q.stderr
- source=(t/'Rows.cs').read_text();(t/'Rows.cs').write_text(source.replace('float stride=compact?16:22;','float stride=22;'));build();q=subprocess.run([args.dotnet,str(t/'bin/Debug/net8.0/Tests.dll')],env=env,capture_output=True,text=True);assert q.returncode and 'compact actual draw stays inside existing mode card' in q.stderr,q.stdout+q.stderr
- print('PASS: compiled expanded-row negative rejected by actual mobile Draw rectangles')
+ source=(t/'Draw.cs').read_text();changed=source.replace('y+=h+2*TouchRatio;','y+=h+20*TouchRatio;');assert changed!=source;(t/'Draw.cs').write_text(changed);build();q=subprocess.run([args.dotnet,str(t/'bin/Debug/net8.0/Tests.dll')],env=env,capture_output=True,text=True);assert q.returncode and 'compact actual draw stays inside existing mode card' in q.stderr,q.stdout+q.stderr
+ print('PASS: compiled expanded text spacing rejected by actual mobile draw rectangles')

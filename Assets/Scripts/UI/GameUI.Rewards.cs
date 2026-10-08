@@ -83,7 +83,7 @@ namespace Emberfall
             if(revealed)
             {
                 Text(new Rect(w.x+28,w.yMax-55,w.width-430,36),complete?"奖励已保存":"正在揭晓已保存的奖励",13,muted,false,true);
-                if(complete&&CanTrialChestReward(reward)&&PrimaryButton(new Rect(w.xMax-396,w.yMax-58,180,42), "收下并试穿", jade)){AcceptChestForTrial();return;}
+                if(complete&&CanTrialChestReward(reward)&&PrimaryButton(new Rect(w.xMax-396,w.yMax-58,180,42), "收下并查看时装", jade)){AcceptChestForTrial();return;}
                 if(PrimaryButton(new Rect(w.xMax-208,w.yMax-58,180,42), complete?"收下":"跳过动画", jade, !chestDetails, null, true))
                 {if(!complete)chestRevealedAt=Time.unscaledTime-ChestDuration;else FinishChestReveal();BlockUITransition();}
             }
@@ -165,7 +165,7 @@ namespace Emberfall
             if(!session.Progression.Profile.pendingChestReveal||!ChestAnimationDone||!CanTrialChestReward(reward))return false;
             if(!session.Progression.AcknowledgeChestReward()){Feedback(false,"无法保存奖励确认");return false;}
             session.LogSystem(chestRevealResult);ResetChestReveal();panel=Panel.Fashion;session.SetUIBlocking(true);
-            collectionOwner=session.Player;collectionViewing.Reset();TrialFashion(reward.Slot.Value,reward.Rarity.Value);mobileFashionPreview=true;BlockUITransition();return true;
+            collectionOwner=session.Player;collectionViewing.Reset();inventoryFashionOpen=true;inventoryComparisonOpen=false;BlockUITransition();return true;
         }
 
         private void FinishChestReveal()

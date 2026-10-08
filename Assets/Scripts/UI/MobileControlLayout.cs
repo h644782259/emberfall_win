@@ -54,7 +54,8 @@ namespace Emberfall
             }
             CounterOpportunity=new Area(Attack.X,Attack.Y+Attack.Height+1,Attack.Width/2,13);
             ComboOpportunity=new Area(Attack.X+Attack.Width/2,Attack.Y+Attack.Height+1,Attack.Width/2,13);
-            FocusCommand=new Area(204,Height-170-bottomLift,48,48);RecallCommand=new Area(204,Height-120-bottomLift,48,48);
+            float commandLift=Width<700?22:0;
+            FocusCommand=new Area(204,Height-170-commandLift,48,48);RecallCommand=new Area(204,Height-120-commandLift,48,48);
             PlayerStatus=new Area(Width*.5f-80,Height-35,160,18);
             PlayerHealth=new Area(PlayerStatus.X,PlayerStatus.Y,160,12);
             PlayerEnergy=new Area(PlayerStatus.X,PlayerStatus.Y+15,160,3);Map=new Area(12,12,72,56);
@@ -80,7 +81,7 @@ namespace Emberfall
         }
         private bool ClearView(Area area)
         {
-            if(area.X<0||area.Y<0||area.X+area.Width>Width||area.Y+area.Height>Height)return false;
+            if(area.X<0||area.Y<56||area.X+area.Width>Width||area.Y+area.Height>Height)return false;
             foreach(var control in new[]{MoveZone,Attack,Dodge,Potion,Jump,Menu,Inventory,SkillsMenu,Catalog,Interact,FocusCommand,RecallCommand,Notice,BossHealth,EncounterText,AdventureStatus,PlayerStatus,Map})
                 if(area.Overlaps(control))return false;
             foreach(var skill in Skills)if(area.Overlaps(skill))return false;

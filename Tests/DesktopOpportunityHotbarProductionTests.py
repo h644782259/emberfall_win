@@ -45,6 +45,7 @@ namespace Emberfall {
   struct Label{public Rect Rect;public string Value;public Label(Rect r,string s){Rect=r;Value=s;}}
   List<Label> labels=new List<Label>();List<int> identities=new List<int>();int utilityIcons,dispatches;List<Rect> emphasis=new List<Rect>();
   void Box(Rect r,Color c){}void Fill(Rect r,Color c){}void Border(Rect r,Color c,float width=1){if(width==2)emphasis.Add(r);}void Text(Rect r,string text,int size,Color c,bool bold=false,bool wrap=false,TextAnchor anchor=TextAnchor.MiddleCenter){labels.Add(new Label(r,text));}
+  float TouchRatio=>1;void DrawSkillStock(Rect r,int skill,float u){} // Separate production HUD fixture validates stock badges.
   void DrawIcon(Rect r,object icon,Color tint){if(icon is int skill)identities.Add(skill);else utilityIcons++;Check(hotbarSlots.Any(slot=>r.x==slot.x+1&&r.y==slot.y+1&&r.width==slot.width-2&&r.height==slot.height-2),"glyph fills slot interior regardless of transient status");}object HotbarIcon(GameProfile p,int skill)=>null;
   string PotionTooltip(GameProfile p)=>"potion";string SkillTooltip(GameProfile p,int skill,int rank)=>"skill";void TogglePanel(Panel p){dispatches++;}void SelectSkill(int skill){dispatches++;}void HandleHotbarPointer(Rect[] slots,bool configuring){}
   static int checks;static void Check(bool okay,string why){checks++;if(!okay)throw new Exception(why);}

@@ -45,13 +45,14 @@ namespace Emberfall
 
         private void DrawMobileInventory()
         {
+            PrepareInventoryPopupInput();
             var progression = session.Progression;
             var profile = progression.Profile;
             if (mobileInventoryProfile != progression.CurrentSlotId || mobileInventoryStatusOwner != session.Player)
             {
                 mobileInventoryProfile = progression.CurrentSlotId; mobileInventoryStatusOwner = session.Player;
                 mobileInventoryStatus = mobileSupplyStatus = null;
-                mobileInventoryDetail = false; mobileInventoryTab = 0;
+                inventoryComparisonOpen=false;inventoryPopupItem=null;mobileInventoryDetail = false; mobileInventoryTab = 0;
                 mobileInventoryListScroll = mobileInventoryDetailScroll = mobileSupplyScroll = Vector2.zero;
             }
             // Apply the explicit NPC destination after a new-profile reset, so a
@@ -72,37 +73,31 @@ namespace Emberfall
             var wear=new MobilePanelLayout.Area(layout.Body.X,layout.Body.Y,leftWidth,layout.Height-layout.Body.Y-12);
             var bag=new MobilePanelLayout.Area(wear.XMax+12,layout.Body.Y,layout.Body.Width-leftWidth-12,wear.Height);
             DrawCurrentWear(MobilePanelRect(wear),TouchRatio);
-            if(inventoryFashionOpen){DrawBagFashion(bag);return;}
+            if(inventoryFashionOpen){mobileInventoryTab=3;inventoryFashionOpen=false;inventoryComparisonOpen=false;}
             Rect equipmentTab=MobilePanelRect(new MobilePanelLayout.Area(bag.X,bag.Y,52,44));
             Rect supplyTab=MobilePanelRect(new MobilePanelLayout.Area(bag.X+58,bag.Y,52,44));
-            if(QuietAction(equipmentTab,"装备",true,null,mobileInventoryTab!=2)){mobileInventoryTab=0;mobileInventoryDetail=false;}
+            if(QuietAction(equipmentTab,"装备",true,null,mobileInventoryTab==0)){mobileInventoryTab=0;mobileInventoryDetail=false;}
             if(QuietAction(supplyTab,"补给",true,null,mobileInventoryTab==2)){mobileInventoryTab=2;mobileInventoryDetail=false;}
+            if(QuietAction(MobilePanelRect(new MobilePanelLayout.Area(bag.X+116,bag.Y,52,44)),"时装",true,null,mobileInventoryTab==3)){mobileInventoryTab=3;inventoryComparisonOpen=false;}
             var content=new MobilePanelLayout.Area(bag.X,bag.Y+48,bag.Width,bag.Height-48);
+            if(mobileInventoryTab==3){DrawBagFashion(content);return;}
             if(mobileInventoryTab==2)
             {
                 DrawBagSupplies(content);
                 return;
             }
-            if(inventoryComparisonOpen&&picked!=null)
-            {
-                float dock=Mathf.Min(144,content.Height*.46f);
-                var comparison=new MobilePanelLayout.Area(content.X,content.Y+content.Height-dock,content.Width,dock);
-                content=new MobilePanelLayout.Area(content.X,content.Y,content.Width,content.Height-dock-6);
-                DrawInventoryComparison(MobilePanelRect(comparison),picked,TouchRatio);
-            }
             if(mobileInventoryPicker!=0)
             {
-                string[] choices=mobileInventoryPicker==1?new[]{"全部","武器","护甲","饰品"}:new[]{"评分","等级","品质"};
+                string[] choices=new[]{"全部","武器","护甲","饰品"};
                 for(int choice=0;choice<choices.Length;choice++)
                 {
                     Rect target=MobilePanelRect(new MobilePanelLayout.Area(content.X+(choice%2)*100,content.Y+(choice/2)*50,92,44));
-                    if(QuietAction(target,choices[choice],true,null,mobileInventoryPicker==1?inventoryFilter==choice-1:inventorySort==choice)){if(mobileInventoryPicker==1)inventoryFilter=choice-1;else inventorySort=choice;mobileInventoryPicker=0;mobileInventoryListScroll=Vector2.zero;CancelMobileScroll();BlockUITransition();return;}
+                    if(QuietAction(target,choices[choice],true,null,inventoryFilter==choice-1)){inventoryFilter=choice-1;mobileInventoryPicker=0;mobileInventoryListScroll=Vector2.zero;CancelMobileScroll();BlockUITransition();return;}
                 }
                 return;
             }
             if(DrawMobileEquipmentGrid(content,false))return;
-            if(QuietAction(MobilePanelRect(new MobilePanelLayout.Area(bag.XMax-118,bag.Y,64,44)),MobileInventoryFilterLabel+" ▾")){CycleMobileInventoryFilter();return;}
-            if(DrawInventorySortIcon(MobilePanelRect(new MobilePanelLayout.Area(bag.XMax-44,bag.Y,44,44)))){CycleMobileInventorySort();return;}
+            if(QuietAction(MobilePanelRect(new MobilePanelLayout.Area(bag.XMax-64,bag.Y,64,44)),MobileInventoryFilterLabel+" ▾")){CycleMobileInventoryFilter();return;}
 
         }
 

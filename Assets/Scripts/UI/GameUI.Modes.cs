@@ -72,7 +72,7 @@ namespace Emberfall
   private void DrawMobileSealText(Rect r,ref float y,ChapterSealPresentation seal)
   {
    if(seal==null)return;
-   DrawMobileObjectiveText(r,ref y,seal.Label+" "+Mathf.RoundToInt(seal.Seconds/3f*100)+"%",10,seal.Complete?jade:seal.Contested?gold:pale);
+   DrawMobileObjectiveText(r,ref y,seal.Label,10,seal.Complete?jade:seal.Contested?gold:pale,seal.Occupied);
   }
  }
 }

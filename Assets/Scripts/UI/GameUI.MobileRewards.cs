@@ -3,80 +3,14 @@ namespace Emberfall
 {
     public sealed partial class GameUI
     {
-        private int mobileFashionSlot;
         private Vector2 mobileFashionScroll, mobileChestScroll, mobileChestArtScroll;
         private string mobileChestError, mobileChestOdds;
-        private string mobileFashionStatus, mobileFashionProfile;
+        private string mobileFashionStatus;
         private bool mobileFashionFailed;
-        private PlayerController mobileFashionStatusOwner;
 
         private void DrawMobileFashion()
         {
             panel=Panel.Inventory;inventoryFashionOpen=true;DrawMobileInventory();
-        }
-
-        private void DrawLegacyMobileFashion()
-        {
-            var progression = session.Progression; var profile = progression.Profile;
-            if (mobileFashionProfile != progression.CurrentSlotId || mobileFashionStatusOwner != session.Player)
-            {
-                mobileFashionProfile = progression.CurrentSlotId; mobileFashionStatusOwner = session.Player;
-                mobileFashionStatus = null; mobileFashionScroll = Vector2.zero;
-            }
-            var layout = MobilePanelGeometry();
-            if (DrawMobilePanelChrome(layout, "时装收藏", "星纹 " + profile.fashionThreads + "  ·  外观自由穿戴，属性取最高收藏")) return;
-            if(mobileFashionPreview){DrawMobileCollectionPreview(layout);return;}
-            string[] names = { "翅膀", "武器外观" };
-            for (int i = 0; i < names.Length; i++)
-                if (TabButton(MobilePanelRect(layout.Tab(i, 2)), names[i], mobileFashionSlot == i))
-                { mobileFashionSlot = i; mobileFashionScroll = Vector2.zero; BlockUITransition(); return; }
-            FashionSlot slot = (FashionSlot)mobileFashionSlot;
-            FashionData worn = progression.EquippedFashion(slot), strongest = progression.StrongestFashion(slot);
-            float width = layout.TabbedBody.Width - 18, textWidth = width - 154;
-            string summary = "穿戴中：" + (worn == null ? "无" : worn.name) + "\n收藏属性：" + (strongest == null ? "无" : GameBalance.RarityName(strongest.rarity) + " · " + ProgressionService.FashionBonus(slot, strongest.rarity));
-            float summaryHeight = Mathf.Max(64, 16 + MeasureMobileParagraph(summary, textWidth, 14));
-            string status = string.IsNullOrEmpty(mobileFashionStatus) ? progression.LastError : mobileFashionStatus;
-            float statusHeight = string.IsNullOrEmpty(status) ? 0 : MeasureMobileParagraph(status, width - 16, 14, true) + 12;
-            float total = statusHeight + summaryHeight + 16;
-            for (int rank = 0; rank < 4; rank++) total += MobileFashionRowHeight(slot, (Rarity)rank, textWidth) + 8;
-            string rules = "每次开箱积累星纹；重复收藏额外增加。" + ProgressionService.FashionChoiceCost + " 星纹可在营地兑换缺少的传说部位。";
-            total += 8 + MeasureMobileParagraph(rules, width - 16, 14) + 12;
-            mobileFashionScroll = BeginTouchScroll("mobile-fashion-collection", MobilePanelRect(layout.TabbedBody), mobileFashionScroll,
-                new Rect(0, 0, width * TouchRatio, Mathf.Max(layout.TabbedBody.Height, total) * TouchRatio));
-            if (statusHeight > 0) DrawMobileParagraph(8, 0, width - 16, status, 14,
-                mobileFashionFailed || string.IsNullOrEmpty(mobileFashionStatus) ? gold : jade, true);
-            Fill(TouchRect(0, statusHeight, width, summaryHeight), card);
-            DrawMobileParagraph(8, statusHeight + 8, textWidth, summary, 14, pale);
-            bool unequip = Button(TouchRect(width - 136, statusHeight + 8, 128, 48), "卸下外观", jade, worn != null);
-            float y = statusHeight + summaryHeight + 12; string chosenId = null; int trialRank=-1;
-            for (int rank = 0; rank < 4; rank++)
-            {
-                Rarity rarity = (Rarity)rank;
-                string id = "fashion-" + mobileFashionSlot + "-" + rank;
-                FashionData owned = profile.fashions.Find(value => value != null && value.id == id);
-                bool current = worn != null && worn.id == id;
-                float rowHeight = MobileFashionRowHeight(slot, rarity, textWidth);
-                Color accent = GameBalance.RarityColor(rarity);
-                Fill(TouchRect(0, y, width, rowHeight), card); Fill(TouchRect(0, y, 3, rowHeight), accent);
-                float at = y + 8;
-                at += DrawMobileParagraph(10, at, textWidth, ProgressionService.FashionName(slot, rarity), 16, accent, true);
-                at += DrawMobileParagraph(10, at, textWidth, GameBalance.RarityName(rarity) + " · " + ProgressionService.FashionBonus(slot, rarity), 14, pale);
-                DrawMobileParagraph(10, at, textWidth, EquipmentComparisonPresentation.CollectionState(owned!=null,current,strongest!=null&&strongest.id==id), 14, owned == null ? muted : jade);
-                if (Button(TouchRect(width - 136, y + 8, 128, 48), "试穿", jade)) trialRank=rank;
-                if (Button(TouchRect(width - 136, y + 64, 128, 48), current ? "穿戴中" : owned == null ? "未解锁" : "穿戴", accent, owned != null && !current)) chosenId = id;
-                y += rowHeight + 8;
-            }
-            y += DrawMobileParagraph(8, y + 4, width - 16, rules, 14, muted) + 8;
-            EndTouchScroll();
-            if(trialRank>=0){TrialFashion(slot,(Rarity)trialRank);mobileFashionPreview=true;mobilePreviewTextScroll=Vector2.zero;BlockUITransition();return;}
-            if (unequip) { MobileFashionResult(progression.UnequipFashion(slot), "已卸下外观，收藏属性保留"); BlockUITransition(); return; }
-            if (chosenId != null) { MobileFashionResult(progression.EquipFashion(chosenId), "外观已穿戴"); BlockUITransition(); return; }
-            if (NavigationButton(MobilePanelRect(layout.FooterButton(0, 3)), "返回行囊", jade)) { panel = Panel.Inventory; BlockUITransition(); return; }
-            if(Button(MobilePanelRect(layout.FooterButton(1,3)),"6星纹 → 1碎片",jade,string.IsNullOrEmpty(progression.ThreadMaterialExchangeLockReason(session.IsInCamp)))){ExchangeThreadMaterial();return;}
-            bool ownedLegendary = profile.fashions.Exists(value => value != null && value.slot == slot && value.rarity == Rarity.Legendary);
-            string exchange = ownedLegendary ? "传说已收藏" : !session.IsInCamp ? "回营地兑换传说" : ProgressionService.FashionChoiceCost + " 星纹 · 兑换传说";
-            if (Button(MobilePanelRect(layout.FooterButton(2, 3)), exchange, gold, session.IsInCamp && !ownedLegendary && profile.fashionThreads >= ProgressionService.FashionChoiceCost))
-            { MobileFashionResult(progression.ChooseLegendaryFashion(slot, session.IsInCamp), "传说收藏已解锁"); BlockUITransition(); }
         }
 
         private void MobileFashionResult(bool accepted, string message)
@@ -122,7 +56,7 @@ namespace Emberfall
             else if (DrawMobileChestChoices(layout)) return;
 
             bool firstTrial=complete&&!chestDetails&&CanTrialChestReward(reward);int footerCount=firstTrial?3:2;
-            if(firstTrial&&PrimaryButton(MobilePanelRect(layout.FooterButton(1,3)), "收下并试穿", jade)){AcceptChestForTrial();return;}
+            if(firstTrial&&PrimaryButton(MobilePanelRect(layout.FooterButton(1,3)), "收下并查看时装", jade)){AcceptChestForTrial();return;}
             if (NavigationButton(MobilePanelRect(layout.FooterButton(0, footerCount)), chestDetails ? "返回宝箱" : "概率 / 规则", jade))
             { chestDetails = !chestDetails; mobileChestScroll = Vector2.zero; BlockUITransition(); return; }
             if (DrawButton(MobilePanelRect(layout.FooterButton(footerCount-1, footerCount)), revealed ? complete ? "收下" : "跳过动画" : "返回", revealed ? ButtonRole.Primary : ButtonRole.Navigation, !chestDetails))

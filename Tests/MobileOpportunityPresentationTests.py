@@ -6,6 +6,10 @@ root=Path(__file__).resolve().parents[1];dotnet=sys.argv[1] if len(sys.argv)>1 e
 with tempfile.TemporaryDirectory(prefix='mobile-opportunity-h05-') as t:
  p=Path(t)
  for name in ['Core/CombatOpportunityState','UI/MobileCombatPresentation','UI/MobileControlLayout','UI/MobileOpportunityMeter','UI/MobileControls.Feedback','UI/GameUI.MobileFeedback']:(p/(Path(name).name+'.cs')).write_text((root/'Assets/Scripts'/(name+'.cs')).read_text())
+ # Stock badge has its own actual-production HUD suite; this fixture records opportunity draws only.
+ stock=p/'GameUI.MobileFeedback.cs';body=stock.read_text();a=body.index('        private void DrawSkillStock(');b=body.index('{',a)+1;depth=1
+ while depth:depth+=(body[b]=='{')-(body[b]=='}');b+=1
+ stock.write_text(body[:a]+'private void DrawSkillStock(Rect r,int skill,float unit){}'+body[b:])
  (p/'Fixture.cs').write_text((root/'Tests/MobileOpportunityPresentationTests.cs').read_text());(p/'NuGet.Config').write_text('<configuration><packageSources><clear /></packageSources></configuration>');proj=p/'Test.csproj';proj.write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net8.0</TargetFramework><OutputType>Exe</OutputType></PropertyGroup></Project>');env=dict(os.environ,DOTNET_CLI_HOME=str(p/'cli'),DOTNET_NOLOGO='1')
  def run(oracle=None):
   q=subprocess.run([dotnet,'build',str(proj),'--configfile',str(p/'NuGet.Config'),'-v:q'],env=env,capture_output=True,text=True);print(q.stdout+q.stderr);q.check_returncode()

@@ -28,8 +28,9 @@ with tempfile.TemporaryDirectory(prefix='chapter-seal-route-') as temp:
 # Source wiring, not a claim about pixels or mobile legibility.
 host=(ROOT/'Assets/Scripts/Core/GameSession.ChapterSeals.cs').read_text()
 assert 'TryGetChapterSeal(index' in host and 'chapterPlan.Objectives[index]' in host and 'ChapterRun.SealProgress(index)' in host
-for f in ['UI/GameUI.cs','UI/GameUI.Modes.cs']:
- assert 'DrawChapterSeals(' in (ROOT/('Assets/Scripts/'+f)).read_text()
+assert 'DrawChapterSeals(' in (ROOT/'Assets/Scripts/UI/GameUI.cs').read_text()
+modes=(ROOT/'Assets/Scripts/UI/GameUI.Modes.cs').read_text()
+assert 'DrawMobileSealText(' in modes and 'ChapterSealView(0)' in modes and 'ChapterSealView(1)' in modes
 visual=(ROOT/'Assets/Scripts/Combat/TacticalCaptureVisual.cs').read_text()
 assert '"Seal A":"Seal B"' in visual and 'if(identity!=null)identity.enabled=false' in visual
 print('PASS: A/B HUD and physical-ring identity wiring (source-only, not rendered UI)')
