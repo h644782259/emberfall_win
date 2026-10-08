@@ -22,6 +22,8 @@ namespace Emberfall
         private void Awake() { EnsurePropertyBlock(); }
         private void EnsurePropertyBlock() { if (block == null) block = new MaterialPropertyBlock(); }
         private int count,epoch,allocated;
+        private bool arrowGeometryReady,arrowGeometryFinal,arrowGeometryReduced;
+        private int arrowGeometryRevision;
         private GameSession session;
         private bool pooled,disposing;
         private ulong rentGeneration;
@@ -168,12 +170,26 @@ namespace Emberfall
             if(fx!=null){fx.finaleCast=castId;fx.kind=FilledVfxKind.Charge;fx.Add(crescent,Vector3.up*.18f,new Vector3(radius*.3f,.2f,radius*.3f),Quaternion.identity,0,6,0,radius*.4f,"Arrow charge envelope",true);}
             return new ArrowBatchHandle(fx);
         }
-        internal static void ArrowRain(PlayerController hero,Vector3 at,float radius,Color color,bool final=false,CombatVisualPriority priority=CombatVisualPriority.ActionBody,int castId=0)
-        {var fx=BeginArrowBatch(hero,at,radius,color,final,priority,castId);if(fx.IsValid)fx.ArrowBeat(at,radius,final);}
+        internal static ArrowBatchHandle ArrowRain(PlayerController hero,Vector3 at,float radius,Color color,bool final=false,CombatVisualPriority priority=CombatVisualPriority.ActionBody,int castId=0)
+        {
+            // Immediate rain has no charge phase: avoid building and clipping a discarded envelope.
+            var fx=Create(hero,at,Vector3.forward,FilledVfxKind.ArrowRain,radius,color,final?1.05f:.65f,priority:final?CombatVisualPriority.Finale:priority);
+            if(fx!=null){fx.finaleCast=castId;fx.ArrowBeat(at,radius,final);}
+            return new ArrowBatchHandle(fx);
+        }
         private void ArrowBeat(Vector3 at,float radius,bool final)
         {
             if(!gameObject.activeInHierarchy||owner==null||owner.IsDead||owner.CombatEpoch!=epoch)return;
-            ClearPieces();kind=FilledVfxKind.ArrowRain;transform.position=at;age=0;life=final?1.05f:.65f;size=Mathf.Clamp(radius,.15f,8);
+            float nextSize=Mathf.Clamp(radius,.15f,8);
+            bool reuse=arrowGeometryReady&&arrowGeometryFinal==final&&arrowGeometryReduced==EffectPreferences.ReducedEffects&&
+                arrowGeometryRevision==WorldTraversal.Revision&&(transform.position-at).sqrMagnitude==0&&size==nextSize;
+            if(reuse)
+            {
+                age=0;life=final?1.05f:.65f;
+                for(int i=0;i<count;i++)Animate(pieces[i]);
+                return;
+            }
+            ClearPieces();kind=FilledVfxKind.ArrowRain;transform.position=at;age=0;life=final?1.05f:.65f;size=nextSize;
             if(final){RegisterFinale(finaleCast);if(lease!=null)lease.Promote(CombatVisualPriority.Finale);}
             Add(rupture,Vector3.up*.08f,Vector3.one*(final?size*.65f:.3f),Quaternion.identity,0,5,0,final?size:.4f,"Arrow landing contact",true);
             Add(arrow,Vector3.zero,new Vector3(final?1.7f:.8f,final?3.2f:1.1f,final?1.7f:.8f),Quaternion.identity,0,11,0,.3f,"Primary falling arrow",true);
@@ -184,6 +200,7 @@ namespace Emberfall
                 float a=i*2.39996f,r=size*(.15f+(i%3)*.2f);var offset=new Vector3(Mathf.Cos(a)*r,.02f,Mathf.Sin(a)*r);
                 Add(arrow,offset,new Vector3(.7f,.55f+(i%2)*.2f,.7f),Quaternion.Euler(0,i*47,0),0,12,0,.25f,"Short embedded arrow");
             }
+            arrowGeometryReady=true;arrowGeometryFinal=final;arrowGeometryReduced=EffectPreferences.ReducedEffects;arrowGeometryRevision=WorldTraversal.Revision;
         }
         internal static void PoisonVines(PlayerController hero,Vector3 at,float radius,Color color)
         {
@@ -355,6 +372,7 @@ namespace Emberfall
         }
         private void ClearPieces()
         {
+            arrowGeometryReady=false;
             EnsurePropertyBlock();
             block.SetColor("_Color",new Color(0,0,0,0));block.SetFloat("_Opacity",0);block.SetFloat("_Progress",0);block.SetFloat("_Style",0);block.SetFloat("_EnvelopeMode",0);block.SetFloat("_EnvelopeAge",0);
             for(int i=0;i<allocated;i++)

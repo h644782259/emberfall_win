@@ -20,7 +20,7 @@ for name in ['GameUI.MobileWorkshop.cs','GameUI.Expedition.cs','GameUI.Inventory
 merchant=(r/'GameUI.Merchant.cs').read_text()
 smith=(r/'GameUI.Smith.cs').read_text()
 assert 'string[] tabs={"购买","兑换","出售"}' in merchant
-assert '!gear.locked&&!IsEquipped(gear)' in merchant and 'SellInventoryItem(id)' in merchant and 'string id=merchantSaleId' in merchant
+assert '!gear.locked&&!IsEquipped(gear)' in merchant and 'SellInventoryItem(id)' in merchant and 'string id=item.id' in merchant
 assert '.SetAutoSell(' not in merchant and '.BulkSellLowQuality(' not in merchant
 assert 'ClaimMobileWorkshopLoot' not in (r/'GameUI.MobileWorkshop.cs').read_text()
 assert 'ClaimPendingLoot(item.id)' not in (r/'GameUI.Expedition.cs').read_text()
@@ -50,8 +50,8 @@ print('PASS source wiring: permanent inline four-filter rail, no picker or sort 
 smith=(r/'GameUI.Smith.cs').read_text()
 assert 'DrawServiceBalances(BuildPlanRect(l.Balance,u),u)' in merchant and 'DrawServiceBalances(BuildPlanRect(l.Balance,u),u)' in smith
 assert 'merchantMode==2' in merchant and 'merchantMode==1?mechanics[index]' in merchant and 'merchantMode==0?1' in merchant
-assert 'merchantSaleId=null;merchantSelection=-1' in merchant and 'StartMerchantAction()' in merchant
-assert 'UIIconAtlas.Utility("confirm")' in merchant and '已选中' in merchant
+assert 'if(merchantMode==2)merchantSelection=-1;' in merchant and 'StartMerchantAction()' in merchant
+assert 'PrimaryButton(sell,"出售"' in merchant and '点击选择' not in merchant and '出售选中' not in merchant
 assert 'TextAnchor.MiddleLeft' in merchant and 'r.x+27*unit' in merchant
 assert '费用：' not in smith and '永久提升此部位' not in smith and '兑换请找商人' not in smith and '此部位暂无已拥有' not in smith and '挂件与装备基础属性分开保留' not in smith
 assert 'if(!capped)DrawPriceTint' in smith and 'affordable?gold:new Color(.98f,.28f,.24f)' in smith

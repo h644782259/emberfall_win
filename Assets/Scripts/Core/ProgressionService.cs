@@ -2387,6 +2387,7 @@ namespace Emberfall
             item.locked=owned.locked;item.mechanic=owned.mechanic;item.mechanicVariant=owned.mechanicVariant;item.mechanicVariantUnlocked=owned.mechanicVariantUnlocked;
             candidate.inventory[candidate.inventory.IndexOf(owned)]=item;
             Profile=candidate;collectedLootIds.Add(item.id);
+            PublishLootCollected(item);
             if(IsStrictEquipmentUpgrade(item))PublishRewardMoment(RewardMomentKind.StrictUpgrade,item);
             LastError=string.Empty;RaiseChanged();
             if(overflow)LastError="背包超过常规容量，"+item.name+"已保全在行囊中，可直接查看、穿戴或整理。";
@@ -2801,6 +2802,13 @@ namespace Emberfall
             RaiseChanged();
         }
 
+        public event Action<ItemData> LootCollected;
+        private void PublishLootCollected(ItemData item)
+        {
+            var handlers=LootCollected;if(handlers==null)return;
+            foreach(Action<ItemData> handler in handlers.GetInvocationList())
+                try{handler(item);}catch(Exception error){Debug.LogWarning("Emberfall: loot notice observer failed: "+error);}
+        }
         public RewardMoment LastRewardMoment {get;private set;}
         private long rewardMomentSequence;
         public bool IsStrictEquipmentUpgrade(ItemData item)

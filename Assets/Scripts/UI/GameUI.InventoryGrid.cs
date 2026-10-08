@@ -7,7 +7,7 @@ namespace Emberfall
         {
             if(mobileInventoryTab==tab)return;
             mobileInventoryTab=tab;mobileInventoryDetail=false;inventoryComparisonOpen=false;inventoryPopupItem=null;
-            CancelMobileScroll();BlockUITransition();
+            CancelMobileScroll();
         }
         private float inventoryActionUntil=-1;
         private bool inventoryComparisonOpen;
@@ -121,7 +121,7 @@ namespace Emberfall
                 bool selected=inventoryFilter==index-1;
                 if(selected)Fill(hit,new Color(gold.r,gold.g,gold.b,.08f));
                 if(QuietAction(hit,filters[index],!inventoryComparisonOpen,null,selected))
-                {inventoryFilter=index-1;scroll=Vector2.zero;RebuildBagItems();ResolveSelectedItem();CancelMobileScroll();BlockUITransition();}
+                {inventoryFilter=index-1;scroll=Vector2.zero;RebuildBagItems();ResolveSelectedItem();CancelMobileScroll();}
             }
             viewport.width-=InventoryGridGeometry.FilterRailWidth*u;
             float available=viewport.width/u-18;var geometry=new InventoryGridGeometry(available);
@@ -197,8 +197,7 @@ namespace Emberfall
             if(!inventoryPopupCompare&&!potion&&!fashion)
             {
                 Rect detail=new Rect(r.x+8*u,r.y+116*u,r.width-16*u,Mathf.Max(24*u,r.height-120*u));
-                string copy="装备机制\n"+EquipmentComparisonPresentation.Description(item,session.Progression.Profile.heroClass)+
-                    "\n\n评分 = 攻击×5 + 防御×3 + 生命×0.2；部位匹配的机制额外加20%属性分（统一估值）。";
+                string copy="装备机制\n"+EquipmentComparisonPresentation.Description(item,session.Progression.Profile.heroClass);
                 float textWidth=detail.width-18*u;
                 float textHeight=Style(Mathf.RoundToInt(12*u),false,true).CalcHeight(new GUIContent(copy),textWidth)+8*u;
                 inventoryComparisonScroll=BeginTouchScroll("inventory-popup-detail",detail,inventoryComparisonScroll,new Rect(0,0,textWidth,Mathf.Max(detail.height,textHeight)));

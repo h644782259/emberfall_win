@@ -154,7 +154,7 @@ namespace Emberfall
             y += MobileDetailParagraph(draw, 8, y, available, MobileAttributeLine("攻击", current == null ? 0 : current.attack, preview.attack), 16, pale, true) + 3;
             y += MobileDetailParagraph(draw, 8, y, available, MobileAttributeLine("防御", current == null ? 0 : current.defense, preview.defense), 16, pale, true) + 3;
             y += MobileDetailParagraph(draw, 8, y, available, MobileAttributeLine("生命", current == null ? 0 : current.health, preview.health), 16, pale, true) + 8;
-            y += MobileDetailParagraph(draw, 8, y, available, "评分含机制估值（属性分的20%）· 换装继承部位强化", 14, muted) + 8;
+            y += MobileDetailParagraph(draw, 8, y, available, "换装继承部位强化", 14, muted) + 8;
             y += MobileDetailParagraph(draw, 8, y, available, EquipmentComparisonPresentation.Changes(current,item,progression.Profile.heroClass), 15, gold, true) + 8;
             if(item.mechanic!=EquipmentMechanic.None)
             {

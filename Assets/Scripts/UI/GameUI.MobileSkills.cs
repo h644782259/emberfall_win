@@ -67,7 +67,6 @@ namespace Emberfall
                 CancelMobileScroll();
                 mobileSkillDetailScroll = Vector2.zero;
                 Feedback(saved, mobileSkillStatus);
-                BlockUITransition();
             }
             Badge(learn, Attention.LearnableSkills.Contains(selectedSkill));
         }
@@ -108,7 +107,7 @@ namespace Emberfall
                 Text(new Rect(node.x+4*TouchRatio,node.y+64*TouchRatio,node.width-8*TouchRatio,16*TouchRatio),state,TouchFont(10),canLearn?gold:accent,false,false,TextAnchor.MiddleCenter);
                 Badge(icon,canLearn);
                 if(MobileSkillRowClicked(node)&&(selectedSkill!=skill||!mobileSkillDetail))
-                {selectedSkill=skill;mobileSkillDetail=true;mobileSkillDetailScroll=Vector2.zero;mobileSkillStatus=null;CancelMobileScroll();BlockUITransition();}
+                {selectedSkill=skill;mobileSkillDetail=true;mobileSkillDetailScroll=Vector2.zero;mobileSkillStatus=null;CancelMobileScroll();}
             }
             return 658;
         }

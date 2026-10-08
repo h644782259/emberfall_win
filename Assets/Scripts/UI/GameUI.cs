@@ -133,6 +133,7 @@ namespace Emberfall
         public void Initialize(GameSession gameSession)
         {
             session = gameSession;
+            BindLootNotices();
             var targetFeedback=GetComponent<CombatTargetFeedback>();
             if(targetFeedback==null)targetFeedback=gameObject.AddComponent<CombatTargetFeedback>();
             targetFeedback.Initialize(session);
@@ -247,6 +248,7 @@ namespace Emberfall
 
         private void OnDestroy()
         {
+            ReleaseLootNotices();
             if(session!=null&&session.Progression!=null)session.Progression.Changed-=InvalidateAttention;
             if(attentionDot!=null)Destroy(attentionDot);
             ClearRewardMoment();
@@ -273,7 +275,7 @@ namespace Emberfall
             GUI.matrix = Matrix4x4.TRS(guiOffset, Quaternion.identity, new Vector3(scale, scale, 1));
             GUI.color = Color.white;
             GUI.contentColor = Color.white;
-            GUI.enabled = !session.BackgroundPaused && !LifecycleTouchBlocked && MerchantServiceLayout.StablePanelEvent(UITransitionBlocked,panel==Panel.Inventory||panel==Panel.Skills,Event.current.type==EventType.Repaint||Event.current.type==EventType.Layout);
+            GUI.enabled = !session.BackgroundPaused && !LifecycleTouchBlocked && MerchantServiceLayout.StablePanelEvent(UITransitionBlocked,true,Event.current.type==EventType.Repaint||Event.current.type==EventType.Layout);
             blockedRects.Clear();
             tooltip = null;
             if(exitRequest.Open)
@@ -292,6 +294,7 @@ namespace Emberfall
             }
             else
             {
+                PrepareLootNotices();
                 PrepareRewardMoment();
                 bool priorEnabled = GUI.enabled;
                 GUI.enabled = priorEnabled && panel == Panel.None && !session.InputBlocked;
@@ -324,6 +327,7 @@ namespace Emberfall
                 else if (panel == Panel.HubDialogue) DrawHubNpcDialogue();
                 DrawNotification();
                 DrawRewardMoment();
+                DrawLootNotices();
             }
             if (hotbarDragging && hotbarPointerSkill != -1)
             {
@@ -1341,7 +1345,7 @@ namespace Emberfall
 
         private void SellInventoryItem(string id,bool confirmed=false)
         {
-            if(!MerchantServiceActive){Feedback(false,"请在商人处选择并出售装备。");return;}
+            if(!MerchantServiceActive){Feedback(false,"请在商人处出售装备。");return;}
             if(!confirmed&&session.Progression.PresetReferences(id).Length>0){RequestPresetSale(id);return;}
             int row = bagItems.FindIndex(item => item.id == id);
             ItemData item = session.Progression.Profile.inventory.Find(entry=>entry!=null&&entry.id==id);
@@ -1554,7 +1558,7 @@ namespace Emberfall
             Fill(new Rect(w.x+24,w.y+110,152,470),new Color(.025f,.05f,.065f,.65f));
             for (int i = 0; i < tabs.Length; i++)
                 if (PauseSidebarTab(new Rect(w.x+24,w.y+110+i*54,152,48), tabs[tabOrder[i]], desktopPauseTab == tabOrder[i],1) && desktopPauseTab != tabOrder[i])
-                { desktopPauseTab = tabOrder[i]; BlockUITransition(); }
+                { desktopPauseTab = tabOrder[i]; }
             Text(new Rect(w.x + 212, w.y + 164, 536, 30), session.ZoneName + "  ·  " + ActiveCharacterName(), 17, jade, true, false, TextAnchor.MiddleCenter);
             if (desktopPauseTab == 0)
             {

@@ -55,7 +55,7 @@ namespace Emberfall
                 if(draw)
                 {
                     Rect option=new Rect(4*u,y*u,(w-8)*u,44*u);
-                    if(TabButton(option,"",selected)){reforgeSelected=choice.Quote;reforgeNotice=null;BlockUITransition();}
+                    if(TabButton(option,"",selected)){reforgeSelected=choice.Quote;reforgeNotice=null;}
                     Text(new Rect(option.x+8*u,option.y,option.width-110*u,option.height),label,Mathf.RoundToInt(13*u),selected?gold:pale,true);
                     DrawPrice(new Rect(option.xMax-100*u,option.y+8*u,92*u,28*u),choice.Quote.GoldCost,false,u);
                 }

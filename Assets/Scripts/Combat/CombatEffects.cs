@@ -503,6 +503,7 @@ namespace Emberfall
         private Material orbMaterial;
         private bool fireVisual, poisonVisual, lightningVisual, solidImpactSpawned;
         private SkillVisualRecipe visualRecipe;
+        private FilledSkillVfx.ArrowBatchHandle arrowRainVisual;
         private readonly ScheduledImpactBatch<EnemyController> pendingTickTargets = new ScheduledImpactBatch<EnemyController>();
         private bool IsCurrentCast { get { return owner != null && session != null && session.Player == owner && !owner.IsDead && session.HasStarted && !session.CombatEnded && owner.CombatEpoch == epoch; } }
 
@@ -569,6 +570,7 @@ namespace Emberfall
                 fallingOrb.transform.Rotate(Time.deltaTime*120f,Time.deltaTime*70f,0,Space.Self);
                 if (age >= delay) { Destroy(fallingOrb); fallingOrb = null; }
             }
+            bool arrowVisualEmitted=false;
             CombatImpactBatch.Begin();try
             {
             for (int tick = 0; tick < ScheduledTickWindow.MaximumCatchUp; tick++)
@@ -579,7 +581,12 @@ namespace Emberfall
                 {
                     if (ScheduledTickWindow.Collect(ref nextTick, age, delay + duration, interval, 1) == 0) break;
                     pendingTickTargets.Begin(session.Enemies, true);
-                    if(visualRecipe==SkillVisualRecipe.ArrowRain)FilledSkillVfx.ArrowRain(owner,transform.position,radius,color,priority:CombatVisualPriority.SustainedBackground);
+                    if(visualRecipe==SkillVisualRecipe.ArrowRain&&!arrowVisualEmitted)
+                    {
+                        arrowVisualEmitted=true;
+                        if(arrowRainVisual.IsValid)arrowRainVisual.ArrowBeat(transform.position,radius,false);
+                        else arrowRainVisual=FilledSkillVfx.ArrowRain(owner,transform.position,radius,color,priority:CombatVisualPriority.SustainedBackground);
+                    }
                     if (!solidImpactSpawned)
                     {
                         solidImpactSpawned = true;
@@ -594,7 +601,7 @@ namespace Emberfall
                             FilledSkillVfx.Impact(owner, transform.position, radius, SkillVisualRecipes.Filled(visualRecipe), color,CombatVisualPriority.ActionBody);
                     }
                     if (tick == 0)
-                    { DestructibleProp.StrikeArea(owner,transform.position,radius,damage,castId); CombatFx.Ring(transform.position,radius,color,.42f,.15f); }
+                    { DestructibleProp.StrikeArea(owner,transform.position,radius,damage,castId); if(visualRecipe!=SkillVisualRecipe.ArrowRain)CombatFx.Ring(transform.position,radius,color,.42f,.15f); }
                     if (tick == 0 && lightningVisual)
                         for (int bolt = 0; bolt < 3; bolt++)
                         {
@@ -602,7 +609,7 @@ namespace Emberfall
                             Vector3 end = transform.position + new Vector3(point.x, .15f, point.y);
                             ElementalCombatVfx.Lightning(transform.position + Vector3.up * Random.Range(2.1f, 3.5f), end);
                         }
-                    if (tick == 0 && !meteor && !follow)
+                    if (tick == 0 && !meteor && !follow && visualRecipe!=SkillVisualRecipe.ArrowRain)
                     {
                         for (int j = 0; j < 3; j++)
                         {
@@ -656,7 +663,7 @@ namespace Emberfall
         }
 
         private void Retire() { pendingTickTargets.Clear(); Destroy(gameObject); }
-        private void OnDisable() { castReceipt?.Release();castReceipt=null;pendingTickTargets.Clear(); }
+        private void OnDisable() { arrowRainVisual.Retire();arrowRainVisual=default;castReceipt?.Release();castReceipt=null;pendingTickTargets.Clear(); }
 
         private void OnDestroy()
         {

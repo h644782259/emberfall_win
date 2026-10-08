@@ -28,10 +28,18 @@ namespace Emberfall
             Crystal(root.transform,r,position+Vector3.up*.85f,.45f,gold);
             return root;
         }
+        public static GameObject MakeDungeonReturnMarker(Vector3 position)
+        {
+            var root=new GameObject("Cleared dungeon return portal");root.transform.position=position;
+            var resources=root.AddComponent<WorldResources>();var glow=resources.Material(new Color(.32f,.91f,.77f),true);
+            Ring(root.transform,resources,"Return interaction",position+Vector3.up*.09f,2.5f,.10f,glow,false);
+            Label(root.transform,"Return to camp","返回营地\n靠近传送点交互",position+Vector3.up*4.3f,.08f,new Color(.55f,1f,.85f),false);
+            return root;
+        }
         public static GameObject MakeSideEventCrystal(Vector3 position)
         {
             var root=MakeLootBeacon(position,new Color(.33f,.85f,1));
-            Label(root.transform,"Optional crystal terms","晶核支线 · 2敌\n全灭：1材料+补给\n可放弃 · 不阻北门",position+Vector3.up*2.1f,.065f,new Color(.65f,.95f,1),false);
+            Label(root.transform,"Optional crystal terms","晶核支线\n靠近后开启挑战",position+Vector3.up*2.1f,.065f,new Color(.65f,.95f,1),false);
             return root;
         }
         public static GameObject MakeRoomContestMarker(Transform enemy,float footprint)

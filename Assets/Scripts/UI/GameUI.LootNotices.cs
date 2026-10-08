@@ -1,0 +1,65 @@
+using System.Collections.Generic;
+using UnityEngine;
+namespace Emberfall
+{
+    public sealed partial class GameUI
+    {
+        private sealed class LootNotice { public string Id,Name;public ItemSlot Slot;public Rarity Rarity;public float Started=-1; }
+        private readonly List<LootNotice> lootNotices=new List<LootNotice>();
+        private ProgressionService lootNoticeOwner;private string lootNoticeSlot;
+        private void BindLootNotices()
+        {
+            var p=session.Progression;
+            if(lootNoticeOwner==p&&lootNoticeSlot==p.CurrentSlotId)return;
+            ReleaseLootNotices();lootNoticeOwner=p;lootNoticeSlot=p.CurrentSlotId;p.LootCollected+=QueueLootNotice;
+        }
+        private void ReleaseLootNotices()
+        {if(lootNoticeOwner!=null)lootNoticeOwner.LootCollected-=QueueLootNotice;lootNoticeOwner=null;lootNotices.Clear();}
+        private void QueueLootNotice(ItemData item)
+        {
+            if(item==null||!session.InDungeon||session.IsDead||session.PracticeActive||lootNoticeOwner!=session.Progression||lootNoticeSlot!=session.Progression.CurrentSlotId)return;
+            if(lootNotices.Exists(n=>n.Id==item.id))return;
+            lootNotices.Add(new LootNotice{Id=item.id,Name=item.name,Slot=item.slot,Rarity=item.rarity});
+        }
+        private bool LootNoticesVisible {get{return session.InDungeon&&!session.IsDead&&!session.Paused&&!session.PracticeActive&&panel==Panel.None&&!session.InputBlocked;}}
+        private int VisibleLootNoticeCount {get{return Mathf.Min(lootNotices.Count,MobileControls.Active&&MobileControls.Layout.Height<400?2:3);}}
+        private Rect LootNoticeRect(int index)
+        {float u=MobileControls.Active?TouchRatio:1,w=Mathf.Min(208*u,width*.35f);return new Rect(width-w-12*u,(64+index*60)*u,w,54*u);}
+        private Rect LootNoticeEquipRect(Rect r)
+        {float u=MobileControls.Active?TouchRatio:1;return new Rect(r.xMax-52*u,r.y+5*u,48*u,44*u);}
+        private ItemData LootNoticeUpgrade(LootNotice n)
+        {var item=session.Progression.Profile.inventory.Find(v=>v!=null&&v.id==n.Id);return IsEquipmentUpgrade(item)?item:null;}
+        private void PrepareLootNotices()
+        {
+            BindLootNotices();
+            if(!session.InDungeon||session.IsDead||session.PracticeActive){lootNotices.Clear();return;}
+            if(!LootNoticesVisible){foreach(var n in lootNotices)n.Started=-1;return;}
+            lootNotices.RemoveAll(n=>n.Started>=0&&Time.time-n.Started>=5f);
+            for(int i=0;i<VisibleLootNoticeCount;i++)
+            {
+                var notice=lootNotices[i];if(notice.Started<0)notice.Started=Time.time;
+                Rect r=LootNoticeRect(i);blockedRects.Add(r);
+                if(r.Contains(Mouse)&&(Event.current.type==EventType.MouseDown||Event.current.type==EventType.MouseUp||Event.current.type==EventType.MouseDrag||Event.current.type==EventType.ScrollWheel))
+                {
+                    if(GUI.enabled&&Event.current.type==EventType.MouseDown&&LootNoticeEquipRect(r).Contains(Mouse))
+                    {var item=LootNoticeUpgrade(notice);if(item!=null){bool saved=session.Progression.Equip(item.id);Feedback(saved,saved?"装备已穿戴":session.Progression.LastError);}}
+                    Event.current.Use();
+                }
+            }
+        }
+        private void DrawLootNotices()
+        {
+            if(!LootNoticesVisible)return;
+            float u=MobileControls.Active?TouchRatio:1;
+            for(int i=0;i<VisibleLootNoticeCount;i++)
+            {
+                var notice=lootNotices[i];Rect r=LootNoticeRect(i);Color tint=GameBalance.RarityColor(notice.Rarity);bool upgrade=LootNoticeUpgrade(notice)!=null;
+                Fill(r,new Color(.025f,.045f,.065f,.94f));Border(r,tint);
+                Rect icon=new Rect(r.x+6*u,r.y+9*u,36*u,36*u);Border(icon,tint);DrawIcon(icon,UIIconAtlas.EquipmentCardIcon(notice.Slot),tint);
+                Text(new Rect(r.x+48*u,r.y+5*u,r.width-(upgrade?104:54)*u,26*u),notice.Name,Mathf.RoundToInt(11*u),pale,false,true);
+                Text(new Rect(r.x+48*u,r.y+32*u,r.width-54*u,17*u),"已拾取 · "+GameBalance.RarityName(notice.Rarity),Mathf.RoundToInt(10*u),tint);
+                if(upgrade){Rect action=LootNoticeEquipRect(r);Fill(action,new Color(.08f,.3f,.18f));Border(action,jade);Text(action,"穿戴",Mathf.RoundToInt(12*u),pale,true,false,TextAnchor.MiddleCenter);}
+            }
+        }
+    }
+}

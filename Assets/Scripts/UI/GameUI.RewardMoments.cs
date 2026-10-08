@@ -42,6 +42,7 @@ namespace Emberfall
             {
                 rewardMomentSeen=latest.Sequence;ClearRewardMoment();
                 if(session.PracticeActive||session.IsDead||session.Paused||latest.SlotId!=p.CurrentSlotId||latest.HeroClass!=p.Profile.heroClass)return;
+                if(session.InDungeon&&latest.Kind==RewardMomentKind.StrictUpgrade)return;
                 rewardMoment=latest;rewardMomentStarted=Time.unscaledTime;rewardMomentPanel=panel;
                 var cue=latest.Kind==RewardMomentKind.FirstCore||latest.Kind==RewardMomentKind.FashionExchange?SoundCue.Victory:
                     latest.Kind==RewardMomentKind.Ascension?SoundCue.LevelUp:latest.Kind==RewardMomentKind.MechanicExchange?SoundCue.Loot:

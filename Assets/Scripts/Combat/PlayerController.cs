@@ -1096,7 +1096,7 @@ namespace Emberfall
             }
         }
 
-        internal bool TryJump()
+        internal bool TryJump(Vector3 direction=default(Vector3))
         {
             if (session == null || IsDead || !session.HasStarted || session.InputBlocked || jumping || TraversalStartedThisFrame || movementSkillLock > 0 || (charge != null && charge.IsCharging)) return false;
             Vector3 origin = transform.position;
@@ -1173,7 +1173,14 @@ namespace Emberfall
             if (!jumping || deltaTime <= 0 || float.IsNaN(deltaTime) || float.IsInfinity(deltaTime)) return;
             jumpAge += deltaTime;
             float progress = Mathf.Clamp01(jumpAge / .55f);
-            transform.position = Vector3.Lerp(jumpOrigin,jumpDestination,progress) + Vector3.up * (Mathf.Sin(progress * Mathf.PI) * 1.65f);
+            Vector3 ground=Vector3.Lerp(jumpOrigin,jumpDestination,progress);
+            if(!rangerVault)
+            {
+                Vector3 current=CombatFx.Flat(transform.position);
+                ground=WorldTraversal.Move(current,ground-current,.45f);
+                if(progress>=1f)jumpDestination=ground;
+            }
+            transform.position = ground + Vector3.up * (Mathf.Sin(progress * Mathf.PI) * 1.65f);
             if (progress >= 1f)
             {
                 jumping = false;

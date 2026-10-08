@@ -33,7 +33,7 @@ namespace Emberfall
             return layout;
         }
         // Returns true only when the existing close/navigation lifecycle was used.
-        private bool DrawMobilePanelChrome(MobilePanelLayout layout,string title,string subtitle,bool canClose=true,bool pauseInstead=false,bool showNotice=true,float headerRightReserve=0)
+        private bool DrawMobilePanelChrome(MobilePanelLayout layout,string title,string subtitle,bool canClose=true,bool pauseInstead=false,bool showNotice=true,float headerRightReserve=0,bool showClose=true)
         {
             Fill(new Rect(0,0,width,height),new Color(.018f,.031f,.048f,.985f));
             blockedRects.Add(new Rect(0,0,width,height));
@@ -44,7 +44,7 @@ namespace Emberfall
             Text(TouchRect(layout.Header.X,layout.Header.Y+31,Mathf.Max(1,layout.Header.Width-headerRightReserve),17),
                 string.IsNullOrEmpty(notice)?HubNpcServiceSubtitle(subtitle):PlatformText(notice),TouchFont(12),string.IsNullOrEmpty(notice)?muted:gold,false,false,TextAnchor.MiddleLeft);
             Rule(16*TouchRatio,60*TouchRatio,(layout.Width-32)*TouchRatio,jade);
-            if(NavigationButton(MobilePanelRect(layout.Close), pauseInstead?"菜单":"×", jade, canClose||pauseInstead))
+            if(showClose&&NavigationButton(MobilePanelRect(layout.Close), pauseInstead?"菜单":"×", jade, canClose||pauseInstead))
             {if(pauseInstead)session.SetPaused(true);else ClosePanel();BlockUITransition();return true;}
             return false;
         }

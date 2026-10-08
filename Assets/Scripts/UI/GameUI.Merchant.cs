@@ -5,11 +5,10 @@ namespace Emberfall
     public sealed partial class GameUI
     {
         private int merchantMode,merchantSelection=-1;
-        private string merchantSaleId;
         private float merchantActionUntil=-1;
         private Vector2 merchantGridScroll;
         private void SelectMerchantMode(int mode,bool force=false)
-        {if(!force&&merchantMode==mode)return;merchantMode=mode;merchantSelection=mode==2?-1:0;merchantSaleId=null;merchantGridScroll=Vector2.zero;BlockUITransition();}
+        {if(!force&&merchantMode==mode)return;merchantMode=mode;merchantSelection=mode==2?-1:0;merchantGridScroll=Vector2.zero;}
         private bool StartMerchantAction()
         {if(Time.unscaledTime<merchantActionUntil)return false;merchantActionUntil=Time.unscaledTime+.35f;return true;}
         private void DrawMerchantService()
@@ -27,14 +26,14 @@ namespace Emberfall
             var saleItems=new List<ItemData>();
             if(merchantMode==2)foreach(var gear in p.Profile.inventory)if(gear!=null&&!gear.locked&&!IsEquipped(gear))saleItems.Add(gear);
             int count=merchantMode==0?1:merchantMode==1?mechanics.Length:saleItems.Count;
-            if(merchantMode==2)merchantSelection=saleItems.FindIndex(item=>item.id==merchantSaleId);
+            if(merchantMode==2)merchantSelection=-1;
             else merchantSelection=Mathf.Clamp(merchantSelection,0,Mathf.Max(0,count-1));
-            float contentHeight=l.GridHeight(count);
+            float contentHeight=l.GridHeight(count,true);
             merchantGridScroll=BeginTouchScroll("merchant-"+merchantMode,BuildPlanRect(l.Body,u),merchantGridScroll,new Rect(0,0,l.Body.Width*u,Mathf.Max(l.Body.Height,contentHeight)*u));
             for(int index=0;index<count;index++)
             {
-                var area=l.Tile(index);Rect tile=new Rect(area.X*u,area.Y*u,area.Width*u,area.Height*u);
-                bool selected=index==merchantSelection;
+                var area=l.Tile(index,true);Rect tile=new Rect(area.X*u,area.Y*u,area.Width*u,area.Height*u);
+                bool selected=false;
                 Fill(tile,selected?new Color(.12f,.22f,.24f):card);Border(tile,selected?gold:muted*.4f);
                 if(selected){Border(new Rect(tile.x+2*u,tile.y+2*u,tile.width-4*u,tile.height-4*u),gold);DrawIcon(new Rect(tile.xMax-25*u,tile.y+4*u,20*u,20*u),UIIconAtlas.Utility("confirm"),gold);}
                 ItemData item=merchantMode==2?saleItems[index]:null;
@@ -47,29 +46,27 @@ namespace Emberfall
                 DrawIcon(new Rect(tile.center.x-23*u,tile.y+6*u,46*u,46*u),item!=null?UIIconAtlas.EquipmentCardIcon(item.slot):UIIconAtlas.Utility(mechanic==EquipmentMechanic.None?"potion":"skills"),item!=null?GameBalance.RarityColor(item.rarity):Color.white);
                 Text(new Rect(tile.x+6*u,tile.y+54*u,tile.width-12*u,20*u),caption,Mathf.RoundToInt(12*u),pale,false,false,TextAnchor.MiddleCenter);
                 DrawPriceTint(new Rect(tile.x+8*u,tile.y+77*u,tile.width-16*u,20*u),price,merchantMode==1,u,item!=null||quote!=null?gold:new Color(.98f,.28f,.24f));
-                string state=item!=null?selected?"已选中":"点击选择":owned?"已拥有":quote!=null?merchantMode==0?"可购买":"可兑换":merchantMode==0?p.Profile.potions>=99?"药剂已满":"金币不足":"碎片不足";
-                Text(new Rect(tile.x+6*u,tile.y+100*u,tile.width-12*u,18*u),state,Mathf.RoundToInt(11*u),quote!=null||selected?jade:muted,false,false,TextAnchor.MiddleCenter);
-                if(GUI.Button(tile,GUIContent.none,invisibleButton)){merchantSelection=index;merchantSaleId=item==null?null:item.id;BlockUITransition();}
+                if(item!=null)
+                {
+                    Rect sell=new Rect(tile.x+6*u,tile.y+100*u,tile.width-12*u,44*u);
+                    if(PrimaryButton(sell,"出售",gold,Time.unscaledTime>=merchantActionUntil)&&StartMerchantAction())
+                    {string id=item.id;RebuildBagItems();SellInventoryItem(id);}
+                }
+                else
+                {
+                    string captionAction=owned?"已拥有":quote!=null?merchantMode==0?"购买":"兑换":merchantMode==0?p.Profile.potions>=99?"药剂已满":"金币不足":"碎片不足";
+                    Rect action=new Rect(tile.x+6*u,tile.y+100*u,tile.width-12*u,44*u);
+                    if(PrimaryButton(action,captionAction,gold,quote!=null&&Time.unscaledTime>=merchantActionUntil)&&StartMerchantAction())
+                    {Feedback(p.BuyAtMerchant(quote,MerchantServiceActive),merchantMode==0?"购买成功 · 药剂已入行囊":"兑换成功 · 挂件已拥有，请到铁匠镶嵌");}
+
+                }
             }
             EndTouchScroll();
-            Rect info=BuildPlanRect(l.Info,u);Rect action=BuildPlanRect(l.Action,u);
-            if(merchantMode!=2)
-            {
-                EquipmentMechanic selected=merchantMode==1&&count>0?mechanics[merchantSelection]:EquipmentMechanic.None;
-                var quote=count>0?p.PrepareMerchantPurchase(selected,MerchantServiceActive):null;
-                string hint=merchantMode==0?"生命药剂 × "+p.Profile.potions+" / 99":"兑换后到铁匠镶嵌 · 已拥有的挂件不能重复兑换";
-                Text(info,hint,Mathf.RoundToInt(13*u),muted,false,true);
-                if(PrimaryButton(action,merchantMode==0?"购买":"兑换",gold,quote!=null&&Time.unscaledTime>=merchantActionUntil)&&StartMerchantAction())
-                {Feedback(p.BuyAtMerchant(quote,MerchantServiceActive),merchantMode==0?"购买成功 · 药剂已入行囊":"兑换成功 · 挂件已拥有，请到铁匠镶嵌");BlockUITransition();}
-            }
-            else
-            {
-                Text(info,merchantSelection<0?"请选择装备 · 穿戴中与锁定物品受保护":"已选中："+saleItems[merchantSelection].name,Mathf.RoundToInt(13*u),pale,false,true);
-                if(PrimaryButton(action,"出售选中",gold,merchantSelection>=0&&Time.unscaledTime>=merchantActionUntil)&&StartMerchantAction())
-                {string id=merchantSaleId;merchantSaleId=null;merchantSelection=-1;RebuildBagItems();SellInventoryItem(id);BlockUITransition();}
-                if(count==0)Text(BuildPlanRect(l.Body,u),"没有可出售装备。",Mathf.RoundToInt(16*u),jade);
-            }
+            Rect info=BuildPlanRect(l.Info,u);
+            Text(info,merchantMode==0?"生命药剂 × "+p.Profile.potions+" / 99":merchantMode==1?"兑换后可到铁匠镶嵌":"穿戴中与锁定物品受保护",Mathf.RoundToInt(13*u),muted,false,true);
+            if(merchantMode==2&&count==0)Text(BuildPlanRect(l.Body,u),"没有可出售装备。",Mathf.RoundToInt(16*u),jade);
         }
+
         private bool ServiceCostAction(Rect r,string caption,int cost,bool material,float u,bool enabled,string reason=null)
         {
             bool clicked=Button(r,"",jade,enabled,reason);
