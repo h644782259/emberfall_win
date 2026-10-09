@@ -5,12 +5,6 @@ namespace Emberfall
     {
         private void DrawAttachmentWorkshop()
         {merchantMode=1;DrawMerchantService();}
-        private void DrawDesktopGoalInteraction(Rect objective)
-        {
-            if(session.InDungeon || session.SpecialAdventure || session.ChapterActive || session.PracticeActive || session.IsDead)return;
-            if(objective.Contains(Mouse) && GUI.enabled)tooltip=CurrentProgressionGoalStatus()+"\n点击查看与定位";
-            if(GUI.Button(objective,GUIContent.none,invisibleButton))NavigateProgressionGoal(session.Progression.SelectedProgressionGoal(session.IsInCamp));
-        }
         private void NavigateProgressionGoal(ProgressionGoalState goal)
         {
             if(!session.IsInCamp)

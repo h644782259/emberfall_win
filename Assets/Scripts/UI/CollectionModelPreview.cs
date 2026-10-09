@@ -166,6 +166,12 @@ namespace Emberfall
             }
             return false;
         }
+        bool IsBodyRenderer(Transform part)
+        {
+            for(var t=part;t!=null&&t!=avatar.transform;t=t.parent)
+                if(t.name=="Sword Wrist"||t.name=="Staff Wrist"||t.name=="Bow"||t.name=="Equipped Weapon"||t.name=="Fashion Weapon"||t.name=="Vanguard_Sword"||t.name=="Fashion Wings"||t.name=="Vanguard_Back")return false;
+            return true;
+        }
         void FrameModel()
         {
             if(equipmentFraming)
@@ -185,11 +191,11 @@ namespace Emberfall
             bool found=false;Bounds bounds=new Bounds();
             // Cache the envelope of actual idle/attack/cast poses. Camera bounds do not
             // chase animated limbs, breathing, cloak vertices or orbit angles each frame.
-            for(int action=0;action<3;action++)for(int step=0;step<=4;step++)
+            for(int action=0;action<(centerOnAvatar?1:3);action++)for(int step=0;step<=(centerOnAvatar?0:4);step++)
             {
                 model.SamplePreview(0,(CollectionPreviewAction)action,step*.25f);
                 foreach(var renderer in renderers)
-                    if(renderer!=null&&renderer.enabled&&renderer.gameObject.activeInHierarchy&&InComposition(renderer.transform))
+                    if(renderer!=null&&renderer.enabled&&renderer.gameObject.activeInHierarchy&&InComposition(renderer.transform)&&(!centerOnAvatar||IsBodyRenderer(renderer.transform)))
                     {if(!found){bounds=renderer.bounds;found=true;}else bounds.Encapsulate(renderer.bounds);}
             }
             if(!found)bounds=new Bounds(avatar.transform.position+Vector3.up*1.3f,new Vector3(1.3f,1.6f,1));

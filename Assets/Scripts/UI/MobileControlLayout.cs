@@ -61,6 +61,8 @@ namespace Emberfall
             if(ipad)
             {
                 Attack=ScalePadCombat(Attack);Dodge=ScalePadCombat(Dodge);Jump=ScalePadCombat(Jump);Cancel=Jump;
+                // Give the left skill arc more breathing room; keep a 30.9-unit gap to the right controls.
+                Attack=new Area(Math.Min(Attack.X+12,Dodge.X-Attack.Width-30.9f),Attack.Y,Attack.Width,Attack.Height);
                 Area page=ScalePadCombat(SkillPage);
                 SkillPage=Centered(Width-45,page.Y+page.Height*.5f,68.64f);
                 // Move the arc inward as one unit, preserving equal button spacing.

@@ -92,7 +92,7 @@ namespace Emberfall
             {
                 var a=rewardMoment.Attachment;
                 DrawIcon(new Rect(body.x,body.y,64*u,64*u),UIIconAtlas.Utility("gem"),GameBalance.RarityColor(a.rarity));
-                Text(new Rect(body.x+72*u,body.y,body.width-72*u,64*u),GameBalance.RarityName(a.rarity)+" · "+a.upgradeRank+"/5阶\n独立挂载 · 换装沿用",Mathf.RoundToInt(13*u),pale,false,true);
+                Text(new Rect(body.x+72*u,body.y,body.width-72*u,64*u),GameBalance.RarityName(a.rarity)+" · "+a.upgradeRank+"/9阶 · 升华 "+Mathf.Max(0,a.ascensionRank)+"/3",Mathf.RoundToInt(13*u),pale,false,true);
             }
             if(rewardMoment.Item!=null||rewardMoment.Fashion!=null)
             {

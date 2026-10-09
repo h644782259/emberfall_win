@@ -52,10 +52,57 @@ namespace Emberfall
         private Vector3 sideEventPosition = new Vector3(12,0,-3);
         private string lastDamageSource = "未记录";
         private float lastDamageAmount, lastInterruptAt = -10;
+        private PlayerController combatStateOwner;
+        private int combatStateEpoch=-1;
+        private float combatStateUntil=-1;
+        public bool InCombat
+        {
+            get
+            {
+                if(!HasStarted||Player==null||IsDead||CombatEnded)return false;
+                foreach(var enemy in Enemies)
+                    if(enemy!=null&&!enemy.IsDead&&enemy.isActiveAndEnabled&&enemy.gameObject.activeInHierarchy&&enemy.IsPreparingAttack)return true;
+                return combatStateOwner==Player&&combatStateEpoch==Player.CombatEpoch&&Time.time<combatStateUntil;
+            }
+        }
+        public void RecordCombatEngagement()
+        {
+            if(!HasStarted||Player==null||IsDead||CombatEnded)return;
+            combatStateOwner=Player;combatStateEpoch=Player.CombatEpoch;combatStateUntil=Time.time+4f;
+        }
         private float runDamageTaken,runHealingReceived;
+        private double runDamageTotal;
+        private int runPickupGold,runEnemyExperience;
+        public int RunPickupPotions {get;private set;}
+        private readonly List<string> runItemIds=new List<string>();
+        public string[] RunItemIds {get{return runItemIds.ToArray();}}
+        public void RecordGroundReward(int coins,int potions)
+        {
+            if(!InDungeon)return;
+            runPickupGold=(int)System.Math.Min(int.MaxValue,(long)runPickupGold+Mathf.Max(0,coins));
+            RunPickupPotions+=Mathf.Max(0,potions);
+            if(CombatEnded)LastRunSummary=BuildRunSummary(!IsDead);
+        }
+        private float runMaximumDamage;
+        private int runMaximumCombo;
+        public void RecordOutgoingDamage(float loss)
+        {if(!InDungeon||CombatEnded||loss<=0||float.IsNaN(loss)||float.IsInfinity(loss))return;runDamageTotal+=loss;runMaximumDamage=Mathf.Max(runMaximumDamage,loss);}
         public void RecordActualHealing(float amount){if(PracticeActive){PracticeRecord.Healing(amount);return;}if(InDungeon&&HasStarted&&!IsDead&&amount>0&&!float.IsNaN(amount)&&!float.IsInfinity(amount))runHealingReceived+=amount;}
         private bool objectiveHealedThisWave, sideEventStarted;
         private GameObject sideCrystal;
+
+        private int comboHits,comboEpoch;
+        private float comboLastHit=-100;
+        private PlayerController comboOwner;
+        public int ComboHitCount {get{return !IsDead&&Player!=null&&Player==comboOwner&&Player.CombatEpoch==comboEpoch&&Time.time-comboLastHit<=3f?comboHits:0;}}
+        public void RecordComboHit(float healthLoss)
+        {
+            if(Player==null||IsDead||!HasStarted||healthLoss<=0||float.IsNaN(healthLoss)||float.IsInfinity(healthLoss))return;
+            int previous=ComboHitCount;
+            comboOwner=Player;comboEpoch=Player.CombatEpoch;comboLastHit=Time.time;
+            comboHits=previous<int.MaxValue?previous+1:int.MaxValue;
+            runMaximumCombo=Mathf.Max(runMaximumCombo,comboHits);
+        }
 
         public bool HasBlessing(RunBlessing blessing) { return InDungeon && RunChoices.Has(blessing); }
         public void CancelDungeonSelection() { DungeonSelectionOpen = false; UpdateTimeScale(); }
@@ -77,11 +124,11 @@ namespace Emberfall
             ClearDungeonSettlement();
             if(!enteringChapter)ResetChapterRun();
             MechanismEvidence.Reset();RunChoices.Reset(); reinforcementQueue.Clear(); nextReinforcementAt=0; DungeonSelectionOpen = false; AbandonSideEvent();
-            runDamageTaken=runHealingReceived=0;
+            runDamageTaken=runHealingReceived=0;runDamageTotal=0;runPickupGold=runEnemyExperience=RunPickupPotions=0;runItemIds.Clear();runMaximumDamage=0;runMaximumCombo=0;comboHits=0;comboLastHit=-100;
             combatActions.Clear(); lastDamageSource = "未记录"; lastDamageAmount = 0; lastInterruptAt = -10; recapGoldLost = 0;
             if (dungeon)
             {
-                DungeonEntryLevel = ChapterActive?Mathf.Clamp(Progression.Profile.level,2,100):AdventureRewardRules.DungeonLevel(DungeonTier);
+                DungeonEntryLevel = AdventureRewardRules.DungeonLevel(DungeonTier);
                 runSeed = retryingRoomChain ? roomRetrySeed : Random.Range(0, 1000000);
                 DungeonLayout = runSeed % 2;
                 HealingCharges = 3;
@@ -142,6 +189,7 @@ namespace Emberfall
         public void RecordIncomingDamage(string source, float amount)
         {
             if (amount <= 0||float.IsNaN(amount)||float.IsInfinity(amount)) return;
+            RecordCombatEngagement();
             if(PracticeActive){PracticeRecord.IncomingDamage(amount);return;}
             if(InDungeon)runDamageTaken+=amount;
             lastDamageSource = source; lastDamageAmount = amount;

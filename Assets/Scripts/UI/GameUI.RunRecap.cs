@@ -11,9 +11,35 @@ namespace Emberfall
         private RunRecapSnapshot renderedRecap;
         private RunRecapPresentation recapPresentation;
 
+        private ChestReward settlementChest;
+        private PlayerController settlementOwner;
+        private string settlementSlot;
+        private int settlementEpoch=-1;
+        private bool SettlementRewardsPending {get{return session.DungeonRewardPending||session.ModeRewardPending||session.ChapterRewardPending||session.Progression.Profile.pendingFashionChest||session.Progression.Profile.pendingChestReveal;}}
+        private void RefreshSettlementChest()
+        {
+            if(settlementOwner!=session.Player||settlementSlot!=session.Progression.CurrentSlotId||settlementEpoch!=(session.Player==null?-1:session.Player.CombatEpoch))
+            {settlementChest=null;settlementOwner=session.Player;settlementSlot=session.Progression.CurrentSlotId;settlementEpoch=session.Player==null?-1:session.Player.CombatEpoch;}
+            if(session.Progression.Profile.pendingChestReveal)settlementChest=session.Progression.LastChestReward;
+        }
+        private void CollectSettlementRewards(int selected=-1)
+        {
+            var progression=session.Progression;
+            if(progression.Profile.pendingFashionChest&&!progression.Profile.pendingChestReveal)
+            {
+                if(selected<0)return;
+                if(progression.OpenChosenDungeonChest(selected)==null)return;
+            }
+            if(progression.Profile.pendingChestReveal){settlementChest=progression.LastChestReward;progression.AcknowledgeChestReward();if(progression.Profile.pendingChestReveal)return;}
+            if(session.ChapterRewardPending&&!session.TrySettleChapterReward())return;
+            if(session.DungeonRewardPending&&!session.TrySettleDungeonReward())return;
+            if(session.ModeRewardPending&&!session.TrySettleArenaReward())return;
+        }
+
         // Returns only the explicit primary action. Respawn/navigation stays with the caller.
         private bool DrawStructuredRunRecap(bool death)
         {
+            RefreshSettlementChest();
             bool mobile=MobileControls.Active;
             float unit=mobile?TouchRatio:1f;
             RunRecapLayout layout=new RunRecapLayout(width/unit,height/unit,mobile);
@@ -23,7 +49,7 @@ namespace Emberfall
                 renderedRecap=snapshot; recapScroll=Vector2.zero;recapGenerationDetailsExpanded=false;
                 recapPresentation=snapshot==null?null:new RunRecapPresentation(snapshot);
             }
-            string latestError=session.Progression.LastError;
+            string latestError=string.IsNullOrEmpty(session.Progression.LastError)?null:"保存暂未完成，请重试；已获得的奖励不会重复发放。";
             if(recapError!=latestError)
             {recapError=latestError;if(!string.IsNullOrEmpty(recapError))recapScroll=Vector2.zero;}
             RunRecapPresentation data=recapPresentation;
@@ -41,7 +67,14 @@ namespace Emberfall
             Rule(frame.x+16*unit,frame.y+(mobile?61:78)*unit,frame.width-32*unit,accent*.5f);
             Rect viewport=RecapRect(layout.Viewport,unit);
             float statusHeight=RecapStatusHeight(layout,unit);
-            float contentHeight=RecapContentHeight(layout,data)+statusHeight;
+            float rewardHeight=settlementChest==null?0:DrawChestRewardContents(layout.ContentWidth,unit,settlementChest,null,false,false)+36;
+            var pickedIds=new List<string>();
+            foreach(string id in session.RunItemIds)
+                if(settlementChest==null||settlementChest.equipmentIds==null||System.Array.IndexOf(settlementChest.equipmentIds,id)<0)pickedIds.Add(id);
+            var pickedReward=new ChestReward{equipmentIds=pickedIds.ToArray()};
+            float pickupHeight=pickedIds.Count==0?0:DrawChestRewardContents(layout.ContentWidth,unit,pickedReward,null,false,false)+12;
+            float choiceHeight=session.Progression.Profile.pendingFashionChest?180:0;
+            float contentHeight=RecapContentHeight(layout,data)+statusHeight+rewardHeight+pickupHeight+choiceHeight;
             recapScroll=BeginTouchScroll("recap",viewport,recapScroll,new Rect(0,0,layout.ContentWidth*unit,Mathf.Max(viewport.height,contentHeight*unit)));
             if(statusHeight>0)
             {
@@ -51,6 +84,32 @@ namespace Emberfall
             if(data==null)
                 Text(new Rect(12*unit,(24+statusHeight)*unit,(layout.ContentWidth-24)*unit,56*unit),"暂无战斗记录",Mathf.RoundToInt(22*unit),muted,true,false,TextAnchor.MiddleCenter);
             else DrawRecapCards(layout,data,unit,statusHeight);
+            if(settlementChest!=null)
+            {
+                float rewardTop=(RecapContentHeight(layout,data)+statusHeight)*unit;
+                GUI.BeginGroup(new Rect(0,rewardTop,layout.ContentWidth*unit,rewardHeight*unit));
+                DrawChestRewardContents(layout.ContentWidth,unit,settlementChest,null,true,false);
+                GUI.EndGroup();
+            }
+            if(pickupHeight>0)
+            {
+                GUI.BeginGroup(new Rect(0,(RecapContentHeight(layout,data)+statusHeight+rewardHeight)*unit,layout.ContentWidth*unit,pickupHeight*unit));
+                DrawChestRewardContents(layout.ContentWidth,unit,pickedReward,null,true,false);
+                GUI.EndGroup();
+            }
+            if(choiceHeight>0)
+            {
+                float y=(RecapContentHeight(layout,data)+statusHeight+rewardHeight+pickupHeight)*unit;
+                Text(new Rect(8*unit,y,(layout.ContentWidth-16)*unit,28*unit),"选择一个通关宝箱",Mathf.RoundToInt(16*unit),gold,true);
+                float cell=(layout.ContentWidth-24)/3;
+                int locked=session.Progression.SelectedRewardChest;
+                for(int choice=0;choice<3;choice++)
+                {
+                    Rect tile=new Rect((choice*(cell+8)+4)*unit,y+32*unit,cell*unit,136*unit);
+                    Fill(tile,card);Border(tile,locked==choice?gold:jade);DrawRewardChest(new Rect(tile.x+8*unit,tile.y+4*unit,tile.width-16*unit,76*unit),false,1,0);
+                    if(Button(new Rect(tile.x+4*unit,tile.yMax-48*unit,tile.width-8*unit,44*unit),locked==choice?"继续开启":"宝箱 "+(choice+1),gold,locked<0||locked==choice))CollectSettlementRewards(choice);
+                }
+            }
             EndTouchScroll();
             Rect primary=RecapRect(layout.Primary,unit);
             if(death)
@@ -60,7 +119,13 @@ namespace Emberfall
                 primary.x+=menuWidth+12*unit;primary.width-=menuWidth+12*unit;
             }
 
-            if(session.CanRetryRoomChain)
+            if(!death&&session.InDungeon&&SettlementRewardsPending)
+            {
+                float claimWidth=primary.width*.48f;
+                if(Button(new Rect(primary.x,primary.y,claimWidth,primary.height),session.Progression.Profile.pendingFashionChest?"请选择上方宝箱":string.IsNullOrEmpty(session.Progression.LastError)?"领取奖励":"重试领取",gold,!session.Progression.Profile.pendingFashionChest))CollectSettlementRewards();
+                primary.x+=claimWidth+8*unit;primary.width-=claimWidth+8*unit;
+            }
+            if(death&&session.CanRetryRoomChain)
             {
                 float retryWidth=primary.width*.48f;
                 if(Button(new Rect(primary.x,primary.y,retryWidth,primary.height),"原条件重试",gold))
@@ -89,19 +154,9 @@ namespace Emberfall
                 Text(new Rect(57*unit,(y+14)*unit,(w-73)*unit,35*unit),data.FailureLabel,Mathf.RoundToInt(23*unit),pale,true,false,TextAnchor.MiddleLeft);
                 y+=76;
             }
-            if(data.HasGenerationFailure)y=DrawRecapTip(data,y,w,unit);
-            if(data.HasDamage)
-            {
-                Rect cause=new Rect(0,y*unit,w*unit,66*unit);Fill(cause,new Color(.16f,.085f,.08f));
-                DrawIcon(new Rect(14*unit,(y+17)*unit,31*unit,31*unit),UIIconAtlas.Utility("attack"),new Color(1f,.58f,.44f));
-                Text(new Rect(58*unit,(y+9)*unit,(w-184)*unit,20*unit),"最后受击",Mathf.RoundToInt(12*unit),muted);
-                Text(new Rect(58*unit,(y+30)*unit,(w-184)*unit,26*unit),snapshot.LastDamageSource,Mathf.RoundToInt(18*unit),pale,true);
-                Text(new Rect((w-116)*unit,(y+14)*unit,100*unit,38*unit),"−"+Money(Mathf.CeilToInt(Mathf.Min(1000000000,snapshot.LastDamageAmount))),Mathf.RoundToInt(27*unit),new Color(1f,.64f,.49f),true,false,TextAnchor.MiddleRight);
-                y+=80;
-            }
             if(data.Metrics.Length>0)
             {
-                RecapSection("关键操作",y,w,unit);y+=28;
+                RecapSection("战斗数据",y,w,unit);y+=28;
                 for(int i=0;i<data.Metrics.Length;i++)
                 {
                     var metric=data.Metrics[i];Rect r=RecapRect(layout.Metric(i,y),unit);
@@ -116,57 +171,21 @@ namespace Emberfall
                 }
                 y+=layout.MetricRowsHeight(data.Metrics.Length)+18;
             }
-            if(data.HasProgress)
+            RecapSection("物品获取",y,w,unit);y+=28;
+            long chestGold=settlementChest==null?0:settlementChest.hasCurrencyDeltas?settlementChest.goldDelta:settlementChest.Gold;
+            long chestMaterials=settlementChest!=null&&settlementChest.hasCurrencyDeltas&&settlementChest.materialKind==RewardMaterialKind.StarAshFragment?settlementChest.materialsDelta:0;
+            long threads=settlementChest!=null&&settlementChest.hasCurrencyDeltas?settlementChest.threadsDelta:0;
+            long[] amounts={snapshot.RewardGold+chestGold,snapshot.RewardExperience,snapshot.RewardMaterials+chestMaterials,threads,session.RunPickupPotions,snapshot.RewardRefinementStones};
+            string[] labels={"金币","经验","星烬碎片","星纹","药品","装备洗练石"};
+            for(int i=0;i<(snapshot.RewardRefinementStones>0?6:session.RunPickupPotions>0?5:4);i++)
             {
-                RecapSection(snapshot.Won?"物资与奖励":"保留与损失",y,w,unit);y+=28;
-                float cardHeight=ProgressCardHeight(snapshot);
-                Fill(new Rect(0,y*unit,w*unit,cardHeight*unit),card);
-                float inner=y+12;
-                if(data.Rewards.Length>0)
-                {
-                    float rewardWidth=(w-28-10*(data.Rewards.Length-1))/data.Rewards.Length;
-                    for(int i=0;i<data.Rewards.Length;i++)
-                    {
-                        float x=14+i*(rewardWidth+10);
-                        DrawRewardToken(new Rect(x*unit,inner*unit,rewardWidth*unit,35*unit),data.Rewards[i].Key=="金币"?0:data.Rewards[i].Key=="碎片"?1:3,data.Rewards[i].Value,unit);
-                        Text(new Rect(x*unit,(inner+38)*unit,rewardWidth*unit,23*unit),data.Rewards[i].Key,Mathf.RoundToInt(13*unit),muted);
-                    }
-                    inner+=72;
-                }
-                if(snapshot.RewardDetailsUnavailable)
-                {
-                    Text(new Rect(14*unit,inner*unit,(w-28)*unit,56*unit),"通关进度与奖励已保存，可返回营地继续冒险。",Mathf.RoundToInt(13*unit),muted,false,true);
-                    inner+=64;
-                }
-                if(snapshot.Materials>0)
-                {
-                    Text(new Rect(14*unit,inner*unit,(w-182)*unit,24*unit),"结算碎片",Mathf.RoundToInt(15*unit),pale,true);
-                    Text(new Rect((w-164)*unit,(inner-4)*unit,150*unit,30*unit),snapshot.Materials+" / "+snapshot.ExchangeCost,Mathf.RoundToInt(22*unit),gold,true,false,TextAnchor.MiddleRight);
-                    Fill(new Rect(14*unit,(inner+32)*unit,(w-28)*unit,5*unit),new Color(.09f,.12f,.16f));
-                    Fill(new Rect(14*unit,(inner+32)*unit,(w-28)*unit*data.ExchangeProgress,5*unit),gold);
-                    Text(new Rect(14*unit,(inner+43)*unit,(w-28)*unit,21*unit),snapshot.Materials>=snapshot.ExchangeCost?"可兑换机制宝石":"距兑换还差 "+(snapshot.ExchangeCost-snapshot.Materials)+" 碎片",Mathf.RoundToInt(13*unit),muted);
-                    inner+=72;
-                }
-                if(snapshot.GoldLost>0)
-                {
-                    Text(new Rect(14*unit,inner*unit,(w-160)*unit,25*unit),"倒下损失",Mathf.RoundToInt(14*unit),muted);
-                    Text(new Rect((w-158)*unit,inner*unit,144*unit,25*unit),"−"+Money(snapshot.GoldLost)+" 金币",Mathf.RoundToInt(18*unit),new Color(1f,.64f,.49f),true,false,TextAnchor.MiddleRight);
-                    inner+=34;
-                }
-                if(snapshot.PendingChest||snapshot.FirstClearChoice)
-                {
-                    string reward=snapshot.PendingChest?"通关宝箱":"";
-                    if(snapshot.FirstClearChoice)reward+=(reward.Length>0?"   ·   ":"")+"首通自选";
-                    DrawIcon(new Rect(14*unit,inner*unit,20*unit,20*unit),UIIconAtlas.Utility("inventory"),gold);
-                    Text(new Rect(42*unit,inner*unit,(w-56)*unit,24*unit),reward,Mathf.RoundToInt(14*unit),gold,true);
-                }
-                y+=cardHeight+18;
+                float cell=(w-8)*.5f;Rect tile=new Rect((i%2)*(cell+8)*unit,(y+(i/2)*76)*unit,cell*unit,68*unit);
+                Fill(tile,card);
+                DrawIcon(new Rect(tile.x+10*unit,tile.y+15*unit,32*unit,32*unit),i==5?UIIconAtlas.Utility("gem"):i==4?UIIconAtlas.Utility("potion"):i==1?UIIconAtlas.Utility("upgrade"):UIIconAtlas.Reward(i==0?0:i-1),i==0?gold:jade);
+                Text(new Rect(tile.x+52*unit,tile.y+7*unit,tile.width-60*unit,22*unit),labels[i],Mathf.RoundToInt(13*unit),muted);
+                Text(new Rect(tile.x+52*unit,tile.y+29*unit,tile.width-60*unit,30*unit),"+"+amounts[i].ToString("N0"),Mathf.RoundToInt(21*unit),pale,true);
             }
-            if(!snapshot.Won)y=DrawRecapChips("机制实例",data.MechanismEvidence,y,w,unit,jade);
-            y=DrawRecapChips("机制装备",data.Mechanics,y,w,unit,gold);
-            y=DrawRecapChips("本局祝福",data.Blessings,y,w,unit,jade);
-            y=DrawRecapChips("更多操作",data.ExtraActions,y,w,unit,muted);
-            if(!data.HasGenerationFailure)DrawRecapTip(data,y,w,unit);
+
         }
 
         private float RecapTextHeight(string text,float width,float unit,int font)
@@ -218,12 +237,10 @@ namespace Emberfall
         private float RecapContentHeight(RunRecapLayout layout,RunRecapPresentation data)
         {
             if(data==null)return 110;
-            float result=(data.HasDamage?80:0)+(data.HasFailureBanner?76:0);
-            if(data.Metrics.Length>0)result+=28+layout.MetricRowsHeight(data.Metrics.Length)+18;
-            if(data.HasProgress)result+=28+ProgressCardHeight(data.Snapshot)+18;
-            foreach(string[] values in data.Snapshot.Won?new[]{data.Mechanics,data.Blessings}:new[]{data.MechanismEvidence,data.Mechanics,data.Blessings,data.ExtraActions})
-                if(values.Length>0)result+=28+RunRecapChipLayout.Height(RunRecapChipLayout.Pack(values,layout.ContentWidth))+18;
-            return result+RecapTipHeight(data,layout.ContentWidth,MobileControls.Active?TouchRatio:1,recapGenerationDetailsExpanded)+6;
+            float result=data.HasFailureBanner?76:0;
+            result+=28+layout.MetricRowsHeight(data.Metrics.Length)+18;
+            result+=28+(session.RunPickupPotions>0||data.Snapshot.RewardRefinementStones>0?228:152)+18;
+            return result+6;
         }
     }
 }

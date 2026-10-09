@@ -4,7 +4,7 @@ namespace Emberfall
 {
     public partial class ProgressionService
     {
-        public const int AttachmentUpgradeCost=6,MaximumAttachmentRank=5;
+        public const int AttachmentUpgradeCost=6,MaximumAttachmentRank=9;
         public MechanicAttachment Attachment(EquipmentMechanic mechanic)
         {if(Profile.attachments!=null)foreach(var a in Profile.attachments)if(a!=null&&a.mechanic==mechanic)return a;return null;}
         public int AttachmentVariant(EquipmentMechanic mechanic)
@@ -12,7 +12,7 @@ namespace Emberfall
         private ProgressionGoalState MigratedAttachmentGoal(bool inCamp)
         {
             bool core=Profile.progressionGoal==ProgressionGoalKind.Core;
-            bool missing=FindItem(Profile.progressionGoalItemId)==null&&(Profile.progressionGoal==ProgressionGoalKind.Variant||Profile.progressionGoal==ProgressionGoalKind.Ascension||Profile.progressionGoal==ProgressionGoalKind.Reforge);
+            bool missing=(Profile.progressionGoal==ProgressionGoalKind.Variant||Profile.progressionGoal==ProgressionGoalKind.Ascension||Profile.progressionGoal==ProgressionGoalKind.Reforge);
             if(!core&&!missing)return null;
             var a=Attachment(Profile.progressionGoalMechanic);
             if(a==null&&missing)a=Profile.attachments.Find(x=>x.legacySourceId==Profile.progressionGoalItemId);
@@ -22,18 +22,18 @@ namespace Emberfall
             {g.Done=true;g.Step="宝石已获得，换装后继续沿用";return g;}
             switch(Profile.progressionGoal)
             {
-                case ProgressionGoalKind.Variant:g.Done=a.variantUnlocked;g.Action=g.Done?ProgressionGoalAction.None:ProgressionGoalAction.UnlockVariant;g.MaterialCost=VariantCost;break;
-                case ProgressionGoalKind.Ascension:g.Done=a.rarity==Rarity.Legendary;g.Action=g.Done?ProgressionGoalAction.None:ProgressionGoalAction.Ascend;g.MaterialCost=AscensionCost;g.RequiredAdventureTier=5;break;
+                case ProgressionGoalKind.Variant:g.Done=a.variantUnlocked;g.Action=g.Done?ProgressionGoalAction.None:ProgressionGoalAction.Ascend;g.MaterialCost=AscensionCost;break;
+                case ProgressionGoalKind.Ascension:g.Done=a.ascensionRank>=3;g.Action=g.Done?ProgressionGoalAction.None:ProgressionGoalAction.Ascend;g.MaterialCost=AscensionCost;break;
                 default:g.Done=a.upgradeRank>=MaximumAttachmentRank;g.Action=g.Done?ProgressionGoalAction.None:ProgressionGoalAction.UpgradeAttachment;g.MaterialCost=AttachmentUpgradeCost;break;
             }
-            g.CanAct=inCamp&&!g.Done&&(g.Action==ProgressionGoalAction.UpgradeAttachment?AttachmentUpgradeLock(a.mechanic,true).Length==0:Profile.mechanicMaterials>=g.MaterialCost&&(g.Action!=ProgressionGoalAction.Ascend||a.rarity==Rarity.Epic&&HighestAdventureTier>=5));
+            g.CanAct=inCamp&&!g.Done&&(g.Action==ProgressionGoalAction.UpgradeAttachment?AttachmentUpgradeLock(a.mechanic,true).Length==0:AttachmentAscensionLock(a.mechanic,true).Length==0);
             g.Step=g.Done?"宝石目标已达成，原装备丢失不影响宝石":"旧装备目标已转为独立宝石 · 点击定位铁匠";
             return g;
         }
         public float MechanicPowerMultiplier(EquipmentMechanic mechanic)
-        {var a=Attachment(mechanic);return a!=null&&a.mounted?(.7f+.15f*(int)a.rarity)+.08f*a.upgradeRank+(a.upgradeRank>=5?.2f:0):1f;}
+        {var a=Attachment(mechanic);return a!=null&&a.mounted?BuildCatalog.AscensionPower(a.ascensionRank):1f;}
         public float MechanicRangeMultiplier(EquipmentMechanic mechanic)
-        {var a=Attachment(mechanic);return a!=null&&a.mounted&&a.upgradeRank>=3?1.2f:1f;}
+        {var a=Attachment(mechanic);return a!=null&&a.mounted?BuildCatalog.AscensionRange(a.ascensionRank):1f;}
         private static void NormalizeAttachments(GameProfile profile)
         {
             if(profile.attachmentRevision<0||profile.attachmentRevision>1)throw new ArgumentException("宝石存档版本不受支持，原文件保留。");
@@ -43,11 +43,13 @@ namespace Emberfall
                 if(a==null||a.mechanic==EquipmentMechanic.None||!Enum.IsDefined(typeof(EquipmentMechanic),a.mechanic))continue;
                 if(string.IsNullOrEmpty(a.id)||a.id.Length>80)a.id=Guid.NewGuid().ToString("N");
                 a.level=Clamp(a.level,1,MaximumLevel);a.upgradeRank=Clamp(a.upgradeRank,0,MaximumAttachmentRank);
+                a.ascensionRank=a.ascensionRank<0?(a.rarity==Rarity.Legendary?1:0):Clamp(a.ascensionRank,0,3);
+                if(a.ascensionRank>0&&BuildCatalog.HasMechanicVariant(a.mechanic))a.variantUnlocked=true;
                 a.rarity=(Rarity)Clamp((int)a.rarity,0,3);a.variant=a.variantUnlocked?Clamp(a.variant,0,1):0;
                 var existing=result.Find(x=>x.mechanic==a.mechanic);
                 if(existing!=null)
                 {
-                    existing.level=Math.Max(existing.level,a.level);existing.upgradeRank=Math.Max(existing.upgradeRank,a.upgradeRank);
+                    existing.ascensionRank=Math.Max(existing.ascensionRank,a.ascensionRank);existing.level=Math.Max(existing.level,a.level);existing.upgradeRank=Math.Max(existing.upgradeRank,a.upgradeRank);
                     existing.rarity=(Rarity)Math.Max((int)existing.rarity,(int)a.rarity);
                     if(!existing.mounted&&a.mounted)existing.variant=a.variant;
                     existing.mounted|=a.mounted;existing.variantUnlocked|=a.variantUnlocked;
@@ -93,6 +95,8 @@ namespace Emberfall
             }
             foreach(var a in result)
             {
+                if(a.ascensionRank<0)a.ascensionRank=a.rarity==Rarity.Legendary?1:0;
+                if(a.ascensionRank>0&&BuildCatalog.HasMechanicVariant(a.mechanic))a.variantUnlocked=true;
                 if(profile.variantKnowledge.Contains(a.mechanic))a.variantUnlocked=true;
                 if(a.variantUnlocked&&!profile.variantKnowledge.Contains(a.mechanic))profile.variantKnowledge.Add(a.mechanic);
             }
@@ -118,7 +122,7 @@ namespace Emberfall
             var candidate=Snapshot();
             if(first){candidate.firstClearRewardClaimed=true;candidate.pendingFirstClearReward=false;}
             else candidate.mechanicMaterials-=MechanicExchangeCost;
-            candidate.attachments.Add(new MechanicAttachment{id=Guid.NewGuid().ToString("N"),mechanic=mechanic,level=EquipmentGenerationLevel(Profile.level),mounted=false});
+            candidate.attachments.Add(new MechanicAttachment{id=Guid.NewGuid().ToString("N"),mechanic=mechanic,ascensionRank=0,level=EquipmentGenerationLevel(Profile.level),mounted=false});
             if(!candidate.discoveredMechanics.Contains(mechanic))candidate.discoveredMechanics.Add(mechanic);
             if(!CommitCandidate(candidate,true))return false;
             PublishRewardMoment(first?RewardMomentKind.FirstCore:RewardMomentKind.MechanicExchange,materials:first?0:-MechanicExchangeCost,attachment:Attachment(mechanic));return true;
@@ -143,19 +147,26 @@ namespace Emberfall
         {
             var a=Attachment(mechanic);
             if(!inCamp||a==null||!BuildCatalog.GemCompatible(mechanic,Profile.heroClass)||!BuildCatalog.HasMechanicVariant(mechanic))return Fail("请在营地选择支持变体的本职业宝石。");
-            if(!a.variantUnlocked&&Profile.mechanicMaterials<VariantCost)return Fail("首次学习变体需4枚星烬碎片。");
+            if(!a.variantUnlocked)return Fail("升至3阶并完成首次升华后解锁形态。");
             var candidate=Snapshot();a=candidate.attachments.Find(x=>x.mechanic==mechanic);
-            if(!a.variantUnlocked)candidate.mechanicMaterials-=VariantCost;
-            a.variantUnlocked=true;a.variant=1-a.variant;
+            a.variant=1-a.variant;
             if(!candidate.variantKnowledge.Contains(mechanic))candidate.variantKnowledge.Add(mechanic);
             return CommitCandidate(candidate,true);
         }
-        public bool AscendAttachment(EquipmentMechanic mechanic,bool inCamp)
+        public string AttachmentAscensionLock(EquipmentMechanic mechanic,bool inCamp)
         {
             var a=Attachment(mechanic);
-            if(!inCamp||a==null||!BuildCatalog.GemCompatible(mechanic,Profile.heroClass)||a.rarity!=Rarity.Epic)return Fail("请在营地选择本职业史诗宝石。");
-            if(HighestAdventureTier<AscensionMilestone||Profile.mechanicMaterials<AscensionCost)return Fail("需通关 Lv50 副本并准备24枚碎片。");
-            var candidate=Snapshot();candidate.attachments.Find(x=>x.mechanic==mechanic).rarity=Rarity.Legendary;candidate.mechanicMaterials-=AscensionCost;
+            if(!inCamp)return "请在铁匠处操作";
+            if(a==null||!BuildCatalog.GemCompatible(mechanic,Profile.heroClass))return "请选择本职业宝石";
+            if(a.ascensionRank>=3)return "已完成3次升华";
+            int required=(Math.Max(0,a.ascensionRank)+1)*3;
+            if(a.upgradeRank<required)return "升至"+required+"阶后可进行第"+(Math.Max(0,a.ascensionRank)+1)+"次升华";
+            return Profile.mechanicMaterials<AscensionCost?"需要24碎片 · 当前"+Profile.mechanicMaterials:"";
+        }
+        public bool AscendAttachment(EquipmentMechanic mechanic,bool inCamp)
+        {
+            string reason=AttachmentAscensionLock(mechanic,inCamp);if(reason.Length>0)return Fail(reason);
+            var candidate=Snapshot();var upgraded=candidate.attachments.Find(x=>x.mechanic==mechanic);upgraded.ascensionRank=Math.Max(0,upgraded.ascensionRank)+1;upgraded.variantUnlocked=BuildCatalog.HasMechanicVariant(mechanic);candidate.mechanicMaterials-=AscensionCost;
             if(!CommitCandidate(candidate,true))return false;
             PublishRewardMoment(RewardMomentKind.Ascension,materials:-AscensionCost,attachment:Attachment(mechanic));return true;
         }

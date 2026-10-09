@@ -93,9 +93,48 @@ namespace Emberfall
             Text(new Rect(w.x+24*u,w.y+116*u,w.width-48*u,100*u),"技能：等级成长、职业精通与技能模式。\n目标：实战试炼、进度、奖励和下一步指引。\n商人：机制兑换、药剂与交易。",Mathf.RoundToInt(16*u),pale,false,true);
         }
 
+        private void DrawComboCounter()
+        {
+            int count=session.ComboHitCount;
+            if(count<=0||panel!=Panel.None||session.Paused||session.IsDead)return;
+            float u=MobileControls.Active?TouchRatio:1;
+            Rect r=new Rect((width-200*u)*.5f,(MobileControls.Active?114:188)*u,200*u,40*u);
+            Text(r,"连击 ×"+count,Mathf.RoundToInt(23*u),gold,true,false,TextAnchor.MiddleCenter);
+        }
+
+        public void OpenDungeonExit()
+        {
+            if(!session.NearDungeonReturn||session.InputBlocked)return;
+            panel=Panel.DungeonExit;session.SetUIBlocking(true);BlockUITransition();
+        }
+        private void DrawDungeonExit()
+        {
+            if(!session.NearDungeonReturn){ClosePanel();return;}
+            float u=MobileControls.Active?TouchRatio:1;
+            Rect w=Modal(Mathf.Min(width-24,500*u),Mathf.Min(height-24,250*u),"传送点","");
+            if(PopupCloseButton(new Rect(w.xMax-54*u,w.y+12*u,44*u,44*u))){ClosePanel();return;}
+            float x=w.x+24*u,y=w.y+106*u,bw=(w.width-56*u)*.5f;
+            if(Button(new Rect(x,y,w.width-48*u,44*u),"结算与奖励",gold))
+            {panel=Panel.Summary;session.SetUIBlocking(true);BlockUITransition();return;}
+            y+=52*u;
+            if(Button(new Rect(x,y,bw,44*u),"挑战下一阶",gold,session.CanChallengeNextTier))
+            {
+                session.SetUIBlocking(false);
+                if(session.ChallengeNextTier())panel=Panel.None;
+                else session.SetUIBlocking(true);
+                BlockUITransition();return;
+            }
+            if(Button(new Rect(x+bw+8*u,y,bw,44*u),"返回营地",jade))
+            {
+                session.SetUIBlocking(false);session.ReturnToCamp();
+                if(!session.InDungeon)panel=Panel.None;else session.SetUIBlocking(true);
+                BlockUITransition();
+            }
+        }
+
         private void DrawExpeditionHUD()
         {
-            if(session.NearDungeonReturn){Rect exit=new Rect((width-240)*.5f,height-225,240,48);blockedRects.Add(exit);if(Button(exit,"返回营地 [E]",gold))session.ReturnToCamp();}
+            if(session.NearDungeonReturn){Rect exit=new Rect((width-240)*.5f,height-225,240,48);blockedRects.Add(exit);if(Button(exit,"传送点 [E]",gold))OpenDungeonExit();}
             else if(session.NearChapterExit){Rect next=new Rect((width-300)*.5f,height-225,300,48);blockedRects.Add(next);if(Button(next,"沿星路前进",gold))session.EnterNextChapterRoom();}
             else if(session.NearRoomExit){Rect next=new Rect((width-300)*.5f,height-225,300,48);blockedRects.Add(next);if(Button(next,"北门已开启 · 进入下一间",gold))session.EnterNextRoom();}
             if(session.SideEventAvailable)

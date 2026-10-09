@@ -55,10 +55,7 @@ namespace Emberfall
         {
             // Suspending an engaged enemy invokes OnDisable/CancelAttack. Refuse
             // before any roots change so practice cannot erase a real attack.
-            foreach(var enemy in Enemies)
-                if(enemy!=null&&enemy.gameObject.activeInHierarchy&&!enemy.IsDead&&
-                    (enemy.IsAggro||enemy.IsPreparingAttack||(enemy.transform.position-Player.transform.position).sqrMagnitude<=144f))
-                {Notify("附近有敌人或仍在交战；请先脱离追击、结束预警后再试招。");return false;}
+            if(InCombat){Notify("正在战斗；脱离战斗后可开始试招。");return false;}
             // These windows use absolute combat time; hiding the original owner
             // cannot pause them. Wait rather than consume, rebuild or extend them.
             if(SummonedCompanion.HasPracticeTimedState(Player))

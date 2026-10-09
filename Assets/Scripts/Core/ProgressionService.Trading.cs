@@ -67,7 +67,7 @@ namespace Emberfall
             int cost=free?0:BuildCatalog.GemPrice(quote.Rarity);
             var candidate=Snapshot();candidate.mechanicMaterials-=cost;
             var gem=candidate.attachments.Find(a=>a.mechanic==quote.Mechanic);
-            if(gem==null){gem=new MechanicAttachment{id=System.Guid.NewGuid().ToString("N"),mechanic=quote.Mechanic,level=EquipmentGenerationLevel(Profile.level),mounted=false};candidate.attachments.Add(gem);}
+            if(gem==null){gem=new MechanicAttachment{id=System.Guid.NewGuid().ToString("N"),mechanic=quote.Mechanic,ascensionRank=0,level=EquipmentGenerationLevel(Profile.level),mounted=false};candidate.attachments.Add(gem);}
             gem.rarity=quote.Rarity;
             if(free){candidate.firstClearRewardClaimed=true;candidate.pendingFirstClearReward=false;}
             if(!CommitCandidate(candidate,true))return false;

@@ -49,6 +49,7 @@ namespace Emberfall
         }
         private void DrawPracticeCombatHUD()
         {
+            DrawComboCounter();
             if(MobileControls.Active)DrawMobileHotbar();else DrawHotbar();
             DrawCompanionCommands();DrawChargeProgress();DrawTargetingHint();
         }

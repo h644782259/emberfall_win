@@ -84,7 +84,6 @@ namespace Emberfall
             return description+"\n"+SkillMasterySummary();
         }
         private int selectedMastery;
-        private bool masteryManagementOpen;
         private string masteryChangeNotice,masteryNoticeSlot;
         private float masteryChangedAt;
         private int masteryChangedNode=-1;
@@ -101,15 +100,8 @@ namespace Emberfall
             if(draw)
             {
                 Text(new Rect(4*u,y*u,(width-132)*u,36*u),"可用精通点 "+p.Profile.skillPoints,Mathf.RoundToInt(16*u),gold,true);
-                if(TabButton(new Rect((width-124)*u,y*u,124*u,36*u),"配点管理",masteryManagementOpen))masteryManagementOpen=!masteryManagementOpen;
             }
             y+=44;
-            if(masteryManagementOpen)
-            {
-                if(draw&&Button(new Rect(0,y*u,Mathf.Min(220,width)*u,38*u),"重置",jade,session.IsInCamp))
-                {bool saved=p.ResetMastery(true);masteryChangeNotice=saved?"职业精通已重置，精通点已返还":p.LastError;}
-                y+=46;
-            }
             int columns=width>=760?4:2,cap=ProgressionService.MasteryCap(p.Profile.level);
             float tileWidth=(width-(columns-1)*10)/columns,tileHeight=174;
             for(int i=0;i<4;i++)
@@ -150,7 +142,16 @@ namespace Emberfall
             {bool saved=p.SelectMasteryCore(chosen,true);masteryChangeNotice=saved?"已启用 "+BuildCatalog.MasteryName(chosen)+"核心，其他核心已关闭":p.LastError;}
             y+=46;
             GoalParagraph(ref y,width,u,"仅一个核心生效 · "+MasteryCoreRules.EnhancedInvestment+" 点增强"+(!session.IsInCamp?" · 返回营地可切换核心":""),12,muted,false,draw);
-            return DrawSpecializationChoices(width,u,y+8,draw);
+            y=DrawSpecializationChoices(width,u,y+8,draw)+16;
+            if(draw)
+            {
+                Rule(0,y*u,width*u,muted*.3f);
+                DrawIcon(new Rect(4*u,(y+18)*u,24*u,24*u),UIIconAtlas.Utility("reset"),muted);
+                Text(new Rect(38*u,(y+12)*u,(width-174)*u,40*u),"返还已投入的精通点",Mathf.RoundToInt(12*u),muted,false,true);
+                if(Button(new Rect((width-128)*u,(y+10)*u,124*u,44*u),"重置精通",jade,session.IsInCamp))
+                {bool saved=p.ResetMastery(true);masteryChangeNotice=saved?"职业精通已重置，精通点已返还":p.LastError;}
+            }
+            return y+66;
         }
     }
 }

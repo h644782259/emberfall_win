@@ -19,7 +19,7 @@ namespace Emberfall
         public readonly bool Won, InDungeon, Challenge, PendingChest, FirstClearChoice;
         public readonly int Tier, Wave, TotalWaves, Seed, Materials, ExchangeCost, GoldLost;
         public readonly string LastDamageSource, ModeName, FailureReason, GenerationFailureDetail;
-        public readonly int RewardGold, RewardExperience, RewardMaterials;
+        public readonly int RewardGold, RewardExperience, RewardMaterials,RewardRefinementStones;
         public readonly bool RewardDetailsUnavailable;
         public readonly float LastDamageAmount;
         public readonly RunFailureEvidence Evidence;
@@ -29,10 +29,10 @@ namespace Emberfall
             int materials, int exchangeCost, string damageSource, float damageAmount,
             IEnumerable<KeyValuePair<string,int>> actions, IEnumerable<string> mechanics, IEnumerable<string> blessings,
             bool pendingChest, bool firstClearChoice, int goldLost = 0, string modeName = null, string failureReason = null,
-            int rewardGold = 0, int rewardExperience = 0, int rewardMaterials = 0,RunFailureEvidence evidence=null,int[] mechanismCounts=null,bool rewardDetailsUnavailable=false,string generationFailureDetail=null)
+            int rewardGold = 0, int rewardExperience = 0, int rewardMaterials = 0,RunFailureEvidence evidence=null,int[] mechanismCounts=null,bool rewardDetailsUnavailable=false,string generationFailureDetail=null,int rewardRefinementStones=0)
         {
             EmberCreated=mechanismCounts!=null&&mechanismCounts.Length==4?mechanismCounts[0]:0;EmberEffective=mechanismCounts!=null&&mechanismCounts.Length==4?mechanismCounts[1]:0;FrostCreated=mechanismCounts!=null&&mechanismCounts.Length==4?mechanismCounts[2]:0;FrostEffective=mechanismCounts!=null&&mechanismCounts.Length==4?mechanismCounts[3]:0;
-            GenerationFailureDetail=generationFailureDetail??"";Evidence=evidence;RewardDetailsUnavailable=rewardDetailsUnavailable;
+            RewardRefinementStones=rewardDetailsUnavailable?0:Math.Max(0,rewardRefinementStones);GenerationFailureDetail=generationFailureDetail??"";Evidence=evidence;RewardDetailsUnavailable=rewardDetailsUnavailable;
             Won=won; InDungeon=dungeon; Challenge=challenge; Tier=Math.Max(1,tier);
             TotalWaves=Math.Max(1,totalWaves); Wave=Math.Max(0,Math.Min(TotalWaves,wave)); Seed=seed;
             Materials=Math.Max(0,materials); ExchangeCost=Math.Max(1,exchangeCost); GoldLost=Math.Max(0,goldLost);
@@ -70,13 +70,12 @@ namespace Emberfall
             if(snapshot.RewardMaterials>0)rewards.Add(new KeyValuePair<string,int>("碎片",snapshot.RewardMaterials));
             Rewards=rewards.ToArray();
             var actions=new List<KeyValuePair<string,int>>();
-            foreach(var action in snapshot.Actions)
-                if(!string.IsNullOrWhiteSpace(action.Key) && action.Value>0 && action.Key!="换装")actions.Add(action);
-            actions.Sort((a,b)=> { int order=Priority(a.Key).CompareTo(Priority(b.Key));return order!=0?order:string.CompareOrdinal(a.Key,b.Key); });
-            Metrics=actions.GetRange(0,Math.Min(4,actions.Count)).ToArray();
-            var extra=new List<string>();
-            for(int i=Metrics.Length;i<actions.Count;i++)extra.Add(actions[i].Key+" "+actions[i].Value);
-            ExtraActions=extra.ToArray(); Mechanics=Clean(snapshot.Mechanics); Blessings=Clean(snapshot.Blessings);
+            foreach(string key in new[]{"伤害总计","单次最大伤害","最大连击","承受伤害","闪避成功次数"})
+            {
+                int value=0;foreach(var action in snapshot.Actions)if(action.Key==key)value=Math.Max(0,action.Value);
+                actions.Add(new KeyValuePair<string,int>(key,value));
+            }
+            Metrics=actions.ToArray();ExtraActions=new string[0]; Mechanics=Clean(snapshot.Mechanics); Blessings=Clean(snapshot.Blessings);
             MechanismEvidence=snapshot.EmberCreated+snapshot.FrostCreated==0?new string[0]:new[]{"烬地 · 生成 "+snapshot.EmberCreated+" / 生效 "+snapshot.EmberEffective,"霜环回响 · 生成 "+snapshot.FrostCreated+" / 生效 "+snapshot.FrostEffective};
             Tip=HasGenerationFailure?ChooseTip(snapshot):snapshot.EmberCreated>snapshot.EmberEffective?"烬地有未造成生命损失的实例；下次把落点放在敌人推进路线上。":snapshot.FrostCreated>snapshot.FrostEffective?"霜环回响有未造成生命损失的实例；下次留意回响延迟与敌人位置。":snapshot.Won?"":ChooseTip(snapshot);
         }
@@ -125,7 +124,7 @@ namespace Emberfall
             }
         }
         public static string IconFor(string action)
-        { return action.Contains("闪避")?"dodge":action=="普攻回能"||action=="打断"?"attack":action=="支线"?"confirm":"skills"; }
+        { return action.Contains("闪避")?"dodge":action=="普攻回能"||action=="打断"||action=="伤害总计"||action=="单次最大伤害"?"attack":action=="支线"?"confirm":"skills"; }
     }
 
     public sealed class RunRecapLayout

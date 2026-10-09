@@ -9,7 +9,7 @@ namespace Emberfall
   private readonly Dictionary<EnemyController,RoomEnemyReceipt> roomEnemies=new Dictionary<EnemyController,RoomEnemyReceipt>();
   private GameObject roomExitMarker;private bool roomResultRecorded;
   public bool NearRoomExit {get{return RoomChainRun!=null&&RoomChainRun.DoorUnlocked&&Player!=null&&Vector3.Distance(Player.transform.position,new Vector3(0,0,14))<3.8f;}}
-  public static string ChainRoomName(int index){return new[]{"林缘前厅","断梁书库","沉桥水院","星泉休憩室","王座封印"}[Mathf.Clamp(index,0,4)];}
+  public static string ChainRoomName(int index){return new[]{"林缘前厅","断梁书库","沉桥水院","星泉守卫室","王座封印"}[Mathf.Clamp(index,0,4)];}
   public string RoomObjectiveStatus {get{return RoomChainRun==null?"":RoomChainRun.Finished?(RoomChainRun.Failed?"远征结束 · 返回营地":"远征完成 · 领取结算"):"房间 "+(RoomChainRun.Room.Index+1)+" / 5 · "+TacticalObjectiveStatus;}}
   private void ResetRoomChain(bool dungeon)
   {
@@ -107,7 +107,7 @@ namespace Emberfall
    if(RoomChainRun==null||!RoomChainRun.Finished||roomResultRecorded)return;
    roomResultRecorded=true;DungeonCleared=!RoomChainRun.Failed;
    if(DungeonCleared){TrySettleRoomReward();GameAudio.Play(SoundCue.Victory);}
-   LastRunSummary=BuildRunSummary(DungeonCleared);SuspendInputs();UpdateTimeScale();
+   LastRunSummary=BuildRunSummary(DungeonCleared);SuspendInputs();if(DungeonCleared)DismissFinishedResult();UpdateTimeScale();
   }
   private bool TrySettleRoomReward()
   {

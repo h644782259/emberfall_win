@@ -22,7 +22,7 @@ namespace Emberfall
 
         private void OpenBuildPlans()
         {
-            ResetBuildPlanSurface();panel=Panel.Skills;skillSection=1;masteryManagementOpen=true;
+            ResetBuildPlanSurface();panel=Panel.Skills;skillSection=1;
             CancelMobileScroll();
         }
         private void RequestBuildPlanAction(BuildPlanAction action,int slot=0)

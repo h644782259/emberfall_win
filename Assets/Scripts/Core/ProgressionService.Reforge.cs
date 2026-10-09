@@ -3,6 +3,44 @@ namespace Emberfall
 {
     public partial class ProgressionService
     {
+
+        public static int ChapterRefinementStones(ChapterNode node,int tier)
+        {return node==ChapterNode.Redrock?3+Math.Max(1,Math.Min(10,tier))/3:1;}
+        public ItemData PreviewRefinementLimit(string id)
+        {
+            var item=FindItem(id);if(item==null)return null;
+            var result=PreviewUpgrade(item,item.upgradeLevel);int q=Clamp((int)item.rarity,0,3),level=EquipmentGenerationLevel(item.level);
+            float max=EquipmentRollMaximum[q];
+            if(result.baseAttack>0)result.baseAttack=Math.Max(result.baseAttack,Round((item.slot==ItemSlot.Weapon?5+level*2.5f:2+level)*max));
+            if(result.baseDefense>0)result.baseDefense=Math.Max(result.baseDefense,Round((3+level*1.2f)*max));
+            if(result.baseHealth>0)result.baseHealth=Math.Max(result.baseHealth,Round((item.slot==ItemSlot.Armor?10+level*4:6+level*3)*max));
+            if(result.criticalChance>0)result.criticalChance=Math.Max(result.criticalChance,new[]{0f,.03f,.05f,.08f}[q]);
+            if(result.criticalDamageBonus>0)result.criticalDamageBonus=Math.Max(result.criticalDamageBonus,new[]{0f,.10f,.15f,.20f}[q]);
+            ApplyUpgradeRank(result,item.upgradeLevel);return result;
+        }
+        public string RefinementLockReason(string id,bool inCamp)
+        {
+            if(IsPracticeOnly||!inCamp)return "请在铁匠处洗练";
+            var current=FindItem(id);var cap=PreviewRefinementLimit(id);if(current==null||cap==null)return "请选择装备";
+            if(current.attack>=cap.attack&&current.defense>=cap.defense&&current.health>=cap.health&&current.criticalChance>=cap.criticalChance&&current.criticalDamageBonus>=cap.criticalDamageBonus)return "数值已满";
+            if(Profile.refinementCount==int.MaxValue)return "洗练次数已达上限";
+            return Profile.refinementStones<1?"需要装备洗练石 · 赤岩断供主要产出":string.Empty;
+        }
+        private static int RefinedValue(int value,int cap,Random random)
+        {return value>=cap?value:Math.Min(cap,value+Math.Max(1,(int)Math.Ceiling((cap-value)*(.15+random.NextDouble()*.3)))) ;}
+        public bool RefineEquipment(string id,bool inCamp)
+        {
+            string reason=RefinementLockReason(id,inCamp);if(reason.Length>0)return Fail(reason);
+            var cap=PreviewRefinementLimit(id);var candidate=Snapshot();var item=candidate.inventory.Find(x=>x.id==id);EnsureUpgradeBasis(item);
+            int seed=candidate.refinementCount;unchecked{foreach(char c in id)seed=seed*31+c;}var random=new Random(seed);
+            item.baseAttack=RefinedValue(item.baseAttack,cap.baseAttack,random);item.baseDefense=RefinedValue(item.baseDefense,cap.baseDefense,random);item.baseHealth=RefinedValue(item.baseHealth,cap.baseHealth,random);
+            item.criticalChance=Math.Max(item.criticalChance,RefinedValue(Round(item.criticalChance*10000),Round(cap.criticalChance*10000),random)/10000f);
+            item.criticalDamageBonus=Math.Max(item.criticalDamageBonus,RefinedValue(Round(item.criticalDamageBonus*10000),Round(cap.criticalDamageBonus*10000),random)/10000f);
+            ApplyUpgradeRank(item,item.upgradeLevel);candidate.refinementStones--;candidate.refinementCount++;
+            if(item.attack==cap.attack&&item.defense==cap.defense&&item.health==cap.health&&item.criticalChance>=cap.criticalChance&&item.criticalDamageBonus>=cap.criticalDamageBonus)candidate.refinementMaxCount=Math.Min(int.MaxValue-1,candidate.refinementMaxCount)+1;
+            return CommitCandidate(candidate,true);
+        }
+
         public static int ReforgeGoldCost(int fromLevel,int targetLevel)
         {
             if(fromLevel<1||targetLevel>100||targetLevel<=fromLevel)throw new ArgumentOutOfRangeException();
@@ -40,7 +78,9 @@ namespace Emberfall
         }
         private static void ApplyReforgeStats(GameProfile profile,ItemData item,int target)
         {
-            item.level=target;item.upgradeLevel=0;item.upgradeBaseInitialized=false;SetRolledStats(item);EnsureUpgradeBasis(item);
+            EnsureUpgradeBasis(item);int attack=item.baseAttack,defense=item.baseDefense,health=item.baseHealth;float crit=item.criticalChance,bonus=item.criticalDamageBonus;
+            item.level=target;item.upgradeLevel=0;item.upgradeBaseInitialized=false;SetRolledStats(item);
+            item.attack=Math.Max(attack,item.attack);item.defense=Math.Max(defense,item.defense);item.health=Math.Max(health,item.health);item.criticalChance=Math.Max(crit,item.criticalChance);item.criticalDamageBonus=Math.Max(bonus,item.criticalDamageBonus);EnsureUpgradeBasis(item);
             if(IsEquipped(profile,item.id))ApplyUpgradeRank(item,profile.slotUpgradeRanks[(int)item.slot]);
         }
         public string ReforgeLockReason(ReforgeQuote quote,bool inCamp)

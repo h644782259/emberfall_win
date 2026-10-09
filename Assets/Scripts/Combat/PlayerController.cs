@@ -35,7 +35,7 @@ namespace Emberfall
         private SkillRuntime skillRuntime;
         private RunChoices ActiveRunBonuses { get { return session != null && session.InDungeon ? session.RunChoices : null; } }
         internal float RunAttackMultiplier { get { return ActiveRunBonuses == null ? 1f : ActiveRunBonuses.AttackMultiplier; } }
-        private float CombatAttack { get { return stats.Damage * RunAttackMultiplier; } }
+        private float CombatAttack { get { return stats.Damage * RunAttackMultiplier * (Health>=MaxHealth*.8f?1f+stats.GemHealthyDamage:1f); } }
 
         private float attackCooldown, attackAnimation, hurtTimer, dodgeCooldown, invulnerability, skillFeedbackCooldown;
         private const float BlinkProtectionDuration = .38f;
@@ -258,7 +258,7 @@ namespace Emberfall
             try
             {
             if (session == null || IsDead || session.CombatEnded || IsBlinkInvulnerable || invulnerability > 0 || !session.HasStarted || amount <= 0 || float.IsNaN(amount) || float.IsInfinity(amount)) return;
-            float damage = Mathf.Max(1, amount * CombatBalance.ArmorDamageMultiplier(stats.Armor, session.Progression.Profile.level));
+            float damage = Mathf.Max(1, amount * CombatBalance.ArmorDamageMultiplier(stats.Armor, session.Progression.Profile.level))*(1f-stats.DamageReduction)*(Health<=MaxHealth*.5f?1f-stats.GemLowHealthGuard:1f);
             if (chargedWardTime > 0) damage *= .75f;
             if(coreWardTime>0)damage*=1f-masteryCore.WardReduction;
             if (guardTime > 0)
@@ -366,6 +366,7 @@ namespace Emberfall
             if (FocusTarget == null) { focusedEnemy = null; focusTime = 0; }
             if (IsDead) return;
             skillRuntime.Advance(dt);
+            skillRuntime.RestoreEnergy(dt*SkillRuntime.EnergyPerSecond*(stats.EnergyRecovery+(Energy<50?stats.GemLowEnergyRecovery:0)));
             if (ActiveRunBonuses != null) skillRuntime.RestoreEnergy(dt * ActiveRunBonuses.ExtraEnergyPerSecond);
             slowTime = Mathf.Max(0, slowTime - dt);
             if (slowTime <= 0) slowStrength = 0;
@@ -1195,6 +1196,11 @@ namespace Emberfall
             if (progress >= 1f)
             {
                 jumping = false;
+                if(!WorldTraversal.CanStand(jumpDestination,.45f))
+                {
+                    Vector3 travel=CombatFx.Flat(jumpDestination-jumpOrigin);
+                    jumpDestination=WorldTraversal.ResolveSkillLanding(jumpOrigin,travel.normalized,travel.magnitude,.45f,session.ArenaRadius-.65f);
+                }
                 transform.position = jumpDestination;platformFallSpeed=0;
                 if(rangerVault)
                 {
@@ -1332,7 +1338,7 @@ namespace Emberfall
             if (!SkillHealingHasEffect(slot,rank))
             { session.Notify("生命已满，无需使用治疗技能。"); return; }
             if (HeroClass==HeroClass.Vanguard && slot == 6 && skillRuntime.Remaining(slot) <= 0 && Energy >= GameBalance.SkillEnergyCost(HeroClass, slot) && !session.TrySpendHealingCharge()) return;
-            if (!skillRuntime.TryConsume(slot, rank, ActiveRunBonuses == null ? 1f : ActiveRunBonuses.CooldownMultiplier))
+            if (!skillRuntime.TryConsume(slot, rank, (ActiveRunBonuses == null ? 1f : ActiveRunBonuses.CooldownMultiplier)*(1f-stats.CooldownReduction)))
             {
                 if(skillRuntime.StockPersistenceFailed){session.Notify("技能未释放："+session.Progression.LastError);return;}
                 if (skillFeedbackCooldown <= 0)
@@ -1349,7 +1355,7 @@ namespace Emberfall
             session.RecordPracticeCast(castId,slot);
             session.RecordCombatAction("职业能力");
             if (executingChargedSkill && session.HasBlessing(RunBlessing.ChargedWard)) chargedWardTime = Mathf.Max(chargedWardTime, 2f);
-            GameAudio.Play(SoundCue.Cast);
+            GameAudio.PlaySkill(HeroClass,slot);
             if (CombatReviewEvents.Enabled) CombatReviewEvents.Emit("skillrelease",CombatReviewObjectId.Get(this),skill:slot);
             if ((HeroClass == HeroClass.Vanguard && slot == 5) || (HeroClass == HeroClass.Ranger && slot == 4)) movementSkillLock = .15f;
             skillBasicRecovery.Begin(HeroClass, slot, executingChargedSkill);

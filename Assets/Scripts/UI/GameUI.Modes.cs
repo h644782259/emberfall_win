@@ -124,25 +124,14 @@ namespace Emberfall
     foreach(var rarity in DropPreviewRules.ClearRarities(mode,tier))
      result.Add(new EntryRewardPreview{Key="clear:"+slot+":"+rarity,Clear=true,Rarity=rarity,Name=GameBalance.SlotName(slot),Icon=UIIconAtlas.EquipmentCardIcon(slot,level,rarity,session.Progression.Profile.heroClass),Tint=GameBalance.RarityColor(rarity),Description=ProgressionService.EquipmentDropPreview(slot,rarity,level)});
    }
-   if(!chapter)
-   {
-    var gem=AdventureRewardRules.ExclusiveGem(mode);
-    result.Add(new EntryRewardPreview{Key="gem:"+gem,Clear=true,Rarity=Rarity.Epic,Name=BuildCatalog.GemName(gem),Icon=UIIconAtlas.Utility("gem"),Tint=GameBalance.RarityColor(Rarity.Epic),Description=GemDropDescription(gem,true)});
-   }
+   if(chapter&&session.SelectedChapterNode==ChapterNode.StarPlatform)
+   foreach(var gem in BuildCatalog.GemsFor(session.Progression.Profile.heroClass))foreach(var rarity in new[]{Rarity.Epic,Rarity.Legendary})
+    result.Add(new EntryRewardPreview{Key="gem:"+gem+":"+rarity,Clear=true,Rarity=rarity,Name=BuildCatalog.GemName(gem),Icon=UIIconAtlas.Utility("gem"),Tint=GameBalance.RarityColor(rarity),Description=BuildCatalog.GemName(gem)+"\n星台封印专属产出 · 每次通关随机1颗\n史诗80% · 传说20%\n"+BuildCatalog.MechanicDescription(gem)});
+   if(chapter)result.Add(new EntryRewardPreview{Key="refinement",Clear=true,Rarity=Rarity.Epic,Name="装备洗练石",Icon=UIIconAtlas.Utility("gem"),Tint=jade,Description="装备洗练石 × "+ProgressionService.ChapterRefinementStones(session.SelectedChapterNode,tier)+"\n铁匠洗练：只升不降，最高达到装备数值上限。\n主要产地：赤岩断供。"});
    result.Add(new EntryRewardPreview{Key="shard",Clear=true,Rarity=Rarity.Rare,Name="星烬碎片",Icon=UIIconAtlas.Utility("shard"),Tint=jade,Description="星烬碎片\n数量："+AdventureRewardRules.Materials(mode,tier)+"\n用于机制宝石兑换、升阶与升华。"});
    result.Add(new EntryRewardPreview{Key="gold",Clear=true,Rarity=Rarity.Common,Name="金币",Icon=UIIconAtlas.Reward(0),Tint=gold,Description="金币\n数量："+TierRewardRules.ChestGoldMinimum(tier)+"～"+(TierRewardRules.ChestGoldMinimum(tier)+40)});
    if(mode==-1&&!chapter)foreach(var rarity in new[]{Rarity.Legendary})foreach(var slot in new[]{FashionSlot.Weapon,FashionSlot.Wings})
     result.Add(new EntryRewardPreview{Key="fashion:"+slot+":"+rarity,Clear=true,Rarity=rarity,Name=ProgressionService.FashionName(slot,rarity,session.Progression.Profile.heroClass),Icon=UIIconAtlas.FashionCardIcon(slot,(int)rarity,session.Progression.Profile.heroClass),Tint=GameBalance.RarityColor(rarity),Description=ProgressionService.FashionName(slot,rarity,session.Progression.Profile.heroClass)+"\n"+(slot==FashionSlot.Weapon?"兵装":"羽翼")+" · "+GameBalance.RarityName(rarity)+"\n"+ProgressionService.FashionBonus(slot,rarity)});
-   for(int slotIndex=0;slotIndex<3;slotIndex++)foreach(var rarity in DropPreviewRules.EnemyRarities(enemyTier,hasBoss,false))
-   {
-    var slot=(ItemSlot)slotIndex;
-    result.Add(new EntryRewardPreview{Key="enemy:"+slot+":"+rarity,Rarity=rarity,Name=GameBalance.SlotName(slot),Icon=UIIconAtlas.EquipmentCardIcon(slot,level,rarity,session.Progression.Profile.heroClass),Tint=GameBalance.RarityColor(rarity),Description=ProgressionService.EquipmentDropPreview(slot,rarity,level)});
-   }
-   foreach(var mechanic in BuildCatalog.MechanicsFor(session.Progression.Profile.heroClass))foreach(var rarity in DropPreviewRules.EnemyRarities(enemyTier,hasBoss,true))
-   {
-
-    result.Add(new EntryRewardPreview{Key="mechanic:"+mechanic+":"+rarity,Rarity=rarity,Name=BuildCatalog.MechanicName(mechanic),Icon=UIIconAtlas.EquipmentCardIcon(BuildCatalog.MechanicSlot(mechanic),level,rarity,session.Progression.Profile.heroClass),Tint=GameBalance.RarityColor(rarity),Description=ProgressionService.EquipmentDropPreview(BuildCatalog.MechanicSlot(mechanic),rarity,level,mechanic)});
-   }
    if(entryPreviewCache.Count>=64)entryPreviewCache.Clear();
    entryPreviewCache[cacheKey]=result;return result;
   }
@@ -152,10 +141,10 @@ namespace Emberfall
    if(entryRewardContext!=context){entryRewardContext=context;entryRewardSelection=null;entryRewardHoverKey=null;entryRewardPopupScroll=Vector2.zero;}
    var items=EntryRewardPreviews(mode,tier,chapter);int columns=Mathf.Max(1,Mathf.FloorToInt(available/82));float cell=available/columns;
    float end=0;
-   for(int group=0;group<2;group++)
+   for(int group=0;group<1;group++)
    {
     bool clear=group==0;var section=items.FindAll(item=>item.Clear==clear);
-    if(draw)Text(new Rect(8*u,end*u,(available-16)*u,26*u),clear?"通关宝箱 · 必得装备，品质随机":"敌人掉落 · 可能获得",Mathf.RoundToInt(13*u),clear?gold:jade,true);
+    if(draw)Text(new Rect(8*u,end*u,(available-16)*u,26*u),"通关宝箱 · 三选一",Mathf.RoundToInt(13*u),clear?gold:jade,true);
     end+=30;
     for(int row=0;row*columns<section.Count;row++)
     {
@@ -207,6 +196,12 @@ namespace Emberfall
     {adventureChapterSelected=i==5;if(i<5)session.SelectedArenaMode=i-1;adventureDetailScroll=Vector2.zero;adventureRewardHint=null;CancelMobileScroll();}
    }
    EndTouchScroll();
+   if(adventureChapterSelected)
+   {
+    DrawInlineChapterEntry(AdventureRect(l.Details,u),u);
+    if(PrimaryButton(new Rect(l.Details.X*u,l.FooterY*u,l.Details.Width*u,48*u),"进入 "+ChapterDefinition.Get(session.SelectedChapterNode).Name,gold,ChapterProgression.IsUnlocked(session.Progression.Profile,session.SelectedChapterNode)))ConfirmSelectedChapter();
+    return;
+   }
    int mode=session.SelectedArenaMode,tier=session.SelectedDungeonTier;float contentWidth=l.Details.Width-18;
    string detail=adventureChapterSelected?"星路章节 · 双印路线":names[mode+1]+" · Lv"+AdventureRewardRules.DungeonLevel(tier);
    float rewardHeight=adventureChapterSelected?0:DrawEntryRewardPreviews(contentWidth,u,mode,tier,false,false);
@@ -220,8 +215,8 @@ namespace Emberfall
    if(Button(new Rect((x)*u,y*u,44*u,48*u),"−",jade,normal&&tier>1))session.SelectedDungeonTier--;
    Text(new Rect((x+44)*u,y*u,80*u,48*u),"Lv"+AdventureRewardRules.DungeonLevel(tier),Mathf.RoundToInt(13*u),gold,true,false,TextAnchor.MiddleCenter);
    if(Button(new Rect((x+124)*u,y*u,44*u,48*u),"+",jade,normal&&tier<session.MaximumDungeonTier))session.SelectedDungeonTier++;
-   if(PrimaryButton(new Rect((x+176)*u,y*u,(l.Frame.Width-176)*u,48*u),adventureChapterSelected?"选择章节":"进入挑战",gold))
-   {if(adventureChapterSelected){if(OpenChapterSelection()){adventureChapterSelected=false;session.CancelDungeonSelection();}else session.Notify("暂时无法打开章节，请在营地或副本入口重试。");}else session.ConfirmDungeonSelection();}
+   if(PrimaryButton(new Rect((x+176)*u,y*u,(l.Frame.Width-176)*u,48*u),"进入挑战",gold))
+   {session.ConfirmDungeonSelection();}
   }
   private void DrawMobileModeStatus(Rect r)
   {

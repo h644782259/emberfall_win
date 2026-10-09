@@ -56,7 +56,7 @@ namespace Emberfall
                 Text(new Rect(tile.x+6*u,tile.y+54*u,tile.width-12*u,20*u),caption,Mathf.RoundToInt(12*u),pale,false,false,TextAnchor.MiddleCenter);
                 if(merchantMode==1)
                 {
-                    string stats=BuildCatalog.IsAttributeGem(mechanic)?BuildCatalog.GemAttributeSummary(mechanic,merchantGemRarity,p.Attachment(mechanic)?.upgradeRank??0):"机制强度 "+(.7f+.15f*(int)merchantGemRarity+.08f*(p.Attachment(mechanic)?.upgradeRank??0)+((p.Attachment(mechanic)?.upgradeRank??0)>=5?.2f:0)).ToString("0.00")+"×";
+                    string stats=BuildCatalog.IsAttributeGem(mechanic)?BuildCatalog.GemAttributeSummary(mechanic,merchantGemRarity,p.Attachment(mechanic)?.upgradeRank??0):"机制强度 "+BuildCatalog.AscensionPower(p.Attachment(mechanic)?.ascensionRank??0).ToString("0.00")+"×";
                     Text(new Rect(tile.x+6*u,tile.y+76*u,tile.width-12*u,22*u),GameBalance.SlotName(BuildCatalog.MechanicSlot(mechanic))+" · "+GameBalance.RarityName(merchantGemRarity),Mathf.RoundToInt(11*u),GameBalance.RarityColor(merchantGemRarity),true,false,TextAnchor.MiddleCenter);
                     Text(new Rect(tile.x+6*u,tile.y+100*u,tile.width-12*u,24*u),stats,Mathf.RoundToInt(12*u),jade,true,false,TextAnchor.MiddleCenter);
                 }

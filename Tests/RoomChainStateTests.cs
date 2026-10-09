@@ -18,6 +18,7 @@ public static class RoomChainStateTests
                 var plan=run.Room;var repeat=new RoomChainPlan(room,seed,run.SelectedBranch);
                 Check(plan.Index==room && plan.Layout==repeat.Layout && plan.Objective==repeat.Objective,"reproducible identity");
                 Check(plan.EnemyCount<=6,"finite six-enemy budget");
+                if(room==3)Check(!plan.Interlude&&plan.Objective==RoomObjective.Hunt&&plan.EnemyCount==6&&!run.DoorUnlocked,"fourth room has a guarded target and locked exit");
                 if(room<3){goals.Add(plan.Objective);terrain.Add((plan.Layout-20)/2);}
                 if(plan.Interlude)Check(run.ChooseInterlude()&&!run.ChooseInterlude(),"choice once");
                 else

@@ -79,7 +79,10 @@ namespace Emberfall
             float leftWidth=Mathf.Clamp(layout.Body.Width*.30f,200,260);
             var wear=new MobilePanelLayout.Area(layout.Body.X,layout.Body.Y,leftWidth,layout.Height-layout.Body.Y-12);
             var bag=new MobilePanelLayout.Area(wear.XMax+12,layout.Body.Y,layout.Body.Width-leftWidth-12,wear.Height);
-            DrawCurrentWear(MobilePanelRect(wear),TouchRatio);
+            if(TabButton(TouchRect(wear.X,wear.Y,(wear.Width-6)*.5f,40),"角色",!inventoryStatsVisible))inventoryStatsVisible=false;
+            if(TabButton(TouchRect(wear.X+(wear.Width+6)*.5f,wear.Y,(wear.Width-6)*.5f,40),"属性",inventoryStatsVisible))inventoryStatsVisible=true;
+            var leftBody=TouchRect(wear.X,wear.Y+44,wear.Width,Mathf.Max(64,wear.Height-44));
+            if(inventoryStatsVisible)DrawCharacterStats(leftBody,TouchRatio);else DrawCurrentWear(leftBody,TouchRatio);
             if(inventoryFashionOpen){mobileInventoryTab=3;inventoryFashionOpen=false;inventoryComparisonOpen=false;}
             Rect equipmentTab=MobilePanelRect(new MobilePanelLayout.Area(bag.X,bag.Y,52,44));
             Rect supplyTab=MobilePanelRect(new MobilePanelLayout.Area(bag.X+58,bag.Y,52,44));

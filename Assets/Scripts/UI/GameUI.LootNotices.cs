@@ -29,12 +29,14 @@ namespace Emberfall
         {float u=MobileControls.Active?TouchRatio:1;return new Rect(r.xMax-52*u,r.y+(MobileControls.Active?0:5)*u,48*u,44*u);}
         private ItemData LootNoticeUpgrade(LootNotice n)
         {var item=session.Progression.Profile.inventory.Find(v=>v!=null&&v.id==n.Id);return IsEquipmentUpgrade(item)?item:null;}
+        private float LootNoticeDuration {get{return MobileControls.Active?3.5f:5f;}}
+        private const float LootNoticeFadeSeconds=.8f;
         private void PrepareLootNotices()
         {
             BindLootNotices();
             if(!session.InDungeon||session.IsDead||session.PracticeActive){lootNotices.Clear();return;}
             if(!LootNoticesVisible){foreach(var n in lootNotices)n.Started=-1;return;}
-            lootNotices.RemoveAll(n=>n.Started>=0&&Time.time-n.Started>=(MobileControls.Active?3.5f:5f));
+            lootNotices.RemoveAll(n=>n.Started>=0&&Time.time-n.Started>=LootNoticeDuration);
             for(int i=0;i<VisibleLootNoticeCount;i++)
             {
                 var notice=lootNotices[i];if(notice.Started<0)notice.Started=Time.time;
@@ -56,12 +58,19 @@ namespace Emberfall
             for(int i=0;i<VisibleLootNoticeCount;i++)
             {
                 var notice=lootNotices[i];Rect r=LootNoticeRect(i);Color tint=GameBalance.RarityColor(notice.Rarity);bool upgrade=LootNoticeUpgrade(notice)!=null;
+                float previousOpacity=controlOpacity;
+                float remaining=notice.Started<0?LootNoticeDuration:LootNoticeDuration-(Time.time-notice.Started);
+                controlOpacity*=Mathf.SmoothStep(0,1,Mathf.Clamp01(remaining/LootNoticeFadeSeconds));
+                try
+                {
                 Fill(r,new Color(.025f,.045f,.065f,.94f));Border(r,tint);
                 float iconSize=MobileControls.Active?28:36;float textX=MobileControls.Active?40:48;
                 Rect icon=new Rect(r.x+6*u,r.center.y-iconSize*u/2,iconSize*u,iconSize*u);Border(icon,tint);DrawIcon(icon,UIIconAtlas.EquipmentCardIcon(notice.Slot,notice.Level,notice.Rarity,session.Progression.Profile.heroClass),tint);
                 Text(new Rect(r.x+textX*u,r.y+3*u,r.width-(textX+(upgrade?56:6))*u,(MobileControls.Active?20:26)*u),notice.Name,Mathf.RoundToInt(11*u),pale,false,false);
                 Text(new Rect(r.x+textX*u,r.y+(MobileControls.Active?24:32)*u,r.width-(textX+(upgrade?56:6))*u,17*u),GameBalance.RarityName(notice.Rarity),Mathf.RoundToInt(10*u),tint);
                 if(upgrade){Rect action=LootNoticeEquipRect(r);Fill(action,new Color(.08f,.3f,.18f));Border(action,jade);Text(action,"穿戴",Mathf.RoundToInt(12*u),pale,true,false,TextAnchor.MiddleCenter);}
+                }
+                finally {controlOpacity=previousOpacity;}
             }
         }
     }

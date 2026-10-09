@@ -9,7 +9,7 @@ namespace Emberfall
     public sealed class RewardPresentationReceipt
     {
         public string Id;
-        public int Gold,Experience,Materials;
+        public int Gold,Experience,Materials,RefinementStones;
         public bool FirstCompletion,FirstCoreAvailable;
         public int UnlockedNode=-1,UnlockedDifficulty=-1,SharedBefore,SharedAfter;
     }
@@ -64,13 +64,24 @@ namespace Emberfall
             for(int i=(int)EquipmentMechanic.WeaponPower;i<=(int)EquipmentMechanic.RelicRuin;i++)gems.Add((EquipmentMechanic)i);
             return gems.ToArray();
         }
-        public static int GemAttribute(EquipmentMechanic gem){return ((int)gem-(int)EquipmentMechanic.WeaponPower)%3;}
+        public static int GemAttribute(EquipmentMechanic gem){return (int)gem-(int)EquipmentMechanic.WeaponPower;}
         public static float GemAttributeValue(EquipmentMechanic gem,Rarity rarity,int rank)
-        {float basis=GemAttribute(gem)==0?.03f:GemAttribute(gem)==1?.015f:.06f;return basis*(1+(int)rarity)*(1+.2f*rank);}
-        public static string GemAttributeLabel(EquipmentMechanic gem)
-        {return GemAttribute(gem)==0?"攻击":GemAttribute(gem)==1?"暴击率":"暴击伤害";}
+        {float[] basis={.03f,.015f,.06f,.05f,.08f,.01f,.04f,.015f,.02f};int attribute=GemAttribute(gem);return basis[Math.Max(0,Math.Min(8,attribute))]*(1+(int)rarity)*(1+.2f*rank);}
+        public static string AttributeLabel(int attribute)
+        {return new[]{"攻击","暴击率","暴击伤害","生命","护甲","受到伤害减免","能量回复","技能冷却缩减","移动速度"}[Math.Max(0,Math.Min(8,attribute))];}
+        public static string GemAttributeLabel(EquipmentMechanic gem){return AttributeLabel(GemAttribute(gem));}
         public static string GemAttributeSummary(EquipmentMechanic gem,Rarity rarity,int rank)
         {return GemAttributeLabel(gem)+" +"+(GemAttributeValue(gem,rarity,rank)*100).ToString("0.#")+"%";}
+        public static int MechanicAttribute(EquipmentMechanic gem)
+        {return gem==EquipmentMechanic.CinderTrail?0:gem==EquipmentMechanic.ReturningBlade?2:gem==EquipmentMechanic.FrostEcho?4:gem==EquipmentMechanic.VenomSpread?1:3;}
+        public static float MechanicAttributeValue(EquipmentMechanic gem,int rank)
+        {return rank*(gem==EquipmentMechanic.CinderTrail?.02f:gem==EquipmentMechanic.VenomSpread?.005f:.03f);}
+        public static string GemAscensionLabel(EquipmentMechanic gem)
+        {return MechanicSlot(gem)==ItemSlot.Weapon?"生命≥80%时伤害":MechanicSlot(gem)==ItemSlot.Armor?"生命≤50%时减伤":"能量<50%时回复";}
+        public static float GemAscensionValue(EquipmentMechanic gem,int rank)
+        {return (MechanicSlot(gem)==ItemSlot.Relic?.2f:.05f)*Math.Max(0,Math.Min(3,rank));}
+        public static float AscensionPower(int rank){return 1+.2f*Math.Max(0,Math.Min(3,rank));}
+        public static float AscensionRange(int rank){return 1+.1f*Math.Max(0,Math.Min(3,rank));}
         public static int GemPrice(Rarity rarity){return rarity==Rarity.Common?4:rarity==Rarity.Rare?8:rarity==Rarity.Epic?12:24;}
 
         public static HeroClass MechanicClass(EquipmentMechanic mechanic)
@@ -154,11 +165,11 @@ namespace Emberfall
 
         public static string MechanicDescription(EquipmentMechanic mechanic)
         {
-            if(IsAttributeGem(mechanic))return GameBalance.SlotName(MechanicSlot(mechanic))+"宝石 · 提高"+GemAttributeLabel(mechanic)+"，品质和阶数越高，加成越强。";
+            if(IsAttributeGem(mechanic))return GameBalance.SlotName(MechanicSlot(mechanic))+"宝石 · 提高"+GemAttributeLabel(mechanic)+"，品质和阶数越高，加成越强。3、6、9阶可升华："+GemAscensionLabel(mechanic)+"，每次 +"+(GemAscensionValue(mechanic,1)*100).ToString("0")+"%。";
             switch (mechanic)
             {
-                case EquipmentMechanic.FrostEcho: return "冰霜新星首击伤害 -20%；0.7秒后回响造成40%基础伤害并再次施加冰霜控制（灼燃专精仍只减速）。变体：范围 +35%、回响伤害降低。";
-                case EquipmentMechanic.CinderTrail: return "陨星直接伤害 -20%；落点留下2秒火场，总计40%基础伤害。每次施法每目标仅反应一次。变体：火场半径 -30%、每跳伤害提高。";
+                case EquipmentMechanic.FrostEcho: return "变体A：凝霜回响 · 新星首击保留80%伤害；0.7秒后原范围回响造成60%基础伤害并再次控制。变体B：扩散霜环 · 回响范围扩大35%；首击保留65%、回响造成45%基础伤害，适合控制分散敌人。灼燃专精仅减速。";
+                case EquipmentMechanic.CinderTrail: return "变体A：燎原余烬 · 陨星直伤降低20%，保留完整半径火场；每0.5秒造成首陨基础伤害的10%，共4跳、合计40%，适合覆盖敌群。变体B：凝焰火核 · 陨星直伤降低20%，火场半径缩小30%；每跳约14.3%，共4跳、合计约57.1%，适合集火首领。";
                 case EquipmentMechanic.ReturningBlade: return "普攻伤害 -8%；每1.5秒回刃弹向4米内另一个目标，造成110%基础伤害；回收后强化下一刀，击杀再弹65%。变体B：放弃全部弹射与回收强化，取消普攻-8%；真实完美闪避的反击窗口延至3秒，下次175%反击改窄刺，可沿合法地面前进最多2米。";
                 case EquipmentMechanic.VenomSpread: return "变体A：毒素引爆加成伤害 -20%；每2秒向附近最多2个目标传播1层毒素。变体B：扇形箭改为一发窄幅实体毒矢，直伤240%/360%/480%攻击，仅命中首个拦截目标；无扇形、爆炸和传播，保留普通三毒引爆，能量与冷却不变。";
                 case EquipmentMechanic.TwinSummonResonance: return "普通召唤上限改为2；伙伴伤害 +60%、生命 +20%。不同类型伙伴1.5秒内实际命中同一目标时共鸣追加35%基础伤害，冷却3秒。";
@@ -169,7 +180,7 @@ namespace Emberfall
         public static string MechanicSource(EquipmentMechanic mechanic)
         {
             if (mechanic == EquipmentMechanic.None || !Enum.IsDefined(typeof(EquipmentMechanic), mechanic)) return "无";
-            return "本职业首通自选；遗迹首领机制概率25%至37%、普通史诗/传说机制概率12%至20%，随实际阶数提升；12碎片定向兑换。通关1/5/10/20/40阶每次获3/4/5/6/7碎片；通关第5阶后24碎片将已知史诗机制升华为传说。";
+            return "副本宝石由星台封印通关宝箱产出：每次1颗，史诗80%、传说20%。升阶最高9阶；3、6、9阶各可消耗24碎片升华一次，强化机制；首次升华解锁支持的机制形态。";
         }
 
         public static string SpecializationName(ElementalistSpecialization specialization)
@@ -221,6 +232,8 @@ namespace Emberfall
         public string[] equipmentIds;
         public EquipmentMechanic gemMechanic;
         public bool duplicateGem;
+        public Rarity gemRarity=Emberfall.Rarity.Epic;
+        public int selectedChest=-1;
         // Zero is the historical identical-chest schema; never infer it from choice.
         public int rulesRevision;
         public bool hasCurrencyDeltas;
@@ -354,6 +367,7 @@ namespace Emberfall
         public string id, legacySourceId;
         public EquipmentMechanic mechanic;
         public int level=1, upgradeRank, variant;
+        public int ascensionRank=-1;
         public Rarity rarity=Rarity.Epic;
         public bool mounted=true, variantUnlocked;
     }
@@ -419,6 +433,7 @@ namespace Emberfall
         public int pendingChestMode = -1;
         public int groundGold, groundPotions;
         public int[] chapterBestTiers=new int[3];
+        public int[] chapterBestLevels=new int[3];
         public int chapterMasteryMask;
         public int[] chapterMasteryTiers = new int[4];
         public int chapterRevision;
@@ -444,6 +459,8 @@ namespace Emberfall
         public int[] slotUpgradeRanks = new int[3];
         public bool slotUpgradesInitialized;
         public int mechanicMaterials;
+        public int refinementStones,refinementCount,refinementMaxCount;
+        public bool pendingChestGemSource;
         public int variantKnowledgeRevision;
         public List<EquipmentMechanic> variantKnowledge = new List<EquipmentMechanic>();
         public int materialRewardedClears;
@@ -493,6 +510,8 @@ namespace Emberfall
         public float MoveSpeed;
         public float CritChance;
         public float CritDamageBonus;
+        public float DamageReduction,EnergyRecovery,CooldownReduction;
+        public float GemHealthyDamage,GemLowHealthGuard,GemLowEnergyRecovery;
     }
 
     public static class GameBalance
@@ -684,6 +703,7 @@ namespace Emberfall
             for (int i = 0; i < result.Length; i++) result[i] = -1;
             int slot = 0;
             for (int skill = 0; skill < SkillCount; skill++) if (!IsPassive(skill)) result[slot++] = skill;
+            for(int page=0;page<HotbarPages;page++)result[page*HotbarSize+HotbarSize-1]=HotbarPotion;
             return result;
         }
         public static bool IsBindableKey(int key)

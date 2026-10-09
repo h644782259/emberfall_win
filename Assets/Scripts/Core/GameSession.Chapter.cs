@@ -5,9 +5,8 @@ namespace Emberfall
     public sealed partial class GameSession
     {
         public ChapterNode SelectedChapterNode {get;set;}
-        public ChapterDifficulty SelectedChapterDifficulty {get;set;}
-        private readonly int[] chapterSelectedTiers={1,1,1};
-        public int SelectedChapterTier {get{return chapterSelectedTiers[(int)SelectedChapterNode];}set{chapterSelectedTiers[(int)SelectedChapterNode]=value;}}
+        public ChapterDifficulty SelectedChapterDifficulty {get{return ChapterProgression.LevelDifficulty(SelectedChapterNode,Progression.Profile.level);}set{}}
+        public int SelectedChapterTier {get{return ChapterProgression.LevelTier(Progression.Profile.level);}set{}}
         public bool SelectedChapterLimitedHealing {get{return false;}set{}}
         public int SelectedChapterTactic {get;set;}=-1;
         public ChapterCombatRun ChapterRun {get;private set;}
@@ -38,7 +37,7 @@ namespace Emberfall
         {
             if(!CanRetryChapter||!SaveBeforeLeaving())return false;
             ChapterRunReceipt receipt;
-            if(!Progression.TryBeginChapterNode(ChapterRun.Node,ChapterRun.Difficulty,chapterRetryTier,out receipt))
+            if(!Progression.TryBeginChapterNode(ChapterRun.Node,ChapterProgression.LevelDifficulty(ChapterRun.Node,Progression.Profile.level),ChapterProgression.LevelTier(Progression.Profile.level),out receipt))
             {Notify(Progression.LastError);return false;}
             // A new receipt invalidates all callbacks from the failed attempt. Seed and
             // the admitted tactic are frozen, independent of mutable selection controls.
@@ -282,7 +281,7 @@ namespace Emberfall
         private void FailChapter(string reason)
         {if(!ChapterActive||ChapterFinished)return;ChapterResult=CaptureChapterResult(true,reason);ChapterRun.Fail();RunChoices.Reset();Progression.CancelChapterRun();Notify(reason);SuspendInputs();UpdateTimeScale();}
         private void FinalizeChapter()
-        {ChapterResult=CaptureChapterResult(false,null);DungeonCleared=true;TrySettleChapterReward();LastRunSummary=BuildRunSummary(true);SuspendInputs();UpdateTimeScale();GameAudio.Play(SoundCue.Victory);}
+        {ChapterResult=CaptureChapterResult(false,null);DungeonCleared=true;TrySettleChapterReward();LastRunSummary=BuildRunSummary(true);DismissFinishedResult();UpdateTimeScale();GameAudio.Play(SoundCue.Victory);}
         public bool TrySettleChapterReward()
         {
             if(!ChapterRewardPending)return true;
@@ -291,9 +290,11 @@ namespace Emberfall
             run.ClaimReward();
             if(Progression!=source||source.CurrentSlotId!=slot||ChapterRun!=run||chapterReceipt!=receipt)return true;
             if(ChapterResult==null)ChapterResult=CaptureChapterResult(false,null);
+            ApplyRewardPresentation(receipt.Id);
             var detail=source.GetRewardPresentation(receipt.Id);
             if(detail==null)ChapterResult.RecordSavedUnavailable();
             else ChapterResult.RecordSaved(detail.Materials,detail.FirstCompletion,detail.UnlockedNode,detail.UnlockedDifficulty,detail.SharedBefore,detail.SharedAfter,detail.Experience,detail.FirstCoreAvailable);
+            LastRunSummary=BuildRunSummary(true);
             Notify(detail==null?"章节节点已保存 · 旧回执缺少奖励明细，无法恢复准确数额（不会重复发放）":"章节节点已保存 · 碎片 +"+ChapterResult.Materials);return true;
         }
         public bool EnterNextChapterRoom()

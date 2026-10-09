@@ -85,7 +85,7 @@ namespace Emberfall
             if(PauseSidebarTab(new Rect(r.x+144*u,r.y+50*u,120*u,44*u),"城镇旅行",travelMapTab==1,u))travelMapTab=1;
             Rect body=new Rect(r.x+16*u,r.y+102*u,r.width-32*u,r.height-114*u);
             if(travelMapTab==0){DrawExpandedMap(body,u);return;}
-            string hint=!string.IsNullOrEmpty(travelError)?travelError:!session.CanOpenTravelMap?"挑战中或附近有敌人，暂不可旅行。":"";
+            string hint=!string.IsNullOrEmpty(travelError)?travelError:!session.CanOpenTravelMap?"挑战中或正在战斗，暂不可旅行。":"";
             Text(new Rect(body.x,body.y,body.width,28*u),hint,Mathf.RoundToInt(11*u),string.IsNullOrEmpty(travelError)?muted:gold,false,true);
             var profile=session.Progression.Profile;int mask=HubTravelRules.UnlockedMask(profile.unlockedHubMask,profile.level,profile.clearedRuns);
             float cardWidth=(body.width-16*u)/3;

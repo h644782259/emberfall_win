@@ -50,7 +50,7 @@ namespace Emberfall
             Box(r, gold);
             float unit = mobile ? TouchRatio : 1;
             Text(new Rect(r.x + 24 * unit, r.y + 20 * unit, r.width - 48 * unit, 38 * unit),
-                exitRequest.ToTitle ? "保存并返回主菜单？" : "退出游戏？", mobile ? TouchFont(22) : 24, pale, true);
+                exitRequest.ToTitle ? "保存并返回主菜单？" : "保存并退出游戏？", mobile ? TouchFont(22) : 24, pale, true);
             string identity = session.HasStarted ? GameBalance.ClassName(session.Progression.Profile.heroClass) + " · " +
                 session.Progression.Profile.level + "级\n保存成功后再离开，地面战利品会先收存。" : "当前没有进行中的冒险。";
             Text(new Rect(r.x + 24 * unit, r.y + 77 * unit, r.width - 48 * unit, 76 * unit), identity,
@@ -65,7 +65,7 @@ namespace Emberfall
                 BlockUITransition();
                 return;
             }
-            if (DangerButton(new Rect(r.x + 40 * unit + bw, r.yMax - 68 * unit, bw, 48 * unit), exitRequest.ToTitle ? "保存并返回" : "确认退出", gold, !exitRequest.Busy))
+            if (DangerButton(new Rect(r.x + 40 * unit + bw, r.yMax - 68 * unit, bw, 48 * unit), exitRequest.ToTitle ? "保存并返回" : "保存并退出", gold, !exitRequest.Busy))
             {
                 try
                 {

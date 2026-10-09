@@ -11,7 +11,9 @@ namespace Emberfall {
   private void Part(PrimitiveType type,Vector3 position,Vector3 size,Material material){var p=GameObject.CreatePrimitive(type);p.transform.SetParent(transform,false);p.transform.localPosition=position;p.transform.localScale=size;p.GetComponent<Renderer>().sharedMaterial=material;Destroy(p.GetComponent<Collider>());}
   private void Update(){age+=Time.deltaTime;if(age<.6f||session==null||session.Player==null||session.IsDead||Time.unscaledTime<retry)return;
    if(Vector3.Distance(session.Player.transform.position,transform.position)>2)return;retry=Time.unscaledTime+1;
+   int beforeGold=session.Progression.Profile.gold,beforePotions=session.Progression.Profile.potions;
    if(!session.Progression.CollectGroundSupplies(gold,potions))return;
+   session.RecordGroundReward(session.Progression.Profile.gold-beforeGold,session.Progression.Profile.potions-beforePotions);
    enabled=false;session.LogSystem("拾取金币 × "+gold+(potions>0?" · 药剂 × "+potions:""));GameAudio.Play(SoundCue.Loot);Destroy(gameObject);
   }
   private void OnDestroy(){if(coin!=null)Destroy(coin);if(potion!=null)Destroy(potion);}

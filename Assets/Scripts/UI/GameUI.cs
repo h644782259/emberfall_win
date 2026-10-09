@@ -6,7 +6,7 @@ namespace Emberfall
     /// <summary>Resolution-independent runtime interface; no scene or package dependencies.</summary>
     public sealed partial class GameUI : MonoBehaviour
     {
-        private enum Panel { None, Inventory, Skills, Bindings, SaveLocation, Controls, SaveSelection, PotionAssignment, Fashion, Chests, Camp, Summary, TravelMap, Notice, Chapter, HubDialogue }
+        private enum Panel { None, DungeonExit, Inventory, Skills, Bindings, SaveLocation, Controls, SaveSelection, PotionAssignment, Fashion, Chests, Camp, Summary, TravelMap, Notice, Chapter, HubDialogue }
         private GameSession session;
         private Panel panel;
         private HeroClass selectedClass;
@@ -233,7 +233,7 @@ namespace Emberfall
                     targeting.Cancel();
                     return;
                 }
-                if (panel == Panel.Chests && (!chestDetails || session.Paused)) { session.SetPaused(!session.Paused); BlockUITransition(); }
+                if (panel == Panel.Chests) { session.SetPaused(false); ClosePanel(); BlockUITransition(); }
                 else if (panel != Panel.None) ClosePanel();
                 else session.SetPaused(!session.Paused);
             }
@@ -317,6 +317,7 @@ namespace Emberfall
             else
             {
                 EnsurePendingChestPanel();
+                if(PendingChestReturnVisible)blockedRects.Add(PendingChestReturnRect());
                 PrepareLootNotices();
                 PrepareRewardMoment();
                 bool priorEnabled = GUI.enabled;
@@ -328,12 +329,13 @@ namespace Emberfall
                 else if(PauseUtilityVisible)
                 {if(panel==Panel.Controls)DrawControls();else if(panel==Panel.Bindings)DrawBindings();else if(panel==Panel.SaveLocation)DrawSaveLocation();else DrawTravelMap();}
                 else if (panel == Panel.Chests) DrawChests();
+                else if (panel == Panel.DungeonExit) DrawDungeonExit();
                 else if (chestRecoveryService && panel == Panel.Inventory) DrawInventory();
-                else if (session.IsDead) {if(session.ChapterFinished)DrawChapterResult();else DrawDeath();}
+                else if (session.IsDead) DrawDeath();
                 else if (session.DungeonSelectionOpen) DrawDungeonSelection();
                 else if (session.RoomBranchChoiceOpen) DrawRoomBranchChoice();
                 else if (session.RunChoices.AwaitingChoice) DrawBlessingChoice();
-                else if(session.ChapterFinished&&!session.FinishedResultDismissed)DrawChapterResult();
+                else if(session.ChapterFinished&&!session.FinishedResultDismissed){if(DrawStructuredRunRecap(false))session.DismissFinishedResult();}
                 else if(session.ModeFinished&&!session.FinishedResultDismissed){if(DrawStructuredRunRecap(false))session.DismissFinishedResult();}
                 else if (DrawPresetSaleConfirmation()) {}
                 else if (panel == Panel.Inventory) DrawInventory();
@@ -350,6 +352,7 @@ namespace Emberfall
                 else if (panel == Panel.Chapter) DrawChapterSelection();
                 DrawNotification();
                 DrawRewardMoment();
+                DrawPendingChestReturn();
                 DrawLootNotices();
             }
             if (hotbarDragging && hotbarPointerSkill != -1)
@@ -812,6 +815,7 @@ namespace Emberfall
 
         private void DrawHUD()
         {
+            DrawComboCounter();
             if(MobileControls.Active){DrawMobileHUD();return;}
             GameProfile p = session.Progression.Profile;
             Color accent = GameBalance.ClassColor(p.heroClass);
@@ -866,10 +870,7 @@ namespace Emberfall
             else if(showRoomSeals)DrawRoomSeals(new Rect(objective.x+13,objective.y+measured.ProgressY,255,66),1,false,roomFirstSeal,session.RoomSealView(1),session.RoomObjectiveView);
             else Text(new Rect(objective.x+13,objective.y+measured.ProgressY,255,progressHeight),progressText,12,muted,false,true);
             if(showCharge)Text(new Rect(objective.x+13,objective.y+measured.ChargeY,255,chargeHeight),chargeText,17,gold,true,true);
-            if (objective.Contains(Mouse) && GUI.enabled)
-                tooltip = PlatformText(session.Objective + (session.InDungeon ? "\n通关后靠近返营传送点交互。按 H 返回当前地图起点。" : "\n靠近紫色传送门按 T 进入副本。按 H 返回当前地图起点。"));
             DrawMinimap();
-            DrawDesktopGoalInteraction(objective);
             DrawHotbar();
             DrawCompanionCommands();
             Text(new Rect(hotbarBounds.x-170,hotbarBounds.y-22,622,18),CurrentCombatOpportunity(),12,gold,true,false,TextAnchor.MiddleCenter);
@@ -972,28 +973,10 @@ namespace Emberfall
             Fill(new Rect(x - size * .5f, y - size * .5f, size, size), color);
         }
 
-        private int victoryDismissedEpoch=-1;
-        private PlayerController victoryDismissedOwner;
-        private void DrawVictoryNotice()
-        {
-            if(session.ModeFinished||!session.DungeonReturnAvailable||!session.DungeonResultsReady||session.Player==null||victoryDismissedOwner==session.Player&&victoryDismissedEpoch==session.Player.CombatEpoch||panel!=Panel.None||session.Paused)return;
-            float u=MobileControls.Active?TouchRatio:1,w=Mathf.Min(530*u,width-24*u);
-            Rect victory=new Rect((width-w)*.5f,Mathf.Min(87*u,(height-182*u)*.5f),w,182*u);
-            blockedRects.Add(victory);Box(victory,gold);
-            Text(new Rect(victory.x+16*u,victory.y+12*u,w-76*u,36*u),"遗迹肃清",Mathf.RoundToInt(26*u),gold,true);
-            if(PopupCloseButton(new Rect(victory.xMax-50*u,victory.y+6*u,44*u,44*u)))
-            {victoryDismissedOwner=session.Player;victoryDismissedEpoch=session.Player.CombatEpoch;BlockUITransition();return;}
-            Text(new Rect(victory.x+16*u,victory.y+58*u,w-32*u,40*u),session.DungeonRewardPending?"奖励待保存 · 请先完成结算":"战利品已解锁 · 可继续挑战或从南侧传送点回营",Mathf.RoundToInt(12*u),pale,false,true);
-            float bw=(w-40*u)/2,y= victory.y+120*u;
-            if(NavigationButton(new Rect(victory.x+16*u,y,bw,44*u),"战斗复盘",jade)){panel=Panel.Summary;session.SetUIBlocking(true);BlockUITransition();return;}
-            if(PrimaryButton(new Rect(victory.x+24*u+bw,y,bw,44*u),"挑战 Lv"+AdventureRewardRules.DungeonLevel(session.DungeonTier+1),gold,session.CanChallengeNextTier))
-            {session.ChallengeNextTier();BlockUITransition();return;}
-        }
-
         private void DrawDungeonStatus()
         {
             if (!session.InDungeon || session.ChapterFinished) return;
-            if(session.DungeonCleared){DrawVictoryNotice();return;}
+            if(session.DungeonCleared)return;
             EnemyController boss = null;
             for (int i = 0; i < session.Enemies.Count; i++)
             {
@@ -1072,9 +1055,11 @@ namespace Emberfall
                 if (potion)
                 {
                     string count = "×"+(session.ChallengeRun && session.InDungeon ? session.HealingCharges : p.potions).ToString();
-                    float countWidth = Mathf.Max(17, count.Length * 8 + 4);
-                    Fill(new Rect(slot.xMax - countWidth - 2, slot.yMax - 17, countWidth, 15), new Color(.015f, .025f, .04f, .94f));
-                    Text(new Rect(slot.xMax - countWidth - 3, slot.yMax - 18, countWidth, 17), count, 11, locked ? muted : pale, true, false, TextAnchor.MiddleRight);
+                    Vector2 countSize=Style(11,true).CalcSize(new GUIContent(count));
+                    float countWidth=Mathf.Max(24,countSize.x+6),countHeight=Mathf.Max(22,countSize.y+4);
+                    Rect countBadge=new Rect(slot.xMax-countWidth-2,slot.yMax-countHeight-2,countWidth,countHeight);
+                    Fill(countBadge,new Color(.015f,.025f,.04f,.94f));
+                    Text(countBadge,count,11,locked?muted:pale,true,false,TextAnchor.MiddleCenter);
                 }
 
                 if(actionCaption.Length>0)
@@ -1340,22 +1325,7 @@ namespace Emberfall
             StatBlock stats = progression.GetStats();
             Rule(left, w.y + 389, 232, jade);
             Text(new Rect(left, w.y + 402, 232, 22), "角色属性 · Lv." + p.level, 15, jade, true);
-            StatLine(left, w.y + 433, "攻击", Mathf.RoundToInt(stats.Damage).ToString(), gold);
-            StatLine(left, w.y + 461, "防御", Mathf.RoundToInt(stats.Armor).ToString(), pale);
-            StatLine(left, w.y + 489, "生命上限", Mathf.RoundToInt(stats.MaxHealth).ToString(), pale);
-            if(new Rect(left,w.y+459,232,27).Contains(Mouse))tooltip="当前护甲减伤 "+((1f-CombatBalance.ArmorDamageMultiplier(stats.Armor,p.level))*100f).ToString("0.0")+"% · 护甲上限70%\n等级越高，护甲换算尺度越高；含临时防御最多84%减伤，真正闪避无敌帧除外。";
-            StatLine(left, w.y + 517, "暴击几率", Mathf.RoundToInt(stats.CritChance * 100) + "%", pale);
-            if (new Rect(left, w.y + 514, 232, 29).Contains(Mouse))
-            {
-                int baseCrit = p.heroClass == HeroClass.Ranger ? 14 : (p.heroClass == HeroClass.Arcanist || p.heroClass == HeroClass.Summoner) ? 10 : 8;
-                int totalCrit = Mathf.RoundToInt(stats.CritChance * 100);
-                int rank = p.skillRanks == null || p.skillRanks.Length <= 3 ? 0 : p.skillRanks[3];
-                int passiveCrit = p.heroClass == HeroClass.Ranger ? (rank <= 0 ? 0 : rank == 1 ? 4 : rank == 2 ? 7 : 12) : 0;
-                FashionData weaponFashion = progression.StrongestFashion(FashionSlot.Weapon);
-                int fashionPercent = weaponFashion == null ? 0 : ProgressionService.WeaponFashionPercent(weaponFashion.rarity);
-                tooltip = "暴击几率来源\n" + GameBalance.ClassName(p.heroClass) + "基础：" + baseCrit + "%\n游侠被动：+" + passiveCrit + " 个百分点" +
-                    "\n武器时装：乘以 " + (100 + fashionPercent) + "%\n当前：" + totalCrit + "%\n暴击伤害为普通伤害的 1.65 倍。\n" + BuildCatalog.DamageRules;
-            }
+            DrawCharacterStats(new Rect(left,w.y+430,232,174),1);
 
             float middle = w.x + 272;
             Rect bagArea=new Rect(middle,w.y+144,864,462);
@@ -1654,14 +1624,12 @@ namespace Emberfall
             for (int i = 0; i < tabs.Length; i++)
                 if (PauseSidebarTab(new Rect(w.x+24,w.y+110+i*54,152,48), tabs[tabOrder[i]], desktopPauseTab == tabOrder[i],1) && desktopPauseTab != tabOrder[i])
                 { desktopPauseTab = tabOrder[i]; }
+            if(PrimaryButton(new Rect(w.x+212,w.yMax-70,536,48),"保存并退出",gold))RequestExit(MobileControls.Active);
             Text(new Rect(w.x + 212, w.y + 164, 536, 30), session.ZoneName + "  ·  " + ActiveCharacterName(), 17, jade, true, false, TextAnchor.MiddleCenter);
             if (desktopPauseTab == 0)
             {
                 if(NavigationButton(new Rect(w.x+212,w.y+210,536,48),"营地 / 撤离",jade))LeaveMobilePauseForCamp();
                 if(DangerButton(new Rect(w.x+212,w.y+272,536,44),"返回主菜单",muted))RequestExit(true);
-#if !UNITY_IOS && !UNITY_ANDROID
-                if(DangerButton(new Rect(w.x+212,w.y+334,536,44),"退出游戏",muted))RequestExit(false);
-#endif
             }
             else if(desktopPauseTab==3)
             {
@@ -1707,7 +1675,7 @@ namespace Emberfall
             DrawKeyCap(new Rect(keyboard.x + 81, keyboard.y + 103, 52, 49), "S", "后", jade);
             DrawKeyCap(new Rect(keyboard.x + 139, keyboard.y + 103, 52, 49), "D", "右", jade);
             DrawKeyCap(new Rect(keyboard.x + 249, keyboard.y + 47, 72, 49), "J", "普通攻击", gold);
-            DrawKeyCap(new Rect(keyboard.x + 331, keyboard.y + 47, 72, 49), "F", "生命药剂", gold);
+            DrawKeyCap(new Rect(keyboard.x + 331, keyboard.y + 47, 72, 49), GameBalance.KeyName(p.hotbarKeys[System.Array.IndexOf(p.equippedSkills,GameBalance.HotbarPotion,p.hotbarPage*GameBalance.HotbarSize,GameBalance.HotbarSize)>=0?System.Array.IndexOf(p.equippedSkills,GameBalance.HotbarPotion,p.hotbarPage*GameBalance.HotbarSize,GameBalance.HotbarSize)%GameBalance.HotbarSize:9]), "生命药剂", gold);
             DrawKeyCap(new Rect(keyboard.x + 249, keyboard.y + 103, 82, 49), "SPACE", "跳跃", gold);
             DrawKeyCap(new Rect(keyboard.x + 341, keyboard.y + 103, 72, 49), "SHIFT", "闪现", gold);
             Rect mouse = new Rect(keyboard.x + 447, keyboard.y + 46, 175, 106);
@@ -1846,7 +1814,7 @@ namespace Emberfall
             if (session == null || !session.HasStarted || session.IsDead || session.Paused) return;
             inventoryHubNpc=HubNpcKind.None;merchantExchangeOpen=false;
             panel = panel == value ? Panel.None : value;
-            if(panel==Panel.Skills)ResetMobileSkillNavigation();
+            if(panel==Panel.Skills){skillSection=0;ResetMobileSkillNavigation();}
             session.SetUIBlocking(panel != Panel.None);
         }
 
@@ -1878,13 +1846,7 @@ namespace Emberfall
             if (panel == Panel.Chests)
             {
                 if (chestDetails) { chestDetails=false;return; }
-                if (session.Progression.Profile.pendingFashionChest) return;
-                if (session.Progression.Profile.pendingChestReveal)
-                {
-                    if(!ChestAnimationDone)chestRevealedAt=Time.unscaledTime-ChestDuration;
-                    else FinishChestReveal();
-                    return;
-                }
+                DismissChestPanel();return;
             }
             if (panel == Panel.Fashion)
             {

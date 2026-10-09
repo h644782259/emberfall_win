@@ -5,8 +5,26 @@ namespace Emberfall
     {
         private CollectionModelPreview wearModel;
         private bool inventoryFashionOpen;
+        private bool inventoryStatsVisible;
+        private Vector2 inventoryStatsScroll;
         private MobilePanelLayout.Area InventoryArea(Rect area)
         {float u=TouchRatio;return new MobilePanelLayout.Area(area.x/u,area.y/u,area.width/u,area.height/u);}
+        private void DrawCharacterStats(Rect area,float u)
+        {
+            var stats=session.Progression.GetStats();
+            string[] labels={"攻击","防御","生命上限","移动速度","暴击率","暴击伤害","护甲减伤","额外减伤","能量上限","能量回复 / 秒","技能冷却缩减","高生命伤害加成","低生命额外减伤","低能量回复加成"};
+            string[] values={Mathf.RoundToInt(stats.Damage).ToString(),Mathf.RoundToInt(stats.Armor).ToString(),Mathf.RoundToInt(stats.MaxHealth).ToString(),stats.MoveSpeed.ToString("0.00"),(stats.CritChance*100).ToString("0.##")+"%",((1.65f+stats.CritDamageBonus)*100).ToString("0.##")+"%",((1-CombatBalance.ArmorDamageMultiplier(stats.Armor,session.Progression.Profile.level))*100).ToString("0.#")+"%",(stats.DamageReduction*100).ToString("0.#")+"%",SkillRuntime.MaximumEnergy.ToString("0"),(SkillRuntime.EnergyPerSecond*(1+stats.EnergyRecovery)).ToString("0.##"),(stats.CooldownReduction*100).ToString("0.#")+"%",(stats.GemHealthyDamage*100).ToString("0.#")+"%",(stats.GemLowHealthGuard*100).ToString("0.#")+"%",(stats.GemLowEnergyRecovery*100).ToString("0.#")+"%"};
+            float contentWidth=area.width-18*u,rowHeight=32*u;
+            inventoryStatsScroll=BeginTouchScroll("inventory-character-stats",area,inventoryStatsScroll,new Rect(0,0,contentWidth,(labels.Length*32+62)*u));
+            for(int i=0;i<labels.Length;i++)
+            {
+                Rect row=new Rect(0,i*rowHeight,contentWidth,rowHeight-2*u);if(i%2==0)Fill(row,new Color(.03f,.06f,.08f,.8f));
+                Text(new Rect(5*u,row.y,row.width*.64f-5*u,row.height),labels[i],Mathf.RoundToInt(11*u),muted);
+                Text(new Rect(row.width*.64f,row.y,row.width*.36f-5*u,row.height),values[i],Mathf.RoundToInt(12*u),i==0?gold:pale,true,false,TextAnchor.MiddleRight);
+            }
+            Text(new Rect(4*u,labels.Length*rowHeight,contentWidth-8*u,60*u),"常驻属性（含装备、宝石、精通和最高品质时装）\n高生命≥80% · 低生命≤50% · 低能量<50%",Mathf.RoundToInt(10*u),muted,false,true);
+            EndTouchScroll();
+        }
         private void DrawCurrentWear(Rect area,float u)
         {
             var p=session.Progression;
@@ -91,6 +109,11 @@ namespace Emberfall
             Text(new Rect(tile.x,tile.yMax-14*u,tile.width-2*u,14*u),session.Progression.Profile.potions.ToString(),Mathf.RoundToInt(9*u),pale,true,false,TextAnchor.MiddleRight);
             bool prior=GUI.enabled;GUI.enabled=prior&&!inventoryComparisonOpen&&inventoryPopupDismissed!=Time.frameCount;
             if(GUI.Button(tile,GUIContent.none,invisibleButton))OpenInventoryPopup("@potion",tile);
+            Rect stone=new Rect(bounds.x,bounds.y+(cellSize+12)*u,cellSize*u,cellSize*u);Fill(stone,card);Border(stone,gold);
+            DrawIcon(new Rect(stone.x+5*u,stone.y+3*u,stone.width-10*u,stone.height-17*u),UIIconAtlas.Utility("gem"),gold);
+            Text(new Rect(stone.x,stone.yMax-16*u,stone.width-3*u,16*u),session.Progression.Profile.refinementStones.ToString(),Mathf.RoundToInt(10*u),pale,true,false,TextAnchor.MiddleRight);
+            Text(new Rect(stone.xMax+10*u,stone.y,bounds.width-stone.width-12*u,24*u),"装备洗练石",Mathf.RoundToInt(13*u),gold,true);
+            Text(new Rect(stone.xMax+10*u,stone.y+26*u,bounds.width-stone.width-12*u,52*u),"铁匠洗练装备 · 数值只升不降\n主要产地：赤岩断供",Mathf.RoundToInt(11*u),muted,false,true);
             GUI.enabled=prior;DrawInventoryPopup(bounds,u);
         }
     }

@@ -20,7 +20,7 @@ namespace Emberfall
         public float ArenaRadius { get { return InDungeon ? 18f : 22f; } }
         public bool DungeonCleared { get; private set; }
         public int PendingLootCount { get { return pendingLoot.Count; } }
-        public string ZoneName { get { return InDungeon ? ModeName + (ChapterActive?" · 第 " + DungeonTier + " 阶":" · Lv"+AdventureRewardRules.DungeonLevel(DungeonTier)) : HubTravelRules.Name(CurrentHub); } }
+        public string ZoneName { get { return InDungeon ? ModeName + (" · Lv"+AdventureRewardRules.DungeonLevel(DungeonTier)) : HubTravelRules.Name(CurrentHub); } }
         public string Notification
         {
             get
@@ -285,11 +285,11 @@ namespace Emberfall
             if(ChapterActive)TickChapterRun();
             if (!InputBlocked)
             {
-                if(Input.GetKeyDown(KeyCode.E)){if(NearDungeonReturn)ReturnToCamp();else if(SideEventAvailable)StartSideEvent();}
+                if(Input.GetKeyDown(KeyCode.E)){if(NearDungeonReturn)ui.OpenDungeonExit();else if(SideEventAvailable)StartSideEvent();}
                 bool touchPotionRequested = MobileControls.ConsumePotion();
                 if (Input.GetKeyDown(KeyCode.F) || touchPotionRequested) DrinkPotion();
-                if (Input.GetKeyDown(KeyCode.T)) { if(NearChapterExit)EnterNextChapterRoom();else if(NearRoomExit)EnterNextRoom();else if (InDungeon) { if (NearDungeonReturn) ReturnToCamp(); else Notify(DungeonReturnAvailable?"靠近返营传送点后交互。":"先完成本轮挑战。"); } else EnterDungeon(); }
-                if (Input.GetKeyDown(KeyCode.H)) ReturnToOrigin();
+                if (Input.GetKeyDown(KeyCode.T)) { if(NearChapterExit)EnterNextChapterRoom();else if(NearRoomExit)EnterNextRoom();else if (InDungeon) { if (NearDungeonReturn) ui.OpenDungeonExit(); else Notify(DungeonReturnAvailable?"靠近返营传送点后交互。":"先完成本轮挑战。"); } else EnterDungeon(); }
+                if (Input.GetKeyDown(KeyCode.H)) {if(InDungeon&&DungeonReturnAvailable){if(NearDungeonReturn)ui.OpenDungeonExit();else Notify("靠近传送点后交互。");}else ReturnToOrigin();}
             }
             if(InDungeon && reinforcementQueue.Count>0 && Enemies.Count<=6)TrySpawnReinforcements();
             if (!InDungeon && CurrentHub==0)
@@ -372,12 +372,7 @@ namespace Emberfall
         {
             if(PracticeActive){EndPractice("主动离开 · 记录提前结束");return;}
             if (!HasStarted || IsDead) return;
-            if (!DungeonCleared && !ModeFinished)
-            {
-                foreach (EnemyController enemy in Enemies)
-                    if (enemy != null && !enemy.IsDead && Vector3.Distance(enemy.transform.position, Player.transform.position) < 6f)
-                    { Notify("附近有敌人！拉开至少 6 米距离后可返回营地。"); return; }
-            }
+            if(InCombat){Notify("正在战斗，脱离战斗后可返回营地。");return;}
             bool abandoned = InDungeon && !DungeonCleared;
             if (!ChangeZone(false)) return;
             Notify(abandoned ? "已撤离遗迹，生命恢复。随时可以重新挑战。" : "已回到营地，生命已恢复。");
@@ -519,10 +514,17 @@ namespace Emberfall
             if(InDungeon)gold=Mathf.RoundToInt(gold*(1f+.15f*TierRewardBand.Of(DungeonTier)));
             if(chapterKill)experience=chapterExperience;
             int potions=InDungeon&&(boss||Random.Range(0,100)<AdventureRewardRules.PotionChance(DungeonTier))?1+TierRewardBand.Of(DungeonTier)/2:0;
+            int beforeKillLevel=Progression.Profile.level,beforeKillXp=Progression.Profile.xp;
             Progression.GrantEnemyKillReward(gold, experience, InDungeon, potions);
+            if(InDungeon)
+            {
+                long earned=Progression.Profile.xp-beforeKillXp;
+                for(int l=beforeKillLevel;l<Progression.Profile.level;l++)earned+=GameBalance.XpToNext(l);
+                runEnemyExperience=(int)System.Math.Min(int.MaxValue,(long)runEnemyExperience+System.Math.Max(0,earned));
+            }
             if(InDungeon)SpawnGroundSupplies(position,gold,potions);
             LogSystem((InDungeon?"地面补给 · ":"+"+gold+" 金币 · ")+"+"+experience+" 经验");
-            if (boss || Random.value < (InDungeon ? .65f+.05f*TierRewardBand.Of(DungeonTier) : .5f))
+            if (Random.Range(0,100)<AdventureRewardRules.EnemyEquipmentChance(boss,enemy.Tier!=EnemyController.ThreatTier.Normal))
             {
                 ItemData loot = Progression.RollLoot(InDungeon&&!ChapterActive?DungeonEntryLevel:Progression.Profile.level, boss, InDungeon ? DungeonTier : 0);
                 DeliverEnemyLoot(loot, position);
@@ -548,7 +550,17 @@ namespace Emberfall
             {
                 if (!ChallengeRun) Player.Heal(Player.MaxHealth * .25f);
                 else HealingCharges = Mathf.Min(3, HealingCharges + 1);
-                RunChoices.Prepare(DungeonWave, Progression.Profile.heroClass, RunChoices.UsableRanks(Progression.Profile,MobileControls.Active), runSeed + DungeonWave * 97);
+                // Let the finishing combat action complete before spawning the next wave.
+                var owner = Player;
+                int epoch = owner.CombatEpoch;
+                yield return null;
+                while (Player == owner && owner.CombatEpoch == epoch && InDungeon && !IsDead && InputBlocked)
+                    yield return null;
+                if (Player != owner || owner.CombatEpoch != epoch || !InDungeon || IsDead || changingZone)
+                    yield break;
+                DungeonWave++;
+                SpawnDungeonWave();
+                Notify(DungeonWave == TotalWaves ? "最终波 · 星蚀巨像" : "第 " + DungeonWave + " 波");
                 UpdateTimeScale();
                 waveRoutine = null;
                 yield break;
@@ -561,7 +573,7 @@ namespace Emberfall
                 bool settled=TrySettleDungeonReward();
                 LastRunSummary = BuildRunSummary(true);
                 Player.Heal(Player.MaxHealth);
-                Notify(settled?"遗迹通关 · 领取宝箱与战利品后，前往南侧传送点返回营地":"遗迹已通关，但奖励尚未保存。请重试结算，或打开菜单处理存档。");
+                Notify(settled?"遗迹通关 · 前往传送点领取奖励或继续挑战":"遗迹已通关，但奖励尚未保存。请重试结算，或打开菜单处理存档。");
             }
             waveRoutine = null;
         }
@@ -753,6 +765,7 @@ namespace Emberfall
                     {
                         pendingLoot.Remove(itemId);
                         collectedGroundLoot.Add(itemId);
+                        if(InDungeon&&!runItemIds.Contains(itemId))runItemIds.Add(itemId);
                     }
                     if (pending.Pickup != null) pending.Pickup.Retire();
                 }

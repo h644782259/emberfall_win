@@ -26,6 +26,11 @@ namespace Emberfall
         private AudioClip[] clips;
         private AudioSource ambientSource;
         private AudioClip ambientClip;
+        private readonly AudioClip[] musicClips=new AudioClip[12];
+        private readonly AudioClip[] skillClips=new AudioClip[40];
+        private int musicTheme=-1,requestedTheme=-1;
+        private float musicFade=1f;
+        private static readonly string[] MusicNames={"营火微光","荒野行旅","沉星残响","林庭守望","烬河疾行","蚀星战鼓","回廊迷途","林庭复明","赤岩炉心","星台封印","巨影交锋","城镇夜曲"};
         private AudioListener listener;
         private float[] lastPlayed;
         private int nextVoice;
@@ -105,6 +110,22 @@ namespace Emberfall
             instance.PlayInternal(index);
         }
 
+        public static void PlaySkill(HeroClass hero,int skill)
+        {
+            if(muted||quitting||lifecycle.BackgroundPaused||!Application.isPlaying||(int)hero<0||(int)hero>3||skill<0||skill>=10)return;
+            EnsureInstance();int index=(int)hero*10+skill;
+            if(instance.skillClips[index]==null)instance.skillClips[index]=SynthesizeSkill(hero,skill);
+            instance.PlayInternal((int)SoundCue.Cast,instance.skillClips[index]);
+        }
+        private static int CurrentMusicTheme()
+        {
+            var game=GameSession.Instance;if(game==null||!game.HasStarted)return 0;
+            if(!game.InDungeon)return game.CurrentHub>0?11:game.IsInCamp?0:1;
+            if(game.InCombat)foreach(var enemy in game.Enemies)if(enemy!=null&&!enemy.IsDead&&enemy.IsBoss&&enemy.gameObject.activeInHierarchy)return 10;
+            if(game.ChapterActive)return 7+(int)game.ActiveChapterNode;
+            if(game.RoomChainRun!=null)return 6;
+            return game.ModeRun==null?2:3+(int)game.ModeRun.Mode;
+        }
         private static void EnsureInstance()
         {
             if (instance == null)
@@ -157,10 +178,10 @@ namespace Emberfall
             ambientSource.dopplerLevel = 0f;
             ambientSource.ignoreListenerPause = true;
             ambientSource.priority = 192;
-            ambientSource.volume = BackgroundVolume * masterVolume;
+            ambientSource.volume = BackgroundVolume * masterVolume * musicFade;
         }
 
-        private void PlayInternal(int cue)
+        private void PlayInternal(int cue,AudioClip skillClip=null)
         {
             EnsurePool();
             EnsureListener();
@@ -179,7 +200,7 @@ namespace Emberfall
             lastPlayed[cue] = now;
             voice.volume = DefaultVolume * masterVolume * (cue == (int)SoundCue.UI ? .55f : 1f);
             voice.mute = false;
-            voice.clip = clips[cue];
+            voice.clip = skillClip!=null?skillClip:clips[cue];
             voice.Play();
         }
 
@@ -189,7 +210,14 @@ namespace Emberfall
             if (Time.unscaledTime >= nextListenerCheck)
             {
                 nextListenerCheck = Time.unscaledTime + .5f;
-                EnsureListener();
+                EnsureListener();requestedTheme=CurrentMusicTheme();
+            }
+            if(!muted&&ambientSource!=null)
+            {
+                bool changing=requestedTheme>=0&&requestedTheme!=musicTheme;
+                musicFade=Mathf.MoveTowards(musicFade,changing?0f:1f,Time.unscaledDeltaTime/ .65f);
+                if(changing&&musicFade<=0){ambientSource.Stop();musicTheme=requestedTheme;ambientClip=MusicClip(musicTheme);ambientSource.clip=ambientClip;ambientResumeSample=-1;ambientSource.Play();}
+                ambientSource.volume=BackgroundVolume*masterVolume*musicFade;
             }
             if (!muted && !quitting && !lifecycle.BackgroundPaused && ambientSource != null && !ambientSource.isPlaying) StartBackground();
         }
@@ -217,9 +245,9 @@ namespace Emberfall
         {
             if (muted || quitting || lifecycle.BackgroundPaused || !isActiveAndEnabled) return;
             EnsurePool();
-            if (ambientClip == null) ambientClip = SynthesizeBackground();
+            if (ambientClip == null){musicTheme=requestedTheme=CurrentMusicTheme();ambientClip=MusicClip(musicTheme);}
             ambientSource.clip = ambientClip;
-            ambientSource.volume = BackgroundVolume * masterVolume;
+            ambientSource.volume = BackgroundVolume * masterVolume * musicFade;
             ambientSource.mute = false;
             if (!ambientSource.isPlaying)
             {
@@ -235,7 +263,7 @@ namespace Emberfall
                 foreach (AudioSource voice in voices)
                     if (voice != null) voice.volume = DefaultVolume * masterVolume *
                         (clips != null && voice.clip == clips[(int)SoundCue.UI] && voice.clip != null ? .55f : 1f);
-            if (ambientSource != null) ambientSource.volume = BackgroundVolume * masterVolume;
+            if (ambientSource != null) ambientSource.volume = BackgroundVolume * masterVolume * musicFade;
         }
 
         public static Diagnostics GetDiagnostics()
@@ -347,37 +375,49 @@ namespace Emberfall
             return clip;
         }
 
-        private static AudioClip SynthesizeBackground()
+        private AudioClip MusicClip(int theme)
+        {if(musicClips[theme]==null)musicClips[theme]=SynthesizeBackground(theme);return musicClips[theme];}
+        private static AudioClip SynthesizeBackground(int theme)
         {
-            const int seconds = 24;
-            var samples = new float[seconds * SampleRate];
-            double[] roots = { 146.83, 116.54, 174.61, 130.81, 146.83, 116.54, 130.81, 146.83 };
-            double[] melodySteps = { 2, 3, 4, 3, 2, 2.5, 3, 2.5 };
-            float peak = .001f;
-            for (int i = 0; i < samples.Length; i++)
+            double[] beats={.75,.6,.8,.6,.4,.375,.65,.7,.45,.55,.32,.8};
+            int[][] progression={new[]{0,5,7,0,9,5,7,0},new[]{0,7,9,4,5,0,7,0},new[]{0,3,-2,5,0,-5,3,0},new[]{0,5,3,7,0,3,5,7},new[]{0,0,-2,3,0,5,3,-2},new[]{0,-1,3,0,-5,3,-1,0},new[]{0,3,7,6,0,-2,3,6},new[]{0,4,7,9,5,4,7,0},new[]{0,-5,0,3,-2,0,5,3},new[]{0,7,3,10,5,7,3,0},new[]{0,0,-1,3,0,-5,3,-1},new[]{0,4,5,7,9,5,4,0}};
+            int[][] motifs={new[]{0,4,7,12,7,4,2,0},new[]{0,7,9,12,14,9,7,4},new[]{0,3,7,10,7,3,-2,0},new[]{0,7,5,3,10,7,5,3},new[]{0,0,7,3,0,10,7,3},new[]{0,12,7,0,3,7,10,7},new[]{0,6,3,10,7,6,3,-2},new[]{0,4,9,7,12,9,7,4},new[]{0,3,0,7,3,10,7,0},new[]{0,7,14,10,19,14,10,7},new[]{0,0,3,7,0,10,7,3},new[]{0,4,7,11,9,7,4,2}};
+            double beat=beats[theme],chordDuration=beat*4,duration=chordDuration*8;
+            var samples=new float[(int)(duration*SampleRate)];float peak=.001f;bool percussion=theme==4||theme==5||theme==8||theme==10;
+            for(int i=0;i<samples.Length;i++)
             {
-                double time = i / (double)SampleRate;
-                int chord = Math.Min(roots.Length - 1, (int)(time / 3));
-                double chordTime = time - chord * 3;
-                double root = roots[chord];
-                double padEnvelope = Math.Min(1, chordTime / .35) * Math.Min(1, (3 - chordTime) / .45);
-                double pad = (Math.Sin(Tau * root * chordTime) * .15 + Math.Sin(Tau * root * 1.5 * chordTime) * .08 +
-                    Math.Sin(Tau * root * 2 * chordTime) * .055) * Math.Max(0, padEnvelope);
-                int beat = (int)(time / .75);
-                double noteTime = time - beat * .75;
-                double noteEnvelope = Math.Min(1, (.75 - noteTime) / .04);
-                double melody = Bell(noteTime, root * melodySteps[beat % melodySteps.Length]) * .30 * Math.Max(0, noteEnvelope);
-                // The last note/pad fades to zero and the first attacks from zero,
-                // keeping the loop seam quiet without an audio-thread generator.
-                samples[i] = (float)(pad + melody);
-                peak = Math.Max(peak, Math.Abs(samples[i]));
+                double t=i/(double)SampleRate;int chord=Math.Min(7,(int)(t/chordDuration)),step=(int)(t/beat);double ct=t-chord*chordDuration,nt=t-step*beat;
+                double root=(theme==10?82.41:theme==8?98:theme==7?164.81:130.81)*Math.Pow(2,progression[theme][chord]/12.0);
+                double envelope=Math.Min(1,ct/.15)*Math.Min(1,(chordDuration-ct)/.25);
+                double pad=(Math.Sin(Tau*root*ct)*.16+Math.Sin(Tau*root*1.5*ct)*.08)*Math.Max(0,envelope);
+                double frequency=root*2*Math.Pow(2,motifs[theme][step%8]/12.0);
+                double melody=Bell(nt,frequency)*(theme==2||theme==6?.15:.26)*Math.Max(0,Math.Min(1,(beat-nt)/.04));
+                double drum=percussion?Math.Sin(Tau*(55*nt+1.7*(1-Math.Exp(-nt*30))))*Math.Exp(-nt*24)*(step%4==0?.35:.14):0;
+                double fade=Math.Min(1,t/.025)*Math.Min(1,(duration-t)/.08);
+                samples[i]=(float)((pad+melody+drum)*Math.Max(0,fade));peak=Math.Max(peak,Math.Abs(samples[i]));
             }
-            float gain = .62f / peak;
-            for (int i = 0; i < samples.Length; i++) samples[i] *= gain;
-            AudioClip clip = AudioClip.Create("Emberfall Quiet Hearth", samples.Length, 1, SampleRate, false);
-            clip.hideFlags = HideFlags.DontSave;
-            if (!clip.SetData(samples, 0)) Debug.LogError("Emberfall could not upload background PCM");
-            return clip;
+            for(int i=0;i<samples.Length;i++)samples[i]*=.62f/peak;
+            var clip=AudioClip.Create("Emberfall "+MusicNames[theme],samples.Length,1,SampleRate,false);clip.hideFlags=HideFlags.DontSave;clip.SetData(samples,0);return clip;
+        }
+        private static AudioClip SynthesizeSkill(HeroClass hero,int skill)
+        {
+            double duration=.28+(skill%3)*.11+(skill>=7?.2:0);var samples=new float[(int)(duration*SampleRate)];uint state=(uint)(1979+(int)hero*101+skill*337);float peak=.001f;
+            for(int i=0;i<samples.Length;i++)
+            {
+                double t=i/(double)SampleRate,p=t/duration;state^=state<<13;state^=state>>17;state^=state<<5;double noise=state/(double)uint.MaxValue*2-1;
+                double tone=180+skill*43,value;
+                if(hero==HeroClass.Vanguard)value=noise*Math.Exp(-p*(4+skill%3))*.55+Math.Sin(Tau*(tone*t-90*t*t))*.3*Math.Exp(-p*5);
+                else if(hero==HeroClass.Arcanist)
+                {
+                    bool fire=skill==1||skill==5||skill==8;
+                    value=fire?(noise*.6+Math.Sin(Tau*(65+skill*8)*t)*.3)*Math.Sin(Math.PI*p)*Math.Exp(-p*1.5):(Bell(t,900+skill*115)+Bell(t-.06,1500+skill*95)*.6+noise*.12*Math.Exp(-p*9));
+                }
+                else if(hero==HeroClass.Ranger)value=Math.Sin(Tau*(tone*2*t+50*t*t))*Math.Exp(-p*13)*.65+noise*Math.Sin(Math.PI*p)*Math.Exp(-p*4)*.45;
+                else value=(Math.Sin(Tau*tone*t)+Math.Sin(Tau*tone*1.5*t)*.4+Math.Sin(Tau*tone*2.01*t)*.2)*Math.Sin(Math.PI*p)*(.45+.15*Math.Sin(Tau*(3+skill)*t));
+                double envelope=Math.Min(1,t/.004)*Math.Min(1,(duration-t)/.025);samples[i]=(float)(value*Math.Max(0,envelope));peak=Math.Max(peak,Math.Abs(samples[i]));
+            }
+            for(int i=0;i<samples.Length;i++)samples[i]*=.7f/peak;
+            var clip=AudioClip.Create("Emberfall "+hero+" Skill "+skill,samples.Length,1,SampleRate,false);clip.hideFlags=HideFlags.DontSave;clip.SetData(samples,0);return clip;
         }
 
         private static double Bell(double time, double frequency)
@@ -427,7 +467,8 @@ namespace Emberfall
         private void ReleaseClips()
         {
             if (ambientSource != null) ambientSource.clip = null;
-            if (ambientClip != null) Destroy(ambientClip);
+            for(int i=0;i<musicClips.Length;i++){if(musicClips[i]!=null)Destroy(musicClips[i]);musicClips[i]=null;}
+            for(int i=0;i<skillClips.Length;i++){if(skillClips[i]!=null)Destroy(skillClips[i]);skillClips[i]=null;}
             ambientClip = null;
             if (clips == null) return;
             if (voices != null) foreach (AudioSource voice in voices) if (voice != null) voice.clip = null;

@@ -34,12 +34,11 @@ namespace Emberfall
   public static Vector3 HubNpcPosition(int index){return HubSettlementPlan.Npc(index);}
   private bool CanTravelNow()
   {
-   bool nearby=false;if(Player!=null)foreach(var enemy in Enemies)if(enemy!=null&&!enemy.IsDead&&Vector3.Distance(Player.transform.position,enemy.transform.position)<7){nearby=true;break;}
-   return HubTravelRules.CanTravel(HasStarted,InDungeon,IsDead,nearby,changingZone);
+   return HubTravelRules.CanTravel(HasStarted,InDungeon,IsDead,InCombat,changingZone);
   }
   public bool TravelToHub(int hub)
   {
-   if(!CanTravelNow()){Notify("先离开挑战并远离敌人，再旅行。");return false;}
+   if(!CanTravelNow()){Notify("先结束挑战并脱离战斗，再旅行。");return false;}
    if(hub==CurrentHub)return true;
    if(!PreserveWorldLoot()||!Progression.TravelToHub(hub)){Notify(Progression.LastError);return false;}
    loadingSaveSnapshot=true;

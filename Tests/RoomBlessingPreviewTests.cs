@@ -43,13 +43,9 @@ public static class RoomBlessingPreviewTests
         Check(run.OpenBranchChoice()&&run.SelectBranch(branch)&&run.Next(true,false),"selected third room entered through production choice");
         Check(run.Room.Branch==branch,"only selected branch becomes the current plan");
         Open(run);Check(run.Next(true,false),"both selected third rooms converge at rest");
-        Check(run.Room.Interlude&&!run.DoorUnlocked,"real interlude reached");
-        Check(!RoomBlessingPreview.TryNext(run,1,out p),"wrong rest choice stage rejected");
-        Check(RoomBlessingPreview.TryNext(run,2,out p)&&p.Boss&&p.EnemyCount==3,"rest previews actual three-enemy boss plan");
-        Check(RoomBlessingPreview.Subtitle(run,2,"fallback").Contains("2名护卫全灭"),"boss preview includes required guards");
-        Check(run.ChooseInterlude(),"choose real interlude");
-        Check(!RoomBlessingPreview.TryNext(run,2,out var ignored),"consumed rest choice no forecast");
-        Check(run.Next(true,false),"production boss transition");Match(p,run.Room);
+        Check(!run.Room.Interlude&&!run.DoorUnlocked&&run.Room.EnemyCount==6,"fourth room is a combat encounter");
+        Check(!RoomBlessingPreview.TryNext(run,2,out p),"fourth combat room has no empty rest choice");
+        Open(run);Check(run.Next(true,false)&&run.Room.Boss,"combat objective unlocks boss transition");
         Open(run);Check(run.Finished&&!RoomBlessingPreview.TryNext(run,2,out p),"terminal run no next room");
     }
 }

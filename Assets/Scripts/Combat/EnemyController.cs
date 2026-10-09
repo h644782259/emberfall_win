@@ -172,6 +172,9 @@ namespace Emberfall
             amount*=armorMultiplier;
             float previousHealth = Health;
             Health = Mathf.Max(0,Health-amount);
+            if(Health<previousHealth)session.RecordCombatEngagement();
+            if(Health<previousHealth)session.RecordOutgoingDamage(previousHealth-Health);
+            if(impact&&Health<previousHealth)session.RecordComboHit(previousHealth-Health);
             if(session.PracticeActive)session.PracticeRecord.ConfirmedHealthLoss(previousHealth-Health,practiceCastId);
             if(actualHealthLoss!=null&&Health<previousHealth)actualHealthLoss(previousHealth-Health);
             if(guardArmorVisual!=null&&Health<previousHealth)guardArmorVisual.RecordImpact(armorMultiplier<1,preparing);
@@ -500,6 +503,7 @@ namespace Emberfall
             if (IsBoss) { BossAttackPolicy.Move move = ToMove(type); repeatedMove = repeatedMove > 0 && previousMove == move ? repeatedMove+1 : 1; previousMove = move; }
             attackType = type;
             preparing = true;
+            session.RecordCombatEngagement();
             dodgeRegistered = dodgePending = false;
             chargeHit = false;
             dodgePlayer = null;

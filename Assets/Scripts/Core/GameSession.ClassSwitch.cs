@@ -15,9 +15,7 @@ namespace Emberfall
             if(!HasStarted||!IsInCamp||InDungeon||PracticeActive||IsDead||Player==null||Paused||BackgroundPaused)return "请先安全返回营地。";
             if(ui!=null&&ui.ClassSwitchHasPendingEdit)return "请先完成或取消当前草稿与确认。";
             if(Player.HasClassSwitchTransientState)return "请等施法、动作与临时效果结束后切换。";
-            foreach(var enemy in Enemies)
-                if(enemy!=null&&enemy.gameObject.activeInHierarchy&&!enemy.IsDead&&
-                    (enemy.IsAggro||enemy.IsPreparingAttack||(enemy.transform.position-Player.transform.position).sqrMagnitude<=144f))return "附近有敌人或仍在交战，请先脱离追击。";
+            if(InCombat)return "正在战斗，请先脱离战斗。";
             if(SummonedCompanion.HasPracticeTimedState(Player))return "请等伙伴的契约强化、护契或共鸣结束。";
             foreach(var root in gameObject.scene.GetRootGameObjects())
                 if(root.activeSelf&&(root.GetComponentInChildren<CombatProjectile>()!=null||root.GetComponentInChildren<CombatArea>()!=null||

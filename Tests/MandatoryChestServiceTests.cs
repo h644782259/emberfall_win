@@ -34,6 +34,22 @@ public static class MandatoryChestServiceTests
         var restart=new ProgressionService(disk.SaveDirectory);C(restart.LoadSlot(disk.CurrentSlotId)&&restart.Profile.pendingChestDraw.id==frozen,"process restart restores frozen failed grant");
         C(restart.OpenDungeonChest()!=null&&restart.LastChestReward.Id==frozen&&restart.Profile.inventory.Count==before+AdventureRewardRules.EquipmentCount(-1,10),"reentry commits original reward once");count=restart.Profile.inventory.Count;gold=restart.Profile.gold;
         C(restart.OpenDungeonChest()==null&&restart.Profile.inventory.Count==count&&restart.Profile.gold==gold,"reentry repeated open cannot duplicate");
+        foreach(Rarity appearance in new[]{Rarity.Rare,Rarity.Epic,Rarity.Legendary})
+        {
+            var p=New(root);C(p.PrepareDungeonChest(10),"appearance qualification");
+            for(int slot=0;slot<2;slot++)p.Profile.fashions.Add(new FashionData{id="fashion-"+slot+"-"+(int)appearance,slot=(FashionSlot)slot,rarity=Rarity.Legendary,appearanceTier=(int)appearance});
+            int quality=appearance==Rarity.Legendary?0:appearance==Rarity.Epic?12:99;
+            var draw=ProgressionService.BuildSingleChestRoll(p.Profile,quality,0,0,false,Guid.NewGuid().ToString("N"));
+            if(draw.Rarity==appearance)C(draw.duplicate,"appearance ownership survives unified legendary quality");
+            // Reproduce a persisted pre-fix draw that incorrectly recorded a new item.
+            draw.rarityIndex=(int)appearance;draw.name=ProgressionService.FashionName(FashionSlot.Weapon,appearance,p.Profile.heroClass);draw.duplicate=false;draw.slotIndex=0;p.Profile.pendingChestDraw=draw;p.Save();
+            var reload=new ProgressionService(p.SaveDirectory);C(reload.LoadSlot(p.CurrentSlotId),"load previously stuck chest");
+            int owned=reload.Profile.fashions.Count;gold=reload.Profile.gold;
+            MandatoryChestFaults.FailGrant=true;C(reload.OpenDungeonChest()==null&&reload.Profile.pendingFashionChest&&reload.Profile.gold==gold&&reload.Profile.fashions.Count==owned,"failed reconciled grant preserves original save");
+            var retry=new ProgressionService(p.SaveDirectory);C(retry.LoadSlot(p.CurrentSlotId)&&retry.OpenDungeonChest()!=null,"restart resumes stuck duplicate without reroll");
+            C(retry.LastChestReward.id==draw.id&&retry.LastChestReward.duplicate&&retry.LastChestReward.duplicateGold==800&&retry.LastChestReward.duplicateThreads==8&&retry.Profile.fashions.Count==owned,"same draw converts duplicate exactly once");
+            gold=retry.Profile.gold;C(retry.OpenDungeonChest()==null&&retry.Profile.gold==gold,"reconciled chest cannot be claimed twice");
+        }
         return "PASS "+checks+" mandatory chest capacity, explicit recovery, write faults, reentry and idempotence checks; managed persistence boundary";
     }
 }

@@ -20,7 +20,7 @@ namespace Emberfall
             return value;
         }
         public static RoomObjective Objective(int seed, int room)
-        { return room == 3 ? RoomObjective.Rest : room == 4 ? RoomObjective.Boss : (RoomObjective)((Opening(seed) + room) % 3); }
+        { return room == 3 ? RoomObjective.Hunt : room == 4 ? RoomObjective.Boss : (RoomObjective)((Opening(seed) + room) % 3); }
         public static int Mirror(int seed) { return Positive(seed) / 9 % 2 == 0 ? 1 : -1; }
         public static int EventRoom(int seed) { return Positive(seed) / 18 % 3; }
         public static string Name(RoomObjective objective)

@@ -17,6 +17,25 @@ namespace Emberfall
         private string chestReceiptId;
         private string chestQualificationId;
         private bool chestRecoveryService;
+        private ProgressionService dismissedChestOwner;
+        private string dismissedChestSlot,dismissedChestId;
+        private bool ChestDismissed {get{return dismissedChestOwner==session.Progression&&dismissedChestSlot==session.Progression.CurrentSlotId&&dismissedChestId==session.Progression.Profile.pendingChestQualificationId;}}
+        private void DismissChestPanel()
+        {
+            dismissedChestOwner=session.Progression;dismissedChestSlot=session.Progression.CurrentSlotId;
+            dismissedChestId=session.Progression.Profile.pendingChestQualificationId;
+            panel=Panel.None;session.SetUIBlocking(false);BlockUITransition();
+        }
+        private bool PendingChestReturnVisible {get{return !session.InDungeon&&ChestDismissed&&panel==Panel.None&&!session.Paused&&!session.IsDead&&!session.InputBlocked&&(session.Progression.Profile.pendingFashionChest||session.Progression.Profile.pendingChestReveal);}}
+        private Rect PendingChestReturnRect()
+        {float u=MobileControls.Active?TouchRatio:1;return new Rect((width-168*u)*.5f,12*u,168*u,44*u);}
+        private void DrawPendingChestReturn()
+        {
+            if(!PendingChestReturnVisible)return;
+            if(Button(PendingChestReturnRect(),"领取宝箱",gold))
+            {dismissedChestOwner=null;ResetChestReveal();mobileChestError=null;panel=Panel.Chests;session.SetUIBlocking(true);BlockUITransition();}
+        }
+
         private void OpenChestRecoveryService()
         {
             if(!session.Progression.Profile.pendingFashionChest||string.IsNullOrEmpty(session.Progression.LastError))return;
@@ -31,6 +50,8 @@ namespace Emberfall
             if(session==null||!session.HasStarted||session.Paused||session.IsDead)return;
             var profile=session.Progression.Profile;
             if(!profile.pendingFashionChest&&!profile.pendingChestReveal){chestRecoveryService=false;return;}
+            if(session.InDungeon)return;
+            if(ChestDismissed&&panel!=Panel.Chests)return;
             if(chestRecoveryService&&panel==Panel.Inventory&&MerchantServiceActive)return;
             chestRecoveryService=false;
             if(panel!=Panel.None&&panel!=Panel.Chests&&panel!=Panel.Summary)return;
@@ -57,7 +78,7 @@ namespace Emberfall
             if (session.Progression.Profile.pendingChestReveal && session.Progression.LastChestReward != null)
             {
                 var reward=session.Progression.LastChestReward;
-                revealedChest=Mathf.Clamp(reward.choice,0,2); chestRevealResult=reward.summary; chestReceiptId=reward.Id;
+                revealedChest=Mathf.Clamp(reward.selectedChest,0,2); chestRevealResult=reward.summary; chestReceiptId=reward.Id;
                 chestRevealedAt=Time.unscaledTime-ChestDuration; rewardSoundPlayed=true;
             }
         }
@@ -85,6 +106,7 @@ namespace Emberfall
             float ww=Mathf.Min(860,width-32),wh=Mathf.Min(550,height-24);
             Rect w=new Rect((width-ww)*.5f,(height-wh)*.5f,ww,wh);
             Fill(w,new Color(.045f,.064f,.095f,.99f));Border(w,new Color(.52f,.60f,.67f,.3f));
+            if(PopupCloseButton(new Rect(w.xMax-54,w.y+8,44,44))){DismissChestPanel();return;}
             Text(new Rect(w.x+28,w.y+20,w.width-56,18),"F A L L E N   S T A R",10,gold,true);
             Text(new Rect(w.x+28,w.y+45,w.width-248,42),revealed?(complete?"宝箱奖励":"开启宝箱"):"通关馈赠",28,pale,true);
             Text(new Rect(w.x+28,w.y+92,w.width-56,24),revealed&&!complete?"正在开启宝箱":"",14,muted);
@@ -93,23 +115,24 @@ namespace Emberfall
             else if(revealed)DrawChestRevealTransition(body,reward,new Rect(body.x,body.y,ChestRevealPresentation.DesktopArtSize(body.height),ChestRevealPresentation.DesktopArtSize(body.height)));
             else
             {
-                Rect r=new Rect(body.x,body.y,body.width,body.height);
-                DrawSingleChestCard(r,1);
-                if(PrimaryButton(new Rect(r.x+12,r.yMax-54,r.width-24,42), progression.ChestOpenCaption, gold, !chestOpening&&progression.Profile.pendingFashionChest&&!progression.Profile.pendingChestReveal))
+                float cell=(body.width-24)/3;int locked=progression.SelectedRewardChest;
+                for(int choice=0;choice<3;choice++)
                 {
-                    chestOpening=true;string result;
-                    try{result=progression.OpenDungeonChest();}finally{chestOpening=false;}
-                    if(result==null){chestOpening=false;Feedback(false,"宝箱暂时无法开启");}
-                    else {chestRevealOrigin=ChestChoiceArt(r,1);revealedChest=0;chestRevealResult=result;chestRevealedAt=Time.unscaledTime;chestDetails=false;rewardSoundPlayed=false;chestReceiptId=progression.LastChestReward.Id;desktopChestResultScroll=Vector2.zero;GameAudio.Play(SoundCue.Cast);}
-                    BlockUITransition();return;
+                    Rect r=new Rect(body.x+choice*(cell+12),body.y,cell,body.height);DrawSingleChestCard(r,1);
+                    if(Button(new Rect(r.x+8,r.yMax-54,r.width-16,44),locked==choice?"继续开启":"宝箱 "+(choice+1),gold,!chestOpening&&(locked<0||locked==choice)&&progression.Profile.pendingFashionChest))
+                    {
+                        chestOpening=true;string result;try{result=progression.OpenChosenDungeonChest(choice);}finally{chestOpening=false;}
+                        if(result==null)Feedback(false,"宝箱暂时无法开启");
+                        else{chestRevealOrigin=ChestChoiceArt(r,1);revealedChest=choice;chestRevealResult=result;chestRevealedAt=Time.unscaledTime;chestDetails=false;rewardSoundPlayed=false;chestReceiptId=progression.LastChestReward.Id;desktopChestResultScroll=Vector2.zero;GameAudio.Play(SoundCue.Cast);}
+                        BlockUITransition();return;
+                    }
                 }
             }
 
             if(revealed)
             {
-                if(complete&&CanTrialChestReward(reward)&&PrimaryButton(new Rect(w.xMax-396,w.yMax-58,180,42), "收下并查看时装", jade)){AcceptChestForTrial();return;}
                 if(PrimaryButton(new Rect(w.xMax-208,w.yMax-58,180,42), complete?"收下":"跳过动画", jade, !chestDetails, null, true))
-                {FinishChestReveal();BlockUITransition();}
+                {if(complete)FinishChestReveal();else chestRevealedAt=Time.unscaledTime-ChestDuration;BlockUITransition();}
             }
             else
             {

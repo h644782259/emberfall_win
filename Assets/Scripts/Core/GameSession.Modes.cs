@@ -88,8 +88,9 @@ namespace Emberfall
    }
    if(ModeRun.Status==ExpeditionModeStatus.AwaitingSpawn&&!arenaAwaitingBlessing)
    {
-    arenaAwaitingBlessing=true;if(!ChallengeRun)Player.Heal(Player.MaxHealth*.2f);else HealingCharges=Mathf.Min(3,HealingCharges+1);
-    RunChoices.Prepare(ModeRun.CompletedPhases,Progression.Profile.heroClass,RunChoices.UsableRanks(Progression.Profile,MobileControls.Active),runSeed+ModeRun.CompletedPhases*197);UpdateTimeScale();
+    if(!ChallengeRun)Player.Heal(Player.MaxHealth*.2f);else HealingCharges=Mathf.Min(3,HealingCharges+1);
+    // Short arena challenges flow directly into the next phase without a blessing prompt.
+    BeginArenaPhase();UpdateTimeScale();
    }
    FinalizeArenaResult();
   }
@@ -99,7 +100,7 @@ namespace Emberfall
    {
     arenaResultRecorded=true;DungeonCleared=ModeRun.Status==ExpeditionModeStatus.Won;
     if(DungeonCleared){TrySettleArenaReward();GameAudio.Play(SoundCue.Victory);}else Notify(ModeObjectiveStatus);
-    LastRunSummary=BuildRunSummary(DungeonCleared);SuspendInputs();UpdateTimeScale();
+    LastRunSummary=BuildRunSummary(DungeonCleared);SuspendInputs();if(DungeonCleared)DismissFinishedResult();UpdateTimeScale();
    }
   }
   private bool ConfirmArenaBlessing(int index)

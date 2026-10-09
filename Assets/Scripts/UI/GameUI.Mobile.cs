@@ -73,7 +73,7 @@ namespace Emberfall
             try
             {
                 if(MobileDungeonEntranceVisible)session.EnterDungeon();
-                else if(session.NearDungeonReturn)session.ReturnToCamp();
+                else if(session.NearDungeonReturn)OpenDungeonExit();
                 else if(session.NearChapterExit)session.EnterNextChapterRoom();
                 else if(session.NearRoomExit)session.EnterNextRoom();
                 else if(session.SideEventAvailable)session.StartSideEvent();
@@ -140,9 +140,8 @@ namespace Emberfall
             {blockedRects.Add(TouchRect(l.EncounterText));Text(TouchRect(l.EncounterText),session.DungeonCleared?"遗迹肃清":"第 "+session.DungeonWave+" / "+session.TotalWaves+" 波",TouchFont(12),pale,true,false,TextAnchor.MiddleCenter);}
             DrawMobileHotbar();
             DrawCompanionCommands();
-            DrawVictoryNotice();
 
-            string interaction=MobileDungeonEntranceVisible?"进入副本":session.NearDungeonReturn?"返回营地":session.NearChapterExit?"沿星路前进":session.NearRoomExit?"进入下一间":session.SideEventAvailable?"开启晶核挑战":session.IsInCamp?"营地工坊":session.InDungeon?"返回营地":session.IsNearDungeonEntrance?"进入副本":"靠近入口";
+            string interaction=MobileDungeonEntranceVisible?"进入副本":session.NearDungeonReturn?"传送点":session.NearChapterExit?"沿星路前进":session.NearRoomExit?"进入下一间":session.SideEventAvailable?"开启晶核挑战":session.IsInCamp?"营地工坊":session.InDungeon?"返回营地":session.IsNearDungeonEntrance?"进入副本":"靠近入口";
             if(MobileInteractionVisible)
             {
             Rect interact=TouchRect(MobileInteractionArea);blockedRects.Add(interact);
@@ -158,6 +157,18 @@ namespace Emberfall
             var targeting=session.Player==null?null:session.Player.GetComponent<SkillTargetingController>();
             var charge=session.Player==null?null:session.Player.GetComponent<SkillChargeController>();
             if(charge!=null&&charge.IsCharging)Bar(TouchRect(26,l.Height-12,128,5),charge.Progress,gold);
+        }
+        private bool OtherMobilePageReady()
+        {
+            if(session.Player==null)return false;
+            int otherPage=(mobileSkillPage+1)%MobileSkillPolicy.PageCount;
+            for(int button=0;button<MobileSkillPolicy.ButtonCount;button++)
+            {
+                int skill=BoundMobileSkill(button,otherPage);
+                // Shared buttons (such as the ultimate) are already visible on this page.
+                if(skill>=0&&!MobileSkillVisible(skill)&&session.Player.IsSkillAvailable(skill))return true;
+            }
+            return false;
         }
         private void DrawMobileHotbar()
         {
@@ -182,6 +193,7 @@ namespace Emberfall
             Rect pageHit=TouchRect(l.SkillPage);blockedRects.Add(pageHit);
             float pageIcon=(MobileControls.IsIPad?28.8f:24f)*TouchRatio;
             DrawIcon(new Rect(pageHit.center.x-pageIcon*.5f,pageHit.center.y-pageIcon*.5f,pageIcon,pageIcon),UIIconAtlas.SkillPageArrow(),Color.white);
+            Badge(new Rect(pageHit.center.x-pageIcon*.5f,pageHit.center.y-pageIcon*.5f,pageIcon,pageIcon),OtherMobilePageReady());
             controlOpacity=priorOpacity;
         }
         private void DrawMobileControlSurface(Rect r,bool ready,bool pressed)
@@ -199,8 +211,7 @@ namespace Emberfall
             Text(TouchRect(layout.PlayerHealth),Mathf.CeilToInt(hp)+" / "+Mathf.CeilToInt(max),TouchFont(MobileControls.IsIPad?11:9),pale,true,false,TextAnchor.MiddleCenter);
             Bar(TouchRect(layout.PlayerEnergy),session.Player==null?0:session.Player.Energy/Mathf.Max(1,session.Player.MaxEnergy),new Color(.35f,.63f,1));
         }
-        // Only the measured title is interactive. Text and the unused objective slot
-        // never claim battlefield input; a small shadow works over bright terrain.
+        // Objective text is informational; touching it must not open travel or click through.
         private void DrawMobileObjectiveText(Rect bounds,ref float y,string value,int size,Color tint,bool bold=false,bool locate=false)
         {
             if(string.IsNullOrEmpty(value))return;
@@ -210,7 +221,7 @@ namespace Emberfall
             Rect line=new Rect(bounds.x,y,w,h);
             Text(new Rect(line.x+TouchRatio,line.y+TouchRatio,line.width,line.height),content,TouchFont(size),new Color(0,0,0,.9f),bold,true);
             Text(line,content,TouchFont(size),tint,bold,true);
-            if(locate){blockedRects.Add(line);if(GUI.Button(line,GUIContent.none,invisibleButton))OpenTravelMap();}
+            blockedRects.Add(line);
             y+=h+2*TouchRatio;
         }
         private string mobileNoticeDetail;
@@ -324,7 +335,8 @@ namespace Emberfall
             string[] tabs = { "冒险", "声音与画面", "按键设置", "存档" };
             int[] tabOrder={0,3,1,2};
             float sidebarWidth=120,bodyY=y+headerHeight+8;
-            float bodyHeight=Mathf.Max(48,layout.Height-bodyY-12);
+            float bodyHeight=Mathf.Max(48,layout.Height-bodyY-72);
+            if(PrimaryButton(TouchRect(x+136,layout.Height-60,panelWidth-136,48),"保存并退出",gold))RequestExit(true);
             Fill(TouchRect(x,bodyY,sidebarWidth,bodyHeight),new Color(.025f,.05f,.065f,.65f));
             for (int i=0;i<tabs.Length;i++)
                 if (PauseSidebarTab(TouchRect(x,bodyY+i*52,sidebarWidth,48),tabs[tabOrder[i]],mobilePausePage==tabOrder[i],TouchRatio) && mobilePausePage!=tabOrder[i])
@@ -366,7 +378,6 @@ namespace Emberfall
                 return;
             }
             if(NavigationButton(TouchRect(0,0,contentWidth,48),"营地 / 撤离",jade))LeaveMobilePauseForCamp();
-            if(DangerButton(TouchRect(0,58,contentWidth,48),"返回主菜单",muted))RequestExit(true);
             if (!string.IsNullOrEmpty(notice))
                 Text(TouchRect(0,174,contentWidth,noticeHeight),notice,TouchFont(11),gold,false,true,TextAnchor.MiddleCenter);
         }

@@ -242,7 +242,7 @@ namespace Emberfall
 
             if(PopupCloseButton(new Rect(r.xMax-44*u,r.y,44*u,44*u))){inventoryComparisonOpen=false;BlockUITransition();}
             if(potion||fashion)Text(new Rect(r.x+8*u,r.y+42*u,r.width-16*u,22*u),potion?"恢复50%生命":"时装 · "+GameBalance.RarityName(appearance.rarity),Mathf.RoundToInt(12*u),muted);
-            if(fashion)Text(new Rect(r.x+12*u,r.y+120*u,r.width-24*u,Mathf.Max(30*u,r.height-132*u)),ProgressionService.FashionBonus(appearance.slot,appearance.rarity),Mathf.RoundToInt(13*u),pale,false,true);
+            if(fashion)Text(new Rect(r.x+12*u,r.y+120*u,r.width-24*u,Mathf.Max(30*u,r.height-132*u)),ProgressionService.FashionBonus(appearance.slot,appearance.rarity)+"\n同部位按已收藏的最高品质生效",Mathf.RoundToInt(13*u),pale,false,true);
             float actionWidth=(r.width-16*u)*.5f;
             if(potion)
             {
