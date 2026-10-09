@@ -59,8 +59,16 @@ try {
     }
 
     Write-Host '[1/5] Building current local Windows source...'
+    Write-Host "Source repository: $projectRoot"
+    $sourceCommit = 'Git unavailable'
+    if (Get-Command git -ErrorAction SilentlyContinue) {
+        $sourceCommit = (& git -C $projectRoot rev-parse HEAD | Out-String).Trim()
+    }
+    Write-Host "Source commit: $sourceCommit"
     & (Join-Path $toolsRoot 'Build-Windows.ps1') -UnityPath $UnityPath
     $buildRoot = Join-Path $projectRoot 'Builds\Windows'
+    $buildInfo = [ordered]@{ sourceDirectory = $projectRoot; sourceCommit = $sourceCommit; builtUtc = [DateTime]::UtcNow.ToString('o') }
+    [IO.File]::WriteAllText((Join-Path $buildRoot 'build-info.json'), ($buildInfo | ConvertTo-Json), (New-Object Text.UTF8Encoding($false)))
 
     Write-Host '[2/5] Packaging outside the repository...'
     & (Join-Path $toolsRoot 'Package-Release.ps1') -BuildDirectory $buildRoot -OutputDirectory $PackageDirectory
