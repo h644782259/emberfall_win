@@ -19,21 +19,21 @@ namespace Emberfall
    {
     var slot=(ItemSlot)slotIndex;int count=DropPreviewRules.SlotCount(mode,tier,slot);if(count==0)continue;
     foreach(var rarity in DropPreviewRules.ClearRarities(mode,tier))
-     result.Add(new EntryRewardPreview{Key="clear:"+slot+":"+rarity,Clear=true,Rarity=rarity,Name=GameBalance.SlotName(slot)+" · "+GameBalance.RarityName(rarity),Icon=UIIconAtlas.EquipmentCardIcon(slot,level,rarity,session.Progression.Profile.heroClass),Tint=GameBalance.RarityColor(rarity),Description="通关宝箱必得 "+GameBalance.SlotName(slot)+" ×"+count+"，至少"+GameBalance.RarityName(AdventureRewardRules.MinimumRarity(mode))+"。\n本图展示可能品质："+GameBalance.RarityName(rarity)+"，不是各品质各送一件。\n当前等级档 Lv."+level+"；按开启宝箱时角色等级生成。"});
+     result.Add(new EntryRewardPreview{Key="clear:"+slot+":"+rarity,Clear=true,Rarity=rarity,Name=GameBalance.SlotName(slot),Icon=UIIconAtlas.EquipmentCardIcon(slot,level,rarity,session.Progression.Profile.heroClass),Tint=GameBalance.RarityColor(rarity),Description=GameBalance.SlotName(slot)+" · "+GameBalance.RarityName(rarity)+"\nLv."+level});
    }
-   result.Add(new EntryRewardPreview{Key="shard",Clear=true,Rarity=Rarity.Rare,Name="星烬碎片",Icon=UIIconAtlas.Utility("shard"),Tint=jade,Description="通关宝箱 · 星烬碎片 ×"+AdventureRewardRules.Materials(mode,tier)+"\n用于宝石与机制变体；章节完成奖励另列。"});
-   result.Add(new EntryRewardPreview{Key="gold",Clear=true,Rarity=Rarity.Common,Name="金币",Icon=UIIconAtlas.Reward(0),Tint=gold,Description="通关宝箱金币："+TierRewardRules.ChestGoldMinimum(tier)+"～"+(TierRewardRules.ChestGoldMinimum(tier)+40)});
-   if(mode==-1&&!chapter)foreach(var rarity in DropPreviewRules.ClearRarities(-1,tier))foreach(var slot in new[]{FashionSlot.Weapon,FashionSlot.Wings})
-    result.Add(new EntryRewardPreview{Key="fashion:"+slot+":"+rarity,Clear=true,Rarity=Rarity.Legendary,Name=ProgressionService.FashionName(slot,rarity,session.Progression.Profile.heroClass)+" · 传说",Icon=UIIconAtlas.FashionCardIcon(slot,(int)rarity,session.Progression.Profile.heroClass),Tint=GameBalance.RarityColor(Rarity.Legendary),Description="通关宝箱必得一个传说外观，此图为可能部位与外观款式（保存 appearanceTier 身份）。\n重复外观转为资源，不是每图各送一个外观。"});
+   result.Add(new EntryRewardPreview{Key="shard",Clear=true,Rarity=Rarity.Rare,Name="星烬碎片",Icon=UIIconAtlas.Utility("shard"),Tint=jade,Description="星烬碎片\n数量："+AdventureRewardRules.Materials(mode,tier)});
+   result.Add(new EntryRewardPreview{Key="gold",Clear=true,Rarity=Rarity.Common,Name="金币",Icon=UIIconAtlas.Reward(0),Tint=gold,Description="金币\n数量："+TierRewardRules.ChestGoldMinimum(tier)+"～"+(TierRewardRules.ChestGoldMinimum(tier)+40)});
+   if(mode==-1&&!chapter)foreach(var rarity in new[]{Rarity.Common,Rarity.Rare,Rarity.Epic,Rarity.Legendary})foreach(var slot in new[]{FashionSlot.Weapon,FashionSlot.Wings})
+    result.Add(new EntryRewardPreview{Key="fashion:"+slot+":"+rarity,Clear=true,Rarity=rarity,Name=ProgressionService.FashionName(slot,rarity,session.Progression.Profile.heroClass),Icon=UIIconAtlas.FashionCardIcon(slot,(int)rarity,session.Progression.Profile.heroClass),Tint=GameBalance.RarityColor(rarity),Description=ProgressionService.FashionName(slot,rarity,session.Progression.Profile.heroClass)+"\n"+(slot==FashionSlot.Weapon?"兵装":"羽翼")+" · "+GameBalance.RarityName(rarity)+"\n"+ProgressionService.FashionBonus(slot,rarity)});
    for(int slotIndex=0;slotIndex<3;slotIndex++)foreach(var rarity in DropPreviewRules.EnemyRarities(enemyTier,hasBoss,false))
    {
     var slot=(ItemSlot)slotIndex;
-    result.Add(new EntryRewardPreview{Key="enemy:"+slot+":"+rarity,Rarity=rarity,Name=GameBalance.SlotName(slot)+" · "+GameBalance.RarityName(rarity),Icon=UIIconAtlas.EquipmentCardIcon(slot,level,rarity,session.Progression.Profile.heroClass),Tint=GameBalance.RarityColor(rarity),Description="敌人可能掉落 · "+GameBalance.SlotName(slot)+" · "+GameBalance.RarityName(rarity)+"\n当前等级档 Lv."+level+"，基础属性在获得时生成；不是通关保底。"});
+    result.Add(new EntryRewardPreview{Key="enemy:"+slot+":"+rarity,Rarity=rarity,Name=GameBalance.SlotName(slot),Icon=UIIconAtlas.EquipmentCardIcon(slot,level,rarity,session.Progression.Profile.heroClass),Tint=GameBalance.RarityColor(rarity),Description=GameBalance.SlotName(slot)+" · "+GameBalance.RarityName(rarity)+"\nLv."+level});
    }
    foreach(var mechanic in BuildCatalog.MechanicsFor(session.Progression.Profile.heroClass))foreach(var rarity in DropPreviewRules.EnemyRarities(enemyTier,hasBoss,true))
    {
-    string effect=BuildCatalog.MechanicDescription(mechanic);int variant=effect.IndexOf("变体");if(variant>0)effect=effect.Substring(0,variant).Trim();
-    result.Add(new EntryRewardPreview{Key="mechanic:"+mechanic+":"+rarity,Rarity=rarity,Name=BuildCatalog.MechanicName(mechanic)+" · "+GameBalance.RarityName(rarity),Icon=UIIconAtlas.EquipmentCardIcon(BuildCatalog.MechanicSlot(mechanic),level,rarity,session.Progression.Profile.heroClass),Tint=GameBalance.RarityColor(rarity),Description="敌人可能掉落 · "+BuildCatalog.MechanicName(mechanic)+" · "+GameBalance.RarityName(rarity)+"\n当前等级档 Lv."+level+"\n"+effect});
+
+    result.Add(new EntryRewardPreview{Key="mechanic:"+mechanic+":"+rarity,Rarity=rarity,Name=BuildCatalog.MechanicName(mechanic),Icon=UIIconAtlas.EquipmentCardIcon(BuildCatalog.MechanicSlot(mechanic),level,rarity,session.Progression.Profile.heroClass),Tint=GameBalance.RarityColor(rarity),Description=BuildCatalog.MechanicName(mechanic)+"\n"+GameBalance.SlotName(BuildCatalog.MechanicSlot(mechanic))+" · "+GameBalance.RarityName(rarity)+"\nLv."+level});
    }
    return result;
   }

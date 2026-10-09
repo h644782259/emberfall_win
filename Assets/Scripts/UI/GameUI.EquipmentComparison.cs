@@ -25,7 +25,7 @@ namespace Emberfall
                 foreach(var a in session.Progression.Profile.attachments)
                     if(a.mounted&&BuildCatalog.MechanicClass(a.mechanic)==session.Progression.Profile.heroClass)mounts+=(mounts.Length>0?" / ":"")+BuildCatalog.MechanicName(a.mechanic)+" · "+a.upgradeRank+"阶";
                 Fill(area,new Color(.025f,.05f,.065f));
-                string text="宝石换装沿用 · "+(mounts.Length>0?mounts:"当前未挂载")+"\n旧装备属性与部位强化按换装比较；到营地工坊管理宝石与变体。";
+                string text="宝石换装沿用 · "+(mounts.Length>0?mounts:"当前未挂载")+"\n旧装备属性与部位强化按换装比较；到铁匠处管理宝石与变体。";
                 Text(new Rect(area.x+8,area.y+6,area.width-16,area.height-12),text,12,jade,false,true);
                 if(area.Contains(Mouse))tooltip=text;
                 return;

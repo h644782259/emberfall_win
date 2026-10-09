@@ -36,15 +36,11 @@ namespace Emberfall
             EndTouchScroll();
             Text(new Rect(w.x+24,w.yMax-48,w.width-48,28),"星烬碎片 × "+p.Profile.mechanicMaterials+" · 传说机制额外+15% · 旧装备属性、强化与方案投入保留",14,gold,true);
         }
-        private void DrawGrowthHudCard()
+        private void DrawDesktopGoalInteraction(Rect objective)
         {
-            if(MobileControls.Active||session.PracticeActive||session.InDungeon||systemHistory)return;
-            var goal=session.Progression.SelectedProgressionGoal(session.IsInCamp);
-            Rect r=new Rect(18,Mathf.Min(height-156,height-72-AdventureSelectionLayout.LogHeight(session.SystemMessages.Count,systemHistory)-98),282,98);blockedRects.Add(r);Box(r,jade,false);
-            DrawIcon(new Rect(r.x+12,r.y+14,24,24),UIIconAtlas.Utility("confirm"),jade);
-            Text(new Rect(r.x+46,r.y+10,r.width-58,25),goal.Title,14,pale,true);
-            Text(new Rect(r.x+12,r.y+43,r.width-24,38),"达成自动奖励 · 点击查看与定位",12,muted,false,true);
-            if(GUI.Button(r,GUIContent.none,invisibleButton))NavigateProgressionGoal(goal);
+            if(session.InDungeon || session.SpecialAdventure || session.ChapterActive || session.PracticeActive || session.IsDead)return;
+            if(objective.Contains(Mouse) && GUI.enabled)tooltip=CurrentProgressionGoalStatus()+"\n点击查看与定位";
+            if(GUI.Button(objective,GUIContent.none,invisibleButton))NavigateProgressionGoal(session.Progression.SelectedProgressionGoal(session.IsInCamp));
         }
         private void NavigateProgressionGoal(ProgressionGoalState goal)
         {

@@ -60,11 +60,11 @@ namespace Emberfall
         private static readonly int[] WingHealthPercents = { 3, 5, 8, 12 };
         private static readonly int[] WingArmorPercents = { 2, 3, 5, 8 };
         private static readonly int[] WeaponPercents = { 2, 4, 6, 9 };
-        // Preserve the overall 40% fashion chance; every new fashion is legendary.
+        // Absolute per-chest chances: common 22%, rare 12%, epic 5%, legendary 1%.
         public static Rarity? RollFashionRarity(int roll)
         {
             if(roll<0||roll>=100)throw new ArgumentOutOfRangeException("roll");
-            return roll<40?(Rarity?)Rarity.Legendary:null;
+            return roll<1?Rarity.Legendary:roll<6?Rarity.Epic:roll<18?Rarity.Rare:roll<40?(Rarity?)Rarity.Common:null;
         }
 
         public static string FashionName(FashionSlot slot,Rarity rarity)
@@ -1832,13 +1832,13 @@ namespace Emberfall
         internal static ChestReward BuildSingleChestRoll(GameProfile profile,int qualityRoll,int slotRoll,int goldRoll,bool protectLegacy,string id)
         {
             if(slotRoll<0||slotRoll>1||goldRoll<0||goldRoll>40)throw new ArgumentOutOfRangeException("roll");
-            Rarity? rarity=!profile.pendingAdventureChest?RollFashionRarity(qualityRoll):profile.pendingChestMode==-1?(Rarity?)(qualityRoll<AdventureRewardRules.LegendaryChance(profile.pendingChestTier)?Rarity.Legendary:qualityRoll<AdventureRewardRules.LegendaryChance(profile.pendingChestTier)+AdventureRewardRules.UpgradeChance(-1,profile.pendingChestTier)?Rarity.Epic:Rarity.Rare):null;int gold=TierRewardRules.ChestGoldMinimum(profile.pendingChestTier)+goldRoll;
+            Rarity? rarity=!profile.pendingAdventureChest||profile.pendingChestMode==-1?RollFashionRarity(qualityRoll):null;int gold=TierRewardRules.ChestGoldMinimum(profile.pendingChestTier)+goldRoll;
             var roll=new ChestReward{rulesRevision=2,rewardKind=ChestRewardKind.SingleChest,id=id,choice=-1,gold=protectLegacy?gold*3/2:gold,
                 rarityIndex=rarity.HasValue?(int)rarity.Value:-1,materialKind=RewardMaterialKind.StarAshFragment,materials=profile.pendingAdventureChest?AdventureRewardRules.Materials(profile.pendingChestMode,profile.pendingChestTier):1,legacyGoldProtection=protectLegacy};
             if(rarity.HasValue)
             {
-                bool weapon=profile.fashions.Exists(x=>x.slot==FashionSlot.Weapon&&x.rarity==rarity.Value);
-                bool wings=profile.fashions.Exists(x=>x.slot==FashionSlot.Wings&&x.rarity==rarity.Value);
+                bool weapon=profile.fashions.Exists(x=>x.slot==FashionSlot.Weapon&&x.AppearanceRarity==rarity.Value);
+                bool wings=profile.fashions.Exists(x=>x.slot==FashionSlot.Wings&&x.AppearanceRarity==rarity.Value);
                 FashionSlot slot=weapon&&!wings?FashionSlot.Wings:wings&&!weapon?FashionSlot.Weapon:(FashionSlot)slotRoll;
                 roll.slotIndex=(int)slot;roll.duplicate=weapon&&wings;roll.name=FashionName(slot,rarity.Value,profile.heroClass);
             }
@@ -1886,12 +1886,12 @@ namespace Emberfall
                 FashionSlot slot=roll.rulesRevision>=2?(FashionSlot)roll.slotIndex:roll.choice==0?FashionSlot.Weapon:FashionSlot.Wings;
                 string id="fashion-"+(int)slot+"-"+(int)rarity.Value;
                 bool owned=candidate.fashions.Exists(x=>x.id==id);
-                receipt.rarityIndex=(int)Rarity.Legendary;receipt.appearanceTier=(int)rarity.Value;receipt.slotIndex=(int)slot;receipt.name=FashionName(slot,rarity.Value,candidate.heroClass);
+                receipt.rarityIndex=(int)rarity.Value;receipt.appearanceTier=(int)rarity.Value;receipt.slotIndex=(int)slot;receipt.name=FashionName(slot,rarity.Value,candidate.heroClass);
                 receipt.duplicate=roll.rulesRevision>=2?roll.duplicate:owned;
                 if(!receipt.duplicate&&owned){Fail("冻结奖励的收藏状态已改变，请保留存档并恢复原资格；不会重抽。");return null;}
                 if(receipt.duplicate)
                 {receipt.duplicateGold=800;receipt.duplicateThreads=8;receipt.gold+=receipt.duplicateGold;}
-                else candidate.fashions.Add(new FashionData{id=id,slot=slot,rarity=Rarity.Legendary,appearanceTier=(int)rarity.Value,name=receipt.name});
+                else candidate.fashions.Add(new FashionData{id=id,slot=slot,rarity=rarity.Value,appearanceTier=(int)rarity.Value,name=receipt.name});
             }
             if(Profile.pendingAdventureChest){
                 int before=candidate.inventory.Count;
@@ -3149,7 +3149,6 @@ namespace Emberfall
                 else
                 {
                     if(receipt.appearanceTier<0||receipt.appearanceTier>3)receipt.appearanceTier=receipt.rarityIndex;
-                    receipt.rarityIndex=(int)Rarity.Legendary;
                     receipt.name=FashionName((FashionSlot)receipt.slotIndex,(Rarity)receipt.appearanceTier,profile.heroClass);
                 }
                 if (string.IsNullOrWhiteSpace(receipt.summary)) receipt.summary = receipt.name + " · " + receipt.gold + " 金币";
@@ -3269,7 +3268,6 @@ namespace Emberfall
                     fashion.appearanceTier=fashion.id!=null&&fashion.id.StartsWith(prefix,StringComparison.Ordinal)&&int.TryParse(fashion.id.Substring(prefix.Length),out oldTier)&&oldTier>=0&&oldTier<=3?oldTier:(int)fashion.rarity;
                 }
                 if(fashion.appearanceTier<0||fashion.appearanceTier>3)fashion.appearanceTier=(int)fashion.rarity;
-                fashion.rarity=Rarity.Legendary;
                 string expectedId = "fashion-" + (int)fashion.slot + "-" + fashion.appearanceTier;
                 if (!fashionIds.Add(expectedId)) continue;
                 fashion.id = expectedId;

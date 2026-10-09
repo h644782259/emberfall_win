@@ -173,11 +173,13 @@ namespace Emberfall.Editor
                     name + ": unopened qualification persists without a phantom frozen draw");
                 gold = restored.Profile.gold;
                 int threads = restored.Profile.fashionThreads, materials = restored.Profile.mechanicMaterials;
+                int expectedChestMaterials = restored.Profile.pendingAdventureChest
+                    ? AdventureRewardRules.Materials(restored.Profile.pendingChestMode, restored.Profile.pendingChestTier) : 1;
                 Check(!string.IsNullOrEmpty(restored.OpenDungeonChest()) && string.IsNullOrEmpty(restored.LastError),
                     name + ": actual random draw freezes and grants through durable writes");
                 string receiptId = restored.LastChestReward.id;
                 Check(restored.Profile.gold > gold && restored.Profile.fashionThreads > threads &&
-                    restored.Profile.mechanicMaterials == materials + 1 && restored.Profile.pendingChestReveal,
+                    restored.Profile.mechanicMaterials == materials + expectedChestMaterials && restored.Profile.pendingChestReveal,
                     name + ": guaranteed resources and committed reveal are present");
                 gold = restored.Profile.gold; threads = restored.Profile.fashionThreads; materials = restored.Profile.mechanicMaterials;
                 Check(restored.Load() && restored.LastChestReward.id == receiptId && restored.Profile.pendingChestDraw == null,

@@ -791,20 +791,20 @@ namespace Emberfall
             if(MobileControls.Active){DrawMobileHUD();return;}
             GameProfile p = session.Progression.Profile;
             Color accent = GameBalance.ClassColor(p.heroClass);
-            Rect playerRect = new Rect(182, 16, 240, 88);
+            Rect playerRect = new Rect(16, 16, 240, 88);
             blockedRects.Add(playerRect);
             Box(playerRect, accent);
-            Fill(new Rect(182, 16, 2, 88), accent);
-            Text(new Rect(194, 24, 139, 22), GameBalance.ClassName(p.heroClass) + " · Lv." + p.level, 16, pale, true);
-            DrawPrice(new Rect(335,26,74,20),p.gold,false,1);
+            Fill(new Rect(16, 16, 2, 88), accent);
+            Text(new Rect(28, 24, 139, 22), GameBalance.ClassName(p.heroClass) + " · Lv." + p.level, 16, pale, true);
+            DrawPrice(new Rect(169,26,74,20),p.gold,false,1);
             float hp = session.Player == null ? 0 : session.Player.Health;
             float maxHp = session.Player == null ? 1 : session.Player.MaxHealth;
-            Bar(new Rect(194, 54, 216, 10), hp / Mathf.Max(1, maxHp), new Color(.86f, .16f, .19f));
+            Bar(new Rect(28, 54, 216, 10), hp / Mathf.Max(1, maxHp), new Color(.86f, .16f, .19f));
             float energy = session.Player == null ? 0 : session.Player.Energy;
             float maxEnergy = session.Player == null ? 100 : session.Player.MaxEnergy;
-            Bar(new Rect(194, 71, 216, 7), energy / Mathf.Max(1, maxEnergy), new Color(.28f, .57f, .91f));
+            Bar(new Rect(28, 71, 216, 7), energy / Mathf.Max(1, maxEnergy), new Color(.28f, .57f, .91f));
             bool maxLevel = p.level >= ProgressionService.MaximumLevel;
-            Bar(new Rect(194, 88, 216, 3), maxLevel ? 1 : p.xp / (float)GameBalance.XpToNext(p.level), gold);
+            Bar(new Rect(28, 88, 216, 3), maxLevel ? 1 : p.xp / (float)GameBalance.XpToNext(p.level), gold);
             if (playerRect.Contains(Mouse) && GUI.enabled)
                 tooltip = "生命 " + Mathf.CeilToInt(hp) + " / " + Mathf.CeilToInt(maxHp) + "\n" + GameBalance.EnergyName(p.heroClass) + " " + Mathf.FloorToInt(energy) + " / " + Mathf.RoundToInt(maxEnergy) + "\n" + (maxLevel ? "已达最高等级" : "经验 " + p.xp + " / " + GameBalance.XpToNext(p.level)) + "\n金币 " + p.gold + " · 生命药剂 " + p.potions;
             string objectiveText = session.SpecialAdventure?session.ModeName:session.InDungeon
@@ -834,7 +834,7 @@ namespace Emberfall
             string chargeText="治疗充能  "+session.HealingCharges+" / 3";
             float chargeHeight=showCharge?Mathf.Max(23,Style(17,true,true).CalcHeight(new GUIContent(chargeText),255)):0;
             var measured=new ObjectiveCardLayout(17,bodyHeight,progressHeight,chargeHeight);
-            Rect objective=new Rect(16,182,282,measured.Height);blockedRects.Add(objective);Box(objective,jade,false);
+            Rect objective=new Rect(16,116,282,measured.Height);blockedRects.Add(objective);Box(objective,jade,false);
             Fill(new Rect(objective.x,objective.y,3,objective.height),jade);
             Text(new Rect(objective.x+13,objective.y+measured.HeadingY,255,17),"当前目标",11,jade,true);
             Text(new Rect(objective.x+13,objective.y+measured.BodyY,255,bodyHeight),objectiveText,15,pale,true,true);
@@ -845,6 +845,7 @@ namespace Emberfall
             if (objective.Contains(Mouse) && GUI.enabled)
                 tooltip = PlatformText(session.Objective + (session.InDungeon ? "\n通关后按 T 返回营地。远离敌人后可按 H 提前撤离。" : "\n靠近紫色传送门按 T 进入副本。远离敌人后可按 H 回营。"));
             DrawMinimap();
+            DrawDesktopGoalInteraction(objective);
             DrawHotbar();
             DrawCompanionCommands();
             Text(new Rect(hotbarBounds.x-170,hotbarBounds.y-22,622,18),CurrentCombatOpportunity(),12,gold,true,false,TextAnchor.MiddleCenter);
@@ -853,7 +854,6 @@ namespace Emberfall
             DrawDungeonStatus();
             DrawEdgeActions();
             DrawExpeditionHUD();
-            DrawGrowthHudCard();
             DrawTownActivityEntry();
             EnemyController target = session.Player == null ? null : session.Player.AimTarget;
             if (target != null && !target.IsDead)
@@ -906,12 +906,12 @@ namespace Emberfall
 
         private void DrawMinimap()
         {
-            float x = 16;
-            Rect map = new Rect(x, 16, 150, 154);
+            float x = width - 166;
+            Rect map = new Rect(x, 70, 150, 154);
             blockedRects.Add(map);
             Box(map, jade);
-            Text(new Rect(x + 8, 23, 134, 19), session.ZoneName, 11, pale, true, false, TextAnchor.MiddleCenter);
-            Rect field = new Rect(x + 11, 49, 128, 109);
+            Text(new Rect(x + 8, 77, 134, 19), session.ZoneName, 11, pale, true, false, TextAnchor.MiddleCenter);
+            Rect field = new Rect(x + 11, 103, 128, 109);
             Fill(field, new Color(.055f, .11f, .14f));
             for (int i = 1; i < 4; i++)
             {
@@ -1199,30 +1199,29 @@ namespace Emberfall
         private void DrawEdgeActions()
         {
             GameProfile p = session.Progression.Profile;
-            float x = width - (MobileControls.Active ? 284 : 238);
-            float y = height - 54;
-            Rect catalog=new Rect(x-46,y,38,38);
+            float x = width - 422;
+            float y = 18;
             if(HubServicesAvailable)
             {
-                if(IconButton(new Rect(width-124,18,38,38),"shop","","商店 · 购买、出售与兑换",gold))OpenHubService(HubNpcKind.Merchant);
-                if(IconButton(new Rect(width-78,18,38,38),"smith","","铁匠 · 强化、镶嵌与继承",jade))OpenHubService(HubNpcKind.Blacksmith);
+                if(IconButton(new Rect(x+138,y,38,38),"shop","","商店 · 购买、出售与兑换",jade))OpenHubService(HubNpcKind.Merchant);
+                if(IconButton(new Rect(x+184,y,38,38),"smith","","铁匠 · 强化、镶嵌与继承",jade))OpenHubService(HubNpcKind.Blacksmith);
             }
-            if(IconButton(new Rect(width-216,18,38,38),"confirm","","目标 · 实战试炼与成长进度",gold))OpenProgressionGoals();
+            if(IconButton(new Rect(x+230,y,38,38),"confirm","","目标 · 实战试炼与成长进度",jade))OpenProgressionGoals();
 
-            if (IconButton(new Rect(x, y, 38, 38), "inventory", "I", "行囊 · I\n查看属性、穿戴装备与时装，使用已有补给。交易与强化请点击右上角图标。", jade))
+            if (IconButton(new Rect(x + 322, y, 38, 38), "inventory", "I", "行囊 · I\n查看属性、穿戴装备与时装，使用已有补给。交易与强化请点击右上角图标。", jade))
                 TogglePanel(Panel.Inventory);
-            if (IconButton(new Rect(x + 46, y, 38, 38), "skills", "K", "技能 · K\n按分支学习或进阶技能，配置十格快捷栏。\n可用技能点：" + p.skillPoints, gold, p.skillPoints > 0 ? "+" + p.skillPoints : null))
+            if (IconButton(new Rect(x + 276, y, 38, 38), "skills", "K", "技能 · K\n按分支学习或进阶技能，配置十格快捷栏。\n可用技能点：" + p.skillPoints, jade, p.skillPoints > 0 ? "+" + p.skillPoints : null))
                 TogglePanel(Panel.Skills);
-            if (IconButton(new Rect(x + 92, y, 38, 38), "camp", "H", "返回营地 · H\n附近没有敌人时可以返回营地整备。", jade))
+            if (IconButton(new Rect(x, y, 38, 38), "camp", "H", "返回营地 · H\n附近没有敌人时可以返回营地整备。", jade))
                 session.ReturnToCamp();
-            if (IconButton(new Rect(x + 138, y, 38, 38), "portal", "T", session.InDungeon ? "返回营地 · T\n通关后返回营地；提前撤离需要远离敌人。" : "进入副本 · T\n靠近北面的青色传送门后进入副本。", gold))
+            if (IconButton(new Rect(x + 46, y, 38, 38), "portal", "T", session.InDungeon ? "返回营地 · T\n通关后返回营地；提前撤离需要远离敌人。" : "进入副本 · T\n靠近北面的青色传送门后进入副本。", jade))
             {
                 if(session.NearRoomExit)session.EnterNextRoom();
                 else if (session.InDungeon) session.ReturnToCamp();
                 else session.EnterDungeon();
             }
-            if (IconButton(new Rect(x + 184, y, 38, 38), "help", "", "操作指南\n查看移动、战斗、技能施法与自定义快捷键。", muted)) OpenControls();
-            if (MobileControls.Active && IconButton(new Rect(x + 230, y, 38, 38), "settings", "", "设置", muted)) session.SetPaused(true);
+            if (IconButton(new Rect(x + 92, y, 38, 38), "help", "", "操作指南\n查看移动、战斗、技能施法与自定义快捷键。", jade)) OpenControls();
+            if (IconButton(new Rect(x + 368, y, 38, 38), "settings", "", "设置", jade)) session.SetPaused(true);
         }
 
         private static int SkillAtSlot(GameProfile profile, int slot)
