@@ -31,7 +31,7 @@ namespace Emberfall
             return g;
         }
         public float MechanicPowerMultiplier(EquipmentMechanic mechanic)
-        {var a=Attachment(mechanic);return a!=null&&a.mounted?1f+.08f*a.upgradeRank+(a.upgradeRank>=5?.2f:0)+(a.rarity==Rarity.Legendary?.15f:0):1f;}
+        {var a=Attachment(mechanic);return a!=null&&a.mounted?(.7f+.15f*(int)a.rarity)+.08f*a.upgradeRank+(a.upgradeRank>=5?.2f:0):1f;}
         public float MechanicRangeMultiplier(EquipmentMechanic mechanic)
         {var a=Attachment(mechanic);return a!=null&&a.mounted&&a.upgradeRank>=3?1.2f:1f;}
         private static void NormalizeAttachments(GameProfile profile)
@@ -106,10 +106,10 @@ namespace Emberfall
         }
         public bool SetAttachmentMounted(EquipmentMechanic mechanic,bool mounted,bool inCamp)
         {
-            var a=Attachment(mechanic);if(!inCamp||a==null||BuildCatalog.MechanicClass(mechanic)!=Profile.heroClass)return Fail("请在营地操作本职业宝石。");
+            var a=Attachment(mechanic);if(!inCamp||a==null||!BuildCatalog.GemCompatible(mechanic,Profile.heroClass))return Fail("请在营地操作本职业宝石。");
             var candidate=Snapshot();
             if(mounted)foreach(var other in candidate.attachments)
-                if(BuildCatalog.MechanicClass(other.mechanic)==Profile.heroClass&&BuildCatalog.MechanicSlot(other.mechanic)==BuildCatalog.MechanicSlot(mechanic))other.mounted=false;
+                if(BuildCatalog.GemCompatible(other.mechanic,Profile.heroClass)&&BuildCatalog.MechanicSlot(other.mechanic)==BuildCatalog.MechanicSlot(mechanic))other.mounted=false;
             candidate.attachments.Find(x=>x.mechanic==mechanic).mounted=mounted;return CommitCandidate(candidate,true);
         }
         private bool GrantAttachment(EquipmentMechanic mechanic,bool first)
@@ -126,7 +126,7 @@ namespace Emberfall
         public string AttachmentUpgradeLock(EquipmentMechanic mechanic,bool inCamp)
         {
             var a=Attachment(mechanic);
-            if(!inCamp||a==null||BuildCatalog.MechanicClass(mechanic)!=Profile.heroClass)return "请在营地升级本职业宝石。";
+            if(!inCamp||a==null||!BuildCatalog.GemCompatible(mechanic,Profile.heroClass))return "请在营地升级本职业宝石。";
             if(a.upgradeRank>=MaximumAttachmentRank)return "宝石已满阶。";
             int required=1+(a.upgradeRank+1)*5;
             if(Profile.level<required)return "角色达到 "+required+" 级后可升下一阶。";
@@ -142,7 +142,7 @@ namespace Emberfall
         public bool ToggleAttachmentVariant(EquipmentMechanic mechanic,bool inCamp)
         {
             var a=Attachment(mechanic);
-            if(!inCamp||a==null||BuildCatalog.MechanicClass(mechanic)!=Profile.heroClass||!BuildCatalog.HasMechanicVariant(mechanic))return Fail("请在营地选择支持变体的本职业宝石。");
+            if(!inCamp||a==null||!BuildCatalog.GemCompatible(mechanic,Profile.heroClass)||!BuildCatalog.HasMechanicVariant(mechanic))return Fail("请在营地选择支持变体的本职业宝石。");
             if(!a.variantUnlocked&&Profile.mechanicMaterials<VariantCost)return Fail("首次学习变体需4枚星烬碎片。");
             var candidate=Snapshot();a=candidate.attachments.Find(x=>x.mechanic==mechanic);
             if(!a.variantUnlocked)candidate.mechanicMaterials-=VariantCost;
@@ -153,8 +153,8 @@ namespace Emberfall
         public bool AscendAttachment(EquipmentMechanic mechanic,bool inCamp)
         {
             var a=Attachment(mechanic);
-            if(!inCamp||a==null||BuildCatalog.MechanicClass(mechanic)!=Profile.heroClass||a.rarity!=Rarity.Epic)return Fail("请在营地选择本职业史诗宝石。");
-            if(HighestAdventureTier<AscensionMilestone||Profile.mechanicMaterials<AscensionCost)return Fail("需通关第5阶并准备24枚碎片。");
+            if(!inCamp||a==null||!BuildCatalog.GemCompatible(mechanic,Profile.heroClass)||a.rarity!=Rarity.Epic)return Fail("请在营地选择本职业史诗宝石。");
+            if(HighestAdventureTier<AscensionMilestone||Profile.mechanicMaterials<AscensionCost)return Fail("需通关 Lv50 副本并准备24枚碎片。");
             var candidate=Snapshot();candidate.attachments.Find(x=>x.mechanic==mechanic).rarity=Rarity.Legendary;candidate.mechanicMaterials-=AscensionCost;
             if(!CommitCandidate(candidate,true))return false;
             PublishRewardMoment(RewardMomentKind.Ascension,materials:-AscensionCost,attachment:Attachment(mechanic));return true;
@@ -178,7 +178,7 @@ namespace Emberfall
         private static void CaptureAttachmentPreset(GameProfile profile,BuildPreset preset)
         {
             var mounted=new List<EquipmentMechanic>();var variants=new List<int>();
-            foreach(var a in profile.attachments)if(a.mounted&&BuildCatalog.MechanicClass(a.mechanic)==profile.heroClass){mounted.Add(a.mechanic);variants.Add(a.variantUnlocked?a.variant:0);}
+            foreach(var a in profile.attachments)if(a.mounted&&BuildCatalog.GemCompatible(a.mechanic,profile.heroClass)){mounted.Add(a.mechanic);variants.Add(a.variantUnlocked?a.variant:0);}
             preset.mountedAttachments=mounted.ToArray();preset.attachmentVariants=variants.ToArray();
         }
         private static void ApplyAttachmentPreset(GameProfile candidate,BuildPreset preset)
@@ -186,7 +186,7 @@ namespace Emberfall
             if(preset.mountedAttachments==null)return; // Old plans retain the migrated selection.
             foreach(var a in candidate.attachments)
             {
-                if(BuildCatalog.MechanicClass(a.mechanic)!=candidate.heroClass)continue;
+                if(!BuildCatalog.GemCompatible(a.mechanic,candidate.heroClass))continue;
                 int index=Array.IndexOf(preset.mountedAttachments,a.mechanic);a.mounted=index>=0;
                 if(index>=0&&a.variantUnlocked&&preset.attachmentVariants!=null&&index<preset.attachmentVariants.Length)a.variant=Clamp(preset.attachmentVariants[index],0,1);
             }

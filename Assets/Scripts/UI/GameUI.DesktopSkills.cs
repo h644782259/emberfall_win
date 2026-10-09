@@ -24,7 +24,7 @@ namespace Emberfall
             if (desktopDetailSkill != skill) { desktopDetailSkill=skill; desktopDetailScroll=Vector2.zero; }
             string description=BuildCatalog.VenomSkillOverride(p,skill,rank);
             if(description.Length==0)description=GameBalance.SkillDescription(p.heroClass,skill);
-            string prerequisite=GameBalance.PrerequisiteDescription(p.heroClass,skill);
+            string prerequisite="达到对应等级自动习得、进阶和觉醒";
             float descriptionHeight=DesktopParagraphHeight(description,530,13);
             float prerequisiteHeight=DesktopParagraphHeight(prerequisite,530,12);
             string[] evolutions=new string[3];
@@ -52,7 +52,7 @@ namespace Emberfall
                 Text(new Rect(stat.x + 9, stat.y + 4, 110, 14), labels[i], 10, muted);
                 Text(new Rect(stat.x + 9, stat.y + 23, 110, 18), values[i], 12, i == 1 ? jade : pale, true);
             }
-            Text(new Rect(0,statsY+53,530,18),"学习前置",11,jade,true);
+            Text(new Rect(0,statsY+53,530,18),"成长方式",11,jade,true);
             Text(new Rect(0,prerequisiteY,530,prerequisiteHeight),prerequisite,12,session.Progression.PrerequisitesMet(skill)?pale:gold,false,true);
             for (int stage = 1; stage <= 3; stage++)
             {
@@ -68,12 +68,7 @@ namespace Emberfall
             }
             EndTouchScroll();
             float actionX = r.x + 18;
-            string reason = session.Progression.SkillLockReason(skill);
-            bool canLearn = string.IsNullOrEmpty(reason);
-            string caption = rank == 3 ? "已完全觉醒" : rank == 0 ? "学习初习 · 1 技能点" : "进阶" + GameBalance.SkillRankName(nextRank) + " · 1 技能点";
-            if (Button(new Rect(actionX, r.y + 341, 236, 39), caption, gold, canLearn, reason, canLearn))
-                Feedback(session.Progression.LearnSkill(skill), GameBalance.SkillName(p.heroClass, skill) + "已达到" + GameBalance.SkillRankName(session.Progression.Profile.skillRanks[skill]));
-            Text(new Rect(r.x + 271, r.y + 341, 296, 40), rank == 3 ? "" : canLearn ? "下一阶段：" + GameBalance.SkillRankName(nextRank) + " · Lv." + GameBalance.SkillRankRequiredLevel(skill, nextRank) : reason, 12, muted, false, true);
+            Text(new Rect(actionX,r.y+341,530,40),session.Progression.SkillLockReason(skill),14,gold,true);
             if (passive) return;
             if(MobileControls.Active)return;
             Rect loadoutHeading = new Rect(actionX, r.y + 397, 365, 21);

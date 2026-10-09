@@ -11,6 +11,7 @@ namespace Emberfall
         {if(!force&&merchantMode==mode)return;merchantMode=mode;merchantSelection=mode==2?-1:0;merchantGridScroll=Vector2.zero;}
         private bool StartMerchantAction()
         {if(Time.unscaledTime<merchantActionUntil)return false;merchantActionUntil=Time.unscaledTime+.35f;return true;}
+        private Rarity merchantGemRarity=Rarity.Epic;
         private void DrawMerchantService()
         {
             var p=session.Progression;float u=MobileControls.Active?TouchRatio:1;
@@ -29,30 +30,37 @@ namespace Emberfall
                 if(PrimaryButton(BuildPlanRect(l.Action,u),"一键出售",gold,bulk!=null&&Time.unscaledTime>=merchantActionUntil)&&StartMerchantAction())
                 {bool sold=p.SellAtMerchant(bulk,MerchantServiceActive);Feedback(sold,"已出售 "+bulk.Count+" 件 · +"+bulk.Gold+" 金币");if(sold){RebuildBagItems();ResolveSelectedItem();}}
             }
-            var mechanics=BuildCatalog.MechanicsFor(p.Profile.heroClass);
+            var mechanics=BuildCatalog.GemsFor(p.Profile.heroClass);
             var saleItems=new List<ItemData>();
             if(merchantMode==2)foreach(var gear in p.Profile.inventory)if(gear!=null&&!gear.locked&&!IsEquipped(gear))saleItems.Add(gear);
             int count=merchantMode==0?1:merchantMode==1?mechanics.Length:saleItems.Count;
             if(merchantMode==2)merchantSelection=-1;
             else merchantSelection=Mathf.Clamp(merchantSelection,0,Mathf.Max(0,count-1));
-            float contentHeight=l.GridHeight(count,true);
+            float contentHeight=l.GridHeight(count,true)+(merchantMode==1?((count+l.Columns-1)/l.Columns)*54:0);
             merchantGridScroll=BeginTouchScroll("merchant-"+merchantMode,BuildPlanRect(l.Body,u),merchantGridScroll,new Rect(0,0,l.Body.Width*u,Mathf.Max(l.Body.Height,contentHeight)*u));
             for(int index=0;index<count;index++)
             {
                 var area=l.Tile(index,true);Rect tile=new Rect(area.X*u,area.Y*u,area.Width*u,area.Height*u);
+                if(merchantMode==1){tile.y+=(index/l.Columns)*54*u;tile.height+=54*u;}
                 bool selected=false;
                 Fill(tile,selected?new Color(.12f,.22f,.24f):card);Border(tile,selected?gold:muted*.4f);
                 if(selected){Border(new Rect(tile.x+2*u,tile.y+2*u,tile.width-4*u,tile.height-4*u),gold);DrawIcon(new Rect(tile.xMax-25*u,tile.y+4*u,20*u,20*u),UIIconAtlas.Utility("confirm"),gold);}
                 ItemData item=merchantMode==2?saleItems[index]:null;
                 EquipmentMechanic mechanic=merchantMode==1?mechanics[index]:EquipmentMechanic.None;
-                bool owned=mechanic!=EquipmentMechanic.None&&p.Attachment(mechanic)!=null;
-                var quote=item==null?p.PrepareMerchantPurchase(mechanic,MerchantServiceActive):null;
-                bool first=p.Profile.pendingFirstClearReward&&!p.Profile.firstClearRewardClaimed;
-                int price=item!=null?p.SellValue(item):mechanic==EquipmentMechanic.None?ProgressionService.PotionPrice:first?0:ProgressionService.MechanicExchangeCost;
+                bool owned=mechanic!=EquipmentMechanic.None&&p.Attachment(mechanic)!=null&&p.Attachment(mechanic).rarity>=merchantGemRarity;
+                var quote=item==null?p.PrepareMerchantPurchase(mechanic,MerchantServiceActive,merchantGemRarity):null;
+                bool first=p.Profile.pendingFirstClearReward&&!p.Profile.firstClearRewardClaimed&&!BuildCatalog.IsAttributeGem(mechanic)&&merchantGemRarity==Rarity.Epic&&p.Attachment(mechanic)==null;
+                int price=item!=null?p.SellValue(item):mechanic==EquipmentMechanic.None?ProgressionService.PotionPrice:first?0:BuildCatalog.GemPrice(merchantGemRarity);
                 string caption=item!=null?item.name:mechanic==EquipmentMechanic.None?"生命药剂":BuildCatalog.GemName(mechanic);
-                DrawIcon(new Rect(tile.center.x-23*u,tile.y+6*u,46*u,46*u),item!=null?UIIconAtlas.EquipmentCardIcon(item.slot,item.level,item.rarity,session.Progression.Profile.heroClass):UIIconAtlas.Utility(mechanic==EquipmentMechanic.None?"potion":"gem"),item!=null?GameBalance.RarityColor(item.rarity):Color.white);
+                DrawIcon(new Rect(tile.center.x-23*u,tile.y+6*u,46*u,46*u),item!=null?UIIconAtlas.EquipmentCardIcon(item.slot,item.level,item.rarity,session.Progression.Profile.heroClass):UIIconAtlas.Utility(mechanic==EquipmentMechanic.None?"potion":"gem"),item!=null?GameBalance.RarityColor(item.rarity):merchantMode==1?GameBalance.RarityColor(merchantGemRarity):Color.white);
                 Text(new Rect(tile.x+6*u,tile.y+54*u,tile.width-12*u,20*u),caption,Mathf.RoundToInt(12*u),pale,false,false,TextAnchor.MiddleCenter);
-                DrawPriceTint(new Rect(tile.x+8*u,tile.y+77*u,tile.width-16*u,20*u),price,merchantMode==1,u,item!=null||quote!=null?gold:new Color(.98f,.28f,.24f));
+                if(merchantMode==1)
+                {
+                    string stats=BuildCatalog.IsAttributeGem(mechanic)?BuildCatalog.GemAttributeSummary(mechanic,merchantGemRarity,p.Attachment(mechanic)?.upgradeRank??0):"机制强度 "+(.7f+.15f*(int)merchantGemRarity+.08f*(p.Attachment(mechanic)?.upgradeRank??0)+((p.Attachment(mechanic)?.upgradeRank??0)>=5?.2f:0)).ToString("0.00")+"×";
+                    Text(new Rect(tile.x+6*u,tile.y+76*u,tile.width-12*u,22*u),GameBalance.SlotName(BuildCatalog.MechanicSlot(mechanic))+" · "+GameBalance.RarityName(merchantGemRarity),Mathf.RoundToInt(11*u),GameBalance.RarityColor(merchantGemRarity),true,false,TextAnchor.MiddleCenter);
+                    Text(new Rect(tile.x+6*u,tile.y+100*u,tile.width-12*u,24*u),stats,Mathf.RoundToInt(12*u),jade,true,false,TextAnchor.MiddleCenter);
+                }
+                DrawPriceTint(new Rect(tile.x+8*u,tile.y+(merchantMode==1?131:77)*u,tile.width-16*u,20*u),price,merchantMode==1,u,item!=null||quote!=null?gold:new Color(.98f,.28f,.24f));
                 if(item!=null)
                 {
                     Rect sell=new Rect(tile.x+6*u,tile.y+100*u,tile.width-12*u,44*u);
@@ -61,8 +69,8 @@ namespace Emberfall
                 }
                 else
                 {
-                    string captionAction=owned?"已拥有":quote!=null?merchantMode==0?"购买":"兑换":merchantMode==0?p.Profile.potions>=99?"药剂已满":"金币不足":"碎片不足";
-                    Rect action=new Rect(tile.x+6*u,tile.y+100*u,tile.width-12*u,44*u);
+                    string captionAction=owned?"已拥有":quote!=null?merchantMode==0?"购买":p.Attachment(mechanic)!=null?"兑换 · 提升品质":"兑换":merchantMode==0?p.Profile.potions>=99?"药剂已满":"金币不足":"碎片不足";
+                    Rect action=new Rect(tile.x+6*u,tile.y+(merchantMode==1?154:100)*u,tile.width-12*u,44*u);
                     if(PrimaryButton(action,captionAction,gold,quote!=null&&Time.unscaledTime>=merchantActionUntil)&&StartMerchantAction())
                     {Feedback(p.BuyAtMerchant(quote,MerchantServiceActive),merchantMode==0?"购买成功 · 药剂已入行囊":"兑换成功 · 宝石已拥有，请到铁匠镶嵌");}
 
@@ -70,7 +78,9 @@ namespace Emberfall
             }
             EndTouchScroll();
             Rect info=BuildPlanRect(l.Info,u);
-            if(merchantMode!=2)Text(info,merchantMode==0?"生命药剂 × "+p.Profile.potions+" / 99":merchantMode==1?"兑换后可到铁匠镶嵌":"穿戴中与锁定物品受保护",Mathf.RoundToInt(13*u),muted,false,true);
+            if(merchantMode==1)
+            {for(int tier=0;tier<4;tier++){Rect tab=new Rect(info.x+tier*(info.width/4),info.y,info.width/4-4*u,info.height);if(TabButton(tab,GameBalance.RarityName((Rarity)tier),merchantGemRarity==(Rarity)tier)){merchantGemRarity=(Rarity)tier;}}}
+            if(merchantMode==0)Text(info,merchantMode==0?"生命药剂 × "+p.Profile.potions+" / 99":merchantMode==1?"兑换后可到铁匠镶嵌":"穿戴中与锁定物品受保护",Mathf.RoundToInt(13*u),muted,false,true);
             if(merchantMode==2&&count==0)Text(BuildPlanRect(l.Body,u),"没有可出售装备。",Mathf.RoundToInt(16*u),jade);
         }
 

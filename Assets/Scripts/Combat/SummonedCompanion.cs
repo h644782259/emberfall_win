@@ -432,8 +432,7 @@ namespace Emberfall
         public void OnConfirmedHit(EnemyController enemy)
         {
             if (!IsAlive || enemy == null) return;
-            if (commandedTarget == enemy || ExplicitFocus(Owner) == enemy)
-                session.RecordClassTutorial(HeroClass.Summoner);
+            session.RecordClassTutorial(HeroClass.Summoner);
             if (!ValidTarget(enemy)) return;
             if (!Owner.HasMechanic(EquipmentMechanic.TwinSummonResonance)) return;
             // Autonomous hits from different summon forms can trigger resonance.

@@ -86,9 +86,10 @@ namespace Emberfall
             ComboOpportunity=new Area(Attack.X+Attack.Width/2,Attack.Y+Attack.Height+1,Attack.Width/2,13);
             float commandLift=Width<700?22:0;
             FocusCommand=new Area(204,Height-170-commandLift,48,48);RecallCommand=new Area(204,Height-120-commandLift,48,48);
-            PlayerStatus=new Area(Width*.5f-(ipad?112:80),Height-(ipad?41:35),ipad?234:160,ipad?23:18);
-            PlayerHealth=new Area(PlayerStatus.X,PlayerStatus.Y,ipad?184:110,ipad?16:12);
-            PlayerEnergy=new Area(PlayerStatus.X,PlayerStatus.Y+(ipad?20:15),ipad?184:110,3);Map=new Area(12,12,ipad?158.4f:88,ipad?122.4f:68);
+            float phoneHealthWidth=Math.Min(160,Math.Max(110,Attack.X-8-(Width*.5f-80)-50));
+            PlayerStatus=new Area(Width*.5f-(ipad?112:80),Height-(ipad?41:35),ipad?234:phoneHealthWidth+50,ipad?23:18);
+            PlayerHealth=new Area(PlayerStatus.X,PlayerStatus.Y,ipad?184:phoneHealthWidth,ipad?16:12);
+            PlayerEnergy=new Area(PlayerStatus.X,PlayerStatus.Y+(ipad?20:15),ipad?184:phoneHealthWidth,3);Map=new Area(12,12,ipad?158.4f:88,ipad?122.4f:68);
             AdventureStatus=new Area(12,ipad?140.4f:86,188,76);
             // Transient notices replace this left-side information slot, never the battlefield.
             Notice=AdventureStatus;

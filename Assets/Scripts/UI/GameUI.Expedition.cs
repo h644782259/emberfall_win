@@ -90,7 +90,7 @@ namespace Emberfall
             float u=MobileControls.Active?TouchRatio:1;
             Rect w=Modal(Mathf.Min(width-24,780*u),Mathf.Min(height-24,300*u),"营地工坊","职业能力与精通已并入技能；兑换请与商人对话，试炼请打开右上目标。");
             if(PopupCloseButton(new Rect(w.xMax-64*u,w.y+20*u,40*u,32*u)))ClosePanel();
-            Text(new Rect(w.x+24*u,w.y+116*u,w.width-48*u,100*u),"技能：学习、职业路线、精通与配装方案。\n目标：实战试炼、进度、奖励和下一步指引。\n商人：机制兑换、药剂与交易。",Mathf.RoundToInt(16*u),pale,false,true);
+            Text(new Rect(w.x+24*u,w.y+116*u,w.width-48*u,100*u),"技能：等级成长、职业精通与技能模式。\n目标：实战试炼、进度、奖励和下一步指引。\n商人：机制兑换、药剂与交易。",Mathf.RoundToInt(16*u),pale,false,true);
         }
 
         private void DrawExpeditionHUD()

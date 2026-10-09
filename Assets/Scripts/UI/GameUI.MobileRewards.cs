@@ -57,10 +57,8 @@ namespace Emberfall
             bool firstTrial=complete&&CanTrialChestReward(reward);int footerCount=firstTrial?2:1;
             if(firstTrial&&Button(MobilePanelRect(layout.FooterButton(0,2)),"收下并查看时装",jade)){AcceptChestForTrial();return;}
             if(!revealed&&!string.IsNullOrEmpty(progression.LastError)&&Button(MobilePanelRect(layout.FooterButton(0,1)),"商人 · 整理容量 / 资源",jade)){OpenChestRecoveryService();return;}
-            if (revealed && Button(MobilePanelRect(layout.FooterButton(footerCount-1,footerCount)),complete?"收下":"跳过动画",gold))
+            if (revealed && complete && Button(MobilePanelRect(layout.FooterButton(footerCount-1,footerCount)),"收下",gold))
             {
-                if (!complete) chestRevealedAt = Time.unscaledTime - ChestDuration;
-                else
                 {
                     FinishChestReveal();
                     mobileChestError = panel == Panel.Chests ? progression.LastError : null;

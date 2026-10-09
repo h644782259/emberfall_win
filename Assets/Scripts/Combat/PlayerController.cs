@@ -1152,7 +1152,7 @@ namespace Emberfall
                     else if (skillFeedbackCooldown <= 0)
                     {
                         session.ReportControlFailure("dodge",dodgeCooldown>0?"冷却":jumping?"空中":"位移中");
-                        session.Notify(dodgeCooldown > 0 ? "闪避冷却中（" + dodgeCooldown.ToString("0.0") + " 秒）" : jumping ? "落地后才能闪避。" : "位移结束后才能闪避。");
+                        if(dodgeCooldown <= 0)session.Notify(jumping ? "落地后才能闪避。" : "位移结束后才能闪避。");
                         skillFeedbackCooldown = .5f;
                     }
                 }

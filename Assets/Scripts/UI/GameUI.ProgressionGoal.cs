@@ -3,6 +3,42 @@ namespace Emberfall
 {
     public sealed partial class GameUI
     {
+        private int achievementCategory=-1;
+        private Vector2 achievementScroll;
+        private void DrawAchievements(Rect area,float u)
+        {
+            var p=session.Progression;string[] filters={"全部","成长","战斗","探索","收集","打造"};
+            float filterWidth=Mathf.Min(96*u,area.width/6);
+            for(int i=0;i<filters.Length;i++)
+            {
+                Rect tab=new Rect(area.x+i*filterWidth,area.y,filterWidth-4*u,32*u);
+                if(TabButton(tab,filters[i],achievementCategory==i-1)&&achievementCategory!=i-1){achievementCategory=i-1;achievementScroll=Vector2.zero;}
+                bool ready=false;foreach(var entry in ProgressionService.Achievements)if((i==0||entry.Category==i-1)&&!p.AchievementClaimed(entry.Id)&&entry.Progress(p.Profile)>=entry.Target){ready=true;break;}
+                if(ready)Text(new Rect(tab.xMax-13*u,tab.y,12*u,16*u),"●",Mathf.RoundToInt(10*u),new Color(1,.22f,.2f),true);
+            }
+            var entries=new System.Collections.Generic.List<AchievementDefinition>();
+            foreach(var a in ProgressionService.Achievements)if(achievementCategory<0||a.Category==achievementCategory)entries.Add(a);
+            entries.Sort((a,b)=>{int x=p.AchievementClaimed(a.Id)?2:a.Progress(p.Profile)>=a.Target?0:1;int y=p.AchievementClaimed(b.Id)?2:b.Progress(p.Profile)>=b.Target?0:1;return x!=y?x.CompareTo(y):System.Array.IndexOf(ProgressionService.Achievements,a).CompareTo(System.Array.IndexOf(ProgressionService.Achievements,b));});
+            Rect viewport=new Rect(area.x,area.y+42*u,area.width,area.height-42*u);
+            int columns=area.width/u>=720?2:1;float gap=10*u,cw=(viewport.width-18*u-(columns-1)*gap)/columns,rowHeight=110*u;
+            achievementScroll=BeginTouchScroll("achievements",viewport,achievementScroll,new Rect(0,0,viewport.width-18*u,Mathf.Max(viewport.height,((entries.Count+columns-1)/columns)*rowHeight)));
+            for(int i=0;i<entries.Count;i++)
+            {
+                var a=entries[i];bool claimed=p.AchievementClaimed(a.Id);int progress=Mathf.Min(a.Target,a.Progress(p.Profile));bool ready=progress>=a.Target&&!claimed;
+                Rect tile=new Rect((i%columns)*(cw+gap),(i/columns)*rowHeight,cw,100*u);Fill(tile,card);Border(tile,ready?gold:muted*.3f);
+                Text(new Rect(tile.x+10*u,tile.y+6*u,cw-20*u,26*u),a.Title,Mathf.RoundToInt(14*u),claimed?muted:pale,true);
+                float barWidth=cw-136*u;
+                Fill(new Rect(tile.x+10*u,tile.y+43*u,barWidth,5*u),muted*.3f);Fill(new Rect(tile.x+10*u,tile.y+43*u,barWidth*progress/a.Target,5*u),jade);
+                Text(new Rect(tile.x+10*u,tile.y+49*u,barWidth,18*u),progress+" / "+a.Target,Mathf.RoundToInt(10*u),muted);
+                DrawIcon(new Rect(tile.x+10*u,tile.y+72*u,18*u,18*u),UIIconAtlas.Utility("coin"),gold);
+                Text(new Rect(tile.x+32*u,tile.y+70*u,68*u,22*u),"+"+a.Gold,Mathf.RoundToInt(12*u),gold,true);
+                DrawIcon(new Rect(tile.x+100*u,tile.y+72*u,18*u,18*u),UIIconAtlas.Utility("shard"),jade);
+                Text(new Rect(tile.x+122*u,tile.y+70*u,60*u,22*u),"+"+a.Shards,Mathf.RoundToInt(12*u),jade,true);
+                if(PrimaryButton(new Rect(tile.xMax-110*u,tile.y+42*u,100*u,44*u),claimed?"已领取":ready?"领取奖励":"未完成",gold,ready))
+                    Feedback(p.ClaimAchievement(a.Id),"成就奖励：+"+a.Gold+"金币 · +"+a.Shards+"碎片");
+            }
+            EndTouchScroll();
+        }
         private bool progressionGoalsOpen;
         private Vector2 progressionGoalScroll,progressionGoalHeaderScroll;
         private ProgressionService progressionGoalOwner;
@@ -31,62 +67,15 @@ namespace Emberfall
         private bool DrawProgressionGoalSurface()
         {
             ReconcileProgressionGoalSurface();if(!progressionGoalsOpen)return false;
-
-            float u=MobileControls.Active?TouchRatio:1;
-            var l=new MobileDialogLayout(width/u,height/u);
+            float u=MobileControls.Active?TouchRatio:1;var l=new MobileDialogLayout(width/u,height/u);
             Fill(new Rect(0,0,width,height),new Color(.018f,.031f,.048f,1));blockedRects.Add(new Rect(0,0,width,height));
             Box(BuildPlanRect(l.Frame,u),jade,false);
-            Text(BuildPlanRect(l.Header,u),"目标 · 实战试炼与成长",Mathf.RoundToInt(21*u),pale,true);
-            var p=session.Progression;var current=p.SelectedProgressionGoal(session.IsInCamp);
-            string status=CurrentProgressionGoalStatus()+(string.IsNullOrEmpty(p.LastError)?"":"\n"+p.LastError);
-            float statusHeight=Mathf.Ceil(Style(Mathf.RoundToInt(13*u),false,true).CalcHeight(new GUIContent(status),(l.Body.Width-26)*u)/u)+12;
-            var sections=new ProgressionGoalLayout(l.Body,statusHeight,current.Action!=ProgressionGoalAction.None);
-            progressionGoalHeaderScroll=BeginTouchScroll("progression-goal-current",BuildPlanRect(sections.Status,u),progressionGoalHeaderScroll,new Rect(0,0,(l.Body.Width-16)*u,statusHeight*u));
-            Text(new Rect(4*u,4*u,(l.Body.Width-26)*u,(statusHeight-8)*u),status,Mathf.RoundToInt(13*u),jade,false,true);EndTouchScroll();
-            if(current.Action!=ProgressionGoalAction.None&&PrimaryButton(BuildPlanRect(sections.Action,u), current.ActionLabel, gold, current.CanAct, current.Step))
-            {PerformGoalAction(current);progressionGoalHeaderScroll=Vector2.zero;BlockUITransition();return true;}
-            float h=DrawProgressionGoalOptions(sections.Candidates.Width-18,u,false);
-            progressionGoalScroll=BeginTouchScroll("progression-goals",BuildPlanRect(sections.Candidates,u),progressionGoalScroll,new Rect(0,0,(sections.Candidates.Width-18)*u,Mathf.Max(sections.Candidates.Height,h)*u));
-            DrawProgressionGoalOptions(sections.Candidates.Width-18,u,true);EndTouchScroll();
+            Text(BuildPlanRect(l.Header,u),"成就",Mathf.RoundToInt(21*u),pale,true);
+            int available=session.Progression.ClaimableAchievements;
+            Text(new Rect((l.Frame.X+l.Frame.Width-222)*u,(l.Frame.Y+12)*u,154*u,32*u),available>0?available+" 项奖励可领取":"完成成就领取奖励",Mathf.RoundToInt(12*u),available>0?gold:muted,false,false,TextAnchor.MiddleRight);
+            DrawAchievements(BuildPlanRect(l.Body,u),u);
             if(PopupCloseButton(new Rect((l.Frame.X+l.Frame.Width-52)*u,(l.Frame.Y+12)*u,40*u,32*u)))CloseProgressionGoalSurface();
             return true;
-        }
-        private float DrawProgressionGoalOptions(float w,float u,bool draw)
-        {
-            var p=session.Progression;float y=8;
-            if(draw&&PrimaryButton(new Rect(8*u,y*u,(w-16)*u,48*u),"启用自动成长 · 自动奖励并推进",gold))
-            {Feedback(p.ResumeAutomaticGrowth(),"已启用自动成长");BlockUITransition();}
-            y+=60;
-            DrawCombatTrialGoal(ref y,w,u,draw);
-            GoalOption(ref y,w,u,"实战试炼 · 四项实战指引",ProgressionGoalKind.CombatTrial,null,0,draw);
-            GoalNode(ref y,w,u,"10阶节点 · 首套方向（自主选择）","先选具体核心，集中材料建立一条路线；也可先做职业练习，不消耗机制材料。达到10阶不代表装备已成型。",draw);
-            foreach(var mechanic in BuildCatalog.MechanicsFor(p.Profile.heroClass))GoalCoreOption(ref y,w,u,mechanic,Rarity.Common,draw);
-            GoalOption(ref y,w,u,"职业练习 · "+p.ClassTutorialText,ProgressionGoalKind.ClassTutorial,null,0,draw);
-            GoalNode(ref y,w,u,"20阶节点 · 第二套方向（自主选择）","保存方案 A / B 便于营地切换，保存本身不赠送装备；元素变体改变已有装备的收益与代价，需要对应装备和解锁材料。达到20阶不会代你保存方案。",draw);
-            GoalOption(ref y,w,u,"保存第二套配装",ProgressionGoalKind.SecondPreset,null,0,draw);
-            bool variants=false;
-            foreach(ItemData item in p.Profile.inventory)
-            {
-                if(item==null||item.mechanic==EquipmentMechanic.None||BuildCatalog.MechanicClass(item.mechanic)!=p.Profile.heroClass)continue;
-                if(!p.HasVariant(item)&&string.IsNullOrEmpty(p.MechanicGoalEligibility(item.id,ProgressionGoalKind.Variant)))
-                {variants=true;GoalOption(ref y,w,u,"解锁变体 · "+GoalItemTitle(item),ProgressionGoalKind.Variant,item.id,0,draw);}
-            }
-            if(!variants)GoalUnavailable(ref y,w,u,"变体目标 · 需要尚未解锁变体的元素机制装备",draw);
-            GoalNode(ref y,w,u,"40阶节点 · 自愿极限（自主选择）","升华把材料投入指定史诗装备；重铸追上角色等级。也可只追踪40阶挑战，逐阶解锁推进，不强制升华或换掉现有目标。",draw);
-            bool ascensions=false;
-            foreach(ItemData item in p.Profile.inventory)
-            {
-                if(item==null||item.mechanic==EquipmentMechanic.None||BuildCatalog.MechanicClass(item.mechanic)!=p.Profile.heroClass)continue;
-                if(string.IsNullOrEmpty(p.MechanicGoalEligibility(item.id,ProgressionGoalKind.Ascension)))
-                {ascensions=true;GoalOption(ref y,w,u,"传说升华 · "+GoalItemTitle(item),ProgressionGoalKind.Ascension,item.id,0,draw);}
-                else if(item.rarity<Rarity.Epic){ascensions=true;GoalCoreOption(ref y,w,u,item.mechanic,Rarity.Epic,draw);}
-                if(string.IsNullOrEmpty(p.MechanicGoalEligibility(item.id,ProgressionGoalKind.Reforge)))
-                    GoalOption(ref y,w,u,"重铸至 "+p.Profile.level+" 级 · "+GoalItemTitle(item),ProgressionGoalKind.Reforge,item.id,0,draw);
-            }
-            if(!ascensions)GoalUnavailable(ref y,w,u,"升华目标 · 需要本职业史诗机制装备",draw);
-            GoalOption(ref y,w,u,"自愿挑战 · 通关第40阶",ProgressionGoalKind.Tier,null,40,draw);
-            if(p.HighestUnlockedAdventureTier!=40)GoalOption(ref y,w,u,"当前可进 · 第 "+p.HighestUnlockedAdventureTier+" 阶",ProgressionGoalKind.Tier,null,p.HighestUnlockedAdventureTier,draw);
-            GoalOption(ref y,w,u,"取消追踪",ProgressionGoalKind.None,null,0,draw);return y;
         }
         private void GoalNode(ref float y,float w,float u,string title,string reason,bool draw)
         {

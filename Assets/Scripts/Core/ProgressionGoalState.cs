@@ -16,7 +16,7 @@ namespace Emberfall
             string result="";
             if(MaterialCost>0)result="碎片 "+profile.mechanicMaterials+"/"+MaterialCost+(profile.mechanicMaterials>=MaterialCost?" 已齐":" · 仍缺 "+(MaterialCost-profile.mechanicMaterials)+"枚");
             if(GoldCost>0)result+=(result.Length>0?" · ":"")+"金币 "+profile.gold+"/"+GoldCost+(profile.gold>=GoldCost?" 已齐":" · 仍缺 "+(GoldCost-profile.gold));
-            if(RequiredAdventureTier>0)result+=(result.Length>0?" · ":"")+"冒险 "+highestTier+"/"+RequiredAdventureTier+"阶"+(highestTier>=RequiredAdventureTier?" 已达":" · 仍需第"+RequiredAdventureTier+"阶");
+            if(RequiredAdventureTier>0)result+=(result.Length>0?" · ":"")+"通关 Lv"+AdventureRewardRules.DungeonLevel(RequiredAdventureTier)+" 副本"+(highestTier>=RequiredAdventureTier?" 已达":" · 未完成");
             return result;
         }
         public string ActionLabel
@@ -33,7 +33,7 @@ namespace Emberfall
                     case ProgressionGoalAction.Ascend:return "升华目标装备";
                     case ProgressionGoalAction.Reforge:return "重铸目标装备";
                     case ProgressionGoalAction.UpgradeAttachment:return "升级目标宝石";
-                    case ProgressionGoalAction.OpenPresets:return "打开配装方案";
+                    case ProgressionGoalAction.OpenPresets:return "查看职业精通";
                     default:return "继续当前目标";
                 }
             }

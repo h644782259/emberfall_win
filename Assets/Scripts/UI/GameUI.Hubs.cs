@@ -85,7 +85,7 @@ namespace Emberfall
             if(PauseSidebarTab(new Rect(r.x+144*u,r.y+50*u,120*u,44*u),"城镇旅行",travelMapTab==1,u))travelMapTab=1;
             Rect body=new Rect(r.x+16*u,r.y+102*u,r.width-32*u,r.height-114*u);
             if(travelMapTab==0){DrawExpandedMap(body,u);return;}
-            string hint=!string.IsNullOrEmpty(travelError)?travelError:!session.CanOpenTravelMap?"挑战中或附近有敌人，暂不可旅行。":"免费旅行 · 保留装备与货币";
+            string hint=!string.IsNullOrEmpty(travelError)?travelError:!session.CanOpenTravelMap?"挑战中或附近有敌人，暂不可旅行。":"";
             Text(new Rect(body.x,body.y,body.width,28*u),hint,Mathf.RoundToInt(11*u),string.IsNullOrEmpty(travelError)?muted:gold,false,true);
             var profile=session.Progression.Profile;int mask=HubTravelRules.UnlockedMask(profile.unlockedHubMask,profile.level,profile.clearedRuns);
             float cardWidth=(body.width-16*u)/3;
@@ -95,7 +95,7 @@ namespace Emberfall
                 Rect tile=new Rect(body.x+hub*(cardWidth+8*u),body.y+32*u,cardWidth,body.height-32*u);
                 Fill(tile,card);Border(tile,current?gold:jade);
                 Text(new Rect(tile.x+6*u,tile.y+8*u,tile.width-12*u,26*u),HubTravelRules.Name(hub),Mathf.RoundToInt(14*u),unlocked?pale:muted,true,false,TextAnchor.MiddleCenter);
-                Text(new Rect(tile.x+8*u,tile.y+38*u,tile.width-16*u,36*u),unlocked?"商店 · 铁匠强化":HubTravelRules.UnlockHint(hub),Mathf.RoundToInt(11*u),muted,false,true,TextAnchor.MiddleCenter);
+                Text(new Rect(tile.x+8*u,tile.y+38*u,tile.width-16*u,36*u),unlocked?"":HubTravelRules.UnlockHint(hub),Mathf.RoundToInt(11*u),muted,false,true,TextAnchor.MiddleCenter);
                 if(Button(new Rect(tile.x+6*u,tile.yMax-50*u,tile.width-12*u,44*u),current?"当前城镇":unlocked?"前往":"尚未解锁",jade,unlocked&&!current&&session.CanOpenTravelMap&&!UITransitionBlocked))
                 {
                     if(session.TravelToHub(hub)){travelReturnPause=false;CloseTravelMap();return;}
@@ -111,7 +111,7 @@ namespace Emberfall
             Fill(map,ink);DrawMinimapTerrain(map);Border(map,jade);
             Color portal=new Color(.4f,.65f,1),camp=new Color(.9f,.9f,.85f),ordinary=new Color(.54f,.77f,.5f),aggro=new Color(1,.58f,.35f),boss=new Color(1,.32f,.3f);
             if(!session.InDungeon){MapDot(map,new Vector3(0,0,11),portal,7*u);MapDot(map,new Vector3(0,0,-10),camp,6*u);}
-            else if(session.DungeonReturnAvailable)MapDot(map,new Vector3(0,0,-16),portal,7*u);
+            else if(session.DungeonReturnAvailable)MapDot(map,session.DungeonReturnPosition,portal,7*u);
             foreach(var enemy in session.Enemies)if(enemy!=null&&!enemy.IsDead)
                 MapDot(map,enemy.transform.position,enemy.IsBoss?boss:enemy.Tier==EnemyController.ThreatTier.Elite?gold:enemy.IsAggro?aggro:ordinary,enemy.IsBoss?7*u:4*u);
             if(session.Player!=null)MapDot(map,session.Player.transform.position,jade,7*u);

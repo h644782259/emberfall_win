@@ -46,7 +46,7 @@ namespace Emberfall
    try {if(!ChangeZone(false))return false;}
    finally {loadingSaveSnapshot=false;}
    Player.Teleport(WorldTraversal.NearestWalkable(new Vector3(0,0,-14),.45f));
-   Notify("已抵达"+HubTravelRules.Name(CurrentHub)+" · 商人、铁匠在营地");return true;
+   Notify("已抵达"+HubTravelRules.Name(CurrentHub));return true;
   }
  }
 }

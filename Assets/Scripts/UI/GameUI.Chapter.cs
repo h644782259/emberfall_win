@@ -255,9 +255,13 @@ namespace Emberfall
             Text(new Rect(8*u,8*u+rewardHeight,(layout.Body.Width-26)*u,h-rewardHeight),copy,Mathf.RoundToInt(16*u),pale,false,true);EndTouchScroll();
             if(pending&&Button(ChapterRect(layout.FooterButton(0,2),u),"重试保存结算",gold)){RetryChapterSettlement();return;}
             if(failed&&Button(ChapterRect(layout.FooterButton(0,2),u),"原条件重试",gold,session.CanRetryChapter)){session.RetryFailedChapter();BlockUITransition();return;}
-            bool next=!failed&&!pending&&session.CanChallengeNextChapterTier;
-            if(next&&Button(ChapterRect(layout.FooterButton(1,2),u),"直接挑战下一阶",gold)){session.ChallengeNextChapterTier();BlockUITransition();return;}
-            if(NavigationButton(ChapterRect(layout.FooterButton(pending||failed?1:0,pending||next||failed?2:1),u), "返回营地", jade)){ReturnFromChapter();return;}
+            if(session.IsDead)
+            {if(Button(ChapterRect(layout.FooterButton(1,2),u),"复活",jade)){ReturnFromChapter();return;}}
+            else
+            {
+                if(PopupCloseButton(ChapterRect(layout.Close,u))||Button(ChapterRect(layout.FooterButton(pending||failed?1:0,pending||failed?2:1),u),"继续拾取",jade))
+                {session.DismissFinishedResult();BlockUITransition();return;}
+            }
         }
     }
 }

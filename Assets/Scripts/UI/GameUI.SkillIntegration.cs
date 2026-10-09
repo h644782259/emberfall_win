@@ -7,12 +7,12 @@ namespace Emberfall
         private Vector2 skillDevelopmentScroll;
         private void DrawSkillTabs(Rect rect)
         {
-            float u=MobileControls.Active?TouchRatio:1,gap=8*u,w=(rect.width-gap)/2;
-            for(int i=0;i<2;i++)
+            float u=MobileControls.Active?TouchRatio:1,gap=8*u,w=(rect.width-2*gap)/3;
+            for(int i=0;i<3;i++)
             {
                 Rect hit=new Rect(rect.x+i*(w+gap),rect.y,w,rect.height);
                 bool selected=skillSection==i;
-                Text(hit,i==0?"战技":"职业精通",Mathf.RoundToInt(14*u),selected?gold:muted,selected,false,TextAnchor.MiddleCenter);
+                Text(hit,i==0?"战技":i==1?"职业精通":"切换职业",Mathf.RoundToInt(14*u),selected?gold:muted,selected,false,TextAnchor.MiddleCenter);
                 if(selected)Fill(new Rect(hit.x+8*u,hit.yMax-5*u,hit.width-16*u,2*u),gold);
                 if(GUI.Button(hit,GUIContent.none,invisibleButton)&&!selected){skillSection=i;CancelMobileScroll();}
             }
@@ -57,18 +57,18 @@ namespace Emberfall
             if(MobileControls.Active)
             {
                 var l=MobilePanelGeometry();
-                if(DrawMobilePanelChrome(l,"职业精通","技能点 "+p.Profile.skillPoints+" · 共用配点",showNotice:false,headerRightReserve:188))return;
-                DrawSkillTabs(TouchRect(l.Close.X-188,8,176,44));
-                if(skillSection==0)return;
+                if(DrawMobilePanelChrome(l,"职业精通","精通点 "+p.Profile.skillPoints+"",showNotice:false,headerRightReserve:276))return;
+                DrawSkillTabs(TouchRect(l.Close.X-276,8,264,44));
+                if(skillSection!=1)return;
                 var body=new MobilePanelLayout.Area(l.Body.X,l.Body.Y,l.Body.Width,l.Height-l.Body.Y-12);
                 float mobileWidth=body.Width-16,h=8;DrawMobileWorkshopAbilities(ref h,mobileWidth,false);
                 skillDevelopmentScroll=BeginTouchScroll("skill-development",MobilePanelRect(body),skillDevelopmentScroll,new Rect(0,0,mobileWidth*TouchRatio,Mathf.Max(body.Height,h)*TouchRatio));
                 h=8;DrawMobileWorkshopAbilities(ref h,mobileWidth,true);EndTouchScroll();return;
             }
-            Rect w=Modal(980,660,"职业精通","可用技能点 "+p.Profile.skillPoints);
+            Rect w=Modal(980,660,"职业精通","可用精通点 "+p.Profile.skillPoints);
             if(PopupCloseButton(new Rect(w.xMax-69,w.y+20,44,32)))ClosePanel();
-            DrawSkillTabs(new Rect(w.xMax-269,w.y+20,176,36));
-            if(skillSection==0)return;
+            DrawSkillTabs(new Rect(w.xMax-357,w.y+20,264,36));
+            if(skillSection!=1)return;
             Rect desktopBody=new Rect(w.x+26,w.y+82,w.width-52,w.height-96);float available=desktopBody.width-18;
             float desktopHeight=DrawSkillDevelopmentContent(available,1,false);
             skillDevelopmentScroll=BeginTouchScroll("skill-development",desktopBody,skillDevelopmentScroll,new Rect(0,0,available,Mathf.Max(desktopBody.height,desktopHeight)));
@@ -100,30 +100,15 @@ namespace Emberfall
             selectedMastery=Mathf.Clamp(selectedMastery,0,3);
             if(draw)
             {
-                Text(new Rect(4*u,y*u,(width-132)*u,36*u),"可用技能点 "+p.Profile.skillPoints,Mathf.RoundToInt(16*u),gold,true);
+                Text(new Rect(4*u,y*u,(width-132)*u,36*u),"可用精通点 "+p.Profile.skillPoints,Mathf.RoundToInt(16*u),gold,true);
                 if(TabButton(new Rect((width-124)*u,y*u,124*u,36*u),"配点管理",masteryManagementOpen))masteryManagementOpen=!masteryManagementOpen;
             }
             y+=44;
             if(masteryManagementOpen)
             {
-                float cell=(width-16)/3;
-                if(draw)
-                {
-                    if(Button(new Rect(0,y*u,cell*u,38*u),"切换职业",jade))OpenClassSwitch();
-                    if(Button(new Rect((cell+8)*u,y*u,cell*u,38*u),"重置全部配点",jade,session.IsInCamp&&p.RefundableBuildPoints>0))RequestBuildPlanAction(BuildPlanAction.Reset);
-                    if(Button(new Rect((cell+8)*2*u,y*u,cell*u,38*u),"仅重置精通",jade,session.IsInCamp))
-                    {bool saved=p.ResetMastery(true);masteryChangeNotice=saved?"精通点已返还，核心已关闭":p.LastError;}
-                    for(int i=0;i<2;i++)
-                    {
-                        float row=y+46+i*44;
-                        Text(new Rect(4*u,row*u,cell*u,36*u),"配装方案 "+(i==0?"A":"B"),Mathf.RoundToInt(13*u),pale,true);
-                        if(Button(new Rect((cell+8)*u,row*u,cell*u,36*u),"保存当前配点",jade,session.IsInCamp))RequestBuildPlanAction(BuildPlanAction.Save,i);
-                        if(Button(new Rect((cell+8)*2*u,row*u,cell*u,36*u),"应用方案",jade,session.IsInCamp&&p.HasBuildPreset(i)))RequestBuildPlanAction(BuildPlanAction.Apply,i);
-                    }
-                }
-                if(draw&&Button(new Rect(0,(y+134)*u,width*u,38*u),"退还技能进阶点（保留已学 1 阶）",jade,session.IsInCamp&&p.RefundableSkillRanks>0))
-                {bool saved=p.RefundSkillRanks(true);masteryChangeNotice=saved?"技能进阶点已返还，已学 1 阶保留":p.LastError;}
-                y+=180;
+                if(draw&&Button(new Rect(0,y*u,Mathf.Min(220,width)*u,38*u),"重置",jade,session.IsInCamp))
+                {bool saved=p.ResetMastery(true);masteryChangeNotice=saved?"职业精通已重置，精通点已返还":p.LastError;}
+                y+=46;
             }
             int columns=width>=760?4:2,cap=ProgressionService.MasteryCap(p.Profile.level);
             float tileWidth=(width-(columns-1)*10)/columns,tileHeight=174;
@@ -141,16 +126,16 @@ namespace Emberfall
                 Text(new Rect(tile.x+12*u,tile.y+68*u,tile.width-24*u,24*u),"当前  "+MasteryBonusText(i,rank),Mathf.RoundToInt(13*u),pale,true);
                 Text(new Rect(tile.x+12*u,tile.y+94*u,tile.width-24*u,24*u),rank<cap?"下一点  "+MasteryBonusText(i,rank+1):cap==0?"Lv"+MasteryProgressionRules.FirstUnlockLevel+" 解锁":"已达当前等级上限",Mathf.RoundToInt(12*u),rank<cap?jade:muted);
                 if(GUI.Button(new Rect(tile.x,tile.y,tile.width,124*u),GUIContent.none,invisibleButton))selectedMastery=i;
-                string action=learnable?"加 1 点 · 消耗 1 技能点":cap==0?"尚未解锁":rank>=cap?"当前已满":"技能点不足";
+                string action=learnable?"+ 1点":cap==0?"尚未解锁":rank>=cap?"当前已满":"精通点不足";
                 if(PrimaryButton(new Rect(tile.x+10*u,tile.y+128*u,tile.width-20*u,36*u),action,jade,learnable))
                 {
                     selectedMastery=i;bool saved=p.LearnMastery(mastery);
-                    masteryChangeNotice=saved?BuildCatalog.MasteryName(mastery)+"："+MasteryBonusText(i,rank)+" → "+MasteryBonusText(i,p.Profile.masteryRanks[i])+"（消耗 1 技能点）":p.LastError;
+                    masteryChangeNotice=saved?BuildCatalog.MasteryName(mastery)+"："+MasteryBonusText(i,rank)+" → "+MasteryBonusText(i,p.Profile.masteryRanks[i])+"（消耗 1 精通点）":p.LastError;
                     if(saved){masteryChangedNode=i;masteryChangedAt=Time.unscaledTime;}
                 }
             }
             y+=((4+columns-1)/columns)*(tileHeight+10);
-            string notice=string.IsNullOrEmpty(masteryChangeNotice)?"选择精通查看核心效果；加点立即生效，与战技共用技能点。":masteryChangeNotice;
+            string notice=string.IsNullOrEmpty(masteryChangeNotice)?"选择精通查看核心效果；加点立即生效，使用独立精通点。":masteryChangeNotice;
             float noticeHeight=Style(Mathf.RoundToInt(13*u),false,true).CalcHeight(new GUIContent(notice),(width-24)*u)/u+16;
             if(draw){Fill(new Rect(0,y*u,width*u,noticeHeight*u),new Color(.045f,.13f,.12f));Text(new Rect(12*u,(y+8)*u,(width-24)*u,(noticeHeight-16)*u),notice,Mathf.RoundToInt(13*u),jade,false,true);}
             y+=noticeHeight+12;

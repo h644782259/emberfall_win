@@ -16,11 +16,11 @@ namespace Emberfall
             int band = Band(ClampTier(tier)); roll = Math.Max(0, Math.Min(99, roll));
             if (boss)
             {
-                int legendary = 8 + 3 * band, epic = 37 + 2 * band;
+                int legendary = 2 + band, epic = 10 + 2 * band;
                 return roll < 100 - legendary - epic ? Rarity.Rare : roll < 100 - legendary ? Rarity.Epic : Rarity.Legendary;
             }
-            int common = 54 - 4 * band, ordinaryLegendary = 2 + band;
-            return roll < common ? Rarity.Common : roll < common + 31 ? Rarity.Rare : roll < 100 - ordinaryLegendary ? Rarity.Epic : Rarity.Legendary;
+            int common = 70 - band, ordinaryLegendary = 1;
+            return roll < common ? Rarity.Common : roll < 95 - band ? Rarity.Rare : roll < 100 - ordinaryLegendary ? Rarity.Epic : Rarity.Legendary;
         }
     }
 
@@ -40,21 +40,22 @@ namespace Emberfall
         public static int EquipmentCount(int mode){Validate(mode);return mode==3?2:1;}
         public static int EquipmentCount(int mode,int tier){return EquipmentCount(mode)+TierRewardBand.Of(tier)/2;}
         public static int PotionChance(int tier){return 12+3*TierRewardBand.Of(tier);}
-        public static int LegendaryChance(int tier){return 2+2*TierRewardBand.Of(tier);}
+        public static int LegendaryChance(int tier){return 1+TierRewardBand.Of(tier)/2;}
         private static void Validate(int mode){if(mode < -1 || mode > 3)throw new ArgumentOutOfRangeException(nameof(mode));}
         public static ItemSlot EquipmentSlot(int mode,int index)
         {Validate(mode);if(index<0||index>=8)throw new ArgumentOutOfRangeException(nameof(index));return mode==0?ItemSlot.Armor:mode==1?ItemSlot.Relic:mode==3?(index%2==0?ItemSlot.Armor:ItemSlot.Relic):ItemSlot.Weapon;}
-        public static Rarity MinimumRarity(int mode){Validate(mode);return mode==2?Rarity.Epic:Rarity.Rare;}
-        public static int UpgradeChance(int mode,int tier){Validate(mode);return mode==2?8+3*TierRewardBand.Of(tier):15+5*TierRewardBand.Of(tier);}
+        public static Rarity MinimumRarity(int mode){Validate(mode);return Rarity.Rare;}
+        public static int UpgradeChance(int mode,int tier){Validate(mode);return mode==2?10+2*TierRewardBand.Of(tier):6+2*TierRewardBand.Of(tier);}
         public static Rarity EquipmentRarity(int mode,int tier,int roll)
-        {return roll<LegendaryChance(tier)?Rarity.Legendary:roll<LegendaryChance(tier)+UpgradeChance(mode,tier)?(mode==2?Rarity.Legendary:Rarity.Epic):MinimumRarity(mode);}
+        {return roll<LegendaryChance(tier)?Rarity.Legendary:roll<LegendaryChance(tier)+UpgradeChance(mode,tier)?Rarity.Epic:MinimumRarity(mode);}
         public static int Materials(int mode,int tier){Validate(mode);return (mode==0||mode==1?5:mode==3?4:3)+TierRewardBand.Of(tier);}
         public static int Gold(int mode,int tier,bool riskContract)
         {Validate(mode);tier=TierRewardBand.Clamp(tier);int value=mode==-1?120+tier*30:mode==0?110+tier*20:mode==1?100+tier*25:mode==2?180+tier*40:200+tier*35;return riskContract?(int)Math.Round(value*1.3f):value;}
         public static int Experience(int mode,int tier)
         {Validate(mode);tier=TierRewardBand.Clamp(tier);return mode==-1?100+tier*20:mode==0?90+tier*20:mode==1?100+tier*20:mode==2?140+tier*30:160+tier*25;}
         public static string EquipmentSummary(int mode,int tier)
-        {Validate(mode);string slot=mode==0?"护甲":mode==1?"饰品":mode==3?"护甲 + 饰品":"武器";return "保底 "+(mode==2?"史诗":"稀有")+" "+slot+" · "+(mode==2?UpgradeChance(mode,tier)+LegendaryChance(tier):LegendaryChance(tier))+"% 传说"+(mode==2?"":" · "+UpgradeChance(mode,tier)+"% 史诗");}
+        {Validate(mode);string slot=mode==0?"护甲":mode==1?"饰品":mode==3?"护甲 + 饰品":"武器";return "保底 稀有 "+slot+" · "+LegendaryChance(tier)+"% 传说 · "+UpgradeChance(mode,tier)+"% 史诗";}
+
     }
 }
 

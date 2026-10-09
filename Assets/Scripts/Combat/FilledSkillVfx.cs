@@ -181,6 +181,7 @@ namespace Emberfall
         {
             if(type!=FilledVfxKind.Ice&&type!=FilledVfxKind.Fire&&type!=FilledVfxKind.Summon&&type!=FilledVfxKind.Sword&&type!=FilledVfxKind.Lightning&&type!=FilledVfxKind.Arcane)return;
             var fx=Create(hero,at,Vector3.forward,type,radius,color,type==FilledVfxKind.Fire?.8f:1.05f,priority:priority);if(fx==null)return;
+            if(type==FilledVfxKind.Fire||type==FilledVfxKind.Ice)ElementalCombatVfx.Burst(hero,at,radius,type==FilledVfxKind.Fire?ElementalCombatVfx.Element.Fire:ElementalCombatVfx.Element.Ice);
             if(priority==CombatVisualPriority.Finale)fx.RegisterFinale(castId);
             float unit=Mathf.Min(1.6f,fx.size*.55f);
             // Allocate landing base, identity silhouette and contact flash BEFORE repeated ornaments.

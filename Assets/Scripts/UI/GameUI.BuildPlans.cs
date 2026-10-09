@@ -22,10 +22,8 @@ namespace Emberfall
 
         private void OpenBuildPlans()
         {
-            buildPlansOpen=true;buildPlanAction=BuildPlanAction.None;buildPlanOwner=session.Progression;
-            buildPlanHero=session.Player;buildPlanCharacterId=session.Progression.CurrentSlotId;
-            buildPlanError=null;buildPlanScroll=Vector2.zero;buildPlanDetails=-1;practiceChoicesOpen=false;
-            CancelMobileScroll();BlockUITransition();
+            ResetBuildPlanSurface();panel=Panel.Skills;skillSection=1;masteryManagementOpen=true;
+            CancelMobileScroll();
         }
         private void RequestBuildPlanAction(BuildPlanAction action,int slot=0)
         {

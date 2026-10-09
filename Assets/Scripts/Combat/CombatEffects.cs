@@ -595,7 +595,8 @@ namespace Emberfall
                         if (fireVisual || poisonVisual || lightningVisual)
                             ElementalCombatVfx.Area(transform, radius, fireVisual ? ElementalCombatVfx.Element.Fire :
                                 poisonVisual ? ElementalCombatVfx.Element.Poison : ElementalCombatVfx.Element.Lightning);
-                        if(poisonVisual)FilledSkillVfx.PoisonVines(owner,transform.position,radius,color);
+                        if(visualRecipe==SkillVisualRecipe.Ice)ElementalCombatVfx.Area(transform,radius,ElementalCombatVfx.Element.Ice);
+                        if(poisonVisual){ElementalCombatVfx.Burst(owner,transform.position,radius,ElementalCombatVfx.Element.Poison);FilledSkillVfx.PoisonVines(owner,transform.position,radius,color);}
                         if (fireVisual) FilledSkillVfx.Impact(owner, transform.position, radius, FilledVfxKind.Fire, new Color(1f,.43f,.12f),CombatVisualPriority.ActionBody);
                         else if (visualRecipe == SkillVisualRecipe.Ice)
                             FilledSkillVfx.Impact(owner, transform.position, radius, FilledVfxKind.Ice, new Color(.2f,.75f,1f),CombatVisualPriority.ActionBody);

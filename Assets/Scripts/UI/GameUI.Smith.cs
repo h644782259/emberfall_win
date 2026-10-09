@@ -30,7 +30,7 @@ namespace Emberfall
             y=0;DrawGemUpgradeComparison(ref y,contentWidth,u,gem,smithPreviewAscend,true);
             GoalParagraph(ref y,contentWidth,u,BuildCatalog.MechanicDescription(gem.mechanic),12,muted,false,true);EndTouchScroll();
             int cost=smithPreviewAscend?ProgressionService.AscensionCost:ProgressionService.AttachmentUpgradeCost;
-            string reason=smithPreviewAscend?gem.rarity==Rarity.Legendary?"已升华":gem.rarity!=Rarity.Epic?"需先升阶至史诗品质":p.HighestAdventureTier<5?"需通关第5阶":!SmithServiceActive?"请在铁匠处操作":p.Profile.mechanicMaterials<cost?"星烬碎片不足":"":p.AttachmentUpgradeLock(gem.mechanic,SmithServiceActive);
+            string reason=smithPreviewAscend?gem.rarity==Rarity.Legendary?"已升华":gem.rarity!=Rarity.Epic?"需先升阶至史诗品质":p.HighestAdventureTier<5?"需通关 Lv50 副本":!SmithServiceActive?"请在铁匠处操作":p.Profile.mechanicMaterials<cost?"星烬碎片不足":"":p.AttachmentUpgradeLock(gem.mechanic,SmithServiceActive);
             bool enough=p.Profile.mechanicMaterials>=cost;
             Text(new Rect(box.x+14*u,box.yMax-88*u,w-28*u,30*u),reason,Mathf.RoundToInt(12*u),reason.Length==0?muted:new Color(1,.35f,.3f),false,true);
             Rect confirm=new Rect(box.x+14*u,box.yMax-52*u,w-28*u,40*u);
@@ -107,11 +107,17 @@ namespace Emberfall
             int nextRank=ascend?gem.upgradeRank:Mathf.Min(ProgressionService.MaximumAttachmentRank,gem.upgradeRank+1);
             Rarity nextRarity=ascend?Rarity.Legendary:nextRank>=3&&gem.rarity<Rarity.Epic?Rarity.Epic:gem.rarity;
             bool capped=ascend?gem.rarity==Rarity.Legendary:gem.upgradeRank>=ProgressionService.MaximumAttachmentRank;
-            float currentPower=1f+.08f*gem.upgradeRank+(gem.upgradeRank>=5?.2f:0)+(gem.rarity==Rarity.Legendary?.15f:0);
-            float nextPower=1f+.08f*nextRank+(nextRank>=5?.2f:0)+(nextRarity==Rarity.Legendary?.15f:0);
+            float currentPower=(.7f+.15f*(int)gem.rarity)+.08f*gem.upgradeRank+(gem.upgradeRank>=5?.2f:0);
+            float nextPower=(.7f+.15f*(int)nextRarity)+.08f*nextRank+(nextRank>=5?.2f:0);
             string[] labels={"阶数","品质","机制强度","作用范围","攻击加成","生命加成"};
             string[] before={"+"+gem.upgradeRank,GameBalance.RarityName(gem.rarity),currentPower.ToString("0.00")+"×",gem.upgradeRank>=3?"1.20×":"1.00×","+"+(gem.upgradeRank*1.5f).ToString("0.#")+"%","+"+(gem.upgradeRank*2)+"%"};
             string[] after={"+"+nextRank,GameBalance.RarityName(nextRarity),nextPower.ToString("0.00")+"×",nextRank>=3?"1.20×":"1.00×","+"+(nextRank*1.5f).ToString("0.#")+"%","+"+(nextRank*2)+"%"};
+            if(BuildCatalog.IsAttributeGem(gem.mechanic))
+            {
+                labels=new[]{"阶数","品质",BuildCatalog.GemAttributeLabel(gem.mechanic)};
+                before=new[]{"+"+gem.upgradeRank,GameBalance.RarityName(gem.rarity),(BuildCatalog.GemAttributeValue(gem.mechanic,gem.rarity,gem.upgradeRank)*100).ToString("0.#")+"%"};
+                after=new[]{"+"+nextRank,GameBalance.RarityName(nextRarity),(BuildCatalog.GemAttributeValue(gem.mechanic,nextRarity,nextRank)*100).ToString("0.#")+"%"};
+            }
             GoalParagraph(ref y,width,u,(ascend?"升华":"升阶")+(capped?" · 已达上限":!gem.mounted?" · 镶嵌后生效":""),15,gold,true,draw);
             if(draw)
             {
@@ -175,7 +181,7 @@ namespace Emberfall
             Text(new Rect(box.x+16*u,box.y+12*u,w-76*u,30*u),GameBalance.SlotName(slot)+" · 选择宝石",Mathf.RoundToInt(18*u),gold,true);
             if(PopupCloseButton(new Rect(box.xMax-48*u,box.y+6*u,44*u,36*u))){smithSocketPicker=false;return;}
             var candidates=new System.Collections.Generic.List<MechanicAttachment>();
-            foreach(var mechanic in BuildCatalog.MechanicsFor(p.Profile.heroClass))
+            foreach(var mechanic in BuildCatalog.GemsFor(p.Profile.heroClass))
             {
                 var a=p.Attachment(mechanic);
                 if(a!=null&&BuildCatalog.MechanicSlot(mechanic)==slot)candidates.Add(a);
@@ -190,7 +196,7 @@ namespace Emberfall
                 Fill(tile,new Color(.06f,.09f,.13f));Border(tile,a.mounted?jade:GameBalance.RarityColor(a.rarity));
                 DrawIcon(new Rect(tile.center.x-24*u,tile.y+12*u,48*u,48*u),UIIconAtlas.Utility("gem"),GameBalance.RarityColor(a.rarity));
                 Text(new Rect(tile.x+6*u,tile.y+65*u,tile.width-12*u,28*u),BuildCatalog.GemName(a.mechanic),Mathf.RoundToInt(13*u),pale,true,false,TextAnchor.MiddleCenter);
-                Text(new Rect(tile.x,tile.y+96*u,tile.width,20*u),a.mounted?"已镶嵌":"阶数 "+a.upgradeRank,Mathf.RoundToInt(11*u),a.mounted?jade:muted,false,false,TextAnchor.MiddleCenter);
+                Text(new Rect(tile.x,tile.y+96*u,tile.width,20*u),BuildCatalog.IsAttributeGem(a.mechanic)?BuildCatalog.GemAttributeSummary(a.mechanic,a.rarity,a.upgradeRank):a.mounted?"已镶嵌":"阶数 "+a.upgradeRank,Mathf.RoundToInt(11*u),a.mounted?jade:muted,false,false,TextAnchor.MiddleCenter);
                 if(QuietAction(tile,"",SmithServiceActive&&!a.mounted))
                 {if(p.SetAttachmentMounted(a.mechanic,true,SmithServiceActive)){Feedback(true,"宝石已镶嵌");smithSocketPicker=false;}else Feedback(false,p.LastError);}
             }
@@ -239,7 +245,7 @@ namespace Emberfall
             {
 
                 MechanicAttachment mounted=null;
-                foreach(var mechanic in BuildCatalog.MechanicsFor(p.Profile.heroClass))
+                foreach(var mechanic in BuildCatalog.GemsFor(p.Profile.heroClass))
                 {
                     var a=p.Attachment(mechanic);
                     if(BuildCatalog.MechanicSlot(mechanic)==item.slot&&a!=null&&a.mounted){mounted=a;break;}

@@ -30,7 +30,7 @@ namespace Emberfall
                 return Time.unscaledTime < notificationUntil ? notification : "";
             }
         }
-        public bool InputBlocked { get { return !HasStarted || Paused || uiBlocking || IsDead || ModeFinished || (PracticeActive&&PracticeRecord!=null&&PracticeRecord.Finished) || RunChoices.AwaitingChoice || RoomBranchChoiceOpen || DungeonSelectionOpen || pauseState.BackgroundPaused; } }
+        public bool InputBlocked { get { return !HasStarted || Paused || uiBlocking || IsDead || (ModeFinished&&!FinishedResultDismissed) || (PracticeActive&&PracticeRecord!=null&&PracticeRecord.Finished) || RunChoices.AwaitingChoice || RoomBranchChoiceOpen || DungeonSelectionOpen || pauseState.BackgroundPaused; } }
         public bool PointerOverUI { get { return ui != null && ui.IsPointerOverUI; } }
         public bool CanChangeLoadout { get { return HasStarted && !IsDead; } }
         public string Objective
@@ -279,16 +279,6 @@ namespace Emberfall
             if(activeHubNpc!=HubNpcKind.None&&ActiveHubNpc==HubNpcKind.None)EndHubNpcConversation();
             if(PracticeActive){TickPractice();return;} // Practice owns its guarded potion input too.
             if(HasStarted)TickSideEvent();
-            if(HasStarted&&!PracticeActive&&Time.unscaledTime>=nextGrowthCheck)
-            {
-                nextGrowthCheck=Time.unscaledTime+1f;
-                int receipts=Progression.Profile.growthRewardReceipts.Count;
-                if(Progression.AdvanceAutomaticGrowth()&&Progression.Profile.growthRewardReceipts.Count>receipts)
-                {
-                    LogSystem(Progression.LastGrowthReward);
-                    if(!ModeFinished&&!Paused&&string.IsNullOrEmpty(RoomGenerationFailureDetail))Notify(Progression.LastGrowthReward);
-                }
-            }
             if (InputBlocked) return;
             if(ModeRun!=null){TickArenaRun();if(InputBlocked)return;}
             if(RoomChainRun!=null)TickRoomTactics();
@@ -298,7 +288,7 @@ namespace Emberfall
                 if(Input.GetKeyDown(KeyCode.E)){if(NearDungeonReturn)ReturnToCamp();else if(SideEventAvailable)StartSideEvent();}
                 bool touchPotionRequested = MobileControls.ConsumePotion();
                 if (Input.GetKeyDown(KeyCode.F) || touchPotionRequested) DrinkPotion();
-                if (Input.GetKeyDown(KeyCode.T)) { if(NearChapterExit)EnterNextChapterRoom();else if(NearRoomExit)EnterNextRoom();else if (InDungeon) { if (DungeonCleared) ReturnToCamp(); else Notify("先击败本轮敌人后再返回营地。"); } else EnterDungeon(); }
+                if (Input.GetKeyDown(KeyCode.T)) { if(NearChapterExit)EnterNextChapterRoom();else if(NearRoomExit)EnterNextRoom();else if (InDungeon) { if (NearDungeonReturn) ReturnToCamp(); else Notify(DungeonReturnAvailable?"靠近返营传送点后交互。":"先完成本轮挑战。"); } else EnterDungeon(); }
                 if (Input.GetKeyDown(KeyCode.H)) ReturnToOrigin();
             }
             if(InDungeon && reinforcementQueue.Count>0 && Enemies.Count<=6)TrySpawnReinforcements();
@@ -323,7 +313,7 @@ namespace Emberfall
         {
             if (!CanChangeLoadout) { Notify("请先开始冒险，再配置技能快捷栏。"); return false; }
             bool changed = Progression.AssignSkill(hotbarSlot, skillIndex);
-            Notify(changed ? "快捷栏已更新 · 技能冷却保留" : Progression.LastError);
+            if(!changed&&!string.IsNullOrEmpty(Progression.LastError))Notify(Progression.LastError);
             return changed;
         }
         public bool SetHotbarPage(int page)
@@ -334,8 +324,7 @@ namespace Emberfall
         {
             if (!CanChangeLoadout) return false;
             bool changed = Progression.MoveHotbarSkill(sourceSlot, targetSlot);
-            if (changed) Notify("快捷栏已更新 · 技能冷却保留");
-            else if (!string.IsNullOrEmpty(Progression.LastError)) Notify(Progression.LastError);
+            if (!changed&&!string.IsNullOrEmpty(Progression.LastError)) Notify(Progression.LastError);
             return changed;
         }
         private void UpdateMobileFrameRate()
@@ -346,7 +335,7 @@ namespace Emberfall
         }
         private void UpdateTimeScale()
         {
-            Time.timeScale = pauseState.CanAdvance(HasStarted, Paused, uiBlocking || RunChoices.AwaitingChoice || RoomBranchChoiceOpen || DungeonSelectionOpen || ModeFinished, IsDead) ? 1 : 0;
+            Time.timeScale = pauseState.CanAdvance(HasStarted, Paused, uiBlocking || RunChoices.AwaitingChoice || RoomBranchChoiceOpen || DungeonSelectionOpen || (ModeFinished&&!FinishedResultDismissed), IsDead) ? 1 : 0;
             UpdateMobileFrameRate();
         }
 
@@ -533,7 +522,6 @@ namespace Emberfall
             Progression.GrantEnemyKillReward(gold, experience, InDungeon, potions);
             if(InDungeon)SpawnGroundSupplies(position,gold,potions);
             LogSystem((InDungeon?"地面补给 · ":"+"+gold+" 金币 · ")+"+"+experience+" 经验");
-            SpawnFloatingText(position + Vector3.up * 2, "+" + experience + " XP  +" + gold + " G", new Color(.95f, .83f, .4f));
             if (boss || Random.value < (InDungeon ? .65f+.05f*TierRewardBand.Of(DungeonTier) : .5f))
             {
                 ItemData loot = Progression.RollLoot(InDungeon&&!ChapterActive?DungeonEntryLevel:Progression.Profile.level, boss, InDungeon ? DungeonTier : 0);
@@ -667,6 +655,10 @@ namespace Emberfall
         private void OnLevelUp(int level)
         {
             GameAudio.Play(SoundCue.LevelUp);
+            var learned=new System.Collections.Generic.List<string>();
+            for(int skill=0;skill<GameBalance.SkillCount;skill++)
+                if(GameBalance.SkillRequiredLevels[skill]==level)learned.Add(GameBalance.SkillName(Progression.Profile.heroClass,skill));
+            if(learned.Count>0)Notify((Time.unscaledTime<notificationUntil&&notification!=null&&notification.StartsWith("习得技能：")?notification+"、":"习得技能：")+string.Join("、",learned));
             if (Player != null)
             {
                 Player.RefreshStats(true);
@@ -677,7 +669,6 @@ namespace Emberfall
                 SpawnFloatingText(position+Vector3.up*3,"Lv"+level,glow);
             }
         }
-        private float nextGrowthCheck;
         public void Notify(string message) { notification = message; notificationUntil = Time.unscaledTime + 6; }
 
         public void SpawnFloatingText(Vector3 position, string value, Color color)

@@ -28,10 +28,10 @@ namespace Emberfall
             selectedSkill = Mathf.Clamp(selectedSkill, 0, GameBalance.SkillCount - 1);
             var layout = MobilePanelGeometry();
             if (DrawMobilePanelChrome(layout, GameBalance.ClassName(profile.heroClass) + " · 技能",
-                "Lv." + profile.level + " · 可用技能点 " + profile.skillPoints,showNotice:false,headerRightReserve:188)) return;
+                "Lv." + profile.level + " · 等级自动解锁",showNotice:false,headerRightReserve:276)) return;
 
-            DrawSkillTabs(TouchRect(layout.Close.X-188,8,176,44));
-            if(skillSection==1)return;
+            DrawSkillTabs(TouchRect(layout.Close.X-276,8,264,44));
+            if(skillSection!=0)return;
             float u=TouchRatio,bodyHeight=RouteSkillReturnAvailable?layout.Body.Height:layout.Height-layout.Body.Y-12;
             float leftWidth=layout.Body.Width*.44f;
             var listArea=new MobilePanelLayout.Area(layout.Body.X,layout.Body.Y,leftWidth,bodyHeight);
@@ -49,19 +49,8 @@ namespace Emberfall
             DrawMobileSkillDescription(detailWidth,true);EndTouchScroll();
             int rank = progression.Profile.skillRanks[selectedSkill];
             string reason = progression.SkillLockReason(selectedSkill);
-            string caption = rank >= 3 ? "已完全觉醒" : (rank == 0 ? "学习初习" : "进阶" + GameBalance.SkillRankName(rank + 1)) + " · 1点";
-            Rect learn=new Rect(r.x+8*u,r.yMax-52*u,r.width-16*u,48*u);
-            if (PrimaryButton(learn,rank>=3?"已觉醒":rank==0?"学习 · 1点":"进阶 · 1点",gold,string.IsNullOrEmpty(reason)))
-            {
-                bool saved = progression.LearnSkill(selectedSkill) && string.IsNullOrEmpty(progression.LastError);
-                mobileSkillStatusFailed = !saved;
-                mobileSkillStatus = saved ? GameBalance.SkillName(progression.Profile.heroClass, selectedSkill) + "已达到" +
-                    GameBalance.SkillRankName(progression.Profile.skillRanks[selectedSkill]) : progression.LastError;
-                CancelMobileScroll();
-                mobileSkillDetailScroll = Vector2.zero;
-                Feedback(saved, mobileSkillStatus);
-            }
-            Badge(learn, Attention.LearnableSkills.Contains(selectedSkill));
+            Text(new Rect(r.x+8*u,r.yMax-48*u,r.width-16*u,40*u),reason,TouchFont(14),gold,true,false,TextAnchor.MiddleCenter);
+
         }
 
         private Rect MobileSkillTreeNode(int skill,float width)
@@ -101,10 +90,7 @@ namespace Emberfall
             MobileSkillParagraph(ref y, width, (GameBalance.IsPassive(skill) ? "被动" : "主动") + " · " +
                 GameBalance.CategoryName(GameBalance.GetSkillCategory(p.heroClass, skill)), 13, jade, true, draw);
             MobileSkillParagraph(ref y, width, SkillTooltip(p, skill, rank), 14, pale, false, draw);
-            MobileSkillParagraph(ref y, width, "学习前置：" + GameBalance.PrerequisiteDescription(p.heroClass, skill), 14,
-                session.Progression.PrerequisitesMet(skill) ? muted : gold, false, draw);
-            string reason = session.Progression.SkillLockReason(skill);
-            MobileSkillParagraph(ref y, width, string.IsNullOrEmpty(reason) ? "可学习下一阶：消耗1技能点" : reason, 14, gold, true, draw);
+            MobileSkillParagraph(ref y,width,session.Progression.SkillLockReason(skill),14,gold,true,draw);
             for (int stage = 1; stage <= 3; stage++)
             {
                 MobileSkillParagraph(ref y, width, GameBalance.SkillRankName(stage) + " · Lv." + GameBalance.SkillRankRequiredLevel(skill, stage) +

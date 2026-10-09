@@ -35,7 +35,7 @@ namespace Emberfall
     public enum Rarity { Common, Rare, Epic, Legendary }
     public enum FashionSlot { Wings, Weapon }
     public enum ElementalistSpecialization { None, Shatter, Burn }
-    public enum EquipmentMechanic { None, FrostEcho, CinderTrail, ReturningBlade, VenomSpread, TwinSummonResonance }
+    public enum EquipmentMechanic { None, FrostEcho, CinderTrail, ReturningBlade, VenomSpread, TwinSummonResonance, WeaponPower, WeaponPrecision, WeaponRuin, ArmorPower, ArmorPrecision, ArmorRuin, RelicPower, RelicPrecision, RelicRuin }
     public enum SummonerRoute { Bonded, Pack }
     public enum MasteryType { Offense, Vitality, Guard, Technique }
 
@@ -54,6 +54,25 @@ namespace Emberfall
             }
         }
 
+        public static bool IsAttributeGem(EquipmentMechanic gem)
+        {return gem>=EquipmentMechanic.WeaponPower&&gem<=EquipmentMechanic.RelicRuin;}
+        public static bool GemCompatible(EquipmentMechanic gem,HeroClass hero)
+        {return IsAttributeGem(gem)||gem!=EquipmentMechanic.None&&MechanicClass(gem)==hero;}
+        public static EquipmentMechanic[] GemsFor(HeroClass hero)
+        {
+            var gems=new List<EquipmentMechanic>(MechanicsFor(hero));
+            for(int i=(int)EquipmentMechanic.WeaponPower;i<=(int)EquipmentMechanic.RelicRuin;i++)gems.Add((EquipmentMechanic)i);
+            return gems.ToArray();
+        }
+        public static int GemAttribute(EquipmentMechanic gem){return ((int)gem-(int)EquipmentMechanic.WeaponPower)%3;}
+        public static float GemAttributeValue(EquipmentMechanic gem,Rarity rarity,int rank)
+        {float basis=GemAttribute(gem)==0?.03f:GemAttribute(gem)==1?.015f:.06f;return basis*(1+(int)rarity)*(1+.2f*rank);}
+        public static string GemAttributeLabel(EquipmentMechanic gem)
+        {return GemAttribute(gem)==0?"攻击":GemAttribute(gem)==1?"暴击率":"暴击伤害";}
+        public static string GemAttributeSummary(EquipmentMechanic gem,Rarity rarity,int rank)
+        {return GemAttributeLabel(gem)+" +"+(GemAttributeValue(gem,rarity,rank)*100).ToString("0.#")+"%";}
+        public static int GemPrice(Rarity rarity){return rarity==Rarity.Common?4:rarity==Rarity.Rare?8:rarity==Rarity.Epic?12:24;}
+
         public static HeroClass MechanicClass(EquipmentMechanic mechanic)
         {
             switch (mechanic)
@@ -68,6 +87,7 @@ namespace Emberfall
 
         public static ItemSlot MechanicSlot(EquipmentMechanic mechanic)
         {
+            if(IsAttributeGem(mechanic))return (ItemSlot)(((int)mechanic-(int)EquipmentMechanic.WeaponPower)/3);
             return mechanic == EquipmentMechanic.CinderTrail || mechanic == EquipmentMechanic.ReturningBlade ? ItemSlot.Weapon : ItemSlot.Relic;
         }
 
@@ -108,6 +128,7 @@ namespace Emberfall
 
         public static string GemName(EquipmentMechanic mechanic)
         {
+            if(IsAttributeGem(mechanic))return new[]{"赤锋","鹰眼","裂魂","赤铠","明镜","破军","赤曜","星瞳","灾星"}[(int)mechanic-(int)EquipmentMechanic.WeaponPower]+"宝石";
             switch(mechanic)
             {
                 case EquipmentMechanic.FrostEcho:return "霜鸣宝石";
@@ -133,6 +154,7 @@ namespace Emberfall
 
         public static string MechanicDescription(EquipmentMechanic mechanic)
         {
+            if(IsAttributeGem(mechanic))return GameBalance.SlotName(MechanicSlot(mechanic))+"宝石 · 提高"+GemAttributeLabel(mechanic)+"，品质和阶数越高，加成越强。";
             switch (mechanic)
             {
                 case EquipmentMechanic.FrostEcho: return "冰霜新星首击伤害 -20%；0.7秒后回响造成40%基础伤害并再次施加冰霜控制（灼燃专精仍只减速）。变体：范围 +35%、回响伤害降低。";
@@ -180,7 +202,7 @@ namespace Emberfall
                 "每点生命 +0.5%；核心：受到实际伤害后生命低于50%且存活时，恢复3% / 5%最大生命；冷却12 / 10秒，不会复活。",
                 "每点护甲 +0.75%；核心：完美闪避获得15% / 25%减伤，持续2 / 3秒；冷却8 / 6秒。",
                 "每点普攻回能 +0.1；核心：技能实际消耗累计60 / 45能量，回复8 / 12能量并减冷却0.4 / 0.7秒；冷却8 / 6秒，冷却中不累计。" }[(int)mastery]
-                + MasteryProgressionRules.TierSummary+"；"+MasteryProgressionRules.CoreSummary+"。营地可退还技能2/3阶或重置精通。";
+                + MasteryProgressionRules.TierSummary+"；"+MasteryProgressionRules.CoreSummary+"。营地可重置职业精通。";
         }
         public const string DamageRules = "暴击：普攻与直接技能每次施法掷骰，延迟命中继承结果；持续伤害、反应和伙伴不暴击。伙伴继承当前攻击与生命及契约阶数，数量与召唤模式影响输出。";
 
@@ -369,6 +391,7 @@ namespace Emberfall
         public int attachmentRevision;
         public List<MechanicAttachment> attachments=new List<MechanicAttachment>();
         public List<string> growthRewardReceipts=new List<string>();
+        public List<string> achievementReceipts=new List<string>();
         public bool automaticGrowth=true;
         public int growthRevision;
         public int classStateRevision;
@@ -665,7 +688,7 @@ namespace Emberfall
         }
         public static bool IsBindableKey(int key)
         {
-            if (key == 97 || key == 100 || key == 102 || key == 103 || key == 104 || key == 105 || key == 106 || key == 107 || key == 109 || key == 115 || key == 116 || key == 119) return false;
+            if (key == 97 || key == 100 || key == 102 || key == 103 || key == 104 || key == 105 || key == 106 || key == 107 || key == 109 || key == 111 || key == 112 || key == 115 || key == 116 || key == 119) return false;
             return (key >= 97 && key <= 122) || (key >= 48 && key <= 57) || (key >= 282 && key <= 293);
         }
         public static string KeyName(int key)

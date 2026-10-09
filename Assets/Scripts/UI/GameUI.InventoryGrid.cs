@@ -102,7 +102,7 @@ namespace Emberfall
         }
         private void OpenInventoryPopup(string id,Rect anchor)
         {
-            inventoryPopupItem=id;inventoryPopupAnchor=anchor;inventoryPopupCompare=false;
+            inventoryPopupItem=id;inventoryPopupAnchor=anchor;inventoryPopupCompare=!id.StartsWith("@");
             inventoryComparisonOpen=true;inventoryPopupOpened=Time.frameCount;inventoryComparisonScroll=Vector2.zero;
             if(!id.StartsWith("@")){selectedItem=id;ReviewEquipment(session.Progression.Profile.inventory.Find(v=>v!=null&&v.id==id));}
             CancelMobileScroll();
@@ -114,7 +114,7 @@ namespace Emberfall
             DrawIcon(new Rect(tile.x+6*u,tile.y+5*u,tile.width-12*u,tile.height-17*u),UIIconAtlas.EquipmentCardIcon(item.slot,item.level,item.rarity,session.Progression.Profile.heroClass),rarity);
             // Counted pips encode rarity without relying on color alone.
             for(int pip=0;pip<=(int)item.rarity;pip++)Fill(new Rect(tile.x+3*u+pip*5*u,tile.y+3*u,3*u,3*u),pale);
-            Text(new Rect(tile.x+2*u,tile.yMax-15*u,tile.width-4*u,14*u),"Lv"+item.level,Mathf.RoundToInt(9*u),pale,true,false,TextAnchor.MiddleRight);
+            Text(new Rect(tile.x+2*u,tile.yMax-15*u,tile.width-4*u,14*u),"Lv"+item.level,Mathf.RoundToInt(9*u),item.level>session.Progression.Profile.level?new Color(1f,.35f,.3f):pale,true,false,TextAnchor.MiddleRight);
             if(item.locked)DrawIcon(new Rect(tile.xMax-14*u,tile.y+2*u,12*u,12*u),UIIconAtlas.EquipmentLock(true),Color.white);
             if(IsEquipped(item))DrawIcon(new Rect(tile.x+2*u,tile.yMax-16*u,14*u,14*u),UIIconAtlas.Utility("confirm"),jade);
             if(UnreviewedEquipmentUpgrade(item))DrawIcon(new Rect(tile.xMax-18*u,tile.yMax-31*u,18*u,18*u),UIIconAtlas.EquipmentUpgradeArrow(),new Color(.25f,1f,.4f));
@@ -154,52 +154,57 @@ namespace Emberfall
         }
         private void DrawEquipmentSheet(ItemData item,float u)
         {
-            float sheetWidth=Mathf.Min(760,(width/u)-24),sheetHeight=Mathf.Min(430,(height/u)-24);
+            bool compactCompare=inventoryPopupCompare&&height/u<400;
+            float sheetWidth=Mathf.Min(compactCompare?520:380,(width/u)-40),sheetHeight=Mathf.Min(480,(height/u)-32);
             Rect r=inventoryPopupRect=new Rect((width-sheetWidth*u)*.5f,(height-sheetHeight*u)*.5f,sheetWidth*u,sheetHeight*u);
             Fill(r,new Color(.025f,.055f,.075f,.995f));Border(r,jade);
             bool prior=GUI.enabled;GUI.enabled=prior&&Time.frameCount!=inventoryPopupOpened;
-            Text(new Rect(r.x+12*u,r.y+4*u,48*u,36*u),"Lv"+item.level,Mathf.RoundToInt(14*u),gold,true,false,TextAnchor.MiddleLeft);
-            Text(new Rect(r.x+66*u,r.y+4*u,r.width-200*u,36*u),item.name,Mathf.RoundToInt(17*u),pale,true,false,TextAnchor.MiddleLeft);
-            if(DrawInventoryLock(new Rect(r.xMax-130*u,r.y+4*u,40*u,36*u),item.locked))session.Progression.SetItemLocked(item.id,!item.locked);
-            Text(new Rect(r.xMax-88*u,r.y+4*u,40*u,36*u),GameBalance.RarityName(item.rarity),Mathf.RoundToInt(12*u),GameBalance.RarityColor(item.rarity),true,false,TextAnchor.MiddleCenter);
+            Text(new Rect(r.x+12*u,r.y+4*u,46*u,36*u),"Lv"+item.level,Mathf.RoundToInt(13*u),item.level>session.Progression.Profile.level?new Color(1f,.35f,.3f):gold,true,false,TextAnchor.MiddleLeft);
+            Text(new Rect(r.x+60*u,r.y+4*u,r.width-140*u,36*u),item.name,Mathf.RoundToInt(15*u),pale,true,false,TextAnchor.MiddleLeft);
+            if(DrawInventoryLock(new Rect(r.xMax-80*u,r.y+4*u,36*u,36*u),item.locked))session.Progression.SetItemLocked(item.id,!item.locked);
+            Text(new Rect(r.x+12*u,r.y+40*u,r.width-24*u,22*u),GameBalance.RarityName(item.rarity)+" · "+GameBalance.SlotName(item.slot),Mathf.RoundToInt(12*u),GameBalance.RarityColor(item.rarity));
             if(PopupCloseButton(new Rect(r.xMax-44*u,r.y,44*u,44*u))){inventoryComparisonOpen=false;GUI.enabled=prior;return;}
             var p=session.Progression;var next=p.PreviewEquippedItem(item);var current=p.Equipped(item.slot);
-            float bodyY=r.y+48*u,bodyHeight=r.height-108*u,leftWidth=(r.width-36*u)*.55f,rightX=r.x+24*u+leftWidth;
+            float bodyY=r.y+66*u,rowHeight=(sheetHeight<360?22:28)*u;
             string[] labels={"评分","攻击","防御","生命","暴击率","暴击伤害"};
-            float labelWidth=76*u,valuesWidth=leftWidth-labelWidth;
+            float inner=r.width-24*u,statsWidth=compactCompare?(inner-12*u)*.52f:inner,labelWidth=76*u,valueWidth=(statsWidth-labelWidth)*.5f;
             if(inventoryPopupCompare)
             {
-                Text(new Rect(r.x+12*u+labelWidth,bodyY,valuesWidth*.5f,24*u),"当前",Mathf.RoundToInt(13*u),muted,true,false,TextAnchor.MiddleCenter);
-                Text(new Rect(r.x+12*u+labelWidth+valuesWidth*.5f,bodyY,valuesWidth*.5f,24*u),"所选",Mathf.RoundToInt(13*u),jade,true,false,TextAnchor.MiddleCenter);
+                Text(new Rect(r.x+12*u+labelWidth,bodyY,valueWidth,22*u),current==null?"未穿戴":"当前穿戴",Mathf.RoundToInt(12*u),muted,true,false,TextAnchor.MiddleRight);
+                Text(new Rect(r.x+12*u+labelWidth+valueWidth,bodyY,valueWidth,22*u),"所选装备",Mathf.RoundToInt(12*u),jade,true,false,TextAnchor.MiddleRight);
+                bodyY+=22*u;
             }
-            float rowHeight=(bodyHeight-(inventoryPopupCompare?26*u:0))/6;
             for(int row=0;row<6;row++)
             {
-                float y=bodyY+(inventoryPopupCompare?26*u:0)+row*rowHeight;
-                if(row%2==0)Fill(new Rect(r.x+12*u,y,leftWidth,rowHeight),card);
-                Text(new Rect(r.x+18*u,y,labelWidth-6*u,rowHeight),labels[row],Mathf.RoundToInt(13*u),pale,true,false,TextAnchor.MiddleLeft);
+                float x=r.x+12*u+(inventoryPopupCompare?0:(row%2)*(inner+8*u)*.5f);
+                float y=bodyY+(inventoryPopupCompare?row:row/2)*rowHeight;
+                float cellWidth=inventoryPopupCompare?statsWidth:(inner-8*u)*.5f;
+                Fill(new Rect(x,y,cellWidth,rowHeight-u),card);
+                Text(new Rect(x+4*u,y,72*u,rowHeight),labels[row],Mathf.RoundToInt(11*u),pale,true,false,TextAnchor.MiddleLeft);
                 for(int col=0;col<(inventoryPopupCompare?2:1);col++)
                 {
                     var value=inventoryPopupCompare&&col==0?current:next;
                     float number=value==null?0:row==0?ProgressionService.EquipmentScore(value):row==1?value.attack:row==2?value.defense:row==3?value.health:row==4?value.criticalChance*100:value.criticalDamageBonus*100;
-                    float cell=valuesWidth/(inventoryPopupCompare?2:1);
-                    Text(new Rect(r.x+12*u+labelWidth+col*cell,y,cell-4*u,rowHeight),number.ToString(row>=4?"0.##":"0.#")+(row>=4?"%":""),Mathf.RoundToInt(16*u),row==0?gold:jade,true,false,TextAnchor.MiddleRight);
+                    float baseline=current==null?0:row==0?ProgressionService.EquipmentScore(current):row==1?current.attack:row==2?current.defense:row==3?current.health:row==4?current.criticalChance*100:current.criticalDamageBonus*100;
+                    Color valueColor=inventoryPopupCompare&&col==0?muted:number>baseline?jade:number<baseline?new Color(1,.48f,.42f):pale;
+                    float cell=inventoryPopupCompare?valueWidth:cellWidth-labelWidth;
+                    Text(new Rect(x+labelWidth+col*cell,y,cell-4*u,rowHeight),number.ToString(row>=4?"0.##":"0.#")+(row>=4?"%":""),Mathf.RoundToInt(13*u),valueColor,true,false,TextAnchor.MiddleRight);
                 }
             }
-            float rightWidth=r.xMax-12*u-rightX;
-            Text(new Rect(rightX,bodyY,rightWidth,30*u),"装备机制",Mathf.RoundToInt(16*u),gold,true,false,TextAnchor.MiddleLeft);
+            float mechanismY=compactCompare?r.y+66*u:bodyY+(inventoryPopupCompare?6:3)*rowHeight+8*u;
+            float mechanismX=compactCompare?r.x+24*u+statsWidth:r.x+12*u,mechanismWidth=compactCompare?inner-statsWidth-12*u:inner;
+            Text(new Rect(mechanismX,mechanismY,mechanismWidth,24*u),"装备机制",Mathf.RoundToInt(14*u),gold,true);
             string mechanism=EquipmentComparisonPresentation.Description(next,p);
-            Rect mechanismRect=new Rect(rightX,bodyY+34*u,rightWidth,bodyHeight-34*u);
-            int font=Mathf.RoundToInt(14*u);
-            while(font>Mathf.RoundToInt(12*u)&&Style(font,false,true).CalcHeight(new GUIContent(mechanism),mechanismRect.width)>mechanismRect.height)font--;
+            Rect mechanismRect=new Rect(mechanismX,mechanismY+26*u,mechanismWidth,r.yMax-60*u-mechanismY-26*u);
+            int font=Mathf.RoundToInt(13*u);
+            while(font>Mathf.RoundToInt(11*u)&&Style(font,false,true).CalcHeight(new GUIContent(mechanism),mechanismRect.width)>mechanismRect.height)font--;
             Text(mechanismRect,mechanism,font,pale,false,true);
-            bool worn=IsEquipped(item);float buttonWidth=(r.width-36*u)*.5f;
+            bool worn=IsEquipped(item);float buttonWidth=r.width-24*u;
             if(InventoryPictogramAction(new Rect(r.x+12*u,r.yMax-52*u,buttonWidth,44*u),worn?"脱下":"穿戴",UIIconAtlas.Utility("confirm"),worn||item.level<=p.Profile.level,worn,true))
             {
                 bool saved=worn?p.Unequip(item.slot):p.Equip(item.id);MobileInventoryResult(saved,worn?"装备已脱下":"装备已穿戴");
                 inventoryPopupOpened=Time.frameCount;if(saved){inventoryComparisonOpen=false;CancelMobileScroll();}
             }
-            if(InventoryPictogramAction(new Rect(r.x+24*u+buttonWidth,r.yMax-52*u,buttonWidth,44*u),"对比",UIIconAtlas.Utility("compare"),true,inventoryPopupCompare))inventoryPopupCompare=!inventoryPopupCompare;
             GUI.enabled=prior;
         }
 
@@ -260,7 +265,6 @@ namespace Emberfall
                     inventoryPopupOpened=Time.frameCount;
                     if(saved&&!worn){inventoryComparisonOpen=false;inventoryPopupCompare=false;CancelMobileScroll();}
                 }
-                if(InventoryPictogramAction(new Rect(r.x+10*u+actionWidth,r.y+68*u,actionWidth,44*u),"对比",UIIconAtlas.Utility("compare"),true,inventoryPopupCompare)){inventoryPopupCompare=!inventoryPopupCompare;inventoryComparisonScroll=Vector2.zero;}
             }
             if(!inventoryPopupCompare&&!potion&&!fashion)
             {

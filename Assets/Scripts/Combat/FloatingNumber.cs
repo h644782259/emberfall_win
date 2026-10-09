@@ -65,7 +65,7 @@ namespace Emberfall
             string shown=value??"";
             // Combat captions are short; detailed explanations stay in the HUD/log.
             if(shown.Length>24)shown=shown.Substring(0,23)+"…";
-            return critical&&!shown.EndsWith("!",System.StringComparison.Ordinal)?shown+"!":shown;
+            return critical?shown.TrimEnd('!','！')+"  暴击":shown;
         }
         private static void FontReady(string value)
         {
@@ -152,7 +152,7 @@ namespace Emberfall
             if(replacement!=null)replacement.Retire();
             critical=isCritical;mechanism=isMechanism;originAtSpawn=transform.position;lane=selectedLane;display=value;bounds=box;metrics=measured;
             ActiveCount++;if(mechanism)MechanismCount++;counted=true;visible.Add(this);WatchFont();
-            color=critical?new Color(1f,.87f,.18f):tint;
+            color=critical?new Color(1f,.18f,.16f):tint;
             for(int i=0;i<outline.Length;i++)
             {
                 var edge=new GameObject("Combat text outline");edge.transform.SetParent(transform,false);

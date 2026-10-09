@@ -31,6 +31,7 @@ namespace Emberfall
             Rect frame=RecapRect(layout.Frame,unit),header=RecapRect(layout.Header,unit);
             Fill(new Rect(0,0,width,height),new Color(.012f,.025f,.04f,.84f));
             Box(frame,accent);Fill(new Rect(frame.x,frame.y,4*unit,frame.height),accent);
+            if(!death&&PopupCloseButton(new Rect(frame.xMax-48*unit,frame.y+8*unit,40*unit,36*unit)))return true;
             float iconSize=mobile?35:44;
             DrawIcon(new Rect(header.x,header.y+2*unit,iconSize*unit,iconSize*unit),UIIconAtlas.Utility(snapshot!=null&&snapshot.Won?"confirm":"skills"),accent);
             string title=snapshot==null?"战斗复盘":snapshot.Won?(snapshot.ModeName.Length>0?"挑战完成":"遗迹通关"):"本次止步";
@@ -66,7 +67,7 @@ namespace Emberfall
                 {session.RetryFailedRoomChain();BlockUITransition();return false;}
                 primary.x+=retryWidth+8*unit;primary.width-=retryWidth+8*unit;
             }
-            return PrimaryButton(primary, death?"回营整备":session.ModeFinished?session.ModeRewardPending?"结算奖励并回营":"返回营地":"返回冒险", accent, true, null, true);
+            return PrimaryButton(primary, death?"回营整备":"继续拾取", accent, true, null, true);
         }
 
         private static Rect RecapRect(RunRecapLayout.Area area,float unit)

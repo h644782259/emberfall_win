@@ -16,7 +16,7 @@ namespace Emberfall
         {
             Rect r=TouchRect(area);blockedRects.Add(r);
             float size=28*TouchRatio;DrawIcon(new Rect(r.center.x-size*.5f,r.center.y-size*.5f,size,size),UIIconAtlas.Utility(icon),color);
-            Badge(r,icon=="inventory"?NewEquipmentAttention||Attention.LootPending:icon=="skills"?Attention.Skills:false);
+            Badge(r,icon=="inventory"?NewEquipmentAttention||Attention.LootPending:icon=="skills"?Attention.Skills:icon=="confirm"?session.Progression.ClaimableAchievements>0:false);
             return GUI.Button(r,GUIContent.none,invisibleButton);
         }
 
@@ -78,7 +78,7 @@ namespace Emberfall
                 else if(session.NearRoomExit)session.EnterNextRoom();
                 else if(session.SideEventAvailable)session.StartSideEvent();
                 else if(session.IsInCamp){panel=Panel.Camp;session.SetUIBlocking(true);}
-                else if(session.InDungeon)session.ReturnToCamp();
+                else if(session.InDungeon)session.Notify("靠近返营传送点后交互。");
                 else session.EnterDungeon();
             }
             finally{BlockUITransitionForFinger(triggeringFinger);}
@@ -114,7 +114,6 @@ namespace Emberfall
             if(MobileIcon(l.SkillsMenu,"skills",p.skillPoints>0?gold:jade))TogglePanel(Panel.Skills);
             if(MobileIcon(l.Menu,"settings",pale))session.SetPaused(true);
             if(MobileIcon(l.Catalog,"confirm",gold))OpenProgressionGoals();
-            Badge(TouchRect(l.Catalog),Attention.Rewards);
             if(HubServicesAvailable)
             {
                 if(MobileIcon(l.Shop,"shop",gold))OpenHubService(HubNpcKind.Merchant);

@@ -58,6 +58,7 @@ namespace Emberfall
         private string tooltip;
         private Rect tooltipAnchor;
         private string tooltipAnchorText;
+        private string tooltipKey;
         private readonly Color ink = new Color(.035f, .065f, .10f, .97f);
         private readonly Color card = new Color(.06f, .105f, .15f, .96f);
         private readonly Color jade = new Color(.32f, .91f, .77f);
@@ -243,6 +244,22 @@ namespace Emberfall
                 else if(panel==Panel.None)OpenTravelMap();
                 return;
             }
+            if (!MobileControls.Active && !UITransitionBlocked && !saveFlow.Open)
+            {
+                if (Input.GetKeyDown(KeyCode.J))
+                {
+                    if (progressionGoalsOpen) ClosePanel();
+                    else if (panel == Panel.None && !session.InputBlocked) OpenProgressionGoals();
+                    return;
+                }
+                if (Input.GetKeyDown(KeyCode.P) || Input.GetKeyDown(KeyCode.O))
+                {
+                    bool merchant = Input.GetKeyDown(KeyCode.P);
+                    if (panel == Panel.Inventory && inventoryHubNpc == (merchant ? HubNpcKind.Merchant : HubNpcKind.Blacksmith)) ClosePanel();
+                    else if (panel == Panel.None) OpenHubService(merchant ? HubNpcKind.Merchant : HubNpcKind.Blacksmith);
+                    return;
+                }
+            }
             if (panel == Panel.Controls || panel == Panel.SaveLocation || panel == Panel.Bindings || panel == Panel.PotionAssignment || panel == Panel.Chests || panel == Panel.Camp || panel == Panel.TravelMap || panel == Panel.Notice || panel == Panel.Chapter) return;
             if (Input.GetKeyDown(KeyCode.I)) TogglePanel(Panel.Inventory);
             if (Input.GetKeyDown(KeyCode.K)) TogglePanel(Panel.Skills);
@@ -281,7 +298,7 @@ namespace Emberfall
             GUI.contentColor = Color.white;
             GUI.enabled = !session.BackgroundPaused && !LifecycleTouchBlocked && MerchantServiceLayout.StablePanelEvent(UITransitionBlocked,true,Event.current.type==EventType.Repaint||Event.current.type==EventType.Layout);
             blockedRects.Clear();
-            tooltip = null;tooltipAnchorText=null;
+            tooltip = null;tooltipAnchorText=null;tooltipKey=null;
             BeginEntryRewardPopup();
             if(exitRequest.Open)
             {
@@ -316,8 +333,8 @@ namespace Emberfall
                 else if (session.DungeonSelectionOpen) DrawDungeonSelection();
                 else if (session.RoomBranchChoiceOpen) DrawRoomBranchChoice();
                 else if (session.RunChoices.AwaitingChoice) DrawBlessingChoice();
-                else if(session.ChapterFinished)DrawChapterResult();
-                else if(session.ModeFinished){if(DrawStructuredRunRecap(false))session.ReturnToCamp();}
+                else if(session.ChapterFinished&&!session.FinishedResultDismissed)DrawChapterResult();
+                else if(session.ModeFinished&&!session.FinishedResultDismissed){if(DrawStructuredRunRecap(false))session.DismissFinishedResult();}
                 else if (DrawPresetSaleConfirmation()) {}
                 else if (panel == Panel.Inventory) DrawInventory();
                 else if (panel == Panel.Skills) DrawSkills();
@@ -820,9 +837,9 @@ namespace Emberfall
                 : p.skillRanks[0] == 0 ? "学习首个职业技能"
                 : "前往北方的沉星遗迹";
             string objectiveProgress = session.SpecialAdventure?session.ModeObjectiveStatus:session.InDungeon
-                ? session.DungeonCleared ? "返回营地整备 · T" : "第 " + session.DungeonWave + " / " + session.TotalWaves + " 波 · 剩余 " + session.Enemies.Count + " 个敌人"
+                ? session.DungeonCleared ? "靠近返营传送点离开" : "第 " + session.DungeonWave + " / " + session.TotalWaves + " 波 · 剩余 " + session.Enemies.Count + " 个敌人"
                 : p.level < 2 ? "经验 " + p.xp + " / " + GameBalance.XpToNext(p.level)
-                : p.skillRanks[0] == 0 ? "可用技能点 " + p.skillPoints + " · K"
+                : p.skillRanks[0] == 0 ? "可用精通点 " + p.skillPoints + " · K"
                 : "收集装备，进入传送门 · T";
             if(session.ChapterActive){objectiveText=ChapterDefinition.Get(session.ActiveChapterNode).Name;objectiveProgress=session.ChapterObjectiveStatus;}
             string growthTitle,growthDetail;if(!session.ChapterActive&&TryGrowthHudHint(out growthTitle,out growthDetail)){objectiveText=growthTitle;objectiveProgress=growthDetail;}
@@ -850,7 +867,7 @@ namespace Emberfall
             else Text(new Rect(objective.x+13,objective.y+measured.ProgressY,255,progressHeight),progressText,12,muted,false,true);
             if(showCharge)Text(new Rect(objective.x+13,objective.y+measured.ChargeY,255,chargeHeight),chargeText,17,gold,true,true);
             if (objective.Contains(Mouse) && GUI.enabled)
-                tooltip = PlatformText(session.Objective + (session.InDungeon ? "\n通关后按 T 返回营地。按 H 返回当前地图起点。" : "\n靠近紫色传送门按 T 进入副本。按 H 返回当前地图起点。"));
+                tooltip = PlatformText(session.Objective + (session.InDungeon ? "\n通关后靠近返营传送点交互。按 H 返回当前地图起点。" : "\n靠近紫色传送门按 T 进入副本。按 H 返回当前地图起点。"));
             DrawMinimap();
             DrawDesktopGoalInteraction(objective);
             DrawHotbar();
@@ -959,7 +976,7 @@ namespace Emberfall
         private PlayerController victoryDismissedOwner;
         private void DrawVictoryNotice()
         {
-            if(!session.DungeonReturnAvailable||!session.DungeonResultsReady||session.Player==null||victoryDismissedOwner==session.Player&&victoryDismissedEpoch==session.Player.CombatEpoch||panel!=Panel.None||session.Paused)return;
+            if(session.ModeFinished||!session.DungeonReturnAvailable||!session.DungeonResultsReady||session.Player==null||victoryDismissedOwner==session.Player&&victoryDismissedEpoch==session.Player.CombatEpoch||panel!=Panel.None||session.Paused)return;
             float u=MobileControls.Active?TouchRatio:1,w=Mathf.Min(530*u,width-24*u);
             Rect victory=new Rect((width-w)*.5f,Mathf.Min(87*u,(height-182*u)*.5f),w,182*u);
             blockedRects.Add(victory);Box(victory,gold);
@@ -967,11 +984,10 @@ namespace Emberfall
             if(PopupCloseButton(new Rect(victory.xMax-50*u,victory.y+6*u,44*u,44*u)))
             {victoryDismissedOwner=session.Player;victoryDismissedEpoch=session.Player.CombatEpoch;BlockUITransition();return;}
             Text(new Rect(victory.x+16*u,victory.y+58*u,w-32*u,40*u),session.DungeonRewardPending?"奖励待保存 · 请先完成结算":"战利品已解锁 · 可继续挑战或从南侧传送点回营",Mathf.RoundToInt(12*u),pale,false,true);
-            float bw=(w-48*u)/3,y= victory.y+120*u;
+            float bw=(w-40*u)/2,y= victory.y+120*u;
             if(NavigationButton(new Rect(victory.x+16*u,y,bw,44*u),"战斗复盘",jade)){panel=Panel.Summary;session.SetUIBlocking(true);BlockUITransition();return;}
             if(PrimaryButton(new Rect(victory.x+24*u+bw,y,bw,44*u),"挑战 Lv"+AdventureRewardRules.DungeonLevel(session.DungeonTier+1),gold,session.CanChallengeNextTier))
             {session.ChallengeNextTier();BlockUITransition();return;}
-            if(NavigationButton(new Rect(victory.x+32*u+2*bw,y,bw,44*u),session.DungeonRewardPending?"保存并回营":"返回营地",jade))session.ReturnToCamp();
         }
 
         private void DrawDungeonStatus()
@@ -997,6 +1013,14 @@ namespace Emberfall
             GameProfile p = session.Progression.Profile;
             bool mobile = MobileControls.Active;
             Rect bar = hotbarBounds;
+            if (!mobile && session.Player != null && session.Player.DodgeCooldown > .01f)
+            {
+                Rect cooldown = new Rect(bar.xMax-46,bar.y-58,44,44);
+                Fill(cooldown,ink);Border(cooldown,jade);
+                DrawIcon(new Rect(cooldown.x+4,cooldown.y+4,36,36),UIIconAtlas.Utility("blink"),new Color(1,1,1,.4f));
+                Text(cooldown,session.Player.DodgeCooldown.ToString("0.0"),18,Color.white,true,false,TextAnchor.MiddleCenter);
+            }
+
             float x = bar.x;
             float y = bar.y;
             blockedRects.Add(bar);
@@ -1064,7 +1088,8 @@ namespace Emberfall
                 Border(slot,selected?gold:ready?jade:new Color(accent.r,accent.g,accent.b,locked?.23f:.55f),selected||ready?2:1);
                 if (hover && GUI.enabled)
                 {
-                    tooltip = potion ? PotionTooltip(p) : null;
+                    tooltip = potion ? PotionTooltip(p) : !mobile&&skill>=0 ? SkillTooltip(p,skill,rank) : null;
+                    if(!string.IsNullOrEmpty(tooltip)){tooltipAnchor=slot;tooltipAnchorText=tooltip;}
                 }
                 if (!session.PracticeActive && !mobile && hover && GUI.enabled && Event.current.type == EventType.MouseDown && Event.current.button == 1)
                 {
@@ -1190,7 +1215,7 @@ namespace Emberfall
             Fill(r, hover ? new Color(.11f, .18f, .21f) : ink);
             Border(r, new Color(accent.r, accent.g, accent.b, hover ? .9f : .35f));
             DrawIcon(new Rect(r.x + 7, r.y + 8, r.width - 14, r.height - 13), UIIconAtlas.Utility(icon), Color.white);
-            Badge(r,icon=="inventory"?NewEquipmentAttention||Attention.LootPending:icon=="skills"?Attention.Skills:icon=="camp"?Attention.Rewards:false);
+            Badge(r,icon=="inventory"?NewEquipmentAttention||Attention.LootPending:icon=="skills"?Attention.Skills:icon=="camp"?Attention.Rewards:icon=="confirm"?session.Progression.ClaimableAchievements>0:false);
             if (!MobileControls.Active) Text(new Rect(r.x + 3, r.y + 1, r.width - 6, 12), key, 8, pale, true);
             if (!string.IsNullOrEmpty(badge))
             {
@@ -1198,7 +1223,7 @@ namespace Emberfall
                 Fill(label, new Color(.06f, .08f, .10f));
                 Text(label, badge, 9, gold, true, false, TextAnchor.MiddleCenter);
             }
-            if (hover){tooltip=PlatformText(hint);tooltipAnchor=r;tooltipAnchorText=tooltip;}
+            if (hover){tooltip=PlatformText(hint);tooltipAnchor=r;tooltipAnchorText=tooltip;tooltipKey=key;}
             bool clicked = GUI.Button(r, GUIContent.none, invisibleButton);
             if (clicked) GameAudio.Play(SoundCue.UI);
             return clicked;
@@ -1207,29 +1232,22 @@ namespace Emberfall
         private void DrawEdgeActions()
         {
             GameProfile p = session.Progression.Profile;
-            float x = width - 422;
+            float x = width - 330;
             float y = 18;
             if(HubServicesAvailable)
             {
-                if(IconButton(new Rect(x+138,y,38,38),"shop","","商店 · 购买、出售与兑换",jade))OpenHubService(HubNpcKind.Merchant);
-                if(IconButton(new Rect(x+184,y,38,38),"smith","","铁匠 · 强化、镶嵌与继承",jade))OpenHubService(HubNpcKind.Blacksmith);
+                if(IconButton(new Rect(x + 46,y,38,38),"shop","P","商店",jade))OpenHubService(HubNpcKind.Merchant);
+                if(IconButton(new Rect(x + 92,y,38,38),"smith","O","铁匠",jade))OpenHubService(HubNpcKind.Blacksmith);
             }
-            if(IconButton(new Rect(x+230,y,38,38),"confirm","","目标 · 实战试炼与成长进度",jade))OpenProgressionGoals();
+            if(IconButton(new Rect(x + 138,y,38,38),"confirm","J","成就",jade))OpenProgressionGoals();
 
-            if (IconButton(new Rect(x + 322, y, 38, 38), "inventory", "I", "行囊 · I\n查看属性、穿戴装备与时装，使用已有补给。交易与强化请点击右上角图标。", jade))
+            if (IconButton(new Rect(x + 230, y, 38, 38), "inventory", "I", "行囊", jade))
                 TogglePanel(Panel.Inventory);
-            if (IconButton(new Rect(x + 276, y, 38, 38), "skills", "K", "技能 · K\n按分支学习或进阶技能，配置十格快捷栏。\n可用技能点：" + p.skillPoints, jade, p.skillPoints > 0 ? "+" + p.skillPoints : null))
+            if (IconButton(new Rect(x + 184, y, 38, 38), "skills", "K", "技能", jade, p.skillPoints > 0 ? "+" + p.skillPoints : null))
                 TogglePanel(Panel.Skills);
-            if (IconButton(new Rect(x, y, 38, 38), "camp", "H", "回到起点 · H\n只传送人物，保留当前地图与怪物。", jade))
+            if (IconButton(new Rect(x, y, 38, 38), "camp", "H", "回到起点", jade))
                 session.ReturnToOrigin();
-            if (IconButton(new Rect(x + 46, y, 38, 38), "portal", "T", session.InDungeon ? "返回营地 · T\n通关后返回营地；提前撤离需要远离敌人。" : "进入副本 · T\n靠近北面的青色传送门后进入副本。", jade))
-            {
-                if(session.NearRoomExit)session.EnterNextRoom();
-                else if (session.InDungeon) session.ReturnToCamp();
-                else session.EnterDungeon();
-            }
-            if (IconButton(new Rect(x + 92, y, 38, 38), "help", "", "操作指南\n查看移动、战斗、技能施法与自定义快捷键。", jade)) OpenControls();
-            if (IconButton(new Rect(x + 368, y, 38, 38), "settings", "", "设置", jade)) session.SetPaused(true);
+            if (IconButton(new Rect(x + 276, y, 38, 38), "settings", "Esc", "设置", jade)) session.SetPaused(true);
         }
 
         private static int SkillAtSlot(GameProfile profile, int slot)
@@ -1501,17 +1519,18 @@ namespace Emberfall
         private void DrawSkills()
         {
             if(DrawSkillSubsurface())return;
+            if(skillSection==2){DrawClassSelectionTab();return;}
             if(skillSection==1){DrawSkillDevelopment();return;}
             if(MobileControls.Active){DrawMobileSkills();return;}
             GameProfile p = session.Progression.Profile;
             selectedSkill = Mathf.Clamp(selectedSkill, 0, GameBalance.SkillCount - 1);
             Rect w = Modal(1160, 660, GameBalance.ClassName(p.heroClass) + " · 技能", "");
             if (PopupCloseButton(new Rect(w.xMax - 69, w.y + 20, 44, 32))) ClosePanel();
-            Text(new Rect(w.x + 763, w.y + 28, 296, 32), "技能点 " + p.skillPoints + "   /   角色 Lv." + p.level, 18, gold, true, false, TextAnchor.MiddleRight);
-            DrawSkillTabs(new Rect(w.x+330,w.y+20,176,36));
+            Text(new Rect(w.x + 763, w.y + 28, 296, 32), "精通点 " + p.skillPoints + "   /   角色 Lv." + p.level, 18, gold, true, false, TextAnchor.MiddleRight);
+            DrawSkillTabs(new Rect(w.x+330,w.y+20,264,36));
             Rect branchHeading = new Rect(w.x + 24, w.y + 112, 267, 24);
             Text(branchHeading, "职业分支", 15, jade, true);
-            if (branchHeading.Contains(Mouse)) tooltip = "沿分支从上到下学习，需先掌握前置技能。\n滚动查看高阶技能；每升一级获得 1 技能点。";
+            if (branchHeading.Contains(Mouse)) tooltip = "达到对应等级自动习得与进阶。";
             if (!MobileControls.Active && NavigationButton(new Rect(w.x + 325, w.y + 108, 205, 29), "自定义快捷键", gold)) OpenBindings();
             Rect viewport = new Rect(w.x + 24, w.y + 147, 506, 468);
             Fill(viewport, new Color(.025f, .05f, .075f));
@@ -1549,7 +1568,7 @@ namespace Emberfall
                 DrawSkillIdentity(new Rect(node.x+5,node.y+7,24,24),p.heroClass,i,rank,rank>0||canLearn,24);
                 Text(new Rect(node.x + 32, node.y + 7, 107, 24), GameBalance.SkillName(p.heroClass, i), 14, rank > 0 || canLearn ? pale : muted, true, false, TextAnchor.MiddleCenter);
                 Text(new Rect(node.x + 5, node.y + 35, 134, 18), "Lv." + required + " / " + (passive ? "被动" : "主动"), 11, passive ? new Color(.82f, .74f, .98f) : muted, false, false, TextAnchor.MiddleCenter);
-                string state = rank > 0 ? GameBalance.SkillRankName(rank) + (canLearn ? " · 可进阶" : " · 已学习") : canLearn ? "可学习" : !prerequisitesMet ? "需要前置" : p.level < required ? "等级未达" : "需要技能点";
+                string state = rank > 0 ? GameBalance.SkillRankName(rank) + (canLearn ? " · 可进阶" : " · 已学习") : canLearn ? "可学习" : p.level < required ? "等级未达" : "自动习得";
                 Text(new Rect(node.x + 5, node.y + 57, 134, 17), state, 11, accent, true, false, TextAnchor.MiddleCenter);
                 Badge(node,Attention.LearnableSkills.Contains(i));
                 if (GUI.Button(node, GUIContent.none, invisibleButton)) selectedSkill = i;
@@ -1718,7 +1737,7 @@ namespace Emberfall
             string[] actions = { "行囊、装备与补给", "技能、学习与配置", "靠近营地人物后对话", "远离敌人后返回营地", "进入传送门 / 房间北门", "取消选点或蓄力 / 返回" };
             for (int i = 0; i < keys.Length; i++)
             {
-                float rowY = w.y + 153 + i * 43;
+                float rowY = w.y + 153 + i * 34;
                 Rect key = new Rect(right, rowY, 84, 30);
                 Fill(key, card);
                 Border(key, new Color(.25f, .38f, .46f));
@@ -1792,6 +1811,17 @@ namespace Emberfall
         private void DrawTooltip()
         {
             if (string.IsNullOrEmpty(tooltip)) return;
+            if (tooltipAnchorText == tooltip && !string.IsNullOrEmpty(tooltipKey))
+            {
+                Rect tip = new Rect(Mathf.Clamp(tooltipAnchor.center.x-94,12,width-200),
+                    tooltipAnchor.yMax+54<height?tooltipAnchor.yMax+10:tooltipAnchor.y-54,188,44);
+                Box(tip,jade);
+                Text(new Rect(tip.x+12,tip.y+8,116,28),tooltip,14,pale,true,false,TextAnchor.MiddleLeft);
+                Rect keycap=new Rect(tip.xMax-52,tip.y+10,40,24);
+                Fill(keycap,card);Border(keycap,muted);
+                Text(keycap,tooltipKey,12,jade,true,false,TextAnchor.MiddleCenter);
+                return;
+            }
             float boxHeight = Style(13, false, true).CalcHeight(new GUIContent(tooltip), 288) + 22;
             Vector2 mouse = Mouse;
             Rect r = new Rect(Mathf.Clamp(mouse.x - 154, 12, width - 324), Mathf.Clamp(mouse.y - boxHeight - 14, 12, height - boxHeight - 12), 312, boxHeight);

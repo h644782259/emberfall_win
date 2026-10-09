@@ -26,12 +26,22 @@ namespace Emberfall
         {if(sideCrystal!=null&&sideCrystal.activeInHierarchy!=SideEventEntryOpen)sideCrystal.SetActive(SideEventEntryOpen);}
 
         private GameObject dungeonReturnMarker;
-        public bool DungeonReturnAvailable {get{return HasStarted&&InDungeon&&DungeonCleared&&!ChapterActive&&ModeRun==null&&RoomChainRun==null&&!IsDead;}}
-        public bool NearDungeonReturn {get{return DungeonReturnAvailable&&Player!=null&&Vector3.Distance(Player.transform.position,new Vector3(0,0,-16))<3.5f;}}
+        private Vector3 dungeonReturnPosition=new Vector3(0,0,-16);
+        private PlayerController dismissedResultOwner;private int dismissedResultEpoch=-1;
+        public bool FinishedResultDismissed {get{return Player!=null&&dismissedResultOwner==Player&&dismissedResultEpoch==Player.CombatEpoch;}}
+        public void DismissFinishedResult()
+        {if(Player==null||IsDead)return;dismissedResultOwner=Player;dismissedResultEpoch=Player.CombatEpoch;SetUIBlocking(false);UpdateTimeScale();}
+        public Vector3 DungeonReturnPosition {get{return dungeonReturnPosition;}}
+        public bool DungeonReturnAvailable {get{return HasStarted&&InDungeon&&(DungeonCleared||ModeFinished)&&!IsDead;}}
+        public bool NearDungeonReturn {get{return DungeonReturnAvailable&&Player!=null&&Vector3.Distance(Player.transform.position,dungeonReturnPosition)<3.5f;}}
         private void RefreshDungeonReturnPortal()
         {
             if(DungeonReturnAvailable&&dungeonReturnMarker==null)
-            {dungeonReturnMarker=WorldBuilder.MakeDungeonReturnMarker(new Vector3(0,0,-16));transientObjects.Add(dungeonReturnMarker);}
+            {
+                Vector3 entrance=ChapterActive&&chapterPlan!=null?chapterPlan.Entrance:RoomChainRun!=null?TacticalRoomGeometry.Entrance:new Vector3(0,0,-16);
+                dungeonReturnPosition=WorldTraversal.NearestWalkable(entrance,.65f);
+                dungeonReturnMarker=WorldBuilder.MakeDungeonReturnMarker(dungeonReturnPosition);transientObjects.Add(dungeonReturnMarker);
+            }
             if(dungeonReturnMarker!=null&&dungeonReturnMarker.activeInHierarchy!=DungeonReturnAvailable)dungeonReturnMarker.SetActive(DungeonReturnAvailable);
         }
         private int runSeed, wavePopulation;

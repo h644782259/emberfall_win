@@ -35,13 +35,13 @@ namespace Emberfall
         {
             if(item==null)return "宝石槽为空";
             var text=new System.Text.StringBuilder();
-            foreach(var mechanic in BuildCatalog.MechanicsFor(progression.Profile.heroClass))
+            foreach(var mechanic in BuildCatalog.GemsFor(progression.Profile.heroClass))
             {
                 if(BuildCatalog.MechanicSlot(mechanic)!=item.slot)continue;
                 var gem=progression.Attachment(mechanic);
                 if(gem==null||!gem.mounted)continue;
                 if(text.Length>0)text.Append("\n");
-                string effect=BuildCatalog.MechanicDescription(mechanic);
+                string effect=BuildCatalog.IsAttributeGem(mechanic)?BuildCatalog.GemAttributeSummary(mechanic,gem.rarity,gem.upgradeRank):BuildCatalog.MechanicDescription(mechanic);
                 int split=effect.IndexOf("变体B：",StringComparison.Ordinal);
                 if(split>=0)effect=gem.variantUnlocked&&gem.variant==1?effect.Substring(split).Replace("变体B：",""):effect.Substring(0,split).Replace("变体A：","");
                 text.Append(BuildCatalog.GemName(mechanic)).Append(" · 已镶嵌\n").Append(effect);
