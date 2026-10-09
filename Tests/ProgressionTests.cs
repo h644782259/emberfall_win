@@ -22,7 +22,8 @@ namespace UnityEngine
     public static class JsonUtility
     {
         private static readonly JsonSerializerOptions Options = new JsonSerializerOptions { IncludeFields = true, WriteIndented = true };
-        public static string ToJson(object value, bool pretty) { return JsonSerializer.Serialize(value, value.GetType(), Options); }
+        public static int SerializationCount;
+        public static string ToJson(object value, bool pretty) { SerializationCount++; return JsonSerializer.Serialize(value, value.GetType(), Options); }
         public static T FromJson<T>(string value)
         {
             try { return JsonSerializer.Deserialize<T>(value, Options); }

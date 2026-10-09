@@ -170,6 +170,8 @@ namespace Emberfall
 
         private void Update()
         {
+            if (session == null) return;
+            if (session.BackgroundPaused) { ReleaseCollectionModel(); return; }
             RefreshLayout();
             ReconcileTitleBackdrop();
             ReconcileMobileScroll();
@@ -263,7 +265,7 @@ namespace Emberfall
 
         private void OnGUI()
         {
-            if (session == null || session.Progression == null) return;
+            if (session == null || session.Progression == null || session.BackgroundPaused) return;
             RefreshLayout();
             if (!session.HasStarted) DrawTitleBackdrop();
             if (font == null) font = GameFont.Shared;

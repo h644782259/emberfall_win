@@ -17,7 +17,7 @@ public static class RewardInventoryIntegrationTests
     public static string Run(string directory)
     {
         root=Path.Combine(directory,"reward-integration-"+Guid.NewGuid().ToString("N"));checks=scenarios=0;
-        LegacyMigration(false);LegacyMigration(true);OverflowAndFailure();SafetyBoundary();LegacyClaimRollback();TrialAndFashion();
+        LegacyMigration(false);LegacyMigration(true);OverflowAndFailure();SafetyBoundary();LegacyClaimRollback();TrialAndFashion();GrowthIdlePolling();
         return "PASS: "+checks+" reward inventory integration assertions in "+scenarios+" isolated scenarios";
     }
     private static void LegacyMigration(bool overfull)
@@ -77,4 +77,26 @@ public static class RewardInventoryIntegrationTests
         Fill(p,ProgressionService.InventoryCapacity);p.Profile.fashions.Add(new FashionData{id="fashion-0-2",slot=FashionSlot.Wings,rarity=Rarity.Epic});p.Save();
         var q=new ProgressionService(p.SaveDirectory);Check(q.LoadSlot(p.CurrentSlotId)&&q.Profile.fashions.Count==1&&q.SelectedProgressionGoal(true).Done,"fashion and trial ownership survive capacity migration");
     }
+    private static void GrowthIdlePolling()
+    {
+        var p=Fresh();
+        foreach(bool automatic in new[]{false,true})
+        {
+            p.Profile.automaticGrowth=automatic;
+            string before=UnityEngine.JsonUtility.ToJson(p.Profile,true),disk=File.ReadAllText(p.SaveFilePath);
+            int serializations=UnityEngine.JsonUtility.SerializationCount;
+            for(int i=0;i<100;i++)Check(p.AdvanceAutomaticGrowth(),"idle growth poll succeeds");
+            Check(UnityEngine.JsonUtility.SerializationCount==serializations,"idle growth does not serialize the save");
+            Check(UnityEngine.JsonUtility.ToJson(p.Profile,true)==before&&File.ReadAllText(p.SaveFilePath)==disk,"idle growth preserves memory and disk");
+        }
+        p.Profile.automaticGrowth=false;p.Profile.classTutorialCompleted=true;
+        int gold=p.Profile.gold;
+        Check(p.AdvanceAutomaticGrowth()&&p.Profile.gold==gold+50,"live tutorial mutation still awards without an event");
+        int after=UnityEngine.JsonUtility.SerializationCount;
+        Check(p.AdvanceAutomaticGrowth()&&UnityEngine.JsonUtility.SerializationCount==after,"claimed reward polls do not copy the save");
+        p.Profile.automaticGrowth=true;
+        after=UnityEngine.JsonUtility.SerializationCount;
+        Check(p.AdvanceAutomaticGrowth()&&UnityEngine.JsonUtility.SerializationCount==after,"incomplete next automatic goal does not copy the save");
+    }
+
 }

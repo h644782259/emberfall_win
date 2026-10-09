@@ -185,7 +185,7 @@ namespace Emberfall
 
         private void Update()
         {
-            if (instance != this) return;
+            if (instance != this || lifecycle.BackgroundPaused) return;
             if (Time.unscaledTime >= nextListenerCheck)
             {
                 nextListenerCheck = Time.unscaledTime + .5f;

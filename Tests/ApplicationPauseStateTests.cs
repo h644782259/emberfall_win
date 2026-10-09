@@ -17,6 +17,18 @@ public static class ApplicationPauseStateTests
             state.SetSuspended(false);check(state.CanAdvance(true,manual!=0,modal!=0,dead!=0)==expected,"mobile resume preserves explicit state");
             check(!state.CanAdvance(false,false,false,false),"title never advances simulation");
         }
+        var frames=new ApplicationPauseState();
+        check(frames.TargetFrameRate(true,true)==60,"mobile combat retains 60 fps");
+        check(frames.TargetFrameRate(true,false)==30,"mobile title/menu uses 30 fps");
+        frames.SetFocus(false);
+        check(frames.TargetFrameRate(true,true)==15,"focus loss throttles even before OS suspension");
+        frames.SetSuspended(true);frames.SetFocus(true);
+        check(frames.TargetFrameRate(true,true)==15,"focus cannot override suspension frame cap");
+        check(frames.TargetFrameRate(false,false)==60,"desktop policy unchanged while inactive");
+        frames.SetSuspended(false);
+        check(frames.TargetFrameRate(true,false)==30,"resume retains menu cap");
+        check(frames.TargetFrameRate(true,true)==60,"resume combat restores frame cap");
+        check(frames.TargetFrameRate(false,false)==60,"desktop menus not mobile throttled");
         return "PASS: "+assertions+" pause-state assertions";
     }
 }

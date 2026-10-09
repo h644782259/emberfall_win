@@ -1,7 +1,10 @@
 from pathlib import Path
 r=Path(__file__).resolve().parents[1]/'Assets/Scripts'
 u=(r/'UI/GameUI.cs').read_text(); lifecycle=(r/'UI/GameUI.Lifecycle.cs').read_text(); expedition=(r/'UI/GameUI.Expedition.cs').read_text(); m=(r/'UI/MobileControls.cs').read_text(); s=(r/'Core/GameSession.cs').read_text(); a=(r/'Core/GameAudio.cs').read_text()
-assert 'GUI.enabled = !session.BackgroundPaused && !LifecycleTouchBlocked && !UITransitionBlocked' in u
+# Transition frames still paint the panel, but may not accept an input event.
+assert 'GUI.enabled = !session.BackgroundPaused && !LifecycleTouchBlocked && MerchantServiceLayout.StablePanelEvent(' in u
+assert 'StablePanelEvent(UITransitionBlocked,true,Event.current.type==EventType.Repaint||Event.current.type==EventType.Layout)' in u
+assert 'session.Progression == null || session.BackgroundPaused) return;' in u
 cancel=expedition.split('public void CancelBackgroundInput()',1)[1].split('\n        }',1)[0]
 assert 'CancelForegroundInput();' in cancel and 'lifecycleRelease.Block' in cancel
 foreground=expedition.split('public void CancelForegroundInput()',1)[1].split('\n        }',1)[0]
@@ -29,4 +32,10 @@ assert 'transition==AudioLifecycleTransition.None||instance==null' in a
 assert 'ambientSource.Pause()' in a and 'ambientSource.UnPause()' in a
 assert 'ambientResumeSample<0&&ambientSource.clip!=null' in a
 assert 'ambientSource.timeSamples=ambientResumeSample%ambientClip.samples' in a
+# Time.timeScale=0 alone must not leave unscaled business/UI work running.
+core_update=s.split('private void Update()',1)[1].split('public void SetPaused',1)[0]
+assert core_update.index('if (BackgroundPaused) return;')<core_update.index('TickPractice()')<core_update.index('AdvanceAutomaticGrowth()')
+assert update.index('if (session.BackgroundPaused) { ReleaseCollectionModel(); return; }')<update.index('RefreshLayout()')
+audio_update=a.split('private void Update()',1)[1].split('private void EnsureListener()',1)[0]
+assert audio_update.index('lifecycle.BackgroundPaused) return;')<audio_update.index('EnsureListener()')
 print('PASS: Android lifecycle production wiring (background UI, viewport, Back priority, save/audio transitions)')

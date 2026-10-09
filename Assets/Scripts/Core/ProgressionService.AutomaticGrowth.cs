@@ -65,6 +65,10 @@ namespace Emberfall
         public bool AdvanceAutomaticGrowth()
         {
             if(IsPracticeOnly)return true;
+            // Most polls have nothing to award. Avoid serializing the entire save in that case.
+            // Keep the poll: some combat/tutorial progress mutates the live profile before saving.
+            bool practiceReady=Profile.classTutorialCompleted&&!Profile.growthRewardReceipts.Contains("growth/"+(int)Profile.heroClass+"/practice");
+            if(!practiceReady&&(!Profile.automaticGrowth||!AutomaticGoal(Profile,false).Done))return true;
             var candidate=Snapshot();int rewarded=0;
             string practice="growth/"+(int)candidate.heroClass+"/practice";
             if(candidate.classTutorialCompleted&&!candidate.growthRewardReceipts.Contains(practice))

@@ -486,6 +486,8 @@ def main():
             contents = editor.parent.parent if editor.parent.name == "MacOS" else editor.parent / "Data"
             host_define = "UNITY_EDITOR_OSX" if editor.parent.name == "MacOS" else "UNITY_EDITOR_WIN" if editor.suffix.lower() == ".exe" else "UNITY_EDITOR_LINUX"
             managed = contents / "Managed"
+            if not (managed / "UnityEngine/UnityEngine.CoreModule.dll").is_file():
+                managed = contents / "Resources/Scripting/Managed"
             modules = managed / "UnityEngine"
             if not (modules / "UnityEngine.CoreModule.dll").is_file():
                 report["checks"].append({"name": "exact-unity-compile", "passed": False,

@@ -31,6 +31,7 @@ for path in ['Core/GameSession.RoomChain.cs','Core/GameSession.Modes.cs']:
 shell=r'''
 using System;using System.Collections.Generic;using UnityEngine;
 namespace UnityEngine {
+ public enum KeyCode {Space}
  public static class Time {public static float unscaledTime;}
  public static class Screen {public static float width=568,height=320,dpi=160;public static int orientation=1;}
  public static class GUIUtility {public static int keyboardControl,hotControl;}
@@ -53,7 +54,7 @@ namespace Emberfall {
   // This replay exercises ordinary adventure touch lifecycle, never practice.
   public bool PracticeActive=>false;
   public GameUI ui;public bool BackgroundPaused;public PlayerStub Player;
-  public bool InputBlocked,DungeonSelectionOpen,IsNearDungeonEntrance;public bool NearChapterExit;public bool NearRoomExit=true,SideEventAvailable,IsInCamp,InDungeon;public HubNpcKind NearbyHubNpc;
+  public bool InputBlocked,DungeonSelectionOpen,IsNearDungeonEntrance;public bool NearDungeonReturn;public bool NearChapterExit;public bool NearRoomExit=true,SideEventAvailable,IsInCamp,InDungeon;public HubNpcKind NearbyHubNpc;
   public void EnterNextRoom(){SuspendInputs();}
   public bool EnterNextChapterRoom(){SuspendInputs();return true;}
   public void StartSideEvent(){}public void ReturnToCamp(){}public int DungeonEntries;public void EnterDungeon(){DungeonEntries++;}public void SetUIBlocking(bool b){}
@@ -64,7 +65,7 @@ namespace Emberfall {
   private static MobileControls instance=new MobileControls();
   public static bool Active=true;public static Rect SafeArea=>new Rect(0,0,568,320);
   public class LayoutStub {public float Scale=1;}public static LayoutStub Layout=new LayoutStub();
-  public static Vector2 Move;public static bool AttackHeld;private static bool dodge,potion,jump;
+  public static Vector2 Move;public static bool AttackHeld;private static bool dodge,potion,jump;private static readonly HashSet<KeyCode> keyboardDodgeHeld=new HashSet<KeyCode>();
   private Dictionary<int,int> fingers=new Dictionary<int,int>();private int moveFinger;private bool hasJoystickOrigin;private GameUI ui;
   private object worldPointerOwner,worldPointerTarget;
   private class Gesture {public void Cancel(){}}private Gesture cameraGesture=new Gesture();
