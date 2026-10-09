@@ -18,9 +18,9 @@ namespace Emberfall
         public static bool CoordinatedTarget(bool playerFocusMatches, bool livingCommandMatches, bool explicitFocusMatches = false)
         { return playerFocusMatches || livingCommandMatches || explicitFocusMatches; }
         public static bool CanTransfer(bool permanent, float health, bool active)
-        { return permanent && active && health > 0 && !float.IsNaN(health) && !float.IsInfinity(health); }
+        { return false; }
         public static bool ShouldCreatePartner(bool livingPartner) { return !livingPartner; }
-        public static bool PermanentPartner(bool foundation, int form, bool packRoute) { return foundation || (form == 1 && !packRoute); }
+        public static bool PermanentPartner(bool foundation, int form, bool packRoute) { return false; }
         public static int PackReinforcements(int currentCount, int rank, bool twinContract)
         { return Math.Max(0, Math.Min(NormalCapacity(twinContract) - Math.Max(0, currentCount), rank >= 3 ? 3 : 2)); }
         public static float PackLifetime(int rank) { return 8f + Math.Max(1, Math.Min(3, rank)) * 2f; }
@@ -43,7 +43,7 @@ namespace Emberfall
         public static float AttackCoefficient(int form){return form==2?1.45f:form==1?.72f:.65f;}
         public static float AttackInterval(int form){return form==2?2.2f:form==1?1.2f:.85f;}
         public static float ContractLifetime(int form,int rank,bool permanent)
-        {rank=Math.Max(0,Math.Min(3,rank));return permanent?float.PositiveInfinity:form==2?10+rank*2:15+rank*3;}
+        {rank=Math.Max(0,Math.Min(3,rank));return form==0?12+rank*2:10+rank*2;}
         public static float HealthFraction(int form, int rank, bool foundation)
         {
             rank = Math.Max(0, Math.Min(3, rank));

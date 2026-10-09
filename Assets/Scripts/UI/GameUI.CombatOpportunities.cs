@@ -9,7 +9,7 @@ namespace Emberfall
         private bool commandRecall;
         private float commandStatusUntil;
         private int commandEpoch;
-        public bool CompanionCommandsVisible {get{return session!=null&&session.Player!=null&&session.Player.HeroClass==HeroClass.Summoner&&session.HasStarted&&!session.IsDead;}}
+        public bool CompanionCommandsVisible {get{return false;}}
         private CompanionCommandPresentation CompanionCommandState()
         {
             var hero=session.Player;int count;float lifetime;

@@ -37,8 +37,8 @@ namespace Emberfall
                     loop=index==0?"普攻叠毒 → 扇形箭引爆":"狩猎标记 → 集火击杀 → 拉开距离";
                     skills=index==0?new[]{0}:new[]{7,4};if(index==0)mechanic=EquipmentMechanic.VenomSpread;break;
                 default:
-                    name=index==0?"双契协同":"群契围攻";
-                    loop=index==0?"狼 / 星灵协战 → 指挥集火 → 普攻续战":"普攻集火 → 契约增援 → 轮换兽群";
+                    name=index==0?"强契协同":"群契围攻";
+                    loop=index==0?"炮台远射 → 灵狼追击 → 灵能冲击":"荆棘控场 → 双狼追击 → 树灵重击";
                     skills=new[]{2,4};if(index==0)mechanic=EquipmentMechanic.TwinSummonResonance;break;
             }
             var missing=new List<string>();int nextSkill=-1;int[] usable=RunChoices.UsableRanks(profile,mobile);

@@ -25,7 +25,7 @@ namespace Emberfall
             var charge=hero==null?null:hero.GetComponent<SkillChargeController>();
             return MobileCombatPresentation.Skill(p.skillRanks[skill]>0,GameBalance.IsPassive(skill),
                 hero==null?0:hero.SkillCooldownRemaining(skill),hero==null?0:hero.Energy,
-                GameBalance.SkillEnergyCost(p.heroClass,skill),skill==6&&session.ChallengeRun&&session.InDungeon,session.HealingCharges,charge!=null&&charge.IsCharging&&charge.SkillIndex==skill);
+                GameBalance.SkillEnergyCost(p.heroClass,skill),p.heroClass==HeroClass.Vanguard&&skill==6&&session.ChallengeRun&&session.InDungeon,session.HealingCharges,charge!=null&&charge.IsCharging&&charge.SkillIndex==skill);
         }
         private void DrawMobileSkillAvailability(Rect r,int skill)
         {

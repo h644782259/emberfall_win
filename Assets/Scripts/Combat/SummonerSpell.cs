@@ -22,7 +22,7 @@ namespace Emberfall
             if (skill == 2 || skill == 4 || skill == 9)
             {
                 var form = skill == 2 ? SummonedCompanion.Kind.Wolf : skill == 4 ? SummonedCompanion.Kind.Spirit : SummonedCompanion.Kind.Treant;
-                Vector3 position = skill == 9 || preserveTargetPoint ? CombatSight.GroundPoint(player.transform.position,target) : player.transform.position + player.transform.forward * 2 + player.transform.right * (skill == 2 ? -1 : 1);
+                Vector3 position = CombatSight.GroundPoint(player.transform.position,target);
                 SummonedCompanion partner = SummonedCompanion.CastContract(player, game, form, rank, position, damage,
                     game.Progression.Profile.summonerRoute == SummonerRoute.Pack, preserveTargetPoint ? commandTarget : commandTarget != null ? commandTarget : player.AimTarget, preserveTargetPoint);
                 if (partner != null) FilledSkillVfx.Impact(player,partner.transform.position,1.8f,FilledVfxKind.Summon,color,CombatVisualPriority.ActionBody);
@@ -47,8 +47,10 @@ namespace Emberfall
             }
             else if (skill == 1)
                 CombatArea.Spawn(player, game, target, 3.2f * range, damage * SummonerDamageRules.ThornTickCoefficient, 0, SummonerDamageRules.ThornStartup, SummonerDamageRules.ThornDuration(rank), SummonerDamageRules.ThornInterval, color, statusSkill: 1, statusRank: rank,castId:propCast,visual:SkillVisualRecipe.Poison);
-            else if (skill == 6)
-                AdvancedSkillSequence.Spawn(player, game, skill, rank, target, player.transform.forward, damage, color,propCast);
+            else if(skill==5)
+                CombatProjectile.Friendly(player,game,player.transform.position,player.transform.forward,player.RollDirectDamage(damage*2.6f),color,true,false,false,range,22f,castId:propCast);
+            else if(skill==6)
+                CombatArea.Spawn(player,game,target,4f*range,player.RollDirectDamage(damage*3.2f),.8f,.2f,0,1,color,castId:propCast,visual:SkillVisualRecipe.Spirit);
             else if (skill == 7)
             {
                 var obj = new GameObject("引力印记"); obj.transform.position = target;

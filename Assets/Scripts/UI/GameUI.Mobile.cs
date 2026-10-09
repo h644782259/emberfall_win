@@ -194,7 +194,7 @@ namespace Emberfall
         {
             float hp=session.Player==null?0:session.Player.Health,max=session.Player==null?1:session.Player.MaxHealth;
             blockedRects.Add(TouchRect(layout.PlayerStatus));
-            Text(TouchRect(layout.PlayerHealth.X+116,layout.PlayerHealth.Y-3,44,18),"Lv"+session.Progression.Profile.level,TouchFont(11),gold,true,false,TextAnchor.MiddleLeft);
+            Text(TouchRect(layout.PlayerHealth.X+layout.PlayerHealth.Width+6,layout.PlayerHealth.Y-3,44,18),"Lv"+session.Progression.Profile.level,TouchFont(11),gold,true,false,TextAnchor.MiddleLeft);
             Bar(TouchRect(layout.PlayerHealth),hp/Mathf.Max(1,max),new Color(.86f,.16f,.19f));
             Text(TouchRect(layout.PlayerHealth),Mathf.CeilToInt(hp)+" / "+Mathf.CeilToInt(max),TouchFont(9),pale,true,false,TextAnchor.MiddleCenter);
             Bar(TouchRect(layout.PlayerEnergy),session.Player==null?0:session.Player.Energy/Mathf.Max(1,session.Player.MaxEnergy),new Color(.35f,.63f,1));

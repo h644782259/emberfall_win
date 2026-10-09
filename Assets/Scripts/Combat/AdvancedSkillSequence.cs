@@ -40,7 +40,7 @@ namespace Emberfall
             steps=SkillDamageBudgets.AdvancedSteps(heroClass,skill,rank);
             interval=SkillDamageBudgets.AdvancedInterval(heroClass,skill);
             nextEvent=SkillDamageBudgets.AdvancedFirstEvent(heroClass,skill);
-            if(skill==6)
+            if(skill==6&&heroClass==HeroClass.Vanguard)
             {
                 owner.HealingProtection(rank);
                 healingAura=AdvancedSkillVfx.Healing(owner,3.2f*range,color,5.3f,rank,()=>this!=null&&gameObject.activeInHierarchy&&step<steps);
@@ -76,7 +76,7 @@ namespace Emberfall
                 CombatImpactBatch.BeginAction();
                 try
                 {
-                if (skill==6) Healing();
+                if (skill==6&&heroClass==HeroClass.Vanguard) Healing();
                 else if (heroClass == HeroClass.Vanguard) Vanguard();
                 else if (heroClass == HeroClass.Arcanist) Arcanist();
                 else Ranger();

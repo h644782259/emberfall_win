@@ -4,6 +4,7 @@ namespace Emberfall
     public sealed partial class GameUI
     {
         private Texture2D titleSky, titleMist;
+        private bool titleSkyAsset;
         private float titleClock;
         private void ReconcileTitleBackdrop()
         {
@@ -13,35 +14,21 @@ namespace Emberfall
         }
         private void ReleaseTitleBackdrop()
         {
-            if (titleSky != null) Destroy(titleSky);
+            if (titleSky != null) { if(titleSkyAsset)Resources.UnloadAsset(titleSky);else Destroy(titleSky); }
             if (titleMist != null) Destroy(titleMist);
             titleSky = titleMist = null;
             titleClock = 0;
         }
         private void BuildTitleBackdrop()
         {
-            const int w = 256, h = 128;
-            var pixels = new Color[w*h];
-            for (int y=0;y<h;y++) for (int x=0;x<w;x++)
+            titleSky=Resources.Load<Texture2D>("UI/TitleBackdrop");
+            titleSkyAsset=titleSky!=null;
+            if(titleSky==null)
             {
-                float nx=(x+.5f)/w, ny=(y+.5f)/h;
-                float glow=Mathf.Exp(-((nx-.32f)*(nx-.32f)*13+(ny-.25f)*(ny-.25f)*9));
-                Color c=Color.Lerp(new Color(.025f,.044f,.081f),new Color(.065f,.095f,.15f),ny);
-                c+=new Color(.15f,.054f,.015f)*glow;
-                // Layered ruined silhouettes, with a clear dark centre for the home actions.
-                float ground=.09f+.016f*Mathf.Sin(nx*46)+.012f*Mathf.Sin(nx*93);
-                bool ruin=(nx>.07f&&nx<.11f&&ny<.48f)||(nx>.16f&&nx<.19f&&ny<.37f)||
-                    (nx>.81f&&nx<.85f&&ny<.43f)||(nx>.90f&&nx<.94f&&ny<.56f);
-                bool lintel=((nx>.065f&&nx<.195f)||(nx>.80f&&nx<.95f))&&ny>.32f&&ny<.35f;
-                if(ny<ground||ruin||lintel)c=Color.Lerp(c,new Color(.01f,.018f,.03f),.9f);
-                // Sparse stars and the distant starfall scar; all baked once, not per frame.
-                if(ny>.55f&&(x*37+y*97)%733==0)c=Color.Lerp(c,new Color(.64f,.77f,.85f),.65f);
-                float scar=Mathf.Abs(ny-(.82f-(nx-.12f)*.56f));
-                if(nx>.12f&&nx<.39f&&scar<.009f)c=Color.Lerp(c,new Color(.72f,.39f,.17f),.6f*(1-(nx-.12f)/.27f));
-                c.a=1;pixels[y*w+x]=c;
+                titleSky=new Texture2D(1,1,TextureFormat.RGBA32,false);
+                titleSky.SetPixel(0,0,new Color(.018f,.029f,.048f,1));titleSky.Apply(false,true);
             }
-            titleSky=new Texture2D(w,h,TextureFormat.RGBA32,false){name="Starfall ruins title",filterMode=FilterMode.Bilinear,wrapMode=TextureWrapMode.Clamp,hideFlags=HideFlags.HideAndDontSave};
-            titleSky.SetPixels(pixels);titleSky.Apply(false,true);
+            Color[] pixels;
             const int fw=128,fh=32;pixels=new Color[fw*fh];
             for(int y=0;y<fh;y++)for(int x=0;x<fw;x++)
             {
@@ -61,7 +48,7 @@ namespace Emberfall
             if(Event.current.type==EventType.Repaint)
             {
                 if(titleSky==null)BuildTitleBackdrop();
-                GUI.DrawTexture(new Rect(0,0,Screen.width,Screen.height),titleSky);
+                GUI.DrawTexture(new Rect(0,0,Screen.width,Screen.height),titleSky,ScaleMode.ScaleAndCrop);
                 float t=EffectPreferences.ReducedEffects?0:titleClock;
                 for(int layer=0;layer<3;layer++)
                 {

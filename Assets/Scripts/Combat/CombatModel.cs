@@ -431,6 +431,8 @@ namespace Emberfall
             CombatModel model = Create(parent);
             if (form == SummonedCompanion.Kind.Spirit)
             {
+                model.Part("Turret stone base",PrimitiveType.Cylinder,new Vector3(0,.2f,0),new Vector3(1.05f,.2f,1.05f),new Color(.18f,.32f,.34f));
+                model.Part("Turret pillar",PrimitiveType.Cube,new Vector3(0,.64f,0),new Vector3(.38f,.75f,.38f),new Color(.3f,.52f,.5f));
                 model.floating = true;
                 model.body = model.Part("Star spirit", PrimitiveType.Sphere, new Vector3(0,1.2f,0), new Vector3(.54f,.7f,.54f), new Color(.4f,1f,.84f));
                 model.companionBodyScale = model.body.localScale;

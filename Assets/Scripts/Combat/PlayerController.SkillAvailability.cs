@@ -26,7 +26,7 @@ namespace Emberfall
                 charge!=null&&(charge.IsCharging||charge.ConsumedThisFrame))return false;
             int rank=session.Progression.Profile.skillRanks[skill];
             return rank>0&&skillRuntime.Remaining(skill)<=0&&Energy>=GameBalance.SkillEnergyCost(HeroClass,skill)&&SkillHealingHasEffect(skill,rank)&&StockTargetReady(skill,rank)&&
-                (skill!=6||!session.ChallengeRun||!session.InDungeon||session.HealingCharges>0);
+                (HeroClass!=HeroClass.Vanguard||skill!=6||!session.ChallengeRun||!session.InDungeon||session.HealingCharges>0);
         }
         private bool StockTargetReady(int skill,int rank)
         {
@@ -39,7 +39,7 @@ namespace Emberfall
             return false;
         }
         private bool SkillHealingHasEffect(int skill,int rank)
-        { return !(skill==6&&rank==1&&session.ChallengeRun&&session.InDungeon&&Health>=MaxHealth&&(HeroClass!=HeroClass.Summoner||!SummonedCompanion.HasHealingTarget(this))); }
+        { return !(HeroClass==HeroClass.Vanguard&&skill==6&&rank==1&&session.ChallengeRun&&session.InDungeon&&Health>=MaxHealth); }
         private bool CanUseMovementSkillAt(int skill,int rank,Vector3 point)
         {
             // Obstructed travel is shortened during execution; it is not a cast prerequisite.

@@ -55,9 +55,9 @@ namespace Emberfall
         public static bool RequiresConfirmation(HeroClass hero, int index)
         {
             if (hero == HeroClass.Vanguard) return index == 9;
-            if (hero == HeroClass.Arcanist) return index == 1 || index == 2 || index == 7 || index == 9;
+            if (hero == HeroClass.Arcanist) return index == 1 || index == 2 || index == 6 || index == 7 || index == 9;
             if (hero == HeroClass.Ranger) return index == 1 || index == 2 || index == 5 || index == 9;
-            if (hero == HeroClass.Summoner) return index == 1 || index == 7 || index == 9;
+            if (hero == HeroClass.Summoner) return index == 1 || index == 2 || index == 4 || index == 6 || index == 7 || index == 9;
             return false;
         }
 
@@ -124,7 +124,7 @@ namespace Emberfall
             if (!ready) return false;
             // Only the deliberate desktop confirmation owns an override. Mobile
             // auto-confirmation and ordinary contracts inherit the team order.
-            ConfirmingContract = owner.HeroClass == HeroClass.Summoner && confirmed == 9;
+            ConfirmingContract = owner.HeroClass == HeroClass.Summoner && (confirmed == 2 || confirmed == 4 || confirmed == 9);
             bool committed;
             try { committed = owner.ConfirmTargetedSkill(confirmed, point); }
             finally { ConfirmingContract = false; }
@@ -174,12 +174,15 @@ namespace Emberfall
         public static Preview Describe(HeroClass hero, int skill, int rank)
         {
             float r = GameBalance.SkillRangeMultiplier(rank);
-            if (skill == 6) return new Preview(Shape.Self, 3.2f * r);
+            if (skill == 6) return hero==HeroClass.Vanguard?new Preview(Shape.Self,3.2f*r):hero==HeroClass.Ranger?new Preview(Shape.Lane,1.5f*r,12f*r):new Preview(Shape.Ground,(hero==HeroClass.Summoner?4f:3.8f)*r,9f*r);
             if (hero == HeroClass.Summoner)
             {
                 if (skill == 0) return new Preview(Shape.Cone, 0, 5f * r, 110);
+                if (skill == 5) return new Preview(Shape.Lane, 1f*r, 12f*r);
                 if (skill == 1) return new Preview(Shape.Ground, 3.2f * r, 9f * r);
                 if (skill == 7) return new Preview(Shape.Ground, 4.4f * r, 9f * r);
+                if (skill == 2) return new Preview(Shape.Ground, 1.4f, 9f*r);
+                if (skill == 4) return new Preview(Shape.Ground, 10.5f, 9f*r);
                 if (skill == 9) return new Preview(Shape.Ground, 3.3f * r, 9f * r);
                 return new Preview(Shape.Self, 2.8f * r);
             }

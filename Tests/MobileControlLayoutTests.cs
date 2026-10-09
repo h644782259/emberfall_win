@@ -72,6 +72,22 @@ public static class MobileControlLayoutTests
             Check(!l.EncounterText.Overlaps(l.BossHealth),"wave label and boss health remain separate");
             Check(!l.Notice.Overlaps(l.MoveZone)&&l.Notice.Width>=100&&l.Notice.Height>=48,"full-message touch target stays outside the entire movement zone");
         }
+        foreach(var d in new[]{new[]{2048f,1536f,264f},new[]{2388f,1668f,264f},new[]{2732f,2048f,264f},new[]{2266f,1488f,326f}})
+        {
+            var l=new MobileControlLayout(d[0],d[1],d[2],0,true);
+            Check(Math.Abs(l.Map.Width-158.4f)<.01&&Math.Abs(l.Map.Height-122.4f)<.01,"iPad map dimensions are 1.8x");
+            Check(Math.Abs(l.Skills[0].Width-62.4f)<.01,"iPad skill diameter is 1.3x");
+            Check(Math.Abs(l.Menu.Width-52.8f)<.01&&Math.Abs(l.Potion.Width-52.8f)<.01,"iPad navigation and potion are 1.2x");
+            Check(l.PlayerHealth.Width==154,"iPad health bar is 1.4x");
+            Check(l.Width-l.Dodge.X-l.Dodge.Width>=30,"iPad combat cluster has right inset");
+            var targets=new List<MobileControlLayout.Area>{l.Attack,l.Dodge,l.Jump,l.Potion,l.SkillPage,l.Menu,l.Inventory,l.SkillsMenu,l.Catalog,l.Shop,l.Smith,l.Interact,l.Joystick};targets.AddRange(l.Skills);
+            for(int i=0;i<targets.Count;i++)
+            {
+                var r=targets[i];Check(r.X>=0&&r.Y>=0&&r.X+r.Width<=l.Width&&r.Y+r.Height<=l.Height,"iPad targets stay in safe area");
+                for(int j=i+1;j<targets.Count;j++)Check(!r.Overlaps(targets[j]),"iPad targets do not overlap "+i+"/"+j+" at "+d[0]);
+                foreach(var hud in new[]{l.Map,l.PlayerStatus,l.AdventureStatus,l.EncounterText,l.BossHealth,l.DungeonEntrance})Check(!r.Overlaps(hud),"iPad HUD clears controls "+i+" at "+d[0]);
+            }
+        }
         Check(MobileControlLayout.DeadZone(.1f)==0,"deadzone rejects drift");
         Check(MobileControlLayout.DeadZone(1)==1&&MobileControlLayout.DeadZone(-2)==-1,"movement saturates safely");
         return checks+" mobile control geometry assertions passed";

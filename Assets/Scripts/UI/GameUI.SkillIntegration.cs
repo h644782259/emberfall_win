@@ -22,12 +22,12 @@ namespace Emberfall
             var p=session.Progression;
             bool elemental=p.Profile.heroClass==HeroClass.Arcanist;
             if(!elemental&&p.Profile.heroClass!=HeroClass.Summoner)return y;
-            string[] names=elemental?new[]{"均衡","碎冰","灼燃"}:new[]{"双契","群契"};
+            string[] names=elemental?new[]{"均衡","碎冰","灼燃"}:new[]{"强契","群契"};
             string[] descriptions=elemental?new[]{
                 "均衡：保留冰霜控制与陨星直接伤害；消耗霜痕时追加 50% 基础伤害。",
-                "碎冰：陨星直接伤害降低 15%，碎冰追加 100% 基础伤害；护盾延长霜痕，大招积霜后引爆。",
-                "灼燃：普攻与陨星附加灼烧，新星改为减速；护盾提供机动火区，大招偏持续灼烧。"
-            }:new[]{"双契：伙伴常驻协战，偏持续配合与指令输出。","群契：伙伴以限时增援围攻，偏集中爆发。"};
+                "碎冰：陨星直接伤害降低 15%，碎冰追加 100% 基础伤害；霜环延长霜痕，大招积霜后引爆。",
+                "灼燃：普攻与陨星附加灼烧，新星改为减速；霜焰行者提供机动火区，大招偏持续灼烧。"
+            }:new[]{"强契：每次召唤一只，召唤物伤害提高20%；全部限时存在。","群契：灵狼每次召唤两只，召唤物伤害降低20%；全部限时存在。"};
             int selected=elemental?(int)p.Profile.specialization:(int)p.Profile.summonerRoute;
             float descriptionHeight=0;
             foreach(string text in descriptions)descriptionHeight=Mathf.Max(descriptionHeight,Style(Mathf.RoundToInt(13*u),false,true).CalcHeight(new GUIContent(text),(width-8)*u)/u);

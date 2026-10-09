@@ -52,7 +52,7 @@ namespace Emberfall
                 }
                 else if (skill == 5)
                 {
-                    ink.Shield(); ink.Ring(32, 29, 9, 3);
+                    ink.Arrow(9, 53, 53, 9); ink.Line(12, 44, 25, 51, 3); ink.Line(17, 33, 32, 42, 3);
                 }
                 else
                 {
@@ -99,8 +99,9 @@ namespace Emberfall
                     else { ink.Line(32, 56, 32, 9, 4); for (int i = 0; i < 3; i++) { ink.Line(32, 22 + i * 12, 14, 12 + i * 12, 4); ink.Line(32, 28 + i * 10, 51, 16 + i * 10, 4); } }
                     break;
                 case 6:
-                    ink.color = new Color(.48f, 1f, .65f);
-                    ink.Ring(32, 32, 24, 2); ink.Line(32, 16, 32, 48, 9); ink.Line(16, 32, 48, 32, 9);
+                    if(hero==HeroClass.Vanguard) { ink.color = new Color(.48f, 1f, .65f); ink.Ring(32, 32, 24, 2); ink.Line(32, 16, 32, 48, 9); ink.Line(16, 32, 48, 32, 9); }
+                    else if(hero==HeroClass.Ranger) { for(int i=0;i<3;i++)ink.Arrow(8,18+i*14,54,10+i*18); }
+                    else { ink.Ring(32,32,17,3);for(int i=0;i<6;i++)ink.Radial(i*60,21,29,3);ink.Arrow(23,48,41,16); }
                     break;
                 case 7:
                     if (hero == HeroClass.Ranger) { ink.Arrow(8, 18, 52, 18); ink.Arrow(12, 32, 58, 32); ink.Arrow(8, 46, 52, 46); }
@@ -108,7 +109,7 @@ namespace Emberfall
                     else { ink.Line(9, 52, 22, 36, 5); ink.Line(22, 36, 17, 24, 5); ink.Line(17, 24, 34, 12, 5); ink.Line(30, 54, 40, 35, 4); ink.Line(40, 35, 56, 23, 4); }
                     break;
                 case 8:
-                    ink.Shield(); ink.Disc(32, 29, 7); ink.Line(32, 37, 32, 44, 3);
+                    if(hero==HeroClass.Vanguard) { ink.Shield(); ink.Disc(32,29,7); } else { ink.Arc(32,32,20,30,300,4); ink.Arrow(14,46,49,15); }
                     break;
                 default:
                     ink.color = SkillColor(hero, skill);

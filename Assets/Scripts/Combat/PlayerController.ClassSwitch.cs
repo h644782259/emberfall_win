@@ -22,7 +22,7 @@ namespace Emberfall
         internal ClassRuntimeArchive CaptureClassRuntime()
         {
             return new ClassRuntimeArchive{Skills=skillRuntime.CopyForClass(HeroClass,0,Energy),Core=masteryCore.CopyForClassArchive(),At=Time.time,
-                HealthFraction=MaxHealth>0?Health/MaxHealth:0,StarterRetry=starterRetry,Dodge=dodgeCooldown,Attack=attackCooldown,Passive=passiveCooldown,
+                HealthFraction=MaxHealth>0?Health/MaxHealth:0,StarterRetry=0,Dodge=dodgeCooldown,Attack=attackCooldown,Passive=passiveCooldown,
                 Returning=returningBladeProc.Remaining,Venom=venomSpreadProc.Remaining,Frost=openingFrostProc.Remaining,NextCast=nextCastId,Epoch=CombatEpoch};
         }
         internal void InstallClassRuntime(ClassRuntimeArchive shared,ClassRuntimeArchive previous,GameProfile candidate,StatBlock preparedStats)
@@ -33,7 +33,7 @@ namespace Emberfall
             stats=preparedStats;MaxHealth=Mathf.Max(1,stats.MaxHealth);Health=Mathf.Clamp01(shared.HealthFraction)*MaxHealth;
             int core=candidate.masteryCore;masteryCore.Configure(core,core>=0&&core<4?candidate.masteryRanks[core]:0);
             masteryCore.RestoreClassArchive(previous==null?null:own.Core,elapsed,shared.Core);
-            starterRetry=HeroClass==HeroClass.Summoner?Mathf.Max(0,own.StarterRetry-elapsed):0;
+
             dodgeCooldown=shared.Dodge;attackCooldown=shared.Attack;passiveCooldown=Mathf.Max(shared.Passive,Mathf.Max(0,own.Passive-elapsed));
             returningBladeProc.TryTrigger(Mathf.Max(shared.Returning,Mathf.Max(0,own.Returning-elapsed)));
             venomSpreadProc.TryTrigger(Mathf.Max(shared.Venom,Mathf.Max(0,own.Venom-elapsed)));

@@ -1,0 +1,4 @@
+Generated with the built-in image_gen tool.
+Output resolution: 1672 x 941. Import at native resolution; no downscaling or texture compression.
+
+Create a crisp high-resolution 3840x2160 landscape background illustration for the main menu of Emberfall, a stylized dark fantasy action RPG. Ancient ruined stone arches frame the far left and far right, distant ruined citadel and mountain silhouettes, deep midnight blue sky with scattered sharp stars and a thin warm amber falling-star trail in the upper-left. Foreground weathered stone courtyard with detailed edges and sparse amber embers. Restrained teal-blue and warm ember-gold palette, polished game key art, sharp stone details, no blur, no bokeh, no depth-of-field blur. Center 45 percent kept dark, quiet, and low contrast for readable menu buttons overlaid separately. Wide composition also safe for centered 4:3 iPad crop. No characters, no text, no logos, no buttons, no interface, no watermark. Opaque background.

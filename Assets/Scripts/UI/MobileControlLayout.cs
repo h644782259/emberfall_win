@@ -58,6 +58,17 @@ namespace Emberfall
             }
             Skills[4]=Centered(Width-78-radius-chord,Height-30+shift-bottomLift,diameter);
             SkillPage=Centered(Width-24,Height-158,44);
+            if(ipad)
+            {
+                Attack=ScalePadCombat(Attack);Dodge=ScalePadCombat(Dodge);Jump=ScalePadCombat(Jump);Cancel=Jump;
+                SkillPage=ScalePadCombat(SkillPage);
+                for(int i=0;i<Skills.Length;i++)Skills[i]=ScalePadCombat(Skills[i]);
+                Menu=Centered(Width-38,38,52.8f);Inventory=Centered(Width-93.2f,38,52.8f);
+                SkillsMenu=Centered(Width-148.4f,38,52.8f);Catalog=Centered(Width-203.6f,38,52.8f);
+                Smith=Centered(Width-258.8f,38,52.8f);Shop=Centered(Width-314,38,52.8f);
+                DungeonEntrance=new Area(Width*.5f-58,76,116,44);
+                Potion=Centered(Width*.5f-134.4f,Height-32,52.8f);
+            }
             int[] opportunityIdentities={0,1,2,4,5,6,7,9};
             for(int index=0;index<opportunityIdentities.Length;index++)
             {
@@ -68,15 +79,18 @@ namespace Emberfall
             ComboOpportunity=new Area(Attack.X+Attack.Width/2,Attack.Y+Attack.Height+1,Attack.Width/2,13);
             float commandLift=Width<700?22:0;
             FocusCommand=new Area(204,Height-170-commandLift,48,48);RecallCommand=new Area(204,Height-120-commandLift,48,48);
-            PlayerStatus=new Area(Width*.5f-80,Height-35,160,18);
-            PlayerHealth=new Area(PlayerStatus.X,PlayerStatus.Y,110,12);
-            PlayerEnergy=new Area(PlayerStatus.X,PlayerStatus.Y+15,110,3);Map=new Area(12,12,88,68);
-            AdventureStatus=new Area(12,86,188,76);
+            PlayerStatus=new Area(Width*.5f-(ipad?102:80),Height-(ipad?41:35),ipad?204:160,18);
+            PlayerHealth=new Area(PlayerStatus.X,PlayerStatus.Y,ipad?154:110,12);
+            PlayerEnergy=new Area(PlayerStatus.X,PlayerStatus.Y+15,ipad?154:110,3);Map=new Area(12,12,ipad?158.4f:88,ipad?122.4f:68);
+            AdventureStatus=new Area(12,ipad?140.4f:86,188,76);
             // Transient notices replace this left-side information slot, never the battlefield.
             Notice=AdventureStatus;
-            EncounterText=new Area(Width-172,60,164,18);BossHealth=new Area(Width-172,81,164,5);
+            EncounterText=new Area(Width-(ipad?238:172),ipad?76:60,164,18);BossHealth=new Area(Width-(ipad?238:172),ipad?97:81,164,5);
             CombatView=ChooseCombatView(Width*.5f-12,Height*.3f-32,96,64);
         }
+
+        private Area ScalePadCombat(Area r)
+        {return new Area(Width-24-(Width-r.X)*1.3f,Height-52-(Height-r.Y)*1.3f,r.Width*1.3f,r.Height*1.3f);}
 
         private Area ChooseCombatView(float x,float y,float w,float h)
         {

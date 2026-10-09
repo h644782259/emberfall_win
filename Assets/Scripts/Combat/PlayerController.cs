@@ -57,7 +57,7 @@ namespace Emberfall
         private Vector3 bufferedBlinkDirection;
         private float perfectDodgeCounterTime;
         private bool lastMeleeDamagedEnemy;
-        private float blinkBufferTime, perfectDodgeWindow, counterTime, dodgeShockTime, chargedWardTime, pursuitTime, starterRetry;
+        private float blinkBufferTime, perfectDodgeWindow, counterTime, dodgeShockTime, chargedWardTime, pursuitTime;
         private bool perfectDodgeAwarded, suppressBasicUntilReleased;
         private SkillBasicRecoveryClock skillBasicRecovery;
         private float classDodgeTime, burnStrideTime, coreWardTime;
@@ -184,7 +184,6 @@ namespace Emberfall
             blinkBufferTime = perfectDodgeWindow = counterTime = dodgeShockTime = chargedWardTime = pursuitTime = focusTime = 0;
             focusedEnemy = null; classDodgeTime = burnStrideTime = 0;
             perfectDodgeAwarded = true;
-            starterRetry = 0;
             openingFrost.Clear(); openingFrostTarget = null; openingFrostIdentity = 0;
             slowTime = slowStrength = 0;
             attackAnimation = 0;
@@ -384,7 +383,6 @@ namespace Emberfall
                 return;
             }
             Vector3 walkingDisplacement = Vector3.zero;
-            MaintainStarterCompanion(dt);
             bool mobile = MobileControls.Active;
             // Hardware keyboard uses the same axes and camera-relative movement on every platform.
             // Touch movement has already been projected by MobileControls.
@@ -980,17 +978,7 @@ namespace Emberfall
             if (session != null && !IsDead && session.HasBlessing(RunBlessing.MarkedPursuit)) pursuitTime = 2.5f;
         }
 
-        internal void OnStarterCompanionDefeated() { starterRetry = 12f; }
-
-        private void MaintainStarterCompanion(float dt)
-        {
-            if (HeroClass != HeroClass.Summoner || !session.HasStarted) return;
-            SummonedCompanion.EnforceCapacity(this);
-            starterRetry = Mathf.Max(0, starterRetry - dt);
-            if (starterRetry > 0 || SummonedCompanion.HasStarter(this)) return;
-            SummonedCompanion.SummonStarter(this, session, stats.Damage);
-            starterRetry = 12f;
-        }
+        internal void OnStarterCompanionDefeated() { }
 
         internal void RestoreSkillEnergy(float amount) { skillRuntime.RestoreEnergy(amount); }
 
@@ -1030,7 +1018,8 @@ namespace Emberfall
             }
             else if(HeroClass==HeroClass.Arcanist || HeroClass==HeroClass.Summoner)
             {
-                passiveReduction=(HeroClass==HeroClass.Summoner?.25f:.3f)+rank*.1f;
+                passiveReduction=0;
+                HitArea(transform.position,radius,CombatAttack*(.6f+rank*.3f),.2f,.2f);
                 skillRuntime.RestoreEnergy(2f+rank*2f);
                 if(rank==3) ControlArea(transform.position,radius,1.5f);
             }
@@ -1040,7 +1029,8 @@ namespace Emberfall
                 passiveSpeed=.1f+rank*.05f;
                 if(rank==3) skillRuntime.RestoreEnergy(SkillDamageBudgets.BasicEnergyOnHit);
             }
-            AdvancedSkillVfx.Protection(this,transform.position,radius,tint,passiveTime,rank,()=>passiveTime>0,passive:true);
+            if(HeroClass==HeroClass.Vanguard)AdvancedSkillVfx.Protection(this,transform.position,radius,tint,passiveTime,rank,()=>passiveTime>0,passive:true);
+            else FilledSkillVfx.Impact(this,transform.position,radius,HeroClass==HeroClass.Arcanist?FilledVfxKind.Lightning:FilledVfxKind.Summon,tint,CombatVisualPriority.RealContact);
             session.SpawnMechanismText(transform.position+Vector3.up*2.7f,GameBalance.SkillName(HeroClass,8),tint);
         }
 
@@ -1234,10 +1224,10 @@ namespace Emberfall
             else if(skillRuntime.Remaining(skill)>0) failure=GameBalance.SkillName(HeroClass,skill)+" 冷却中（"+skillRuntime.Remaining(skill).ToString("0.0")+" 秒）";
             else if(Energy<GameBalance.SkillEnergyCost(HeroClass,skill)) failure="能量不足：普攻命中回复 8 点，持续回复每秒 4 点。";
             else if(!SkillHealingHasEffect(skill,rank)) failure="生命已满，无需使用治疗技能。";
-            else if(skill==6&&session.ChallengeRun&&session.InDungeon&&session.HealingCharges<=0) failure="治疗充能已耗尽。";
+            else if(HeroClass==HeroClass.Vanguard&&skill==6&&session.ChallengeRun&&session.InDungeon&&session.HealingCharges<=0) failure="治疗充能已耗尽。";
             else if(!CanUseMovementSkill(skill,rank)) failure="前方有障碍或没有安全落点，请走桥或调整方向。";
             if(failure==null) return true;
-            session.ReportControlFailure("skill"+skill,rank<=0?"未学":skillRuntime.Remaining(skill)>0?"冷却":Energy<GameBalance.SkillEnergyCost(HeroClass,skill)?"缺能":!SkillHealingHasEffect(skill,rank)?"无需治疗":!StockTargetReady(skill,rank)?"无目标":skill==6&&session.ChallengeRun&&session.InDungeon&&session.HealingCharges<=0?"无充能":"无落点");
+            session.ReportControlFailure("skill"+skill,rank<=0?"未学":skillRuntime.Remaining(skill)>0?"冷却":Energy<GameBalance.SkillEnergyCost(HeroClass,skill)?"缺能":!SkillHealingHasEffect(skill,rank)?"无需治疗":!StockTargetReady(skill,rank)?"无目标":HeroClass==HeroClass.Vanguard&&skill==6&&session.ChallengeRun&&session.InDungeon&&session.HealingCharges<=0?"无充能":"无落点");
             if (CombatReviewEvents.Enabled && Energy<GameBalance.SkillEnergyCost(HeroClass,skill)) CombatReviewEvents.Emit("noenergy",CombatReviewObjectId.Get(this),skill:skill);
             if(skillFeedbackCooldown<=0) { session.Notify(failure); skillFeedbackCooldown=.8f; }
             return false;
@@ -1321,7 +1311,7 @@ namespace Emberfall
             // Limited healing rank one has no defensive benefit: do not pay for an empty heal.
             if (!SkillHealingHasEffect(slot,rank))
             { session.Notify("生命已满，无需使用治疗技能。"); return; }
-            if (slot == 6 && skillRuntime.Remaining(slot) <= 0 && Energy >= GameBalance.SkillEnergyCost(HeroClass, slot) && !session.TrySpendHealingCharge()) return;
+            if (HeroClass==HeroClass.Vanguard && slot == 6 && skillRuntime.Remaining(slot) <= 0 && Energy >= GameBalance.SkillEnergyCost(HeroClass, slot) && !session.TrySpendHealingCharge()) return;
             if (!skillRuntime.TryConsume(slot, rank, ActiveRunBonuses == null ? 1f : ActiveRunBonuses.CooldownMultiplier))
             {
                 if(skillRuntime.StockPersistenceFailed){session.Notify("技能未释放："+session.Progression.LastError);return;}
@@ -1352,13 +1342,6 @@ namespace Emberfall
             Vector3 target = ResolveSkillGroundTarget(executingChargedSkill ? charge.TargetPoint : aimPoint,range,executingChargedSkill);
             if (HeroClass == HeroClass.Summoner)
             {
-                if (slot == 5)
-                {
-                    guardTime = 6f + (rank - 1) * 2f;
-                    guardRank = rank;guardCastId=castId;HoldCastReceipt(ref guardCastReceipt,castId); guardReduction = .25f + rank * .1f;
-                    AdvancedSkillVfx.Protection(this, transform.position, 2.8f * range, color, guardTime, rank + 1, ()=>guardTime>0);
-                }
-                else
                 {
                     SummonerSpell.Cast(this, session, slot, rank, target, (slot == 2 || slot == 4 || slot == 9 ? stats.Damage : CombatAttack) * power, executingChargedSkill ? charge.TargetEnemy : AimTarget, executingChargedSkill,castId);
                     if (slot == 0)
@@ -1384,10 +1367,25 @@ namespace Emberfall
                 }
                 else if (HeroClass == HeroClass.Arcanist && slot == 5)
                 {
-                    guardTime=6f+(rank-1)*2f; guardRank=rank;guardCastId=castId;HoldCastReceipt(ref guardCastReceipt,castId); guardReduction=.25f+rank*.1f;
-                    guardRadius=2.8f*range; guardPulseTimer=0;
-                    if (Specialization == ElementalistSpecialization.Burn) { guardReduction=.3f; burnStrideTime=guardTime; FlameRide.Spawn(this,session,guardTime,CombatAttack,castId); }
-                    AdvancedSkillVfx.Protection(this,transform.position,guardRadius,Specialization==ElementalistSpecialization.Burn?new Color(1f,.55f,.25f):new Color(.55f,.92f,1f),guardTime,rank+1,()=>guardTime>0);
+                    guardTime=6f+(rank-1)*2f;guardRank=rank;guardCastId=castId;HoldCastReceipt(ref guardCastReceipt,castId);
+                    guardReduction=0;guardRadius=2.8f*range;guardPulseTimer=0;burnStrideTime=guardTime;
+                    if(Specialization==ElementalistSpecialization.Burn)FlameRide.Spawn(this,session,guardTime,CombatAttack,castId);
+                    else FilledSkillVfx.Impact(this,transform.position,guardRadius,FilledVfxKind.Ice,color);
+
+                }
+                else if(slot==6&&HeroClass==HeroClass.Arcanist)
+                {
+                    CombatArea.Spawn(this,session,target,3.8f*range,Damage(2f*power),.5f,.15f,0,1,color,castId:castId,visual:SkillVisualRecipe.Ice);
+                    CombatArea.Spawn(this,session,target,3.8f*range,Damage(2.5f*power),.25f,.6f,0,1,color,castId:castId,visual:SkillVisualRecipe.Lightning);
+                }
+                else if(slot==6&&HeroClass==HeroClass.Ranger)
+                {
+                    MobilityBuff(rank);
+                    for(int i=-1;i<=1;i++)
+                    {
+                        Vector3 direction=Quaternion.Euler(0,i*8,0)*transform.forward;
+                        CombatProjectile.Friendly(this,session,transform.position,direction,Damage(1.4f*power),color,true,true,false,range,26f,castId:castId);
+                    }
                 }
                 else AdvancedSkillSequence.Spawn(this,session,slot,rank,target,transform.forward,Damage(power * SkillDamageBudgets.AdvancedScale(HeroClass,slot)),color,castId);
                 return;
