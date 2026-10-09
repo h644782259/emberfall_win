@@ -21,9 +21,11 @@ while ($projectRoot) {
 }
 if ($ProjectDirectory) { $projectRoot = [IO.Path]::GetFullPath($ProjectDirectory) }
 if (-not $projectRoot) {
-    $ProjectDirectory = Read-Host 'Enter the complete Windows source folder (for example E:\emberfall_win)'
-    if (-not $ProjectDirectory) { throw 'A Windows source folder is required.' }
-    $projectRoot = [IO.Path]::GetFullPath($ProjectDirectory.Trim().Trim('"'))
+    if (Test-Path -LiteralPath 'E:\emberfall_win\Tools\Build-Windows.ps1') {
+        $projectRoot = 'E:\emberfall_win'
+    } else {
+        throw 'Cannot find Windows source. Run from the repository or configure -ProjectDirectory in Install.cmd.'
+    }
 }
 $toolsRoot = Join-Path $projectRoot 'Tools'
 

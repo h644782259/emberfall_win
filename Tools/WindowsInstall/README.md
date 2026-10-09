@@ -2,7 +2,7 @@
 
 本文件夹包含可复用的安装脚本和说明。脚本还会调用项目 `Tools` 中的构建、打包工具及安装器源码，电脑上必须有完整 Windows 仓库。
 
-可以把 `Install.cmd` 和 `Build-Install-Windows.ps1` 一起复制到桌面。找不到项目时，脚本会提示输入完整源码路径，例如 `E:\emberfall_win`。也可用 `-ProjectDirectory` 参数指定仓库路径。
+可以把 `Install.cmd` 和 `Build-Install-Windows.ps1` 一起复制到桌面。脚本不要求输入，也不等待按键：优先自动查找所在仓库，桌面运行时回退到 `E:\emberfall_win`。其他路径可预先在 `Install.cmd` 中添加 `-ProjectDirectory "完整源码路径"`，以及可选的 `-InstallDirectory "安装路径"`。项目不存在时直接报错停止。
 
 ## 构建电脑准备
 
