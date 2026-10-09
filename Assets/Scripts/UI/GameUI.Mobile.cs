@@ -181,7 +181,8 @@ namespace Emberfall
                 DrawMobileSkillAvailability(r,skill);
             }
             Rect pageHit=TouchRect(l.SkillPage);blockedRects.Add(pageHit);
-            DrawIcon(new Rect(pageHit.center.x-12*TouchRatio,pageHit.center.y-12*TouchRatio,24*TouchRatio,24*TouchRatio),UIIconAtlas.SkillPageArrow(),Color.white);
+            float pageIcon=(MobileControls.IsIPad?28.8f:24f)*TouchRatio;
+            DrawIcon(new Rect(pageHit.center.x-pageIcon*.5f,pageHit.center.y-pageIcon*.5f,pageIcon,pageIcon),UIIconAtlas.SkillPageArrow(),Color.white);
             controlOpacity=priorOpacity;
         }
         private void DrawMobileControlSurface(Rect r,bool ready,bool pressed)
@@ -196,7 +197,7 @@ namespace Emberfall
             blockedRects.Add(TouchRect(layout.PlayerStatus));
             Text(TouchRect(layout.PlayerHealth.X+layout.PlayerHealth.Width+6,layout.PlayerHealth.Y-3,44,18),"Lv"+session.Progression.Profile.level,TouchFont(11),gold,true,false,TextAnchor.MiddleLeft);
             Bar(TouchRect(layout.PlayerHealth),hp/Mathf.Max(1,max),new Color(.86f,.16f,.19f));
-            Text(TouchRect(layout.PlayerHealth),Mathf.CeilToInt(hp)+" / "+Mathf.CeilToInt(max),TouchFont(9),pale,true,false,TextAnchor.MiddleCenter);
+            Text(TouchRect(layout.PlayerHealth),Mathf.CeilToInt(hp)+" / "+Mathf.CeilToInt(max),TouchFont(MobileControls.IsIPad?11:9),pale,true,false,TextAnchor.MiddleCenter);
             Bar(TouchRect(layout.PlayerEnergy),session.Player==null?0:session.Player.Energy/Mathf.Max(1,session.Player.MaxEnergy),new Color(.35f,.63f,1));
         }
         // Only the measured title is interactive. Text and the unused objective slot

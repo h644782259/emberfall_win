@@ -2337,13 +2337,28 @@ namespace Emberfall
         public static int EquipmentGenerationLevel(int level)
         { return Clamp(level,1,MaximumLevel); }
 
+        private static readonly float[] EquipmentRollMinimum={.85f,1.10f,1.45f,1.90f},EquipmentRollMaximum={1.05f,1.40f,1.85f,2.50f};
+        public static string EquipmentDropPreview(ItemSlot slot,Rarity rarity,int level,EquipmentMechanic mechanic=EquipmentMechanic.None)
+        {
+            level=EquipmentGenerationLevel(level);int quality=Clamp((int)rarity,0,3);
+            string text=GameBalance.SlotName(slot)+" · "+GameBalance.RarityName(rarity)+" · Lv"+level+"\n基础属性范围（未强化）";
+            if(slot==ItemSlot.Weapon)text+="\n攻击  "+EquipmentPreviewRange(5+level*2.5f,quality);
+            else if(slot==ItemSlot.Armor)text+="\n防御  "+EquipmentPreviewRange(3+level*1.2f,quality)+"\n生命  "+EquipmentPreviewRange(10+level*4,quality);
+            else text+="\n攻击  "+EquipmentPreviewRange(2+level,quality)+"\n生命  "+EquipmentPreviewRange(6+level*3,quality);
+            if(quality>0)text+="\n随机附加（非必得）\n暴击率  "+new[]{"","1%～3%","2%～5%","3%～8%"}[quality]+"\n暴击伤害  "+new[]{"","5%～10%","8%～15%","12%～20%"}[quality]+(quality==1?"\n至多一项":"\n可能同时获得两项");
+            text+=mechanic==EquipmentMechanic.None?"\n机制  无固定机制":"\n机制 · "+BuildCatalog.MechanicName(mechanic)+"\n"+BuildCatalog.MechanicDescription(mechanic);
+            return text;
+        }
+        private static string EquipmentPreviewRange(float basis,int quality)
+        {return Math.Max(1,Round(basis*EquipmentRollMinimum[quality]))+"～"+Math.Max(1,Round(basis*EquipmentRollMaximum[quality]));}
+
         private static void SetRolledStats(ItemData item)
         {
             // The identified drop owns its roll. Preview, reload and reforge never
             // reroll it; each newly generated GUID produces independent percentiles.
             int seed=17;unchecked{foreach(char c in item.id??"")seed=seed*31+c;}
             var roll=new System.Random(seed);int quality=Clamp((int)item.rarity,0,3);
-            float[] minimum={.85f,1.10f,1.45f,1.90f},maximum={1.05f,1.40f,1.85f,2.50f};
+            float[] minimum=EquipmentRollMinimum,maximum=EquipmentRollMaximum;
             int level=EquipmentGenerationLevel(item.level);item.level=level;
             item.attack=item.defense=item.health=0;
             if(item.slot==ItemSlot.Weapon)item.attack=RolledEquipmentStat(5+level*2.5f,minimum[quality],maximum[quality],roll);

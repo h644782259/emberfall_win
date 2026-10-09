@@ -5,7 +5,7 @@ namespace Emberfall
 {
     public sealed class SummonedCompanion : MonoBehaviour
     {
-        public enum Kind { Wolf, Spirit, Treant }
+        public enum Kind { Wolf, Spirit, Treant, Wisp }
         private static readonly List<SummonedCompanion> active = new List<SummonedCompanion>();
         private sealed class BondState
         {
@@ -139,8 +139,8 @@ namespace Emberfall
                 if (oldest == null) return null;
                 oldest.Dismiss(CompanionRetirementReason.Replaced);
             }
-            var obj = new GameObject(form == Kind.Wolf ? "灵狼" : form == Kind.Spirit ? "星灵炮台" : "远古树灵");
-            obj.transform.position = WorldTraversal.NearestWalkable(at, RadiusFor(form));
+            var obj = new GameObject(form == Kind.Wolf ? "灵狼" : form == Kind.Spirit ? "星灵炮台" : form == Kind.Wisp ? "烬羽灵" : "远古树灵");
+            obj.transform.position = FindSummonPosition(owner,at,RadiusFor(form));
             var companion = obj.AddComponent<SummonedCompanion>();
             companion.Owner = owner; companion.session = game; companion.Form = form;
             companion.rank = Mathf.Clamp(rank, 0, 3); companion.epoch = owner.CombatEpoch; companion.damage = strength;
@@ -153,6 +153,38 @@ namespace Emberfall
             active.Add(companion);
             AdvancedSkillVfx.Rune(owner, obj.transform.position, form == Kind.Treant ? 2.6f : 1.3f, GameBalance.ClassColor(HeroClass.Summoner), .7f, Mathf.Max(1, rank));
             return companion;
+        }
+
+        private static Vector3 FindSummonPosition(PlayerController owner,Vector3 at,float radius)
+        {
+            Vector3 origin=WorldTraversal.NearestWalkable(at,radius),best=origin;float bestClearance=-1;
+            for(int step=0;step<33;step++)
+            {
+                float angle=(step-1)%16*Mathf.PI/8,distance=step==0?0:step<=16?1.3f:2.6f;
+                Vector3 candidate=WorldTraversal.NearestWalkable(origin+new Vector3(Mathf.Cos(angle),0,Mathf.Sin(angle))*distance,radius);
+                if(!WorldTraversal.HasGroundPath(origin,candidate,radius))continue;
+                float clearance=float.MaxValue;
+                foreach(var pet in active)if(pet!=null&&pet.IsAlive&&pet.Owner==owner)
+                    clearance=Mathf.Min(clearance,CombatFx.Flat(candidate-pet.transform.position).magnitude-radius-pet.NavigationRadius);
+                if(clearance>.3f)return candidate;
+                if(clearance>bestClearance){bestClearance=clearance;best=candidate;}
+            }
+            return best;
+        }
+        private Vector3 CompanionSpacing(float dt)
+        {
+            Vector3 push=Vector3.zero;
+            foreach(var other in active)
+            {
+                if(other==null||other==this||!other.IsAlive||other.Owner!=Owner)continue;
+                Vector3 away=CombatFx.Flat(transform.position-other.transform.position);float distance=away.magnitude;
+                float spacing=NavigationRadius+other.NavigationRadius+.45f;
+                if(distance>=spacing)continue;
+                if(distance<.001f)away=active.IndexOf(this)<active.IndexOf(other)?Vector3.right:-Vector3.right;
+                else away/=distance;
+                push+=away*(spacing-distance);
+            }
+            return Vector3.ClampMagnitude(push,1.5f)*Mathf.Min(1,dt*6);
         }
 
         public static bool HasStarter(PlayerController owner)
@@ -318,12 +350,12 @@ namespace Emberfall
             if(owner==null||owner.IsDead||game==null)return null;
             // Recasting replaces that summon type; it cannot create permanent or unlimited bodies.
             foreach(var pet in Snapshot(owner))if(pet.Form==form)pet.Dismiss(CompanionRetirementReason.Replaced);
-            var partner=Summon(owner,game,form,rank,at,strength);
+            var partner=Summon(owner,game,form,rank,form==Kind.Wolf&&timedPackRoute?at-owner.transform.right*.75f:at,strength);
             bool empowered=State(owner).Commands.TryConsume(Time.time);
             if(partner!=null&&empowered){partner.commandTime=4;partner.commandMultiplier=1.5f;partner.commandEmpowered=true;}
             if(form==Kind.Wolf&&timedPackRoute)
             {
-                var second=Summon(owner,game,form,rank,at+owner.transform.right*1.1f,strength);
+                var second=Summon(owner,game,form,rank,at+owner.transform.right*.75f,strength);
                 if(second!=null&&empowered){second.commandTime=4;second.commandMultiplier=1.5f;second.commandEmpowered=true;}
             }
             game.RecordCombatAction("临时召唤");
@@ -489,7 +521,7 @@ namespace Emberfall
             EnemyController nearest=null;float best=Form==Kind.Spirit?10.5f:14f;
             foreach(var enemy in session.Enemies)
             {
-                if(enemy==null||enemy.IsDead||!enemy.gameObject.activeInHierarchy||(!enemy.IsAggro&&!session.InDungeon))continue;
+                if(enemy==null||enemy.IsDead||!enemy.gameObject.activeInHierarchy)continue;
                 float distance=CombatFx.Flat(enemy.transform.position-transform.position).magnitude;
                 if(distance>=best||!CanReachTarget(enemy.transform.position))continue;
                 best=distance;nearest=enemy;
@@ -615,13 +647,15 @@ namespace Emberfall
             }
             Vector3 destination = target == null ? hasCommandPoint && commandTime > 0 ? commandedPoint : followAnchor : target.transform.position;
             Vector3 delta = CombatFx.Flat(destination - transform.position);
-            float attackRange = Form == Kind.Spirit ? 10.5f : Form == Kind.Treant ? 2.8f : 1.4f;
+            float attackRange = Form == Kind.Spirit ? 10.5f : Form == Kind.Wisp ? 7f : Form == Kind.Treant ? 2.8f : 1.4f;
             bool attackPath = target == null || CanReachTarget(target.transform.position);
             bool moving = Form!=Kind.Spirit && (delta.magnitude > (target == null ? .5f : attackRange * .85f) || !attackPath);
             Vector3 heading = moving ? route.Direction(transform.position, destination, NavigationRadius) : delta.normalized;
             if (heading.sqrMagnitude > .01f) transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(heading), 1 - Mathf.Exp(-10 * dt));
             Vector3 previous = transform.position;
-            transform.position = WorldTraversal.Move(transform.position, moving ? heading * Mathf.Min(delta.magnitude, dt * (Form == Kind.Treant ? 4.2f : recallTime > 0 ? 9f : 7f)) : Vector3.zero, NavigationRadius);
+            Vector3 step=moving?heading*Mathf.Min(delta.magnitude,dt*(Form==Kind.Treant?4.2f:recallTime>0?9f:7f)):Vector3.zero;
+            if(Form!=Kind.Spirit)step+=CompanionSpacing(dt);
+            transform.position=WorldTraversal.Move(transform.position,step,NavigationRadius);
             moving = (transform.position - previous).sqrMagnitude > .000001f;
             delta = CombatFx.Flat(destination - transform.position);
             if (target != null && delta.magnitude <= attackRange && cooldown <= 0 && CanReachTarget(target.transform.position))
@@ -631,6 +665,8 @@ namespace Emberfall
                 cooldown = CompanionRules.AttackInterval((int)Form);
                 if (Form == Kind.Spirit)
                     CombatProjectile.Friendly(Owner, session, transform.position, delta.normalized, attackDamage * CompanionRules.AttackCoefficient((int)Form), GameBalance.ClassColor(HeroClass.Summoner), tracking: target, companionSource: this);
+                else if(Form==Kind.Wisp)
+                    CombatProjectile.Friendly(Owner,session,transform.position,delta.normalized,attackDamage*CompanionRules.AttackCoefficient((int)Form),new Color(1f,.64f,.24f),piercing:true,companionSource:this);
                 else if (Form == Kind.Treant)
                 {
                     CombatFx.Ring(transform.position, 3.3f * GameBalance.SkillRangeMultiplier(rank), new Color(.48f, 1f, .63f), .4f, .2f);
@@ -678,7 +714,7 @@ namespace Emberfall
 
         private bool CanReachTarget(Vector3 position)
         {
-            return Form == Kind.Spirit
+            return Form == Kind.Spirit || Form == Kind.Wisp
                 ? WorldTraversal.HasLineOfSight(transform.position, position)
                 : WorldTraversal.HasGroundPath(transform.position, position, .12f);
         }

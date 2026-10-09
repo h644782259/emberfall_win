@@ -19,9 +19,9 @@ namespace Emberfall
             int propCast=castId==0?player.NewCastId():castId;
             float range = GameBalance.SkillRangeMultiplier(rank);
             Color color = GameBalance.ClassColor(HeroClass.Summoner);
-            if (skill == 2 || skill == 4 || skill == 9)
+            if (skill == 2 || skill == 4 || skill == 6 || skill == 9)
             {
-                var form = skill == 2 ? SummonedCompanion.Kind.Wolf : skill == 4 ? SummonedCompanion.Kind.Spirit : SummonedCompanion.Kind.Treant;
+                var form = skill == 2 ? SummonedCompanion.Kind.Wolf : skill == 4 ? SummonedCompanion.Kind.Spirit : skill == 6 ? SummonedCompanion.Kind.Wisp : SummonedCompanion.Kind.Treant;
                 Vector3 position = CombatSight.GroundPoint(player.transform.position,target);
                 SummonedCompanion partner = SummonedCompanion.CastContract(player, game, form, rank, position, damage,
                     game.Progression.Profile.summonerRoute == SummonerRoute.Pack, preserveTargetPoint ? commandTarget : commandTarget != null ? commandTarget : player.AimTarget, preserveTargetPoint);
@@ -49,8 +49,6 @@ namespace Emberfall
                 CombatArea.Spawn(player, game, target, 3.2f * range, damage * SummonerDamageRules.ThornTickCoefficient, 0, SummonerDamageRules.ThornStartup, SummonerDamageRules.ThornDuration(rank), SummonerDamageRules.ThornInterval, color, statusSkill: 1, statusRank: rank,castId:propCast,visual:SkillVisualRecipe.Poison);
             else if(skill==5)
                 CombatProjectile.Friendly(player,game,player.transform.position,player.transform.forward,player.RollDirectDamage(damage*2.6f),color,true,false,false,range,22f,castId:propCast);
-            else if(skill==6)
-                CombatArea.Spawn(player,game,target,4f*range,player.RollDirectDamage(damage*3.2f),.8f,.2f,0,1,color,castId:propCast,visual:SkillVisualRecipe.Spirit);
             else if (skill == 7)
             {
                 var obj = new GameObject("引力印记"); obj.transform.position = target;

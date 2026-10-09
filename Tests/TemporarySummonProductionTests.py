@@ -14,6 +14,7 @@ for node in tree.body:
  if isinstance(node,ast.Assign) and any(isinstance(t,ast.Name) and t.id=='shell' for t in node.targets):
   shell=node.value.func.value.value;break
 shell=shell.split('  public static int Verify()')[0]
+shell=shell.replace('enum Kind{Wolf,Spirit,Treant}', 'enum Kind{Wolf,Spirit,Treant,Wisp}')
 shell=shell.replace('private bool pathClear;','private bool pathClear=true;')
 shell=shell.replace('IsStarter=k==Kind.Wolf','IsStarter=false')
 shell=shell.replace('active.Add(pet);return pet;','pet.transform.position=at;pet.RemainingLifetime=CompanionRules.ContractLifetime((int)k,r,permanent);active.Add(pet);return pet;')
@@ -29,24 +30,35 @@ shell+=r"""
   var wolf=CastContract(owner,game,Kind.Wolf,1,Vector3.zero,10,false);
   check(!wolf.IsPermanent&&!wolf.IsStarter&&wolf.RemainingLifetime==14,"wolf is a timed summon");
   var tower=CastContract(owner,game,Kind.Spirit,2,new Vector3(6,0,0),10,false);
-  check(tower.RemainingLifetime==14&&!tower.IsPermanent,"turret is timed");
+  check(tower.RemainingLifetime==16&&!tower.IsPermanent,"turret is timed");
   for(int i=0;i<100;i++)CastContract(owner,game,Kind.Spirit,2,new Vector3(6,0,0),10,false);
   check(Snapshot(owner).Length==2&&!tower.IsAlive,"recasts replace same form without accumulating summons");
   var ultimate=CastContract(owner,game,Kind.Treant,3,Vector3.zero,10,false);
-  check(ultimate.RemainingLifetime==16&&!ultimate.IsPermanent,"ultimate creates a timed treant");
+  check(ultimate.RemainingLifetime==20&&!ultimate.IsPermanent,"ultimate creates a timed treant");
   CastContract(owner,game,Kind.Wolf,2,Vector3.zero,10,true);
   check(Array.FindAll(Snapshot(owner),p=>p.Form==Kind.Wolf).Length==2,"pack mode creates two temporary wolves");
+  var wolves=Array.FindAll(Snapshot(owner),p=>p.Form==Kind.Wolf);
+  check((wolves[0].transform.position-wolves[1].transform.position).sqrMagnitude>=2.2f,"two wolves spawn visibly separated");
   var near=new EnemyController();near.transform.position=new Vector3(2,0,0);
   var far=new EnemyController();far.transform.position=new Vector3(9,0,0);
   game.Enemies.Add(far);game.Enemies.Add(near);
   check(ultimate.AcquireTarget()==near,"autonomous summon selects nearest reachable enemy");
+  game.InDungeon=false;near.IsAggro=false;far.IsAggro=false;
+  check(ultimate.AcquireTarget()==near,"summon proactively attacks idle non-aggro enemies outside dungeons");
+  var wisp=CastContract(owner,game,Kind.Wisp,2,Vector3.zero,10,false);
+  check(wisp.AcquireTarget()==near&&wisp.RemainingLifetime==16,"new ranged summon acquires idle enemy with ranked lifetime");
+  for(int form=0;form<4;form++)check(CompanionRules.ContractLifetime(form,1,false)<CompanionRules.ContractLifetime(form,2,false)&&CompanionRules.ContractLifetime(form,2,false)<CompanionRules.ContractLifetime(form,3,false),"every summon lasts longer at each rank");
+  wolves[0].transform.position=new Vector3(1,0,0);wolves[1].transform.position=new Vector3(10,0,0);
+  check(wolves[0].AcquireTarget()==near&&wolves[1].AcquireTarget()==far,"each summon selects from its own position independently");
+  wolves[1].transform.position=new Vector3(3,0,0);
+  check(wolves[0].AcquireTarget()==near&&wolves[1].AcquireTarget()==near,"independent summons may choose the same enemy");
   near.IsDead=true;check(ultimate.AcquireTarget()==far,"autonomous retarget after death");
-  for(int form=0;form<3;form++)for(int rank=1;rank<=3;rank++){
+  for(int form=0;form<4;form++)for(int rank=1;rank<=3;rank++){
    check(!float.IsInfinity(CompanionRules.ContractLifetime(form,rank,true)),"legacy permanent flag cannot produce infinite lifetime");
    check(!CompanionRules.PermanentPartner(true,form,false),"no permanent route");
   }
-  check(ultimate.AdvanceLifetime(0)&&ultimate.RemainingLifetime==16,"pause does not age summon");
-  check(ultimate.AdvanceLifetime(15.9f)&&!ultimate.AdvanceLifetime(.2f)&&ultimate.RemainingLifetime==0,"summon expires exactly after its timed life");
+  check(ultimate.AdvanceLifetime(0)&&ultimate.RemainingLifetime==20,"pause does not age summon");
+  check(ultimate.AdvanceLifetime(19.9f)&&!ultimate.AdvanceLifetime(.2f)&&ultimate.RemainingLifetime==0,"summon expires exactly after its timed life");
   return n;
  }
 }}

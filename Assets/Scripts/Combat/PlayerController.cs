@@ -1343,7 +1343,7 @@ namespace Emberfall
             if (HeroClass == HeroClass.Summoner)
             {
                 {
-                    SummonerSpell.Cast(this, session, slot, rank, target, (slot == 2 || slot == 4 || slot == 9 ? stats.Damage : CombatAttack) * power, executingChargedSkill ? charge.TargetEnemy : AimTarget, executingChargedSkill,castId);
+                    SummonerSpell.Cast(this, session, slot, rank, target, (slot == 2 || slot == 4 || slot == 6 || slot == 9 ? stats.Damage : CombatAttack) * power, executingChargedSkill ? charge.TargetEnemy : AimTarget, executingChargedSkill,castId);
                     if (slot == 0)
                         foreach (EnemyController enemy in session.Enemies.ToArray())
                         {

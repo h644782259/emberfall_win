@@ -40,10 +40,10 @@ namespace Emberfall
         public static float RankPower(int rank) { return rank <= 0 ? .55f : 1f + (Math.Min(3, rank) - 1) * .3f; }
         public static float CommandMultiplier(int rank) { return 1.25f + Math.Max(0, Math.Min(3, rank)) * .1f; }
         public static float CommandDuration(bool empowered){return empowered?4f:3f;}
-        public static float AttackCoefficient(int form){return form==2?1.45f:form==1?.72f:.65f;}
-        public static float AttackInterval(int form){return form==2?2.2f:form==1?1.2f:.85f;}
+        public static float AttackCoefficient(int form){return form==2?1.45f:form==3?.85f:form==1?.72f:.65f;}
+        public static float AttackInterval(int form){return form==2?2.2f:form==3?1.5f:form==1?1.2f:.85f;}
         public static float ContractLifetime(int form,int rank,bool permanent)
-        {rank=Math.Max(0,Math.Min(3,rank));return form==0?12+rank*2:10+rank*2;}
+        {rank=Math.Max(1,Math.Min(3,rank));return (form==0?14:12)+(rank-1)*4;}
         public static float HealthFraction(int form, int rank, bool foundation)
         {
             rank = Math.Max(0, Math.Min(3, rank));
@@ -79,7 +79,7 @@ namespace Emberfall
     {
         private sealed class Hits
         {
-            public readonly float[] Times = { float.NegativeInfinity, float.NegativeInfinity, float.NegativeInfinity };
+            public readonly float[] Times = { float.NegativeInfinity, float.NegativeInfinity, float.NegativeInfinity, float.NegativeInfinity };
             public float Last;
         }
         private readonly Dictionary<T, Hits> targets = new Dictionary<T, Hits>();
@@ -97,7 +97,7 @@ namespace Emberfall
         public void Clear() { targets.Clear(); nextProc = latestTime = 0; }
         public bool RegisterHit(T target, int form, float combatTime)
         {
-            if (target == null || form < 0 || form > 2 || float.IsNaN(combatTime) || float.IsInfinity(combatTime) || combatTime < latestTime) return false;
+            if (target == null || form < 0 || form > 3 || float.IsNaN(combatTime) || float.IsInfinity(combatTime) || combatTime < latestTime) return false;
             latestTime = combatTime;
             expired.Clear();
             foreach (var pair in targets)

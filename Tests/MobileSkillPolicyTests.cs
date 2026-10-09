@@ -10,6 +10,9 @@ public static class MobileSkillPolicyTests
   Check(seen.Count==8&&MobileSkillPolicy.SkillAtButton(4,0)==9&&MobileSkillPolicy.SkillAtButton(4,1)==9,"every real active appears and ultimate never moves");
   Check(!MobileSkillPolicy.IsActiveSkill(3)&&!MobileSkillPolicy.IsActiveSkill(8)&&MobileSkillPolicy.IsActiveSkill(9),"passives noninteractive and ultimate reachable");
   Check(MobileSkillPolicy.SkillAtButton(-1)==-1&&MobileSkillPolicy.SkillAtButton(8)==-1,"bounds");
+  var summoner=MobileSkillPolicy.DefaultBindings(true);
+  Check(MobileSkillPolicy.ValidBindings(summoner),"summoner default preserves all skills and fixed ultimate");
+  Check(string.Join(",",summoner)=="0,1,5,7,2,4,6,-1,9","direct spells first page; summons second page; ultimate fixed");
   var bindings=MobileSkillPolicy.DefaultBindings();
   Check(MobileSkillPolicy.ValidBindings(bindings),"default persistent mapping validates");
   Check(MobileSkillPolicy.SwapBinding(bindings,5,0)&&bindings[5]==0&&bindings[0]==6,"cross-page reorder swaps without losing skills");

@@ -55,7 +55,7 @@ namespace Emberfall
                 for(int i=0;i<rank;i++)for(int side=-1;side<=1;side+=2)
                     Part("Wolf grown shoulder clasp",PrimitiveType.Cube,new Vector3(side*(.25f+i*.025f),.72f,.12f-i*.16f),new Vector3(.075f,.14f,.10f),metal,companionInsignia,VisualSurface.Metal).localRotation=Quaternion.Euler(0,0,side*25);
             }
-            else if(form==SummonedCompanion.Kind.Spirit)
+            else if(form==SummonedCompanion.Kind.Spirit||form==SummonedCompanion.Kind.Wisp)
             {
                 if(permanent)
                 {

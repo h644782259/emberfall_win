@@ -134,8 +134,6 @@ namespace Emberfall
                 string venom=BuildCatalog.VenomSkillOverride(p,skill,stage);if(venom.Length>0)evolution=venom;
                 MobileSkillParagraph(ref y, width, evolution, 14, muted, false, draw);
             }
-            MobileSkillParagraph(ref y, width, GameBalance.IsPassive(skill) ? "被动学习后自动生效，无须施放。" :
-                "学会后直接显示在战斗界面；轻点自动瞄准施放，无须配置或翻页。", 14, jade, false, draw);
             return y;
         }
 

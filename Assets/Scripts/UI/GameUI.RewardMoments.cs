@@ -50,6 +50,7 @@ namespace Emberfall
                 GameAudio.Play(RewardMomentSafe?cue:SoundCue.UI);
             }
             if(rewardMoment==null)return;
+            if(session.RunChoices.AwaitingChoice){ClearRewardMoment();return;}
             if(panel!=rewardMomentPanel||session.Paused||session.IsDead||session.PracticeActive||Time.unscaledTime-rewardMomentStarted>(RewardUpgradeItem()!=null?8f:EffectPreferences.ReducedEffects?1.5f:3.2f))
             {ClearRewardMoment();return;}
             bool interactive=RewardMomentSafe||RewardUpgradeItem()!=null;
@@ -71,6 +72,7 @@ namespace Emberfall
         private void DrawRewardMoment()
         {
             if(rewardMoment==null)return;
+            if(session.RunChoices.AwaitingChoice){ClearRewardMoment();return;}
             Rect area=RewardMomentRect();float u=MobileControls.Active?TouchRatio:1;
             bool canEquip=RewardUpgradeItem()!=null;
             Color accent=rewardMoment.Item!=null?GameBalance.RarityColor(rewardMoment.Item.rarity):rewardMoment.Fashion!=null?GameBalance.RarityColor(rewardMoment.Fashion.rarity):jade;

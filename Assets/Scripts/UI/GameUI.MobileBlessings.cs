@@ -22,16 +22,12 @@ namespace Emberfall
         {
             RunBlessing[] offer=session.RunChoices.Offer;
             ReconcileBlessingOffer(offer);
-            var layout=MobilePanelGeometry();
-            if(DrawMobilePanelChrome(layout,"星烬祝福","选择一项 · 仅本局生效",false,true))return;
+            var layout=MobilePanelGeometry();int count=offer.Length;if(count==0)return;
+            float frameWidth=Mathf.Min(960,layout.Width-24),bodyWidth=frameWidth-32;
+            float column=(bodyWidth-16-(count-1)*10)/count;
             string preview=BlessingSubtitle(true);
-            float previewHeight=DrawMobileParagraph(layout.Body.X+8,layout.Body.Y,layout.Body.Width-16,preview,13,gold,true)+8;
-            Rect viewport=MobilePanelRect(new MobilePanelLayout.Area(layout.Body.X,layout.Body.Y+previewHeight,layout.Body.Width,layout.Body.Height-previewHeight));
-            string notice=PlatformText(session.Notification);
-            float noticeHeight=string.IsNullOrEmpty(notice)?0:MeasureMobileParagraph(notice,layout.Body.Width-32,12)+12;
-            int count=offer.Length;if(count==0)return;
-            float column=(layout.Body.Width-16-(count-1)*10)/count;
-            float cardHeight=150;
+            float previewHeight=MeasureMobileParagraph(preview,bodyWidth-16,13,true)+8;
+            float noticeHeight=0,cardHeight=150;
             for(int i=0;i<count;i++)
             {
                 float name=MeasureMobileParagraph(RunChoices.Name(offer[i]),column-20,17,true);
@@ -39,9 +35,16 @@ namespace Emberfall
                 float association=MeasureMobileParagraph(RunChoices.Association(offer[i],session.Progression.Profile,true),column-20,12);
                 cardHeight=Mathf.Max(cardHeight,name+detail+association+82);
             }
+            float frameHeight=Mathf.Min(layout.Height-24,70+previewHeight+cardHeight+76);
+            float frameX=(layout.Width-frameWidth)*.5f,frameY=(layout.Height-frameHeight)*.5f;
+            Fill(new Rect(0,0,width,height),new Color(.008f,.018f,.03f,.86f));blockedRects.Add(new Rect(0,0,width,height));
+            Box(TouchRect(frameX,frameY,frameWidth,frameHeight),jade,false);
+            Text(TouchRect(frameX+16,frameY+12,frameWidth-76,30),"星烬祝福 · 选择一项",TouchFont(22),pale,true);
+            if(PopupCloseButton(TouchRect(frameX+frameWidth-52,frameY+8,44,44))){session.SetPaused(true);return;}
+            DrawMobileParagraph(frameX+16,frameY+54,bodyWidth-16,preview,13,gold,true);
+            Rect viewport=TouchRect(frameX+16,frameY+54+previewHeight,bodyWidth,frameHeight-previewHeight-122);
             mobileBlessingScroll=BeginTouchScroll("mobile-blessings",viewport,mobileBlessingScroll,
-                new Rect(0,0,(layout.Body.Width-16)*TouchRatio,Mathf.Max(viewport.height/TouchRatio,noticeHeight+cardHeight+8)*TouchRatio));
-            if(noticeHeight>0)DrawMobileParagraph(8,4,layout.Body.Width-32,notice,12,gold);
+                new Rect(0,0,(bodyWidth-16)*TouchRatio,(cardHeight+8)*TouchRatio));
             for(int i=0;i<count;i++)
             {
                 float x=i*(column+10);Rect cardRect=TouchRect(x,noticeHeight+4,column,cardHeight);bool chosen=selectedBlessing==i;
@@ -55,7 +58,7 @@ namespace Emberfall
                 if(GUI.Button(cardRect,GUIContent.none,invisibleButton))ClickBlessing(i);
             }
             EndTouchScroll();
-            if(PrimaryButton(MobilePanelRect(layout.FooterButton(0,1)), "确认祝福并继续", gold, selectedBlessing>=0&&selectedBlessing<count))
+            if(PrimaryButton(TouchRect(frameX+16,frameY+frameHeight-60,bodyWidth,44), "确认祝福并继续", gold, selectedBlessing>=0&&selectedBlessing<count))
             {
                 if(session.ConfirmBlessing(selectedBlessing)){selectedBlessing=-1;CancelMobileScroll();BlockUITransition();}
             }

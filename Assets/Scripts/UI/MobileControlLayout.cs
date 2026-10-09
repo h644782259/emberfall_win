@@ -61,13 +61,20 @@ namespace Emberfall
             if(ipad)
             {
                 Attack=ScalePadCombat(Attack);Dodge=ScalePadCombat(Dodge);Jump=ScalePadCombat(Jump);Cancel=Jump;
-                SkillPage=ScalePadCombat(SkillPage);
-                for(int i=0;i<Skills.Length;i++)Skills[i]=ScalePadCombat(Skills[i]);
+                Area page=ScalePadCombat(SkillPage);
+                SkillPage=Centered(Width-45,page.Y+page.Height*.5f,68.64f);
+                // Move the arc inward as one unit, preserving equal button spacing.
+                for(int i=0;i<Skills.Length;i++)
+                {
+                    Area skill=ScalePadCombat(Skills[i]);skill.X+=10;Skills[i]=skill;
+                }
+                // Ultimate stays fixed above the page switch, freeing the bottom HUD.
+                Skills[4]=Centered(SkillPage.X+SkillPage.Width*.5f,SkillPage.Y-10-31.2f,62.4f);
                 Menu=Centered(Width-38,38,52.8f);Inventory=Centered(Width-93.2f,38,52.8f);
                 SkillsMenu=Centered(Width-148.4f,38,52.8f);Catalog=Centered(Width-203.6f,38,52.8f);
                 Smith=Centered(Width-258.8f,38,52.8f);Shop=Centered(Width-314,38,52.8f);
                 DungeonEntrance=new Area(Width*.5f-58,76,116,44);
-                Potion=Centered(Width*.5f-134.4f,Height-32,52.8f);
+                Potion=Centered(Width*.5f-151,Height-33,63.36f);
             }
             int[] opportunityIdentities={0,1,2,4,5,6,7,9};
             for(int index=0;index<opportunityIdentities.Length;index++)
@@ -79,9 +86,9 @@ namespace Emberfall
             ComboOpportunity=new Area(Attack.X+Attack.Width/2,Attack.Y+Attack.Height+1,Attack.Width/2,13);
             float commandLift=Width<700?22:0;
             FocusCommand=new Area(204,Height-170-commandLift,48,48);RecallCommand=new Area(204,Height-120-commandLift,48,48);
-            PlayerStatus=new Area(Width*.5f-(ipad?102:80),Height-(ipad?41:35),ipad?204:160,18);
-            PlayerHealth=new Area(PlayerStatus.X,PlayerStatus.Y,ipad?154:110,12);
-            PlayerEnergy=new Area(PlayerStatus.X,PlayerStatus.Y+15,ipad?154:110,3);Map=new Area(12,12,ipad?158.4f:88,ipad?122.4f:68);
+            PlayerStatus=new Area(Width*.5f-(ipad?112:80),Height-(ipad?41:35),ipad?234:160,ipad?23:18);
+            PlayerHealth=new Area(PlayerStatus.X,PlayerStatus.Y,ipad?184:110,ipad?16:12);
+            PlayerEnergy=new Area(PlayerStatus.X,PlayerStatus.Y+(ipad?20:15),ipad?184:110,3);Map=new Area(12,12,ipad?158.4f:88,ipad?122.4f:68);
             AdventureStatus=new Area(12,ipad?140.4f:86,188,76);
             // Transient notices replace this left-side information slot, never the battlefield.
             Notice=AdventureStatus;
@@ -90,7 +97,29 @@ namespace Emberfall
         }
 
         private Area ScalePadCombat(Area r)
-        {return new Area(Width-24-(Width-r.X)*1.3f,Height-52-(Height-r.Y)*1.3f,r.Width*1.3f,r.Height*1.3f);}
+        {return new Area(Width-24-(Width-r.X)*1.3f,Height-36-(Height-r.Y)*1.3f,r.Width*1.3f,r.Height*1.3f);}
+
+        private readonly Area[] lootNoticeAreas=new Area[2];
+        private bool lootNoticesMeasured;
+        public Area LootNotice(int index)
+        {
+            if(index<0||index>=lootNoticeAreas.Length)return new Area();
+            if(lootNoticesMeasured)return lootNoticeAreas[index];
+            lootNoticesMeasured=true;
+            var placed=new System.Collections.Generic.List<Area>();
+            float w=Math.Min(174,Width*.35f);
+            for(float y=Math.Max(EncounterText.Y+EncounterText.Height,BossHealth.Y+BossHealth.Height)+12;y+44<Height-70;y+=8)
+            for(float x=Width-w-12;x>=Math.Max(Map.X+Map.Width+12,Width*.3f);x-=12)
+            {
+                Area candidate=new Area(x,y,w,44);bool blocked=false;
+                foreach(var r in new[]{Map,EncounterText,BossHealth,Menu,Inventory,SkillsMenu,Catalog,Shop,Smith,Interact,Attack,Dodge,Jump,SkillPage,PlayerStatus,Potion})if(candidate.Overlaps(r)){blocked=true;break;}
+                if(!blocked)foreach(var r in Skills)if(candidate.Overlaps(r)){blocked=true;break;}
+                if(!blocked)foreach(var r in placed)if(candidate.Overlaps(new Area(r.X-4,r.Y-4,r.Width+8,r.Height+8))){blocked=true;break;}
+                if(blocked)continue;
+                placed.Add(candidate);lootNoticeAreas[placed.Count-1]=candidate;if(placed.Count==lootNoticeAreas.Length)return lootNoticeAreas[index];
+            }
+            return lootNoticeAreas[index];
+        }
 
         private Area ChooseCombatView(float x,float y,float w,float h)
         {

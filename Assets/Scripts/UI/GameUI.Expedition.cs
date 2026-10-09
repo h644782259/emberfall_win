@@ -59,21 +59,26 @@ namespace Emberfall
             if(MobileControls.Active){DrawMobileBlessingChoice();return;}
             RunBlessing[] offer = session.RunChoices.Offer;
             ReconcileBlessingOffer(offer);
-            Rect w = Modal(1000, 470, "星烬祝福", BlessingSubtitle(false));
+            float cardHeight=184;
+            foreach(var blessing in offer)
+                cardHeight=Mathf.Max(cardHeight,Style(23,true,true).CalcHeight(new GUIContent(RunChoices.Name(blessing)),260)+Style(12,false,true).CalcHeight(new GUIContent(RunChoices.Association(blessing,session.Progression.Profile,false)),260)+Style(16,false,true).CalcHeight(new GUIContent(RunChoices.Description(blessing)),260)+96);
+            Rect w = Modal(1000, cardHeight+210, "星烬祝福", BlessingSubtitle(false));
             for (int i=0;i<offer.Length;i++)
             {
-                Rect cardRect = new Rect(w.x+28+i*322,w.y+117,300,240);
+                Rect cardRect = new Rect(w.x+28+i*322,w.y+117,300,cardHeight);
                 bool chosen = i == selectedBlessing;
                 Fill(cardRect,chosen ? new Color(.12f,.2f,.21f):card); Border(cardRect,chosen?gold:jade*.5f);
-                Text(new Rect(cardRect.x+20,cardRect.y+23,260,28),RunChoices.Name(offer[i]),23,chosen?gold:pale,true);
+                float nameHeight=Style(23,true,true).CalcHeight(new GUIContent(RunChoices.Name(offer[i])),260);
+                float associationHeight=Style(12,false,true).CalcHeight(new GUIContent(RunChoices.Association(offer[i],session.Progression.Profile,false)),260);
+                Text(new Rect(cardRect.x+20,cardRect.y+16,260,nameHeight),RunChoices.Name(offer[i]),23,chosen?gold:pale,true,true);
                 bool compatible = RunChoices.IsCompatible(offer[i],session.Progression.Profile.heroClass,RunChoices.UsableRanks(session.Progression.Profile,false));
-                Text(new Rect(cardRect.x+20,cardRect.y+63,260,21),RunChoices.Association(offer[i],session.Progression.Profile,false),12,compatible?jade:muted);
-                Text(new Rect(cardRect.x+20,cardRect.y+102,260,93),RunChoices.Description(offer[i]),16,pale,false,true);
+                Text(new Rect(cardRect.x+20,cardRect.y+24+nameHeight,260,associationHeight),RunChoices.Association(offer[i],session.Progression.Profile,false),12,compatible?jade:muted,false,true);
+                Text(new Rect(cardRect.x+20,cardRect.y+36+nameHeight+associationHeight,260,cardHeight-88-nameHeight-associationHeight),RunChoices.Description(offer[i]),16,pale,false,true);
                 if(GUI.Button(cardRect,GUIContent.none,invisibleButton))
                 ClickBlessing(i);
                 Text(new Rect(cardRect.x+20,cardRect.y+202,260,24),chosen?"再点击确认":"点击预览 · 双击确认",13,chosen?gold:muted,true,false,TextAnchor.MiddleCenter);
             }
-            if(PrimaryButton(new Rect(w.x+310,w.y+392,380,46), session.RoomChainRun!=null?"确认祝福并继续":"确认并进入下一波", gold, selectedBlessing>=0&&selectedBlessing<offer.Length, null, true))
+            if(PrimaryButton(new Rect(w.x+310,w.y+cardHeight+137,380,46), session.RoomChainRun!=null?"确认祝福并继续":"确认并进入下一波", gold, selectedBlessing>=0&&selectedBlessing<offer.Length, null, true))
             { if(session.ConfirmBlessing(selectedBlessing))selectedBlessing=-1; }
         }
 

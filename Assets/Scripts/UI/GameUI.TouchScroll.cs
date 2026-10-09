@@ -17,6 +17,7 @@ namespace Emberfall
      for(int i=0;i<Input.touchCount;i++)
      {
       Touch t=Input.GetTouch(i);Vector2 pointer=ScreenToUI(t.position);
+      if(owner!="entry-reward-popup"&&entryRewardPopupVisible&&entryRewardPopupRect.Contains(pointer)&&t.phase==TouchPhase.Began)continue;
       if(t.phase==TouchPhase.Began&&touchScroll.Finger==-1000&&GUI.enabled&&viewport.Contains(pointer)&&pointer.x<viewport.xMax-16)
       {touchScroll.Begin(t.fingerId,pointer.x,pointer.y,position.y,Mathf.Max(0,content.height-viewport.height),9*TouchRatio);touchScrollOwner=owner;touchScrollPanel=panel;}
       if(touchScrollOwner!=owner||touchScroll.Finger!=t.fingerId)continue;

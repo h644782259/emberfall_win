@@ -174,7 +174,7 @@ namespace Emberfall
         public static Preview Describe(HeroClass hero, int skill, int rank)
         {
             float r = GameBalance.SkillRangeMultiplier(rank);
-            if (skill == 6) return hero==HeroClass.Vanguard?new Preview(Shape.Self,3.2f*r):hero==HeroClass.Ranger?new Preview(Shape.Lane,1.5f*r,12f*r):new Preview(Shape.Ground,(hero==HeroClass.Summoner?4f:3.8f)*r,9f*r);
+            if (skill == 6) return hero==HeroClass.Vanguard?new Preview(Shape.Self,3.2f*r):hero==HeroClass.Ranger?new Preview(Shape.Lane,1.5f*r,12f*r):new Preview(Shape.Ground,(hero==HeroClass.Summoner?1.4f:3.8f)*r,9f*r);
             if (hero == HeroClass.Summoner)
             {
                 if (skill == 0) return new Preview(Shape.Cone, 0, 5f * r, 110);

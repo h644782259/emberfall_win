@@ -39,8 +39,8 @@ public static class BossAttackPolicyTests
         Check(BossAttackPolicy.ComboGap >= .3f, "combo has a real inter-move gap");
         foreach (BossAttackPolicy.Move move in Enum.GetValues(typeof(BossAttackPolicy.Move)))
         {
-            Check(BossAttackPolicy.Windup(move, false) >= .85f, move + " first attack warning stays readable");
-            Check(BossAttackPolicy.Windup(move, true) >= .65f, move + " combo keeps an independent readable warning");
+            Check(BossAttackPolicy.Windup(move, false) >= 1.6f, move + " first attack warning stays readable");
+            Check(BossAttackPolicy.Windup(move, true) >= 1.5f, move + " combo keeps an independent readable warning");
             Check(BossAttackPolicy.Windup(move, true) < BossAttackPolicy.Windup(move, false), move + " combo has distinct but fair pacing");
         }
         Check(BossAttackPolicy.Recovery(true) >= BossAttackPolicy.Recovery(false), "full combo gives a punish window");

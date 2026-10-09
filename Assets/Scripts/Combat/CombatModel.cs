@@ -429,7 +429,14 @@ namespace Emberfall
         public static CombatModel Companion(Transform parent, SummonedCompanion.Kind form)
         {
             CombatModel model = Create(parent);
-            if (form == SummonedCompanion.Kind.Spirit)
+            if(form==SummonedCompanion.Kind.Wisp)
+            {
+                model.floating=true;
+                model.body=model.Part("Ember wisp core",PrimitiveType.Sphere,new Vector3(0,1.2f,0),new Vector3(.45f,.65f,.45f),new Color(1f,.55f,.18f));
+                model.companionBodyScale=model.body.localScale;
+                for(int side=-1;side<=1;side+=2)model.Part("Ember feather",PrimitiveType.Capsule,new Vector3(side*.5f,1.35f,0),new Vector3(.22f,.85f,.16f),new Color(1f,.84f,.38f),model.CompanionRigidParent()).localRotation=Quaternion.Euler(0,0,side*60);
+            }
+            else if (form == SummonedCompanion.Kind.Spirit)
             {
                 model.Part("Turret stone base",PrimitiveType.Cylinder,new Vector3(0,.2f,0),new Vector3(1.05f,.2f,1.05f),new Color(.18f,.32f,.34f));
                 model.Part("Turret pillar",PrimitiveType.Cube,new Vector3(0,.64f,0),new Vector3(.38f,.75f,.38f),new Color(.3f,.52f,.5f));

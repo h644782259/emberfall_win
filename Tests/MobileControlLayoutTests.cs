@@ -77,8 +77,11 @@ public static class MobileControlLayoutTests
             var l=new MobileControlLayout(d[0],d[1],d[2],0,true);
             Check(Math.Abs(l.Map.Width-158.4f)<.01&&Math.Abs(l.Map.Height-122.4f)<.01,"iPad map dimensions are 1.8x");
             Check(Math.Abs(l.Skills[0].Width-62.4f)<.01,"iPad skill diameter is 1.3x");
-            Check(Math.Abs(l.Menu.Width-52.8f)<.01&&Math.Abs(l.Potion.Width-52.8f)<.01,"iPad navigation and potion are 1.2x");
-            Check(l.PlayerHealth.Width==154,"iPad health bar is 1.4x");
+            Check(Math.Abs(l.Menu.Width-52.8f)<.01&&Math.Abs(l.Potion.Width-63.36f)<.01,"iPad navigation remains enlarged and potion grows another 20 percent");
+            Check(l.Skills[4].Y+l.Skills[4].Height+9.9f<=l.SkillPage.Y,"iPad ultimate sits above page switch with a gap");
+            Check(Math.Abs(l.Skills[4].X+l.Skills[4].Width*.5f-l.SkillPage.X-l.SkillPage.Width*.5f)<.01f,"iPad ultimate and switch share right column");
+            Check(l.SkillPage.Width>68,"iPad page switch has enlarged hit area");
+            Check(l.PlayerHealth.Width==184&&l.PlayerHealth.Height==16,"iPad health bar is wider and taller");
             Check(l.Width-l.Dodge.X-l.Dodge.Width>=30,"iPad combat cluster has right inset");
             var targets=new List<MobileControlLayout.Area>{l.Attack,l.Dodge,l.Jump,l.Potion,l.SkillPage,l.Menu,l.Inventory,l.SkillsMenu,l.Catalog,l.Shop,l.Smith,l.Interact,l.Joystick};targets.AddRange(l.Skills);
             for(int i=0;i<targets.Count;i++)
@@ -86,6 +89,19 @@ public static class MobileControlLayoutTests
                 var r=targets[i];Check(r.X>=0&&r.Y>=0&&r.X+r.Width<=l.Width&&r.Y+r.Height<=l.Height,"iPad targets stay in safe area");
                 for(int j=i+1;j<targets.Count;j++)Check(!r.Overlaps(targets[j]),"iPad targets do not overlap "+i+"/"+j+" at "+d[0]);
                 foreach(var hud in new[]{l.Map,l.PlayerStatus,l.AdventureStatus,l.EncounterText,l.BossHealth,l.DungeonEntrance})Check(!r.Overlaps(hud),"iPad HUD clears controls "+i+" at "+d[0]);
+            }
+        }
+        foreach(bool ipad in new[]{false,true})foreach(var d in devices)
+        {
+            if(ipad&&(d[0]<2000||d[0]/d[1]>1.65f))continue;
+            var l=new MobileControlLayout(d[0],d[1],d[2],0,ipad);
+            var reserved=new List<MobileControlLayout.Area>{l.Map,l.EncounterText,l.BossHealth,l.Menu,l.Inventory,l.SkillsMenu,l.Catalog,l.Shop,l.Smith,l.Interact,l.Attack,l.Dodge,l.Jump,l.SkillPage,l.PlayerStatus,l.Potion};reserved.AddRange(l.Skills);
+            Check(l.LootNotice(0).Width>0,"at least one pickup notice fits at "+d[0]+" ipad="+ipad);
+            for(int i=0;i<2;i++)
+            {
+                var notice=l.LootNotice(i);if(notice.Width<=0)continue;
+                foreach(var r in reserved)Check(!notice.Overlaps(r),"loot notice clears wave, map and controls");
+                if(i>0)Check(!notice.Overlaps(l.LootNotice(0)),"queued notices remain separate");
             }
         }
         Check(MobileControlLayout.DeadZone(.1f)==0,"deadzone rejects drift");

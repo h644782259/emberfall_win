@@ -8,7 +8,7 @@ namespace Emberfall
             if(hero==HeroClass.Vanguard&&(skill==4||skill==6||skill==8))return CasterPoseFamily.SelfGuard;
             if(hero==HeroClass.Summoner)
             {
-                if(skill==2||skill==4||skill==9)return CasterPoseFamily.Contract;
+                if(skill==2||skill==4||skill==6||skill==9)return CasterPoseFamily.Contract;
                 if(skill==1||skill==6||skill==7)return CasterPoseFamily.Ground;
             }
             else if(hero==HeroClass.Arcanist&&(skill==0||skill==1||skill==2||skill==5||skill==6||skill==7||skill==9))return CasterPoseFamily.Ground;

@@ -10,7 +10,7 @@ assert 'HeroClass==HeroClass.Vanguard && slot == 6' in p
 assert 'HeroClass==HeroClass.Vanguard&&skill==6' in a
 assert 'slot==6&&HeroClass==HeroClass.Arcanist' in p and 'Damage(2.5f*power)' in p
 assert 'slot==6&&HeroClass==HeroClass.Ranger' in p and 'i*8' in p
-assert 'damage*2.6f' in s and 'damage*3.2f' in s
+assert 'damage*2.6f' in s and 'SummonedCompanion.Kind.Wisp' in s
 assert 'AdvancedSkillSequence.Spawn' not in s
 assert 'index == 6' in t
 assert 'guardReduction=0;guardRadius' in p

@@ -278,6 +278,7 @@ namespace Emberfall
             GUI.enabled = !session.BackgroundPaused && !LifecycleTouchBlocked && MerchantServiceLayout.StablePanelEvent(UITransitionBlocked,true,Event.current.type==EventType.Repaint||Event.current.type==EventType.Layout);
             blockedRects.Clear();
             tooltip = null;
+            BeginEntryRewardPopup();
             if(exitRequest.Open)
             {
                 ClearRewardMoment();DrawExitConfirmation();GUI.matrix=oldMatrix;GUI.color=oldColor;GUI.contentColor=oldContentColor;GUI.enabled=oldEnabled;return;
@@ -336,6 +337,7 @@ namespace Emberfall
                 DrawIcon(new Rect(Mouse.x + 11, Mouse.y + 11, 36, 36), HotbarIcon(session.Progression.Profile, hotbarPointerSkill), Color.white);
             }
             DrawTooltip();
+            DrawEntryRewardPopup();
             DrawExitConfirmation();
             GUI.matrix = oldMatrix;
             GUI.color = oldColor;

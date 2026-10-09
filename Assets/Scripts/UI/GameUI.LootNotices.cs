@@ -21,10 +21,10 @@ namespace Emberfall
             if(lootNotices.Exists(n=>n.Id==item.id))return;
             lootNotices.Add(new LootNotice{Id=item.id,Name=item.name,Slot=item.slot,Rarity=item.rarity,Level=item.level});
         }
-        private bool LootNoticesVisible {get{return session.InDungeon&&!session.IsDead&&!session.Paused&&!session.PracticeActive&&panel==Panel.None&&!session.InputBlocked;}}
-        private int VisibleLootNoticeCount {get{return Mathf.Min(lootNotices.Count,MobileControls.Active?2:3);}}
+        private bool LootNoticesVisible {get{return session.InDungeon&&!session.IsDead&&!session.Paused&&!session.PracticeActive&&panel==Panel.None&&!session.InputBlocked&&!session.RunChoices.AwaitingChoice&&!session.RoomBranchChoiceOpen;}}
+        private int VisibleLootNoticeCount {get{int count=Mathf.Min(lootNotices.Count,MobileControls.Active?2:3);if(MobileControls.Active)while(count>0&&MobileControls.Layout.LootNotice(count-1).Width<=0)count--;return count;}}
         private Rect LootNoticeRect(int index)
-        {float u=MobileControls.Active?TouchRatio:1,w=Mathf.Min((MobileControls.Active?174:208)*u,width*.35f);return new Rect(width-w-12*u,(64+index*(MobileControls.Active?48:60))*u,w,(MobileControls.Active?44:54)*u);}
+        {if(MobileControls.Active)return TouchRect(MobileControls.Layout.LootNotice(index));float w=Mathf.Min(208,width*.35f);return new Rect(width-w-12,120+index*60,w,54);}
         private Rect LootNoticeEquipRect(Rect r)
         {float u=MobileControls.Active?TouchRatio:1;return new Rect(r.xMax-52*u,r.y+(MobileControls.Active?0:5)*u,48*u,44*u);}
         private ItemData LootNoticeUpgrade(LootNotice n)

@@ -12,7 +12,7 @@ namespace Emberfall
         {
             string key="Emberfall.TouchBindings."+session.Progression.CurrentSlotId+"."+(int)session.Progression.Profile.heroClass;
             if(mobileBindings!=null&&mobileBindingOwner==key)return;
-            mobileBindingOwner=key;mobileBindings=MobileSkillPolicy.DefaultBindings();
+            mobileBindingOwner=key;mobileBindings=MobileSkillPolicy.DefaultBindings(session.Progression.Profile.heroClass==HeroClass.Summoner);
             string[] saved=PlayerPrefs.GetString(key,"").Split(',');
             int[] parsed=new int[saved.Length];bool valid=true;
             for(int i=0;i<saved.Length;i++)if(!int.TryParse(saved[i],out parsed[i]))valid=false;

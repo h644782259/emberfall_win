@@ -77,7 +77,7 @@ namespace Emberfall
                 Feedback(session.Progression.LearnSkill(skill), GameBalance.SkillName(p.heroClass, skill) + "已达到" + GameBalance.SkillRankName(session.Progression.Profile.skillRanks[skill]));
             Text(new Rect(r.x + 271, r.y + 341, 296, 40), rank == 3 ? "" : canLearn ? "下一阶段：" + GameBalance.SkillRankName(nextRank) + " · Lv." + GameBalance.SkillRankRequiredLevel(skill, nextRank) : reason, 12, muted, false, true);
             if (passive) return;
-            if(MobileControls.Active){Text(new Rect(actionX,r.y+398,550,48),rank>0?"已在战斗界面直接显示 · 轻点自动瞄准施放":"学会后直接出现在战斗界面，无需配置或翻页",18,jade,true,true);return;}
+            if(MobileControls.Active)return;
             Rect loadoutHeading = new Rect(actionX, r.y + 397, 365, 21);
             Text(loadoutHeading, "十格快捷栏", 12, jade, true);
             if (loadoutHeading.Contains(Mouse)) tooltip = "“+” 配置到槽位，“×” 卸下。\n升级保留快捷栏位置，冷却按技能保留。";

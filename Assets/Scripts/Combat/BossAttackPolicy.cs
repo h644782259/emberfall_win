@@ -73,8 +73,8 @@ namespace Emberfall
 
         public static float Windup(Move move, bool followUp)
         {
-            float duration = move == Move.Charge ? 1.05f : move == Move.Fan ? .95f : .9f;
-            return followUp ? Math.Max(.65f, duration - .18f) : duration;
+            float duration = move == Move.Charge ? 1.8f : move == Move.Fan ? 1.7f : 1.6f;
+            return followUp ? Math.Max(1.5f, duration - .1f) : duration;
         }
 
         public static float ChargeContactDelay(float along, float lateral, float remainingWindup)

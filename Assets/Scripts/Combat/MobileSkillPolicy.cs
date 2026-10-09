@@ -10,7 +10,7 @@ namespace Emberfall
         private static readonly int[] activeSkills={0,1,2,4,5,6,7,9};
         public static int SkillAtButton(int button,int page=0)
         {if(button<0||button>=ButtonCount||page<0||page>=PageCount)return -1;if(button==4)return 9;int index=page*4+button;return index<7?activeSkills[index]:-1;}
-        public static int[] DefaultBindings(){return new[]{0,1,2,4,5,6,7,-1,9};}
+        public static int[] DefaultBindings(bool summoner=false){return summoner?new[]{0,1,5,7,2,4,6,-1,9}:new[]{0,1,2,4,5,6,7,-1,9};}
         public static bool ValidBindings(int[] values)
         {
             if(values==null||values.Length!=9||values[8]!=9)return false;

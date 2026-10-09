@@ -101,6 +101,7 @@ namespace Emberfall
                 case 6:
                     if(hero==HeroClass.Vanguard) { ink.color = new Color(.48f, 1f, .65f); ink.Ring(32, 32, 24, 2); ink.Line(32, 16, 32, 48, 9); ink.Line(16, 32, 48, 32, 9); }
                     else if(hero==HeroClass.Ranger) { for(int i=0;i<3;i++)ink.Arrow(8,18+i*14,54,10+i*18); }
+                    else if(hero==HeroClass.Summoner) { ink.Disc(32,32,7);ink.Line(29,32,10,14,5);ink.Line(35,32,54,14,5);ink.Line(29,36,8,28,4);ink.Line(35,36,56,28,4);ink.Arrow(32,54,32,39); }
                     else { ink.Ring(32,32,17,3);for(int i=0;i<6;i++)ink.Radial(i*60,21,29,3);ink.Arrow(23,48,41,16); }
                     break;
                 case 7:
