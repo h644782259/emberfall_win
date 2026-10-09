@@ -338,6 +338,7 @@ namespace Emberfall
                 tooltip = null;
                 DrawIcon(new Rect(Mouse.x + 11, Mouse.y + 11, 36, 36), HotbarIcon(session.Progression.Profile, hotbarPointerSkill), Color.white);
             }
+            if(panel==Panel.Skills&&skillSection==1)tooltip=null;
             DrawTooltip();
             DrawEntryRewardPopup();
             DrawExitConfirmation();
@@ -965,7 +966,7 @@ namespace Emberfall
             Text(new Rect(victory.x+16*u,victory.y+58*u,w-32*u,40*u),session.DungeonRewardPending?"奖励待保存 · 请先完成结算":"战利品已解锁 · 可继续挑战或从南侧传送点回营",Mathf.RoundToInt(12*u),pale,false,true);
             float bw=(w-48*u)/3,y= victory.y+120*u;
             if(NavigationButton(new Rect(victory.x+16*u,y,bw,44*u),"战斗复盘",jade)){panel=Panel.Summary;session.SetUIBlocking(true);BlockUITransition();return;}
-            if(PrimaryButton(new Rect(victory.x+24*u+bw,y,bw,44*u),"挑战下一阶",gold,session.CanChallengeNextTier))
+            if(PrimaryButton(new Rect(victory.x+24*u+bw,y,bw,44*u),"挑战 Lv"+AdventureRewardRules.DungeonLevel(session.DungeonTier+1),gold,session.CanChallengeNextTier))
             {session.ChallengeNextTier();BlockUITransition();return;}
             if(NavigationButton(new Rect(victory.x+32*u+2*bw,y,bw,44*u),session.DungeonRewardPending?"保存并回营":"返回营地",jade))session.ReturnToCamp();
         }

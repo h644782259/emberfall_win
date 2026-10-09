@@ -46,18 +46,34 @@ namespace Emberfall
             {
                 if(draw)Text(new Rect(4*u,y*u,(width-8)*u,24*u),"资源",Mathf.RoundToInt(15*u),pale,true);
                 y+=28;
+                int count=0;foreach(int amount in amounts)if(amount>0)count++;
+                float cell=(width-8-(count-1)*6)/count;int column=0;
                 for(int i=0;i<amounts.Length;i++)if(amounts[i]>0)
                 {
                     if(draw)
                     {
-                        Color tint=i==0?gold:i==1?new Color(.52f,.86f,1):new Color(.87f,.72f,1);
-                        DrawIcon(new Rect(4*u,(y+6)*u,32*u,32*u),UIIconAtlas.Reward(i),tint);
-                        Text(new Rect(44*u,y*u,(width-124)*u,44*u),labels[i],Mathf.RoundToInt(13*u),pale);
-                        Text(new Rect((width-80)*u,y*u,76*u,44*u),"+"+amounts[i],Mathf.RoundToInt(16*u),tint,true,false,TextAnchor.MiddleRight);
+                        float x=4+column*(cell+6);Color tint=i==0?gold:i==1?new Color(.52f,.86f,1):new Color(.87f,.72f,1);
+                        Fill(new Rect(x*u,y*u,cell*u,60*u),card);
+                        DrawIcon(new Rect((x+6)*u,(y+6)*u,22*u,22*u),UIIconAtlas.Reward(i),tint);
+                        Text(new Rect((x+30)*u,(y+2)*u,(cell-34)*u,30*u),"+"+amounts[i],Mathf.RoundToInt(14*u),tint,true,false,TextAnchor.MiddleRight);
+                        Text(new Rect((x+4)*u,(y+34)*u,(cell-8)*u,22*u),labels[i],Mathf.RoundToInt(10*u),muted,false,false,TextAnchor.MiddleCenter);
                     }
-                    y+=48;
+                    column++;
                 }
+                y+=64;
                 y+=8;
+            }
+            if(reward.gemMechanic!=EquipmentMechanic.None)
+            {
+                if(draw)
+                {
+                    var gem=reward.gemMechanic;Rect slot=new Rect(4*u,(y+28)*u,56*u,56*u);
+                    var preview=new EntryRewardPreview{Key="gem:"+reward.id,Name=BuildCatalog.GemName(gem),Rarity=Rarity.Epic,Tint=GameBalance.RarityColor(Rarity.Epic),Icon=UIIconAtlas.Utility("gem"),Description=GemDropDescription(gem,false)};
+                    Text(new Rect(4*u,y*u,(width-8)*u,24*u),"副本专属宝石",Mathf.RoundToInt(15*u),gold,true);
+                    DrawEntryRewardIcon(slot,preview,u);InspectRewardItem(slot,preview);
+                    Text(new Rect(72*u,(y+30)*u,(width-80)*u,54*u),preview.Name+"\n"+(reward.duplicateGem?"已拥有 · 转为3碎片":"整件宝石 · 可到铁匠镶嵌"),Mathf.RoundToInt(13*u),pale,false,true);
+                }
+                y+=96;
             }
             if(reward.Rarity.HasValue&&reward.Slot.HasValue&&!reward.Duplicate)
             {
@@ -69,6 +85,8 @@ namespace Emberfall
                     Rect icon=new Rect(4*u,(y+30)*u,56*u,56*u);Color tint=GameBalance.RarityColor(reward.Rarity.Value);
                     Fill(icon,card);Border(icon,tint);DrawIcon(new Rect(icon.x+8*u,icon.y+8*u,40*u,40*u),UIIconAtlas.FashionCardIcon(reward.Slot.Value,reward.appearanceTier>=0?reward.appearanceTier:(int)reward.Rarity.Value,session.Progression.Profile.heroClass),tint);
                     Text(new Rect(72*u,(y+30)*u,(width-80)*u,h*u),name,Mathf.RoundToInt(14*u),pale,false,true);
+                    var fashionPreview=new EntryRewardPreview{Key="fashion:"+reward.id,Name=reward.Name,Rarity=reward.Rarity.Value,Tint=tint,Icon=UIIconAtlas.FashionCardIcon(reward.Slot.Value,reward.appearanceTier,session.Progression.Profile.heroClass),Description=reward.Name+"\n"+ProgressionService.FashionBonus(reward.Slot.Value,reward.Rarity.Value)};
+                    DrawEntryRewardIcon(icon,fashionPreview,u);InspectRewardItem(icon,fashionPreview);
                 }
                 y+=30+h+12;
             }
@@ -81,7 +99,7 @@ namespace Emberfall
                 float size=Mathf.Min(56*unit,(area.width-8*unit)/reward.equipmentIds.Length);
                 for(int i=0;i<reward.equipmentIds.Length;i++){
                     var item=session.Progression.Profile.inventory.Find(v=>v.id==reward.equipmentIds[i]);
-                    if(item!=null)DrawInventoryIcon(new Rect(area.x+i*(size+2*unit),area.y,size,size),item,unit);
+                    if(item!=null){Rect icon=new Rect(area.x+i*(size+2*unit),area.y,size,size);DrawInventoryIcon(icon,item,unit);InspectRewardItem(icon,ActualEquipmentPreview(item));}
                 }
                 area=new Rect(area.x,area.y+size+8*unit,area.width,Mathf.Max(1,area.height-size-8*unit));
             }

@@ -503,7 +503,7 @@ namespace Emberfall
             GameObject go=new GameObject(name); go.transform.SetParent(parent); go.transform.position=center;
             if(name=="Gate frame"&&AuthoredFixedScenery.Frame(go,radius,material))return go;
             LineRenderer line=go.AddComponent<LineRenderer>(); line.useWorldSpace=false; line.loop=true; line.positionCount=72; line.widthMultiplier=thickness; line.sharedMaterial=material;
-            line.numCornerVertices=2; line.numCapVertices=2; line.generateLightingData=true;
+            line.numCornerVertices=4; line.numCapVertices=4; line.generateLightingData=true;
             for(int i=0;i<72;i++) { float a=i*Mathf.PI*2/72; line.SetPosition(i,vertical?new Vector3(Mathf.Cos(a)*radius,Mathf.Sin(a)*radius,0):new Vector3(Mathf.Cos(a)*radius,0,Mathf.Sin(a)*radius)); }
             return go;
         }

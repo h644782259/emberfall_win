@@ -25,7 +25,7 @@ namespace Emberfall
         public ChapterDifficulty ActiveChapterDifficulty {get{return ChapterActive?ChapterRun.Difficulty:ChapterDifficulty.Normal;}}
         public int ChapterRoomIndex {get{return ChapterActive?ChapterRun.RoomIndex:-1;}}
         public int ChapterSeed {get{return ChapterActive?ChapterRun.Seed:0;}}
-        public bool OpenChapterSelectionAllowed {get{return HasStarted&&!InDungeon&&!IsDead&&!Paused&&!BackgroundPaused&&IsInCamp;}}
+        public bool OpenChapterSelectionAllowed {get{return HasStarted&&!InDungeon&&!IsDead&&!Paused&&!BackgroundPaused&&(IsInCamp||NearPortal());}}
         public bool NearChapterExit {get{return ChapterActive&&!ChapterFinished&&ChapterRun.DoorUnlocked&&chapterPlan!=null&&Player!=null&&Vector3.Distance(Player.transform.position,chapterPlan.Exit)<3.8f;}}
         private ChapterRunReceipt chapterReceipt;
         private ChapterRoomPlan chapterPlan;

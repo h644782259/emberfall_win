@@ -57,7 +57,7 @@ namespace Emberfall
             if(MobileControls.Active)
             {
                 var l=MobilePanelGeometry();
-                if(DrawMobilePanelChrome(l,"技能 · 职业与精通","技能点 "+p.Profile.skillPoints+" · 共用配点",headerRightReserve:188))return;
+                if(DrawMobilePanelChrome(l,"技能 · 职业与精通","技能点 "+p.Profile.skillPoints+" · 共用配点",showNotice:false,headerRightReserve:188))return;
                 DrawSkillTabs(TouchRect(l.Close.X-188,8,176,44));
                 if(skillSection==0)return;
                 var body=new MobilePanelLayout.Area(l.Body.X,l.Body.Y,l.Body.Width,l.Height-l.Body.Y-12);

@@ -23,7 +23,7 @@ namespace Emberfall
         public static Texture2D SkillGlyph(HeroClass hero,int skill,int requestedSize=48) { return BuildSkill(hero,skill,requestedSize,true); }
         private static Texture2D BuildSkill(HeroClass hero,int skill,int requestedSize,bool monochrome)
         {
-            int rasterSize = SkillIconPresentation.RasterSize(requestedSize);
+            int rasterSize = Mathf.Max(128,SkillIconPresentation.RasterSize(requestedSize));
             int key = (monochrome?1000000:0)+rasterSize * 1000 + (int)hero * 10 + skill;
             Texture2D texture;
             if (cache.TryGetValue(key, out texture)) return texture;
@@ -348,12 +348,13 @@ namespace Emberfall
         private static Vector2 V(float x, float y) { return new Vector2(x, y); }
         private sealed class Icon
         {
-            private const int Size = 64;
+            private const int Size = 128;
+            private const float RasterScale = Size / 64f;
             private readonly Color[] pixels = new Color[Size * Size];
             public Color color;
             public bool Layered;
             private readonly int outputSize;
-            public Icon(Color tint, int size = 64) { color = tint; outputSize = size; }
+            public Icon(Color tint, int size = 128) { color = tint; outputSize = Mathf.Clamp(size,128,Size); }
             private void Plot(int x, int y, float alpha)
             {
                 if (alpha <= 0 || x < 0 || y < 0 || x >= Size || y >= Size) return;
@@ -369,12 +370,12 @@ namespace Emberfall
                 Vector2 a = V(ax, ay), d = V(bx - ax, by - ay);
                 for (int y = 0; y < Size; y++) for (int x = 0; x < Size; x++)
                 {
-                    Vector2 p = V(x + .5f, y + .5f);
+                    Vector2 p = V((x + .5f)/RasterScale, (y + .5f)/RasterScale);
                     float t = d.sqrMagnitude < .001f ? 0 : Mathf.Clamp01(Vector2.Dot(p - a, d) / d.sqrMagnitude);
-                    Plot(x, y, thickness * .5f + .8f - Vector2.Distance(p, a + d * t));
+                    Plot(x, y, (thickness * .5f + .8f/RasterScale - Vector2.Distance(p, a + d * t))*RasterScale);
                 }
             }
-            public void Disc(float cx, float cy, float radius) { for (int y = 0; y < Size; y++) for (int x = 0; x < Size; x++) Plot(x, y, radius + .7f - Vector2.Distance(V(x + .5f, y + .5f), V(cx, cy))); }
+            public void Disc(float cx, float cy, float radius) { for (int y = 0; y < Size; y++) for (int x = 0; x < Size; x++) Plot(x, y, (radius + .7f/RasterScale - Vector2.Distance(V((x + .5f)/RasterScale, (y + .5f)/RasterScale), V(cx, cy)))*RasterScale); }
             public void Ring(float x, float y, float radius, float thickness) { Arc(x, y, radius, 0, 360, thickness); }
             public void Arc(float x, float y, float radius, float start, float end, float thickness)
             {
@@ -389,9 +390,10 @@ namespace Emberfall
             {
                 for (int y = 0; y < Size; y++) for (int x = 0; x < Size; x++)
                 {
+                    float sx=(x+.5f)/RasterScale,sy=(y+.5f)/RasterScale;
                     bool inside = false; int j = points.Length - 1;
                     for (int i = 0; i < points.Length; j = i++)
-                        if ((points[i].y > y) != (points[j].y > y) && x < (points[j].x - points[i].x) * (y - points[i].y) / (points[j].y - points[i].y) + points[i].x) inside = !inside;
+                        if ((points[i].y > sy) != (points[j].y > sy) && sx < (points[j].x - points[i].x) * (sy - points[i].y) / (points[j].y - points[i].y) + points[i].x) inside = !inside;
                     if (inside) Plot(x, y, 1);
                 }
             }

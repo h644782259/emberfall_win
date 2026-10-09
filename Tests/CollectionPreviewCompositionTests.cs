@@ -8,7 +8,7 @@ public static class CollectionPreviewCompositionTests
         foreach(bool mobile in new[]{false,true})foreach(float w in new[]{1,64,180,300,512,768,1200,4096,float.NaN,float.PositiveInfinity})
         foreach(float h in new[]{1,64,200,480,768,2400,float.NaN})
         {
-            var s=new CollectionPreviewSurface(w,h,mobile);int cap=mobile?512:768;
+            var s=new CollectionPreviewSurface(w,h,mobile);int cap=mobile?1024:1536;
             check(s.Width>=64&&s.Height>=64&&s.Width<=cap&&s.Height<=cap,"bounded physical surface");
             check(s.Width%16==0&&s.Height%16==0,"quantized native allocation");
             check(s.Samples==(mobile?2:4),"bounded requested sample count");

@@ -7,7 +7,7 @@ namespace Emberfall
         private Texture2D terrainMap;
         private int terrainMapRevision = int.MinValue;
         private float terrainMapRadius;
-        private const int TerrainMapSize = 96;
+        private const int TerrainMapSize = 384;
         private readonly Color[] terrainMapPixels = new Color[TerrainMapSize * TerrainMapSize];
         private void DrawMinimapTerrain(Rect r)
         {

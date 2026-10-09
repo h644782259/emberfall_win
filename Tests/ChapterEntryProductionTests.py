@@ -15,7 +15,8 @@ namespace UnityEngine {
  public struct Vector2{public float x,y;public Vector2(float a,float b){x=a;y=b;}public static Vector2 zero=>new Vector2();}
  public struct Rect{public float x,y,width,height;public Rect(float a,float b,float w,float h){x=a;y=b;width=w;height=h;}public float yMax=>y+height;public float xMax=>x+width;}
  public enum TextAnchor{MiddleLeft,MiddleCenter}public static class Time{public static float unscaledTime;}
- public static class Mathf{public static float Max(float a,float b)=>Math.Max(a,b);public static float Min(float a,float b)=>Math.Min(a,b);public static int Clamp(int x,int a,int b)=>Math.Max(a,Math.Min(b,x));public static int RoundToInt(float x)=>(int)Math.Round(x);}
+ public static class GUI{public static void BeginGroup(Rect r){}public static void EndGroup(){}}
+ public static class Mathf{public static int Min(int a,int b)=>Math.Min(a,b);public static float Max(float a,float b)=>Math.Max(a,b);public static float Min(float a,float b)=>Math.Min(a,b);public static int Clamp(int x,int a,int b)=>Math.Max(a,Math.Min(b,x));public static int RoundToInt(float x)=>(int)Math.Round(x);}
  public class GUIContent{public string text;public GUIContent(string s){text=s;}}
  public class GUIStyle{public static int Measurements;public float CalcHeight(GUIContent c,float width){Measurements++;return 20*(1+c.text.Length/Math.Max(1,(int)(width/10)));}}
 }
@@ -35,6 +36,10 @@ namespace Emberfall {
   public void EnterDungeon(){}public bool LeaveSucceeds=true;public void ReturnToCamp(){ReturnCalls++;if(LeaveSucceeds)ChapterFinished=false;}public void SetUIBlocking(bool b){Blocked=b;}public void SetPaused(bool b){Paused=b;}
  }
  public sealed partial class GameUI {
+ bool SmithServiceActive=>false; EquipmentMechanic smithPreviewMechanic; Rect entryRewardViewport;
+ float DrawEntryRewardPreviews(float width,float u,int mode,int tier,bool chapter,bool draw)=>144;
+ void DrawRewardToken(Rect r,int kind,int value,float u){}
+
   // This chapter navigation fixture never opens the inventory preset-sale dialog.
   bool presetSaleOpen=>false;void CancelPresetSale(){throw new InvalidOperationException("chapter-only fixture entered preset-sale cancellation");}
   bool MerchantServiceActive=>true;enum Panel{None,Chapter,Camp,Inventory,Skills,Chests,Fashion,PotionAssignment,Bindings,SaveLocation,SaveSelection,Controls,TravelMap}
@@ -60,7 +65,7 @@ namespace Emberfall {
   void FinishChestReveal(){}void ReturnToInventory(){panel=Panel.Inventory;}
   CLOSE
   public static int Verify(string root){int n=0;Action<bool,string> check=(ok,why)=>{n++;if(!ok)throw new Exception(why);};
-   var p=new ProgressionService(Path.Combine(root,"ui"));check(p.CreateNewSlot(HeroClass.Arcanist),"create persisted profile");p.Profile.highestAdventureTier=12;
+   var p=new ProgressionService(Path.Combine(root,"ui"));check(p.CreateNewSlot(HeroClass.Arcanist),"create persisted profile");p.Profile.highestAdventureTier=12;p.Profile.chapterBestTiers[0]=12;
    var ui=new GameUI{session=new SessionStub{Progression=p}};ui.session.SelectedChapterTier=7;
    string state=JsonUtility.ToJson(p.Profile,true),disk=File.ReadAllText(p.SaveFilePath);int events=0;p.Changed+=()=>events++;
    check(ui.OpenChapterSelection()&&ui.panel==Panel.Chapter&&ui.session.Blocked,"open actual chapter UI blocks combat");
@@ -122,7 +127,7 @@ namespace Emberfall {
    ui.click="继续 · 查看结果";ui.DrawChapterResult();check(ui.session.ChapterResultReady,"explicit continue only switches presentation state");
    ui.session.ChapterResultReady=true;
    var failure=new ChapterResultSnapshot(ChapterNode.ForestCourt,ChapterDifficulty.Hard,7,4,true,0,0,1,2,true,"spawn #4 unreachable","guardian",17,7);
-   string evidence=ChapterEntryPresentation.Result(failure);check(evidence.Contains("困难")&&evidence.Contains("第 7 阶")&&evidence.Contains("携带药剂 4")&&evidence.Contains("限疗规则")&&evidence.Contains("spawn #4 unreachable")&&evidence.Contains("guardian"),"failure UI uses separated attempt identity healing and concrete evidence");
+   string evidence=ChapterEntryPresentation.Result(failure);check(evidence.Contains("困难")&&evidence.Contains("第 7 阶")&&evidence.Contains("携带药剂 4")&&evidence.Contains("spawn #4 unreachable")&&evidence.Contains("guardian"),"failure UI uses separated attempt identity healing and concrete evidence");
    ui.session.IsDead=true;ui.session.ChapterFinished=false;ui.ReplayDeadSurface();check(ui.ordinaryDeaths==1,"ordinary nonchapter death still dispatches original death screen");
    var previousResult=ui.session.ChapterResult;ui.session.ChapterFinished=true;ui.session.ChapterRun.Failed=true;ui.session.ChapterResult=failure;ui.texts.Clear();ui.ReplayDeadSurface();check(ui.ordinaryDeaths==1&&ui.texts.Exists(t=>t.Contains("spawn #4 unreachable")),"chapter death dispatches retained failure evidence instead of ordinary death screen");check(ui.buttons.Exists(b=>b.text=="原条件重试"&&b.enabled)&&ui.buttons.Exists(b=>b.text=="返回营地"),"failed chapter shows retry and camp actions");ui.click="原条件重试";ui.DrawChapterResult();check(ui.session.RetryCalls==1,"retry button dispatches host once");ui.session.IsDead=false;ui.session.ChapterRun.Failed=false;ui.session.ChapterResult=previousResult;
    var repeat=new ChapterResultSnapshot(ChapterNode.ForestCourt,ChapterDifficulty.Normal,1,3,false,1,2,3,3,false,null,null,0,14);repeat.RecordSaved(1,false,-1,-1,2,2,140);

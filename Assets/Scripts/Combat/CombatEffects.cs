@@ -25,8 +25,8 @@ namespace Emberfall
             if (radius >= 2.5f) color.a = Mathf.Min(color.a, Application.isMobilePlatform ? .48f : .66f);
             line.widthMultiplier = Mathf.Min(width, radius >= 2.5f ? .12f : width);
             line.sortingOrder = 5;
-            line.numCornerVertices = 2;
-            line.numCapVertices = 2;
+            line.numCornerVertices = 4;
+            line.numCapVertices = 4;
             line.sharedMaterial = NewGlow();
             line.startColor = line.endColor = color;
             obj.AddComponent<FadingCombatEffect>().Setup(line, color, radius, lifetime, expand, respectCover: respectCover);
@@ -286,7 +286,9 @@ namespace Emberfall
 
         private static CombatProjectile Make(Vector3 at, Vector3 forward, Color tint, bool arrow,string identity)
         {
-            Material surface = new Material(Shader.Find("Standard")) { color = tint };
+            Shader detail=Resources.Load<Shader>("FilledSpell");
+            Material surface = new Material(detail!=null?detail:Shader.Find("Standard")) { color = tint };
+            if(detail!=null){surface.SetFloat("_Element",arrow?0:5);surface.SetFloat("_Seed",at.x*.17f+at.z*.23f);}
             ProceduralVisuals.ApplySurface(surface,arrow ? VisualSurface.Metal : VisualSurface.Crystal);
             GameObject obj = new GameObject("Projectile simulation root");
             GameObject body = ProceduralVisuals.Create(arrow ? "Spectral Arrow" : "Arcane Bolt",arrow ? PrimitiveType.Capsule : PrimitiveType.Sphere,surface);
@@ -307,12 +309,12 @@ namespace Emberfall
             projectile.trailMaterial = CombatFx.NewGlow();
             trail.sharedMaterial = projectile.trailMaterial;
             trail.time = EffectPreferences.ReducedEffects ? .08f : .16f;
-            trail.numCapVertices = 2; trail.numCornerVertices = 2;
+            trail.numCapVertices = 4; trail.numCornerVertices = 4;
             trail.startWidth = arrow ? .11f : .22f;
             trail.endWidth = 0;
-            trail.startColor = tint;
+            trail.startColor = Color.Lerp(tint,Color.white,.65f);
             trail.endColor = new Color(tint.r,tint.g,tint.b,0);
-            trail.minVertexDistance = .065f;
+            trail.minVertexDistance = .035f;
             return projectile;
         }
 

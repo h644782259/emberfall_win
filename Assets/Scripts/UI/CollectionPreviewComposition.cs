@@ -11,7 +11,7 @@ namespace Emberfall
         {
             if(float.IsNaN(width)||float.IsInfinity(width)||width<=0)width=384;
             if(float.IsNaN(height)||float.IsInfinity(height)||height<=0)height=480;
-            int cap=mobile?512:768;float scale=Math.Min(1,cap/Math.Max(width,height));
+            int cap=mobile?1024:1536;float scale=Math.Min(1,cap/Math.Max(width,height));
             Width=Math.Min(cap,Math.Max(64,(int)Math.Ceiling(width*scale/16)*16));
             Height=Math.Min(cap,Math.Max(64,(int)Math.Ceiling(height*scale/16)*16));Samples=mobile?2:4;
         }

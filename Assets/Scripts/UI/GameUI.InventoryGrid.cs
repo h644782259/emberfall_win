@@ -134,8 +134,8 @@ namespace Emberfall
                 {inventoryFilter=index-1;scroll=Vector2.zero;RebuildBagItems();ResolveSelectedItem();CancelMobileScroll();}
             }
             viewport.width-=InventoryGridGeometry.FilterRailWidth*u;
-            float available=viewport.width/u-18;var geometry=new InventoryGridGeometry(available);
-            float contentHeight=Mathf.Max(viewport.height/u,((bagItems.Count+geometry.Columns-1)/geometry.Columns)*InventoryGridGeometry.RowHeight+4);
+            float available=viewport.width/u-18;var geometry=new InventoryGridGeometry(available,MobileControls.Active?60:44);
+            float contentHeight=Mathf.Max(viewport.height/u,((bagItems.Count+geometry.Columns-1)/geometry.Columns)*geometry.Stride+4);
             bool previous=GUI.enabled;GUI.enabled=previous&&!inventoryComparisonOpen&&inventoryPopupDismissed!=Time.frameCount;
             Vector2 before=scroll;
             scroll=BeginTouchScroll("inventory-icon-grid",viewport,scroll,new Rect(0,0,available*u,contentHeight*u));

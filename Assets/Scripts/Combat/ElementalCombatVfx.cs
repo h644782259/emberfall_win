@@ -5,6 +5,27 @@ namespace Emberfall
     internal static class ElementalCombatVfx
     {
         internal enum Element { Fire, Lightning, Poison }
+        private static readonly Texture2D[] detailTextures=new Texture2D[3];
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetTextures(){for(int i=0;i<detailTextures.Length;i++){if(detailTextures[i]!=null)Object.Destroy(detailTextures[i]);detailTextures[i]=null;}}
+        private static Texture2D DetailTexture(Element element)
+        {
+            int index=(int)element;if(detailTextures[index]!=null)return detailTextures[index];
+            const int size=256;var pixels=new Color[size*size];
+            for(int y=0;y<size;y++)for(int x=0;x<size;x++)
+            {
+                float u=(x+.5f)/size*2-1,v=(y+.5f)/size*2-1;
+                float n=Mathf.PerlinNoise(u*5+13,v*5+29);
+                float distance=Mathf.Sqrt(u*u+v*v),alpha;
+                if(element==Element.Fire){float w=.68f*(1-(v+1)*.34f);float shape=Mathf.Sqrt(u*u/(w*w)+v*v);alpha=Mathf.Pow(Mathf.Clamp01(1-shape),1.2f)*Mathf.Clamp01(n*1.6f+.1f);}
+                else if(element==Element.Poison){float edge=Mathf.Exp(-Mathf.Pow((distance-.62f)*13,2));alpha=(edge*.7f+Mathf.Clamp01(1-distance)*.2f)*Mathf.Clamp01((1-distance)*8);}
+                else alpha=Mathf.Pow(Mathf.Clamp01(1-distance),3)+Mathf.Exp(-Mathf.Abs(u)*55)*Mathf.Clamp01(1-Mathf.Abs(v))*.35f;
+                pixels[y*size+x]=new Color(1,1,1,Mathf.Clamp01(alpha));
+            }
+            var texture=new Texture2D(size,size,TextureFormat.RGBA32,true){name="Element particle detail / "+element,filterMode=FilterMode.Trilinear,wrapMode=TextureWrapMode.Clamp,hideFlags=HideFlags.HideAndDontSave};
+            texture.SetPixels(pixels);texture.Apply(true,true);detailTextures[index]=texture;return texture;
+        }
+
 
         public static void Area(Transform parent, float radius, Element element)
         {
@@ -53,8 +74,15 @@ namespace Emberfall
             main.startSize = element == Element.Poison ? .2f : element == Element.Lightning ? .11f : .27f;
             main.maxParticles = DecorationBudget.Particles(EffectPreferences.EffectsScale);
             main.gravityModifier = -.08f;
+            main.startRotation = new ParticleSystem.MinMaxCurve(-.4f,.4f);
             main.startColor = element == Element.Fire ? new Color(1f, .46f, .08f, .85f) :
                 element == Element.Poison ? new Color(.48f, 1f, .22f, .7f) : new Color(.56f, .88f, 1f, .9f);
+            var colorLife=particles.colorOverLifetime;colorLife.enabled=true;
+            Color core=element==Element.Fire?new Color(1,.97f,.65f):element==Element.Poison?new Color(.85f,1,.3f):new Color(.95f,.97f,1);
+            Color middle=element==Element.Fire?new Color(1,.46f,.09f):element==Element.Poison?new Color(.3f,.76f,.18f):new Color(.45f,.6f,1);
+            Color end=element==Element.Fire?new Color(.35f,.045f,.018f):element==Element.Poison?new Color(.12f,.24f,.04f):new Color(.29f,.12f,.65f);
+            var gradient=new Gradient();gradient.SetKeys(new[]{new GradientColorKey(core,0),new GradientColorKey(middle,.35f),new GradientColorKey(end,1)},new[]{new GradientAlphaKey(0,0),new GradientAlphaKey(.9f,.12f),new GradientAlphaKey(.6f,.55f),new GradientAlphaKey(0,1)});
+            colorLife.color=new ParticleSystem.MinMaxGradient(gradient);main.startColor=Color.white;
             var emission = particles.emission;
             emission.rateOverTime = rate * EffectPreferences.EffectsScale;
             var shape = particles.shape;
@@ -68,6 +96,11 @@ namespace Emberfall
             Shader shader = Shader.Find("Particles/Standard Unlit");
             if (shader == null) shader = Shader.Find("Sprites/Default");
             renderer.sharedMaterial = new Material(shader);
+            renderer.sharedMaterial.mainTexture=DetailTexture(element);
+            renderer.sharedMaterial.SetFloat("_Mode",2);
+            renderer.sharedMaterial.SetInt("_SrcBlend",(int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+            renderer.sharedMaterial.SetInt("_DstBlend",(int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+            renderer.sharedMaterial.SetInt("_ZWrite",0);renderer.sharedMaterial.EnableKeyword("_ALPHABLEND_ON");renderer.sharedMaterial.renderQueue=3000;
             obj.AddComponent<OwnedParticleMaterial>().Value = renderer.sharedMaterial;
             return particles;
         }
@@ -78,9 +111,10 @@ namespace Emberfall
             if(!DecorationLease.Attach(obj,1)){Object.Destroy(obj);return;}
             LineRenderer line = obj.AddComponent<LineRenderer>();
             line.useWorldSpace = true;
-            int points=EffectPreferences.ReducedEffects?4:7;
+            int points=EffectPreferences.ReducedEffects?7:13;
             line.positionCount = points;
-            line.widthMultiplier = .095f;
+            line.widthMultiplier = .13f;
+            line.numCornerVertices=4;line.numCapVertices=4;
             line.sharedMaterial = CombatFx.NewGlow();
             Color color = new Color(.55f, .89f, 1f, .95f);
             line.startColor = line.endColor = color;
@@ -90,6 +124,14 @@ namespace Emberfall
             {
                 float t = i / (float)(points-1);
                 line.SetPosition(i, Vector3.Lerp(from, to, t) + tangent * (i == 0 || i == points-1 ? 0 : Random.Range(-.3f, .3f)));
+            }
+            if(!EffectPreferences.ReducedEffects)
+            {
+                var coreObject=new GameObject("Lightning white core");coreObject.transform.SetParent(obj.transform,false);
+                var core=coreObject.AddComponent<LineRenderer>();core.useWorldSpace=true;core.positionCount=points;
+                for(int i=0;i<points;i++)core.SetPosition(i,line.GetPosition(i));
+                core.widthMultiplier=.035f;core.numCornerVertices=4;core.numCapVertices=4;core.sharedMaterial=CombatFx.NewGlow();core.sortingOrder=line.sortingOrder+1;
+                coreObject.AddComponent<FadingCombatEffect>().Setup(core,new Color(.92f,.96f,1,1),1,.14f,false);
             }
             obj.AddComponent<FadingCombatEffect>().Setup(line, color, 1f, .18f, false);
         }

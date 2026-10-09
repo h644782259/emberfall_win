@@ -29,7 +29,7 @@ namespace Emberfall
             selectedSkill = Mathf.Clamp(selectedSkill, 0, GameBalance.SkillCount - 1);
             var layout = MobilePanelGeometry();
             if (DrawMobilePanelChrome(layout, GameBalance.ClassName(profile.heroClass) + " · 技能",
-                "Lv." + profile.level + " · 可用技能点 " + profile.skillPoints,headerRightReserve:188)) return;
+                "Lv." + profile.level + " · 可用技能点 " + profile.skillPoints,showNotice:false,headerRightReserve:188)) return;
 
             DrawSkillTabs(TouchRect(layout.Close.X-188,8,176,44));
             if(skillSection==1)return;

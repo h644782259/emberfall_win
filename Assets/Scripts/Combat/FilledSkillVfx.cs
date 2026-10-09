@@ -350,6 +350,8 @@ namespace Emberfall
                 color=tint;color.a*=intensity*Mathf.Lerp(.55f,1,EffectPreferences.EffectsScale);
                 opacity=p.Phase<2.5f?1:Mathf.Clamp01(1-local/.32f);
             }
+            block.SetFloat("_Element",kind==FilledVfxKind.Fire?1:kind==FilledVfxKind.Ice?2:kind==FilledVfxKind.Lightning?3:kind==FilledVfxKind.Vine?4:kind==FilledVfxKind.Summon||kind==FilledVfxKind.Arcane?5:0);
+            block.SetFloat("_Seed",p.Phase*.37f+p.Delay*3);
             block.SetColor("_Color",color);block.SetFloat("_Opacity",opacity);block.SetFloat("_Progress",t);
             block.SetFloat("_EnvelopeMode",p.Motion==20?p.Phase+1:0);block.SetFloat("_EnvelopeAge",local);
             block.SetFloat("_Style",kind==FilledVfxKind.Fire||kind==FilledVfxKind.Summon?1:.35f);p.Renderer.SetPropertyBlock(block);

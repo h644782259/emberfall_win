@@ -197,6 +197,8 @@ namespace Emberfall
     public class ChestReward
     {
         public string[] equipmentIds;
+        public EquipmentMechanic gemMechanic;
+        public bool duplicateGem;
         // Zero is the historical identical-chest schema; never infer it from choice.
         public int rulesRevision;
         public bool hasCurrencyDeltas;

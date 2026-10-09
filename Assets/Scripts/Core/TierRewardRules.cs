@@ -27,6 +27,16 @@ namespace Emberfall
     // One authoritative clear-loot table shared by previews and committed rewards.
     public static class AdventureRewardRules
     {
+        public const int DuplicateGemMaterials=3;
+        // Keep the stored difficulty index for save compatibility; gameplay uses its fixed level.
+        public static int DungeonLevel(int index){return Math.Max(1,Math.Min(10,index))*10;}
+        public static int MaximumDungeonIndex(int characterLevel){return Math.Max(1,Math.Min(10,(Math.Max(1,characterLevel)+10)/10));}
+        public static EquipmentMechanic ExclusiveGem(int mode)
+        {
+            Validate(mode);
+            return new[]{EquipmentMechanic.ReturningBlade,EquipmentMechanic.TwinSummonResonance,EquipmentMechanic.CinderTrail,EquipmentMechanic.FrostEcho,EquipmentMechanic.VenomSpread}[mode+1];
+        }
+
         public static int EquipmentCount(int mode){Validate(mode);return mode==3?2:1;}
         public static int EquipmentCount(int mode,int tier){return EquipmentCount(mode)+TierRewardBand.Of(tier)/2;}
         public static int PotionChance(int tier){return 12+3*TierRewardBand.Of(tier);}

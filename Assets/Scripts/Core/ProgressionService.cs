@@ -1897,16 +1897,22 @@ namespace Emberfall
                 int before=candidate.inventory.Count;
                 if(!AddAdventureEquipment(candidate,Profile.pendingChestQualificationId,Clamp(Profile.pendingChestMode,-1,3),Profile.pendingChestTier))return null;
                 receipt.equipmentIds=candidate.inventory.GetRange(before,candidate.inventory.Count-before).ConvertAll(item=>item.id).ToArray();
+                receipt.gemMechanic=AdventureRewardRules.ExclusiveGem(Clamp(Profile.pendingChestMode,-1,3));
+                receipt.duplicateGem=candidate.attachments.Exists(a=>a.mechanic==receipt.gemMechanic);
+                if(receipt.duplicateGem)receipt.materials+=AdventureRewardRules.DuplicateGemMaterials;
+                else candidate.attachments.Add(new MechanicAttachment{id=receipt.id+"-gem",mechanic=receipt.gemMechanic,level=AdventureRewardRules.DungeonLevel(Profile.pendingChestTier),rarity=Rarity.Epic,mounted=false});
+                if(!candidate.discoveredMechanics.Contains(receipt.gemMechanic))candidate.discoveredMechanics.Add(receipt.gemMechanic);
             }
             candidate.gold=(int)Math.Min(MaximumGold,(long)candidate.gold+receipt.gold);
             candidate.fashionThreads=Clamp(candidate.fashionThreads+receipt.baseThreads+receipt.duplicateThreads,0,999999);
             candidate.mechanicMaterials=Clamp(candidate.mechanicMaterials+receipt.materials,0,999999);
             receipt.hasCurrencyDeltas=true;receipt.goldDelta=candidate.gold-Profile.gold;receipt.threadsDelta=candidate.fashionThreads-Profile.fashionThreads;
             receipt.materialsDelta=candidate.mechanicMaterials-Profile.mechanicMaterials;
-            if(receipt.goldDelta==0&&receipt.threadsDelta==0&&receipt.materialsDelta==0&&(!rarity.HasValue||receipt.duplicate))
+            if(receipt.goldDelta==0&&receipt.threadsDelta==0&&receipt.materialsDelta==0&&(!rarity.HasValue||receipt.duplicate)&&(receipt.gemMechanic==EquipmentMechanic.None||receipt.duplicateGem))
             {Fail("本次冻结奖励的资源已达上限，请先使用资源；宝箱资格保留。");return null;}
             receipt.summary=(receipt.rulesRevision>=2?"通关宝箱":ChestChoiceName(receipt.choice)+"箱")+"：金币 +"+receipt.goldDelta+" · 星纹 +"+receipt.threadsDelta+
                 (receipt.materialKind==RewardMaterialKind.StarAshFragment?" · 星烬碎片 +"+receipt.materialsDelta:"")+(rarity.HasValue?" · "+receipt.name+(receipt.duplicate?"（重复转化）":""):"");
+            if(receipt.gemMechanic!=EquipmentMechanic.None)receipt.summary+=" · "+BuildCatalog.GemName(receipt.gemMechanic)+(receipt.duplicateGem?"（重复转为3碎片）":"（整件）");
             candidate.pendingFashionChest=false;candidate.pendingChestDraw=null;candidate.lastChestReward=receipt;candidate.pendingChestReveal=true;
             string failure;if(!TryWriteAttachedProfile(candidate,out failure)){Fail(failure);return null;}
             pendingChestRoll=null;pendingChestContexts.Remove(SaveFilePath);Profile=candidate;LastError=string.Empty;RaiseChanged();return receipt.summary;
@@ -2176,7 +2182,7 @@ namespace Emberfall
             for(int i=0;i<count;i++)
             {
                 hash=unchecked((hash^(uint)(mode+2+i))*16777619);
-                var item=new ItemData{id=receipt+"-clear-"+i,slot=AdventureRewardRules.EquipmentSlot(mode,i),rarity=AdventureRewardRules.EquipmentRarity(mode,tier,(int)(hash%100)),level=EquipmentGenerationLevel(Profile.level)};
+                var item=new ItemData{id=receipt+"-clear-"+i,slot=AdventureRewardRules.EquipmentSlot(mode,i),rarity=AdventureRewardRules.EquipmentRarity(mode,tier,(int)(hash%100)),level=AdventureRewardRules.DungeonLevel(tier)};
                 item.name=new[]{"旅者","苍蓝","星辉","烬王"}[(int)item.rarity]+ItemBaseName(item.slot,candidate.heroClass);
                 SetRolledStats(item);EnsureUpgradeBasis(item);candidate.inventory.Add(item);
             }
@@ -3159,7 +3165,7 @@ namespace Emberfall
             else
             {
                 if(receipt.rulesRevision<2)receipt.choice = Clamp(receipt.choice, 0, 2);
-                else if(receipt.rulesRevision!=2||receipt.rewardKind!=ChestRewardKind.SingleChest||receipt.choice!=-1||receipt.materialKind!=RewardMaterialKind.StarAshFragment||receipt.materialsDelta<0||receipt.materialsDelta>10)throw new ArgumentException("宝箱回执类型或增量无效。");
+                else if(receipt.rulesRevision!=2||receipt.rewardKind!=ChestRewardKind.SingleChest||receipt.choice!=-1||receipt.materialKind!=RewardMaterialKind.StarAshFragment||!Enum.IsDefined(typeof(EquipmentMechanic),receipt.gemMechanic)||receipt.duplicateGem&&receipt.gemMechanic==EquipmentMechanic.None||receipt.materialsDelta<0||receipt.materialsDelta>10+(receipt.duplicateGem?AdventureRewardRules.DuplicateGemMaterials:0))throw new ArgumentException("宝箱回执类型或增量无效。");
                 if (receipt.rarityIndex < 0) { receipt.slotIndex = -1; receipt.duplicate = false; receipt.name = receipt.rulesRevision>=2?"通关资源":"金币"; }
                 else
                 {

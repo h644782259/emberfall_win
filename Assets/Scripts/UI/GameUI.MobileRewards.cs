@@ -99,9 +99,10 @@ namespace Emberfall
         {
             float progress = ChestRevealPresentation.Progress(Time.unscaledTime - chestRevealedAt,ChestDuration);
             if(!complete){DrawChestRevealTransition(MobilePanelRect(layout.Body),reward,TouchRect(layout.BodyLeft.X+8,layout.BodyLeft.Y+8,layout.BodyLeft.Width-16,layout.BodyLeft.Height-16));return;}
-            var art = layout.BodyLeft;
+            float artWidth=Mathf.Min(240,layout.Body.Width*.32f);
+            var art = new MobilePanelLayout.Area(layout.Body.X,layout.Body.Y,artWidth,layout.Body.Height);
             Fill(MobilePanelRect(art), new Color(.055f, .08f, .11f)); Border(MobilePanelRect(art), accent);
-            float artHeight=Mathf.Max(art.Height-16,reward!=null&&reward.Rarity.HasValue?300:144);
+            float artHeight=Mathf.Max(art.Height-16,144);
             mobileChestArtScroll=BeginTouchScroll("mobile-chest-art",MobilePanelRect(art),mobileChestArtScroll,new Rect(0,0,(art.Width-8)*TouchRatio,(artHeight+16)*TouchRatio));
             DrawChestCommittedReward(TouchRect(8,8,art.Width-24,artHeight),reward,accent);
             EndTouchScroll();
@@ -112,7 +113,7 @@ namespace Emberfall
                 DrawRewardRadiance(new Rect(0, 0, clip.width, clip.height), accent, progress);
                 GUI.EndGroup();
             }
-            var viewport=layout.BodyRight;float contentWidth=viewport.Width-24;
+            var viewport=new MobilePanelLayout.Area(art.XMax+12,art.Y,layout.Body.Width-art.Width-12,art.Height);float contentWidth=viewport.Width-24;
             string error=string.IsNullOrEmpty(mobileChestError)?session.Progression.LastError:mobileChestError;
             float total=DrawChestRewardContents(contentWidth,TouchRatio,reward,error,false);
             mobileChestScroll=BeginTouchScroll("mobile-chest-result",MobilePanelRect(viewport),mobileChestScroll,

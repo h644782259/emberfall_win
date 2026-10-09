@@ -53,7 +53,7 @@ namespace Emberfall
                 new RunFailureEvidence(runDamageTaken,runHealingReceived,RoomChainRun!=null&&RoomChainRun.Room!=null?RoomChainRun.Room.Index+1:DungeonWave,
                     RoomChainRun!=null&&RoomChainRun.Room!=null?RoomTactics.Name(RoomChainRun.Room.Objective)+" · 已完成印记 "+RoomChainRun.Seals+" · 当前进度 "+(RoomChainRun.Room.Objective==RoomObjective.Purify?"A "+RoomChainRun.SealProgress(0).ToString("0.0",System.Globalization.CultureInfo.InvariantCulture)+"/3秒 · B "+RoomChainRun.SealProgress(1).ToString("0.0",System.Globalization.CultureInfo.InvariantCulture)+"/3秒":RoomChainRun.Progress.ToString("0.0")+"秒"):ModeRun!=null?"阶段 "+(ModeRun.PhaseIndex+1)+" · 目标 "+Mathf.RoundToInt(ModeRun.ObjectiveProgress*100)+"%":""),MechanismEvidence.Snapshot(),modeRewardDetailsUnavailable,RoomGenerationFailureDetail);
             // Retain a concise compatibility summary for older consumers. The UI renders the snapshot.
-            return won?"遗迹通关 · 第 "+DungeonTier+" 阶":"本次止步 · 最后受击："+lastDamageSource;
+            return won?"遗迹通关 · Lv"+AdventureRewardRules.DungeonLevel(DungeonTier):"本次止步 · 最后受击："+lastDamageSource;
         }
     }
 }

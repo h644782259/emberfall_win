@@ -80,7 +80,7 @@ namespace Emberfall
                 (boss ? "星蚀巨像" : new[] { "森林史莱姆", "盗宝哥布林", "幽光魔灵", "遗迹守卫" }[(int)kind]);
             gameObject.name = DisplayName;
             float[] moveSpeed = { 2.05f, 3.1f, 2.5f, 2.1f };
-            int challengeTier = game.InDungeon ? game.DungeonTier : 1;
+            int challengeTier = game.InDungeon&&game.ChapterActive ? game.DungeonTier : 1;
             MaxHealth = CombatBalance.EnemyHealth(level, challengeTier, boss, kind);
             damage = CombatBalance.EnemyDamage(level, challengeTier, boss);
             if(game.ChapterActive)
@@ -601,6 +601,7 @@ namespace Emberfall
                 if (attackType == AttackType.Melee && Kind == EnemyKind.Slime)
                     transform.position = WorldTraversal.Move(transform.position, Vector3.ClampMagnitude(CombatFx.Flat(targetPoint - transform.position), 1.25f), NavigationRadius);
                 CombatFx.Ring(targetPoint, ImpactRadius, new Color(1f,.45f,.25f), .32f, .15f);
+                SkillImpactDetail.EnemyRelease(this,targetPoint,ImpactRadius,attackType==AttackType.Slam,Kind==EnemyKind.Slime);
                 ConfirmImpactDodge();
                 if (attackType == AttackType.Slam)
                 {

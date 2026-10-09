@@ -35,8 +35,8 @@ namespace Emberfall
                 mesh.RecalculateBounds();shapes[shape]=mesh;return mesh;
             }
             VisualMeshData data = shape == PrimitiveType.Cube ? VisualMeshRecipes.BevelBox() :
-                shape == PrimitiveType.Cylinder ? VisualMeshRecipes.Cylinder(24) :
-                VisualMeshRecipes.RoundBody(shape == PrimitiveType.Capsule, 16, 12);
+                shape == PrimitiveType.Cylinder ? VisualMeshRecipes.Cylinder(32) :
+                VisualMeshRecipes.RoundBody(shape == PrimitiveType.Capsule, 24, 18);
             mesh = Build(data, "Emberfall shared " + shape);
             shapes[shape] = mesh;
             return mesh;

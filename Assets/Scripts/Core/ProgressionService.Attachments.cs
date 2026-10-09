@@ -107,7 +107,10 @@ namespace Emberfall
         public bool SetAttachmentMounted(EquipmentMechanic mechanic,bool mounted,bool inCamp)
         {
             var a=Attachment(mechanic);if(!inCamp||a==null||BuildCatalog.MechanicClass(mechanic)!=Profile.heroClass)return Fail("请在营地操作本职业宝石。");
-            var candidate=Snapshot();candidate.attachments.Find(x=>x.mechanic==mechanic).mounted=mounted;return CommitCandidate(candidate,true);
+            var candidate=Snapshot();
+            if(mounted)foreach(var other in candidate.attachments)
+                if(BuildCatalog.MechanicClass(other.mechanic)==Profile.heroClass&&BuildCatalog.MechanicSlot(other.mechanic)==BuildCatalog.MechanicSlot(mechanic))other.mounted=false;
+            candidate.attachments.Find(x=>x.mechanic==mechanic).mounted=mounted;return CommitCandidate(candidate,true);
         }
         private bool GrantAttachment(EquipmentMechanic mechanic,bool first)
         {

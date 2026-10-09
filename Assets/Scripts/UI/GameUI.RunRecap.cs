@@ -35,7 +35,7 @@ namespace Emberfall
             DrawIcon(new Rect(header.x,header.y+2*unit,iconSize*unit,iconSize*unit),UIIconAtlas.Utility(snapshot!=null&&snapshot.Won?"confirm":"skills"),accent);
             string title=snapshot==null?"战斗复盘":snapshot.Won?(snapshot.ModeName.Length>0?"挑战完成":"遗迹通关"):"本次止步";
             Text(new Rect(header.x+(iconSize+12)*unit,header.y,header.width-(iconSize+126)*unit,32*unit),title,Mathf.RoundToInt((mobile?23:28)*unit),pale,true);
-            string location=snapshot==null?"":snapshot.InDungeon?(snapshot.ModeName.Length>0?snapshot.ModeName+"  ·  ":"")+"第 "+snapshot.Tier+" 阶  ·  "+snapshot.Wave+" / "+snapshot.TotalWaves+(snapshot.ModeName.Length>0?" 阶段":" 波"):"原野探索";
+            string location=snapshot==null?"":snapshot.InDungeon?(snapshot.ModeName.Length>0?snapshot.ModeName+"  ·  ":"")+"Lv"+AdventureRewardRules.DungeonLevel(snapshot.Tier)+"  ·  "+snapshot.Wave+" / "+snapshot.TotalWaves+(snapshot.ModeName.Length>0?" 阶段":" 波"):"原野探索";
             Text(new Rect(header.x+(iconSize+12)*unit,header.y+34*unit,header.width-(iconSize+20)*unit,22*unit),location,Mathf.RoundToInt(13*unit),muted);
             Rule(frame.x+16*unit,frame.y+(mobile?61:78)*unit,frame.width-32*unit,accent*.5f);
             Rect viewport=RecapRect(layout.Viewport,unit);
@@ -80,11 +80,6 @@ namespace Emberfall
         private void DrawRecapCards(RunRecapLayout layout,RunRecapPresentation data,float unit,float top=0)
         {
             float y=top,w=layout.ContentWidth;
-            string goal=CurrentProgressionGoalStatus(data.Snapshot.RewardMaterials);
-            float goalHeight=RecapGoalHeight(layout,unit,data);
-            Fill(new Rect(0,y*unit,w*unit,(goalHeight-10)*unit),card);
-            Text(new Rect(12*unit,(y+8)*unit,(w-24)*unit,(goalHeight-26)*unit),goal,Mathf.RoundToInt(13*unit),jade,false,true);
-            y+=goalHeight;
             RunRecapSnapshot snapshot=data.Snapshot;
             if(data.HasFailureBanner)
             {
@@ -219,12 +214,10 @@ namespace Emberfall
         }
         private static float ProgressCardHeight(RunRecapSnapshot data)
         { return 24+(data.RewardDetailsUnavailable?64:0)+(data.RewardGold>0||data.RewardExperience>0||data.RewardMaterials>0?72:0)+(data.Materials>0?72:0)+(data.GoldLost>0?34:0)+(data.PendingChest||data.FirstClearChoice?28:0); }
-        private float RecapGoalHeight(RunRecapLayout layout,float unit,RunRecapPresentation data)
-        {return Mathf.Ceil(Style(Mathf.RoundToInt(13*unit),false,true).CalcHeight(new GUIContent(CurrentProgressionGoalStatus(data.Snapshot.RewardMaterials)),(layout.ContentWidth-24)*unit)/unit)+26;}
         private float RecapContentHeight(RunRecapLayout layout,RunRecapPresentation data)
         {
             if(data==null)return 110;
-            float result=RecapGoalHeight(layout,MobileControls.Active?TouchRatio:1,data)+(data.HasDamage?80:0)+(data.HasFailureBanner?76:0);
+            float result=(data.HasDamage?80:0)+(data.HasFailureBanner?76:0);
             if(data.Metrics.Length>0)result+=28+layout.MetricRowsHeight(data.Metrics.Length)+18;
             if(data.HasProgress)result+=28+ProgressCardHeight(data.Snapshot)+18;
             foreach(string[] values in data.Snapshot.Won?new[]{data.Mechanics,data.Blessings}:new[]{data.MechanismEvidence,data.Mechanics,data.Blessings,data.ExtraActions})

@@ -20,7 +20,7 @@ namespace Emberfall
         public float ArenaRadius { get { return InDungeon ? 18f : 22f; } }
         public bool DungeonCleared { get; private set; }
         public int PendingLootCount { get { return pendingLoot.Count; } }
-        public string ZoneName { get { return InDungeon ? ModeName + " · 第 " + DungeonTier + " 阶" : HubTravelRules.Name(CurrentHub); } }
+        public string ZoneName { get { return InDungeon ? ModeName + (ChapterActive?" · 第 " + DungeonTier + " 阶":" · Lv"+AdventureRewardRules.DungeonLevel(DungeonTier)) : HubTravelRules.Name(CurrentHub); } }
         public string Notification
         {
             get
@@ -90,7 +90,9 @@ namespace Emberfall
             Instance = this;
             Application.targetFrameRate = pauseState.TargetFrameRate(Application.isMobilePlatform, false);
             QualitySettings.vSyncCount = 1;
-            QualitySettings.antiAliasing = MobileControls.Active ? 2 : 4;
+            QualitySettings.antiAliasing = 4;
+            QualitySettings.globalTextureMipmapLimit = 0;
+            QualitySettings.resolutionScalingFixedDPIFactor = 1f;
             QualitySettings.anisotropicFiltering = AnisotropicFiltering.Enable;
 #if UNITY_EDITOR
             string validationDirectory = UnityEditor.SessionState.GetString("Emberfall.ValidationSaveDirectory", "");
@@ -518,7 +520,7 @@ namespace Emberfall
             SpawnFloatingText(position + Vector3.up * 2, "+" + experience + " XP  +" + gold + " G", new Color(.95f, .83f, .4f));
             if (boss || Random.value < (InDungeon ? .65f+.05f*TierRewardBand.Of(DungeonTier) : .5f))
             {
-                ItemData loot = Progression.RollLoot(Progression.Profile.level, boss, InDungeon ? DungeonTier : 0);
+                ItemData loot = Progression.RollLoot(InDungeon&&!ChapterActive?DungeonEntryLevel:Progression.Profile.level, boss, InDungeon ? DungeonTier : 0);
                 DeliverEnemyLoot(loot, position);
             }
             enemy.BeginDeath();

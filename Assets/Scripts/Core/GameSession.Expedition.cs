@@ -10,7 +10,7 @@ namespace Emberfall
         public bool DungeonSelectionOpen { get; private set; }
         private readonly int[] selectedAdventureTiers={1,1,1,1,1};
         public int SelectedDungeonTier { get { return Progression==null?1:Mathf.Clamp(selectedAdventureTiers[Mathf.Clamp(SelectedArenaMode+1,0,4)],1,MaximumDungeonTier); } set { selectedAdventureTiers[Mathf.Clamp(SelectedArenaMode+1,0,4)]=value; } }
-        public int MaximumDungeonTier { get { return Progression.UnlockedAdventureTier(SelectedArenaMode); } }
+        public int MaximumDungeonTier { get { return AdventureRewardRules.MaximumDungeonIndex(Progression.Profile.level); } }
         public bool SelectedChallengeMode { get { return false; } set { } }
         // Compatibility accessors cannot re-enable the removed healing restriction.
         public bool ChallengeRun { get { return false; } private set { } }
@@ -59,7 +59,7 @@ namespace Emberfall
             if(!ChangeZone(true)){ChallengeRun=previousChallengeRun;DungeonSelectionOpen=true;UpdateTimeScale();Notify(Progression.LastError);return;}
             UpdateTimeScale();
             if(RoomChainRun!=null&&RoomChainRun.Failed)return;
-            Notify(ModeName+" · " + DungeonTier + " 阶 · " + (RoomChainRun!=null?RoomTactics.Name(RoomChainRun.Room.Objective):DungeonLayout == 0 ? "双廊" : "断柱"));
+            Notify(ModeName+" · Lv" + AdventureRewardRules.DungeonLevel(DungeonTier) + " · " + (RoomChainRun!=null?RoomTactics.Name(RoomChainRun.Room.Objective):DungeonLayout == 0 ? "双廊" : "断柱"));
         }
 
         private void ResetExpedition(bool dungeon)
@@ -71,7 +71,7 @@ namespace Emberfall
             combatActions.Clear(); lastDamageSource = "未记录"; lastDamageAmount = 0; lastInterruptAt = -10; recapGoldLost = 0;
             if (dungeon)
             {
-                DungeonEntryLevel = Mathf.Clamp(Progression.Profile.level,2,100);
+                DungeonEntryLevel = ChapterActive?Mathf.Clamp(Progression.Profile.level,2,100):AdventureRewardRules.DungeonLevel(DungeonTier);
                 runSeed = retryingRoomChain ? roomRetrySeed : Random.Range(0, 1000000);
                 DungeonLayout = runSeed % 2;
                 HealingCharges = 3;
