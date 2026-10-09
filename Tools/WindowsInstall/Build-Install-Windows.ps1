@@ -1,6 +1,7 @@
 # Run with powershell.exe -NoProfile -ExecutionPolicy Bypass -File <this script>
 [CmdletBinding()]
 param(
+    [string]$ProjectDirectory,
     [string]$InstallDirectory = (Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) 'Programs\Emberfall'),
     [string]$PackageDirectory,
     [string]$UnityPath,
@@ -18,7 +19,12 @@ while ($projectRoot) {
     }
     $projectRoot = Split-Path -Parent $projectRoot
 }
-if (-not $projectRoot) { throw 'Cannot locate the Unity project. Keep this folder inside the complete Windows repository.' }
+if ($ProjectDirectory) { $projectRoot = [IO.Path]::GetFullPath($ProjectDirectory) }
+if (-not $projectRoot) {
+    $ProjectDirectory = Read-Host 'Enter the complete Windows source folder (for example E:\emberfall_win)'
+    if (-not $ProjectDirectory) { throw 'A Windows source folder is required.' }
+    $projectRoot = [IO.Path]::GetFullPath($ProjectDirectory.Trim().Trim('"'))
+}
 $toolsRoot = Join-Path $projectRoot 'Tools'
 
 function Get-ExternalDirectory([string]$Path) {

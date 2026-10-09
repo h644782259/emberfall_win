@@ -150,11 +150,11 @@ namespace Emberfall.Editor
                     name + ": null draw is explicit in the real Unity JSON document");
                 service.GrantExperience(int.MaxValue);
                 int spent = 0;
-                foreach (int rank in service.Profile.skillRanks) spent += rank;
+                // Ordinary skills unlock automatically and do not spend mastery points.
                 foreach (int rank in service.Profile.masteryRanks) spent += rank;
                 Check(service.Profile.level == ProgressionService.MaximumLevel &&
                     service.Profile.skillPoints + spent == GameBalance.SkillPointBudget(service.Profile.level) &&
-                    string.IsNullOrEmpty(service.LastError), name + ": maximum XP conserves current starter-point budget and saves successfully");
+                    string.IsNullOrEmpty(service.LastError), name + ": maximum XP conserves the mastery-only point budget and saves successfully");
                 Check(service.Profile.equippedSkills.Length == GameBalance.HotbarSize * GameBalance.HotbarPages &&
                     service.Profile.hotbarKeys.Length == GameBalance.HotbarSize,
                     name + ": saved loadout and key slots match the current schema");
