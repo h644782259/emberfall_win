@@ -7,7 +7,7 @@ namespace Emberfall
     public sealed partial class GameUI
     {
         private Vector2 mobileSaveLocationScroll;
-        private string mobileSaveLocationPath, mobileSaveLocationFile, mobileSaveDisplayPath, mobileSaveDisplayFile;
+        private string mobileSaveLocationPath, mobileSaveLocationFile;
         private string mobileSaveLocationStatus;
         private bool mobileSaveLocationFailed;
         private float mobileSaveLocationWidth, mobileSaveLocationRatio;
@@ -23,14 +23,10 @@ namespace Emberfall
             {
                 mobileSaveLocationPath = path; mobileSaveLocationFile = file;
                 mobileSaveLocationWidth = contentWidth; mobileSaveLocationRatio = TouchRatio;
-                GUIStyle style = Style(TouchFont(14), false, false);
-                Func<string, float> measure = value => style.CalcSize(new GUIContent(value)).x / TouchRatio;
-                mobileSaveDisplayPath = MobileSavePathText.Wrap(path, contentWidth - 16, measure);
-                mobileSaveDisplayFile = MobileSavePathText.Wrap(file, contentWidth - 16, measure);
                 mobileSaveLocationScroll = Vector2.zero;
                 if (identityChanged) mobileSaveLocationStatus = null;
             }
-            if (DrawMobilePanelChrome(layout, "存档位置与迁移", "复制完整路径 · 迁移前保留备份")) return;
+            if (DrawMobilePanelChrome(layout, "存档位置与迁移", "备份与迁移角色进度")) return;
             float contentHeight = DrawMobileSaveLocationContent(contentWidth, false);
             mobileSaveLocationScroll = BeginTouchScroll("mobile-save-location", MobilePanelRect(layout.Body), mobileSaveLocationScroll,
                 new Rect(0, 0, contentWidth * TouchRatio, Mathf.Max(layout.Body.Height, contentHeight) * TouchRatio));
@@ -41,9 +37,9 @@ namespace Emberfall
 #else
             const int buttons = 3;
 #endif
-            if (Button(MobilePanelRect(layout.FooterButton(0, buttons)), "复制完整目录路径", gold))
+            if (Button(MobilePanelRect(layout.FooterButton(0, buttons)), "复制存档位置", gold))
             {
-                try { GUIUtility.systemCopyBuffer = path; MobileSaveLocationResult(true, "已复制完整目录路径"); }
+                try { GUIUtility.systemCopyBuffer = path; MobileSaveLocationResult(true, "已复制存档位置"); }
                 catch (Exception error) { MobileSaveLocationResult(false, "复制未完成：" + error.Message); }
                 return;
             }
@@ -73,18 +69,15 @@ namespace Emberfall
             float y = 8;
             if (!string.IsNullOrEmpty(mobileSaveLocationStatus))
                 MobileSaveLocationParagraph(ref y, width, mobileSaveLocationStatus, 14, mobileSaveLocationFailed ? gold : jade, draw, true);
-            MobileSaveLocationParagraph(ref y, width, "当前存档文件夹", 16, jade, draw, true);
-            MobileSaveLocationParagraph(ref y, width, mobileSaveDisplayPath, 14, pale, draw);
-            MobileSaveLocationParagraph(ref y, width, "当前角色文件", 16, jade, draw, true);
-            MobileSaveLocationParagraph(ref y, width, session.Progression.HasActiveSave ? mobileSaveDisplayFile : "当前没有可用角色存档；原文件可能已移除。", 14, pale, draw);
-            MobileSaveLocationParagraph(ref y, width, "长路径在界面中折行显示；复制按钮保留完整原始路径，不包含显示折行。", 14, muted, draw);
+            MobileSaveLocationParagraph(ref y, width, "角色存档", 16, jade, draw, true);
+            MobileSaveLocationParagraph(ref y, width, session.Progression.HasActiveSave ? "角色进度已保存在本机。" : "当前没有可用角色存档。", 14, pale, draw);
+            MobileSaveLocationParagraph(ref y, width, "备份与迁移", 16, jade, draw, true);
+            MobileSaveLocationParagraph(ref y, width, "迁移前，请退出两台设备上的游戏，并备份整个存档文件夹。复制时保留全部文件，再从角色列表读取进度。", 14, pale, draw);
 #if UNITY_IOS || UNITY_ANDROID
-            MobileSaveLocationParagraph(ref y, width, "移动端使用应用私有存档目录。本页可复制路径；不会尝试用桌面文件夹链接打开它。复制路径不会导出存档，文件访问和导出取决于系统提供的方式。", 14, muted, draw);
+            MobileSaveLocationParagraph(ref y, width, "复制存档位置不会导出存档；能否访问文件取决于设备系统。", 14, muted, draw);
 #else
-            MobileSaveLocationParagraph(ref y, width, "存档与游戏安装目录分开保存。可用下方按钮请求系统打开此目录，或复制完整路径后粘贴到文件管理器。", 14, muted, draw);
+            MobileSaveLocationParagraph(ref y, width, "可通过下方按钮打开存档文件夹，或复制位置供迁移时使用。", 14, muted, draw);
 #endif
-            MobileSaveLocationParagraph(ref y, width, "迁移前先退出两端游戏，并保留原目录备份。完整保留角色 .json、对应 .bak 备份、可恢复的 .tmp 文件以及 .delete-pending 删除标记；不要单独搬运旧备份或省略删除标记。", 14, pale, draw);
-            MobileSaveLocationParagraph(ref y, width, "新设备的目标目录也以游戏显示的路径为准。迁移后从角色存档列表读取；本页只显示和复制路径，不会移动、覆盖或删除角色文件。", 14, muted, draw);
             return y + 8;
         }
 

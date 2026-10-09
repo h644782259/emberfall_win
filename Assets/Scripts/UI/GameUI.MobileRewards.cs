@@ -49,7 +49,7 @@ namespace Emberfall
             }
             var layout = revealed||!string.IsNullOrEmpty(progression.LastError)?MobilePanelGeometry():new MobilePanelLayout(MobileControls.Layout.Width,MobileControls.Layout.Height,false);
             string title = revealed ? complete ? "宝箱奖励" : "开启宝箱" : "遗迹馈赠";
-            string subtitle = revealed ? complete ? ChestRevealPresentation.Outcome(reward) : "正在揭晓已保存的奖励" : "直接开启 · 奖励先保存";
+            string subtitle = revealed && !complete ? "正在开启宝箱" : "";
             if (DrawMobilePanelChrome(layout, title, subtitle, showClose:false)) return;
             if (revealed) DrawMobileChestResult(layout, reward, accent, complete);
             else if (DrawMobileChestChoices(layout)) return;
@@ -73,22 +73,20 @@ namespace Emberfall
         private bool DrawMobileChestChoices(MobilePanelLayout layout)
         {
             float bodyWidth=layout.Body.Width-18;
-            float disclosure=MeasureMobileParagraph(ChestRevealPresentation.ChoiceDisclosure,bodyWidth-16,14)+12;
             float errors=string.IsNullOrEmpty(mobileChestError)?0:MeasureMobileParagraph(mobileChestError,bodyWidth-16,14)+12;
-            float cardHeight=Mathf.Max(230,layout.Body.Height-disclosure-errors-8);
-            mobileChestScroll=BeginTouchScroll("mobile-chest-choice",MobilePanelRect(layout.Body),mobileChestScroll,new Rect(0,0,bodyWidth*TouchRatio,(disclosure+errors+cardHeight+8)*TouchRatio));
-            DrawMobileParagraph(8,0,bodyWidth-16,ChestRevealPresentation.ChoiceDisclosure,14,pale);
-            if(errors>0)DrawMobileParagraph(8,disclosure,bodyWidth-16,mobileChestError,14,new Color(1,.55f,.45f));
-            Rect cardRect=TouchRect(8,disclosure+errors,bodyWidth-16,cardHeight);
+            float cardHeight=Mathf.Max(230,layout.Body.Height-errors-8);
+            mobileChestScroll=BeginTouchScroll("mobile-chest-choice",MobilePanelRect(layout.Body),mobileChestScroll,new Rect(0,0,bodyWidth*TouchRatio,(errors+cardHeight+8)*TouchRatio));
+            if(errors>0)DrawMobileParagraph(8,0,bodyWidth-16,mobileChestError,14,new Color(1,.55f,.45f));
+            Rect cardRect=TouchRect(8,errors,bodyWidth-16,cardHeight);
             DrawSingleChestCard(cardRect,TouchRatio);
-            bool open=PrimaryButton(TouchRect(20,disclosure+errors+cardHeight-60,bodyWidth-40,48), session.Progression.ChestOpenCaption, gold, !chestOpening&&session.Progression.Profile.pendingFashionChest&&!session.Progression.Profile.pendingChestReveal);
+            bool open=PrimaryButton(TouchRect(20,errors+cardHeight-60,bodyWidth-40,48), session.Progression.ChestOpenCaption, gold, !chestOpening&&session.Progression.Profile.pendingFashionChest&&!session.Progression.Profile.pendingChestReveal);
             EndTouchScroll();if(!open)return false;
             chestOpening=true;string result;
             try{result=session.Progression.OpenDungeonChest();}finally{chestOpening=false;}
             if(result==null){chestOpening=false;mobileChestError=session.Progression.LastError;mobileChestScroll=Vector2.zero;Feedback(false,"宝箱暂时无法开启");}
             else
             {
-                chestRevealOrigin=ChestChoiceArt(TouchRect(layout.Body.X+8,layout.Body.Y+disclosure+errors-mobileChestScroll.y/TouchRatio,bodyWidth-16,cardHeight),TouchRatio);
+                chestRevealOrigin=ChestChoiceArt(TouchRect(layout.Body.X+8,layout.Body.Y+errors-mobileChestScroll.y/TouchRatio,bodyWidth-16,cardHeight),TouchRatio);
                 revealedChest=0;chestRevealResult=result;chestRevealedAt=Time.unscaledTime;chestDetails=false;rewardSoundPlayed=false;
                 chestReceiptId=session.Progression.LastChestReward.Id;mobileChestError=null;mobileChestScroll=mobileChestArtScroll=Vector2.zero;GameAudio.Play(SoundCue.Cast);
             }

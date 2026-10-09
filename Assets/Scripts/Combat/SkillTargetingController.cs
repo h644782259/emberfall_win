@@ -101,12 +101,12 @@ namespace Emberfall
         {
             if (!IsTargeting) return;
             Vector3 origin = owner.transform.position;
-            desired.y = origin.y = 0;
+            desired.y = 0;
             if (CurrentPreview.shape == Shape.Self) TargetPoint = origin;
             else
             {
                 float maximum = CurrentPreview.shape == Shape.Ground ? CurrentPreview.distance : 30f;
-                TargetPoint = origin + Vector3.ClampMagnitude(desired - origin, maximum);
+                TargetPoint = CombatFx.Flat(origin) + Vector3.ClampMagnitude(desired - CombatFx.Flat(origin), maximum);
                 TargetPoint = Vector3.ClampMagnitude(TargetPoint, session.ArenaRadius);
                 if(CurrentPreview.shape==Shape.Ground)TargetPoint=CombatSight.GroundPoint(origin,TargetPoint);
             }
@@ -275,7 +275,6 @@ namespace Emberfall
             renderedOrigin=owner.transform.position;renderedTarget=TargetPoint;renderedForward=owner.transform.forward;
             Preview spec = CurrentPreview;
             Vector3 origin = owner.transform.position;
-            origin.y = 0;
             Vector3 dir = CombatFx.Flat(TargetPoint - origin).normalized;
             if (dir.sqrMagnitude < .001f) dir = owner.transform.forward;
             range.enabled = spec.shape == Shape.Ground;

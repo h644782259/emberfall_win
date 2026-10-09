@@ -27,7 +27,6 @@ namespace Emberfall
             if(reward.hasCurrencyDeltas&&reward.materialKind==RewardMaterialKind.StarAshFragment)gain+=" · +"+reward.materialsDelta+" 星烬碎片";
             return identity+Outcome(reward)+"\n\n"+gain+"\n星纹余额 "+threads+" / "+ProgressionService.FashionChoiceCost+" · "+"可在收藏页查看兑换缺口";
         }
-        public const string ChoiceDisclosure = "奖励随副本与阶数变化 · 装备等级匹配角色";
         public static int CollectionCount(GameProfile profile,FashionSlot slot)
         {
             var ranks=new HashSet<Rarity>();

@@ -65,7 +65,10 @@ Shader "Emberfall/Filled Spell Volume"
                 } else { // Steel/arcane: bright cutting edge over a shaded body.
                     heat=saturate(rim*.6+grain*.45+i.uv.y*.3);
                 }
-                float dissolve=saturate((_Progress-.48)*1.92)*_Style;
+                // A bright interior, moving colored layers and a cooling silhouette share one pass.
+                float bands=.5+.5*sin(i.uv.y*19+grain*6-time*3.5);
+                float highlights=pow(saturate(fine*.65+rim*.45),4);
+                float dissolve=saturate((_Progress-.62)*2.63)*_Style;
                 float alpha=_Color.a*_Opacity*saturate((pattern+.48-dissolve)*3);
                 if(_EnvelopeMode>.5)
                 {
@@ -80,7 +83,12 @@ Shader "Emberfall/Filled Spell Volume"
                 }
                 clip(alpha-.025);
                 float3 tint=lerp(outer,core,smoothstep(.1,.9,heat))*light;
-                tint+=core*rim*.25;
+                float3 accent=(_Element>.5&&_Element<1.5)?float3(1,.22,.025):
+                    (_Element>1.5&&_Element<2.5)?float3(.12,.48,1):
+                    (_Element>2.5&&_Element<3.5)?float3(.52,.22,1):
+                    (_Element>4.5)?float3(.4,.2,1):_Color.rgb;
+                tint=lerp(tint,accent*1.15,bands*.18*(1-heat));
+                tint+=core*(rim*.32+highlights*.5)*(1-_Progress*.35);
                 return fixed4(tint,alpha);
             }
             ENDCG

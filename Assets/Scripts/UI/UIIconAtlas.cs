@@ -368,14 +368,21 @@ namespace Emberfall
             {
                 if (outputSize < 64) thickness = Mathf.Max(thickness, SkillIconPresentation.MinimumStroke(outputSize));
                 Vector2 a = V(ax, ay), d = V(bx - ax, by - ay);
-                for (int y = 0; y < Size; y++) for (int x = 0; x < Size; x++)
+                float pad=thickness*.5f+1f/RasterScale;
+                int x0=Mathf.Clamp(Mathf.FloorToInt((Mathf.Min(ax,bx)-pad)*RasterScale),0,Size-1),x1=Mathf.Clamp(Mathf.CeilToInt((Mathf.Max(ax,bx)+pad)*RasterScale),0,Size-1);
+                int y0=Mathf.Clamp(Mathf.FloorToInt((Mathf.Min(ay,by)-pad)*RasterScale),0,Size-1),y1=Mathf.Clamp(Mathf.CeilToInt((Mathf.Max(ay,by)+pad)*RasterScale),0,Size-1);
+                for (int y = y0; y <= y1; y++) for (int x = x0; x <= x1; x++)
                 {
                     Vector2 p = V((x + .5f)/RasterScale, (y + .5f)/RasterScale);
                     float t = d.sqrMagnitude < .001f ? 0 : Mathf.Clamp01(Vector2.Dot(p - a, d) / d.sqrMagnitude);
                     Plot(x, y, (thickness * .5f + .8f/RasterScale - Vector2.Distance(p, a + d * t))*RasterScale);
                 }
             }
-            public void Disc(float cx, float cy, float radius) { for (int y = 0; y < Size; y++) for (int x = 0; x < Size; x++) Plot(x, y, (radius + .7f/RasterScale - Vector2.Distance(V((x + .5f)/RasterScale, (y + .5f)/RasterScale), V(cx, cy)))*RasterScale); }
+            public void Disc(float cx, float cy, float radius) {
+                float pad=radius+1f/RasterScale;
+                int x0=Mathf.Clamp(Mathf.FloorToInt((cx-pad)*RasterScale),0,Size-1),x1=Mathf.Clamp(Mathf.CeilToInt((cx+pad)*RasterScale),0,Size-1);
+                int y0=Mathf.Clamp(Mathf.FloorToInt((cy-pad)*RasterScale),0,Size-1),y1=Mathf.Clamp(Mathf.CeilToInt((cy+pad)*RasterScale),0,Size-1);
+                for (int y = y0; y <= y1; y++) for (int x = x0; x <= x1; x++) Plot(x, y, (radius + .7f/RasterScale - Vector2.Distance(V((x + .5f)/RasterScale, (y + .5f)/RasterScale), V(cx, cy)))*RasterScale); }
             public void Ring(float x, float y, float radius, float thickness) { Arc(x, y, radius, 0, 360, thickness); }
             public void Arc(float x, float y, float radius, float start, float end, float thickness)
             {
@@ -388,7 +395,12 @@ namespace Emberfall
             public void Shield() { Vector2[] p = { V(11, 12), V(32, 7), V(53, 12), V(48, 40), V(32, 57), V(16, 40), V(11, 12) }; for (int i = 1; i < p.Length; i++) Line(p[i-1].x, p[i-1].y, p[i].x, p[i].y, 4); }
             public void Polygon(Vector2[] points)
             {
-                for (int y = 0; y < Size; y++) for (int x = 0; x < Size; x++)
+                if(points.Length<3)return;
+                float minX=points[0].x,maxX=minX,minY=points[0].y,maxY=minY;
+                foreach(var point in points){minX=Mathf.Min(minX,point.x);maxX=Mathf.Max(maxX,point.x);minY=Mathf.Min(minY,point.y);maxY=Mathf.Max(maxY,point.y);}
+                int x0=Mathf.Clamp(Mathf.FloorToInt(minX*RasterScale),0,Size-1),x1=Mathf.Clamp(Mathf.CeilToInt(maxX*RasterScale),0,Size-1);
+                int y0=Mathf.Clamp(Mathf.FloorToInt(minY*RasterScale),0,Size-1),y1=Mathf.Clamp(Mathf.CeilToInt(maxY*RasterScale),0,Size-1);
+                for (int y = y0; y <= y1; y++) for (int x = x0; x <= x1; x++)
                 {
                     float sx=(x+.5f)/RasterScale,sy=(y+.5f)/RasterScale;
                     bool inside = false; int j = points.Length - 1;

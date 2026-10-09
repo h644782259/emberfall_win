@@ -82,19 +82,17 @@ namespace Emberfall
             Text(new Rect(left, w.y + 12 * unit, available, 32 * unit), manual ? "覆盖保存当前角色？" : "读取另一份角色进度？",
                 mobile ? TouchFont(21) : 25, pale, true);
             Text(new Rect(left, w.y + 49 * unit, available, 23 * unit), "当前：「" + saveFlowSourceName + "」", normal, pale, true);
-            Text(new Rect(left, w.y + 74 * unit, available, 19 * unit), "编号 " + saveFlow.SourceId, small, jade);
             float warningY;
             string warning;
             if (manual)
             {
-                warningY = 114;
+                warningY = 88;
                 warning = "将覆盖这份角色存档，并收存当前地面战利品。\n自动保存仍持续写入当前角色。取消只取消这次手动保存。";
             }
             else
             {
-                Text(new Rect(left, w.y + 99 * unit, available, 23 * unit), "读取：「" + saveFlowTargetName + "」", normal, gold, true);
-                Text(new Rect(left, w.y + 124 * unit, available, 19 * unit), "编号 " + saveFlow.TargetId, small, jade);
-                warningY = 153;
+                Text(new Rect(left, w.y + 78 * unit, available, 23 * unit), "读取：「" + saveFlowTargetName + "」", normal, gold, true);
+                warningY = 112;
                 warning = "保存并读取：先保存当前角色，再切换至目标角色。\n放弃未保存：丢弃尚未保存的变更、地面战利品" +
                     (session.ModeRewardPending ? "和待保存挑战奖励" : "（含本局临时状态）") + "。\n已自动保存的内容不会回滚；读取后返回营地。";
             }
@@ -148,13 +146,11 @@ namespace Emberfall
             float y=4;
             MobileDialogParagraph(ref y,width,problem,14,gold,draw,true);
             MobileDialogParagraph(ref y,width,"当前：「"+saveFlowSourceName+"」",16,pale,draw,true);
-            MobileDialogParagraph(ref y,width,"完整编号："+saveFlow.SourceId,13,jade,draw);
             if(manual)
                 MobileDialogParagraph(ref y,width,"将覆盖这份角色存档，并收存当前地面战利品。\n自动保存仍持续写入当前角色。取消只取消这次手动保存。",14,muted,draw);
             else
             {
                 MobileDialogParagraph(ref y,width,"读取：「"+saveFlowTargetName+"」",16,gold,draw,true);
-                MobileDialogParagraph(ref y,width,"完整编号："+saveFlow.TargetId,13,jade,draw);
                 MobileDialogParagraph(ref y,width,"保存并读取：先保存当前角色，再切换至目标角色。",14,muted,draw);
                 MobileDialogParagraph(ref y,width,"放弃未保存：丢弃尚未保存的变更、地面战利品"+
                     (session.ModeRewardPending?"和待保存挑战奖励":"（含本局临时状态）")+"。",14,new Color(1,.64f,.49f),draw);

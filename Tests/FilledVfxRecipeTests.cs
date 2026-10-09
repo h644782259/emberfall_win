@@ -32,6 +32,7 @@ public static class FilledVfxRecipeTests
     public static string Run()
     {
         checks=0;
+        Inspect(FilledVfxRecipes.EnergyCore(),true);
         foreach(int detail in new[]{-1,12,36,64,1000})Inspect(FilledVfxRecipes.Crescent(detail),true);
         Inspect(FilledVfxRecipes.Sword(),true);Inspect(FilledVfxRecipes.Lightning(),true);Inspect(FilledVfxRecipes.Arcane(),true);Inspect(FilledVfxRecipes.Rupture(),true);Inspect(FilledVfxRecipes.ArcaneShard(),true);
         Inspect(FilledVfxRecipes.Crystal(),false); // Hard normals intentionally duplicate each face's corners.

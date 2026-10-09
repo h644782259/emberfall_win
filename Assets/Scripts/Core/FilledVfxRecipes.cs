@@ -28,6 +28,29 @@ namespace Emberfall
             float opacity=kind==FilledVfxKind.Charge?Math.Min(1,t*8)*Math.Min(1,(1-t)*8):Math.Min(1,(1-t)*3.5f);
             return new FilledVfxFrame(t,expansion,Math.Max(0,opacity));
         }
+        // Reusable closed surface adds a luminous body beneath ribbons and shards.
+        public static FilledMeshRecipe EnergyCore()
+        {
+            const int rings=12,sides=24;int count=(rings-1)*sides+2;
+            float[] p=new float[count*3],uv=new float[count*2];int[] triangles=new int[(rings-1)*sides*6];int cursor=0;
+            for(int y=1;y<rings;y++)for(int x=0;x<sides;x++)
+            {
+                float v=y/(float)rings,u=x/(float)sides;double phi=v*Math.PI,theta=u*Math.PI*2;
+                float radius=(float)Math.Sin(phi)*(.46f+.04f*(float)Math.Cos(theta*6+phi*2));
+                int k=(y-1)*sides+x;p[k*3]=radius*(float)Math.Cos(theta);p[k*3+1]=.5f+.5f*(float)Math.Cos(phi);p[k*3+2]=radius*(float)Math.Sin(theta);uv[k*2]=u;uv[k*2+1]=1-v;
+                if(y==rings-1)continue;
+                int next=(y-1)*sides+(x+1)%sides,b=k+sides;
+                triangles[cursor++]=k;triangles[cursor++]=next;triangles[cursor++]=b;
+                triangles[cursor++]=next;triangles[cursor++]=next+sides;triangles[cursor++]=b;
+            }
+            int top=count-2,bottom=count-1;p[top*3+1]=1;uv[top*2]=uv[bottom*2]=.5f;uv[top*2+1]=1;
+            for(int x=0;x<sides;x++)
+            {
+                triangles[cursor++]=top;triangles[cursor++]=(x+1)%sides;triangles[cursor++]=x;
+                triangles[cursor++]=bottom;triangles[cursor++]=(rings-2)*sides+x;triangles[cursor++]=(rings-2)*sides+(x+1)%sides;
+            }
+            return new FilledMeshRecipe(p,uv,triangles);
+        }
         // Closed diamond-section blade, with a broad convex cutting face and tapered tips.
         public static FilledMeshRecipe Crescent(int segments=36)
         {

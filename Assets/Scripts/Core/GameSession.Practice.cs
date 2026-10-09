@@ -100,7 +100,7 @@ namespace Emberfall
             // Read it before combining keyboard input so F cannot short-circuit it.
             bool potionRequested=MobileControls.ConsumePotion();
             potionRequested=Input.GetKeyDown(KeyCode.F)||potionRequested;
-            if(Input.GetKeyDown(KeyCode.H)){EndPractice("主动离开 · 记录提前结束");return;}
+            if(Input.GetKeyDown(KeyCode.H))ReturnToOrigin();
             if(PracticeRecord.Finished){EndPractice(PracticeRecord.EndReason);return;}
             if(InputBlocked||!PracticeRecord.Started)return;
             try

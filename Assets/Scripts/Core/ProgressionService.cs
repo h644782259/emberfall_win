@@ -246,7 +246,7 @@ namespace Emberfall
                 slots.Add(new SaveSlotInfo
                 {
                     Id = id,
-                    DisplayName = deletionPending ? "存档 " + (id == "legacy" ? "legacy" : id.Substring(0, 6)) + " · 删除未完成" : readable ? GameBalance.ClassName(loaded.heroClass) + " · " + loaded.level + "级" + (id == "legacy" ? " · 旧存档" : "") : (id == "legacy" ? "旧存档 · 无法读取" : "存档 " + id.Substring(0, 6) + " · 无法读取"),
+                    DisplayName = deletionPending ? "角色存档 · 删除未完成" : readable ? GameBalance.ClassName(loaded.heroClass) + " · " + loaded.level + "级" + (id == "legacy" ? " · 旧存档" : "") : (id == "legacy" ? "旧存档 · 无法读取" : "角色存档 · 无法读取"),
                     HeroClass = readable ? loaded.heroClass : HeroClass.Vanguard,
                     Level = readable ? loaded.level : 0,
                     SavedAtUtc = written,

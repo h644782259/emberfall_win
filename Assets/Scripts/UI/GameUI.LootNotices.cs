@@ -19,12 +19,12 @@ namespace Emberfall
         {
             if(item==null||!session.InDungeon||session.IsDead||session.PracticeActive||lootNoticeOwner!=session.Progression||lootNoticeSlot!=session.Progression.CurrentSlotId)return;
             if(lootNotices.Exists(n=>n.Id==item.id))return;
-            lootNotices.Add(new LootNotice{Id=item.id,Name=item.name,Slot=item.slot,Rarity=item.rarity,Level=item.level});
+            lootNotices.Insert(0,new LootNotice{Id=item.id,Name=item.name,Slot=item.slot,Rarity=item.rarity,Level=item.level});
         }
         private bool LootNoticesVisible {get{return session.InDungeon&&!session.IsDead&&!session.Paused&&!session.PracticeActive&&panel==Panel.None&&!session.InputBlocked&&!session.RunChoices.AwaitingChoice&&!session.RoomBranchChoiceOpen;}}
         private int VisibleLootNoticeCount {get{int count=Mathf.Min(lootNotices.Count,MobileControls.Active?2:3);if(MobileControls.Active)while(count>0&&MobileControls.Layout.LootNotice(count-1).Width<=0)count--;return count;}}
         private Rect LootNoticeRect(int index)
-        {if(MobileControls.Active)return TouchRect(MobileControls.Layout.LootNotice(index));float w=Mathf.Min(208,width*.35f);return new Rect(width-w-12,120+index*60,w,54);}
+        {if(MobileControls.Active)return TouchRect(MobileControls.Layout.LootNotice(index));float w=Mathf.Min(208,width*.35f);return new Rect(width-w-12,DesktopMinimapRect.yMax+10+index*60,w,54);}
         private Rect LootNoticeEquipRect(Rect r)
         {float u=MobileControls.Active?TouchRatio:1;return new Rect(r.xMax-52*u,r.y+(MobileControls.Active?0:5)*u,48*u,44*u);}
         private ItemData LootNoticeUpgrade(LootNotice n)
@@ -60,7 +60,7 @@ namespace Emberfall
                 float iconSize=MobileControls.Active?28:36;float textX=MobileControls.Active?40:48;
                 Rect icon=new Rect(r.x+6*u,r.center.y-iconSize*u/2,iconSize*u,iconSize*u);Border(icon,tint);DrawIcon(icon,UIIconAtlas.EquipmentCardIcon(notice.Slot,notice.Level,notice.Rarity,session.Progression.Profile.heroClass),tint);
                 Text(new Rect(r.x+textX*u,r.y+3*u,r.width-(textX+(upgrade?56:6))*u,(MobileControls.Active?20:26)*u),notice.Name,Mathf.RoundToInt(11*u),pale,false,false);
-                Text(new Rect(r.x+textX*u,r.y+(MobileControls.Active?24:32)*u,r.width-(textX+(upgrade?56:6))*u,17*u),(MobileControls.Active?"":"已拾取 · ")+GameBalance.RarityName(notice.Rarity),Mathf.RoundToInt(10*u),tint);
+                Text(new Rect(r.x+textX*u,r.y+(MobileControls.Active?24:32)*u,r.width-(textX+(upgrade?56:6))*u,17*u),GameBalance.RarityName(notice.Rarity),Mathf.RoundToInt(10*u),tint);
                 if(upgrade){Rect action=LootNoticeEquipRect(r);Fill(action,new Color(.08f,.3f,.18f));Border(action,jade);Text(action,"穿戴",Mathf.RoundToInt(12*u),pale,true,false,TextAnchor.MiddleCenter);}
             }
         }

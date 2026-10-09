@@ -108,9 +108,10 @@ namespace Emberfall
             lootNoticesMeasured=true;
             var placed=new System.Collections.Generic.List<Area>();
             float w=Math.Min(174,Width*.35f);
-            for(float y=Math.Max(EncounterText.Y+EncounterText.Height,BossHealth.Y+BossHealth.Height)+12;y+44<Height-70;y+=8)
+            for(float y=Math.Max(Map.Y+Map.Height,Math.Max(EncounterText.Y+EncounterText.Height,BossHealth.Y+BossHealth.Height))+12;y+44<Height-70;y+=8)
             for(float x=Width-w-12;x>=Math.Max(Map.X+Map.Width+12,Width*.3f);x-=12)
             {
+                if(placed.Count>0&&(x!=placed[0].X||y<placed[placed.Count-1].Y+placed[placed.Count-1].Height+8))continue;
                 Area candidate=new Area(x,y,w,44);bool blocked=false;
                 foreach(var r in new[]{Map,EncounterText,BossHealth,Menu,Inventory,SkillsMenu,Catalog,Shop,Smith,Interact,Attack,Dodge,Jump,SkillPage,PlayerStatus,Potion})if(candidate.Overlaps(r)){blocked=true;break;}
                 if(!blocked)foreach(var r in Skills)if(candidate.Overlaps(r)){blocked=true;break;}

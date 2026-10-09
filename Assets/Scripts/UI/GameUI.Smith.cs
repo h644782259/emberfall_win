@@ -51,32 +51,55 @@ namespace Emberfall
             smithCategory=Mathf.Clamp(smithCategory,0,1);
             string[] categories={"强化","镶嵌"};
             for(int i=0;i<categories.Length;i++)
-                if(TabButton(BuildPlanRect(l.Category(i),u),categories[i],smithCategory==i)&&smithCategory!=i){smithCategory=i;smithDetailScroll=Vector2.zero;}
-            smithSelectedSlot=Mathf.Clamp(smithSelectedSlot,0,2);
+                if(TabButton(new Rect((16+i*116)*u,58*u,108*u,40*u),categories[i],smithCategory==i)&&smithCategory!=i){smithCategory=i;smithDetailScroll=Vector2.zero;}
+            Rect body=new Rect(16*u,110*u,width-32*u,height-122*u);
+            int columns=width/u>=540?3:1;
+            float cardWidth=(body.width/u-(columns-1)*12)/columns;
+            float[] cardHeights=new float[3];float rowHeight=0;
             for(int i=0;i<3;i++)
             {
-                var slot=(ItemSlot)i;var gear=p.Equipped(slot);Rect row=BuildPlanRect(l.Equipment(i),u);
-                if(QuietAction(row,"",gear!=null,null,smithSelectedSlot==i)&&smithSelectedSlot!=i){smithSelectedSlot=i;smithDetailScroll=Vector2.zero;}
-                Text(new Rect(row.x+46*u,row.y+6*u,row.width-52*u,row.height-12*u),GameBalance.SlotName(slot)+"\n+"+p.SlotUpgradeRank(slot),Mathf.RoundToInt(12*u),pale,true,true);
-                DrawIcon(new Rect(row.x+8*u,row.y+8*u,30*u,30*u),UIIconAtlas.EquipmentCardIcon(slot,gear==null?1:gear.level,gear==null?Rarity.Common:gear.rarity,session.Progression.Profile.heroClass),gear==null?muted:GameBalance.RarityColor(gear.rarity));
+                var gear=p.Equipped((ItemSlot)i);
+                cardHeights[i]=gear==null?180:DrawSmithDetail(gear,cardWidth-16,u,false)+(smithCategory==0?62:0)+16;
+                rowHeight=Mathf.Max(rowHeight,cardHeights[i]);
             }
-            var item=p.Equipped((ItemSlot)smithSelectedSlot);
-            if(item==null){Text(BuildPlanRect(l.Detail,u),"先在行囊中穿戴这个部位的装备。",Mathf.RoundToInt(16*u),muted,false,true);GUI.enabled=prior;DrawGemPreview(u);DrawSocketPicker(u);DrawVariantChoice(u);return;}
-            float contentHeight=DrawSmithDetail(item,l.Detail.Width-18,u,false);
-            Rect detailArea=BuildPlanRect(l.Detail,u);if(smithCategory==1)detailArea.height+=54*u;
-            smithDetailScroll=BeginTouchScroll("smith-selected-detail",detailArea,smithDetailScroll,new Rect(0,0,(l.Detail.Width-18)*u,Mathf.Max(detailArea.height,contentHeight*u)));
-            DrawSmithDetail(item,l.Detail.Width-18,u,true);EndTouchScroll();
-            if(smithCategory==0)
+            float contentHeight=columns==3?rowHeight:cardHeights[0]+cardHeights[1]+cardHeights[2]+24;
+            smithDetailScroll=BeginTouchScroll("smith-all-equipment",body,smithDetailScroll,new Rect(0,0,body.width,Mathf.Max(body.height,contentHeight*u)));
+            float top=0;
+            for(int i=0;i<3;i++)
             {
-                var quote=p.PrepareSmithUpgrade(item.slot,SmithServiceActive);
-                bool capped=p.SlotUpgradeRank(item.slot)>=p.CurrentUpgradeLimit;
-                int cost=p.UpgradeCost(item);bool affordable=p.Profile.gold>=cost;
-                Rect action=BuildPlanRect(l.Primary,u);
-                if(PrimaryButton(action,"",gold,quote!=null))
-                {Feedback(p.UpgradeAtSmith(quote,SmithServiceActive),"部位强化已保存，换装自动继承");}
-                Text(new Rect(action.x+12*u,action.y,action.width-126*u,action.height),capped?"已达角色等级上限":affordable?"强化装备":"强化装备 · 金币不足",Mathf.RoundToInt(14*u),pale,true,false,TextAnchor.MiddleLeft);
-                if(!capped)DrawPriceTint(new Rect(action.xMax-108*u,action.y,96*u,action.height),cost,false,u,affordable?gold:new Color(.98f,.28f,.24f));
+                var slot=(ItemSlot)i;var item=p.Equipped(slot);
+                Rect tile=new Rect((columns==3?i*(cardWidth+12):0)*u,(columns==3?0:top)*u,cardWidth*u,(columns==3?rowHeight:cardHeights[i])*u);
+                Fill(tile,card);Border(tile,item==null?muted:GameBalance.RarityColor(item.rarity));
+                GUI.BeginGroup(new Rect(tile.x+8*u,tile.y+8*u,tile.width-16*u,tile.height-16*u));
+                if(item==null)
+                {
+                    DrawIcon(new Rect((cardWidth-64)*.5f*u,12*u,48*u,48*u),UIIconAtlas.EquipmentCardIcon(slot,1,Rarity.Common,p.Profile.heroClass),muted);
+                    Text(new Rect(0,72*u,(cardWidth-16)*u,28*u),GameBalance.SlotName(slot),Mathf.RoundToInt(15*u),pale,true,false,TextAnchor.MiddleCenter);
+                    Text(new Rect(0,110*u,(cardWidth-16)*u,40*u),"未穿戴",Mathf.RoundToInt(12*u),muted,false,false,TextAnchor.MiddleCenter);
+                }
+                else
+                {
+                    float y=DrawSmithDetail(item,cardWidth-16,u,true);
+                    if(smithCategory==0)
+                    {
+                        var quote=p.PrepareSmithUpgrade(slot,SmithServiceActive);
+                        int cost=p.UpgradeCost(item);bool capped=p.SlotUpgradeRank(slot)>=p.CurrentUpgradeLimit;
+                        float actionWidth=Mathf.Min(148,cardWidth-32);
+                        Rect action=new Rect((cardWidth-16-actionWidth)*.5f*u,y*u,actionWidth*u,44*u);
+                        Color accent=quote!=null?gold:muted;
+                        Fill(action,new Color(accent.r,accent.g,accent.b,.13f));Border(action,new Color(accent.r,accent.g,accent.b,.55f));
+                        if(QuietAction(action,"",quote!=null))Feedback(p.UpgradeAtSmith(quote,SmithServiceActive),"部位强化已保存，换装自动继承");
+                        DrawIcon(new Rect(action.x+10*u,action.y+11*u,22*u,22*u),UIIconAtlas.Utility(capped?"confirm":"upgrade"),accent);
+                        if(!capped)
+                        {
+                            DrawIcon(new Rect(action.x+42*u,action.y+13*u,18*u,18*u),UIIconAtlas.Utility("coin"),gold);
+                            Text(new Rect(action.x+66*u,action.y,action.width-72*u,44*u),cost.ToString(),Mathf.RoundToInt(12*u),p.Profile.gold>=cost?accent:new Color(.98f,.28f,.24f),true,false,TextAnchor.MiddleLeft);
+                        }
+                    }
+                }
+                GUI.EndGroup();top+=cardHeights[i]+12;
             }
+            EndTouchScroll();
             GUI.enabled=prior;DrawGemPreview(u);DrawSocketPicker(u);DrawVariantChoice(u);
         }
         private void DrawGemUpgradeComparison(ref float y,float width,float u,MechanicAttachment gem,bool ascend,bool draw)
@@ -106,24 +129,41 @@ namespace Emberfall
             }
             y+=208;
         }
+        private string SmithVariantDescription(EquipmentMechanic mechanic,int variant)
+        {
+            string description=BuildCatalog.MechanicDescription(mechanic);
+            int split=description.IndexOf("变体B：",System.StringComparison.Ordinal);
+            if(split>=0)description=variant==0?description.Substring(0,split):description.Substring(split);
+            return description.Replace("变体A：","").Replace("变体B：","").Trim();
+        }
         private void DrawVariantChoice(float u)
         {
             if(smithVariantMechanic==EquipmentMechanic.None)return;
             var p=session.Progression;var gem=p.Attachment(smithVariantMechanic);
             if(gem==null){smithVariantMechanic=EquipmentMechanic.None;return;}
             Fill(new Rect(0,0,width,height),new Color(0,0,0,.6f));blockedRects.Add(new Rect(0,0,width,height));
-            float w=Mathf.Min(400*u,width-24*u),h=Mathf.Min(300*u,height-24*u);
+            float w=Mathf.Min(680*u,width-24*u),column=(w-44*u)/2;
+            string[] descriptions={SmithVariantDescription(gem.mechanic,0),SmithVariantDescription(gem.mechanic,1)};
+            int font=Mathf.RoundToInt(13*u);
+            float textHeight=Mathf.Max(Style(font,false,true).CalcHeight(new GUIContent(descriptions[0]),column-24*u),Style(font,false,true).CalcHeight(new GUIContent(descriptions[1]),column-24*u));
+            float h=Mathf.Min(Mathf.Max(280*u,textHeight+174*u),height-24*u);
+            while(textHeight>h-174*u&&font>Mathf.RoundToInt(11*u))
+            {font--;textHeight=Mathf.Max(Style(font,false,true).CalcHeight(new GUIContent(descriptions[0]),column-24*u),Style(font,false,true).CalcHeight(new GUIContent(descriptions[1]),column-24*u));}
             Rect box=new Rect((width-w)/2,(height-h)/2,w,h);Fill(box,card);Border(box,jade);
-            Text(new Rect(box.x+14*u,box.y+12*u,w-70*u,28*u),smithVariantChoice==0?"机制形态 A":"机制形态 B",Mathf.RoundToInt(17*u),gold,true);
+            Text(new Rect(box.x+14*u,box.y+12*u,w-70*u,28*u),"机制形态对比",Mathf.RoundToInt(17*u),gold,true);
             if(PopupCloseButton(new Rect(box.xMax-48*u,box.y+6*u,44*u,36*u))){smithVariantMechanic=EquipmentMechanic.None;return;}
-            string description=BuildCatalog.MechanicDescription(gem.mechanic);
-            int split=description.IndexOf("变体B：",System.StringComparison.Ordinal);
-            if(split>=0)description=smithVariantChoice==0?description.Substring(0,split).Replace("变体A：",""):description.Substring(split).Replace("变体B：","");
-            Text(new Rect(box.x+16*u,box.y+56*u,w-32*u,h-130*u),description,Mathf.RoundToInt(13*u),pale,false,true);
-            bool canSwitch=SmithServiceActive&&(gem.variantUnlocked||p.Profile.mechanicMaterials>=ProgressionService.VariantCost);
-            string action=gem.variantUnlocked?"选择此形态":"解锁并选择 · "+ProgressionService.VariantCost+" 碎片";
+            for(int variant=0;variant<2;variant++)
+            {
+                Rect option=new Rect(box.x+16*u+variant*(column+12*u),box.y+52*u,column,h-120*u);
+                Fill(option,new Color(.035f,.065f,.085f));Border(option,smithVariantChoice==variant?jade:muted,smithVariantChoice==variant?2*u:u);
+                Text(new Rect(option.x+12*u,option.y+8*u,column-24*u,28*u),(variant==0?"形态 A":"形态 B")+(gem.variant==variant?" · 当前":""),Mathf.RoundToInt(14*u),gem.variant==variant?gold:pale,true);
+                Text(new Rect(option.x+12*u,option.y+42*u,column-24*u,option.height-50*u),descriptions[variant],font,pale,false,true);
+                if(QuietAction(option,"",true))smithVariantChoice=variant;
+            }
+            bool canSwitch=smithVariantChoice!=gem.variant&&SmithServiceActive&&(gem.variantUnlocked||p.Profile.mechanicMaterials>=ProgressionService.VariantCost);
+            string action=smithVariantChoice==gem.variant?"当前形态":gem.variantUnlocked?"选择形态 "+(smithVariantChoice==0?"A":"B"):"解锁并选择 · "+ProgressionService.VariantCost+" 碎片";
             if(PrimaryButton(new Rect(box.x+16*u,box.yMax-56*u,w-32*u,40*u),action,jade,canSwitch))
-            {if(p.ToggleAttachmentVariant(gem.mechanic,SmithServiceActive)){Feedback(true,"挂件形态已切换");smithVariantMechanic=EquipmentMechanic.None;}else Feedback(false,p.LastError);}
+            {if(p.ToggleAttachmentVariant(gem.mechanic,SmithServiceActive)){Feedback(true,"宝石形态已切换");smithVariantMechanic=EquipmentMechanic.None;}else Feedback(false,p.LastError);}
         }
         private void DrawSocketPicker(float u)
         {
@@ -227,17 +267,22 @@ namespace Emberfall
                     if(BuildCatalog.HasMechanicVariant(mounted.mechanic))
                     {
                         GoalParagraph(ref y,width,u,"机制形态",13,muted,false,draw);
+                        bool stackedVariants=width<420;
+                        float variantWidth=stackedVariants?width-16:width/2-16;
+                        float variantTextHeight=Mathf.Max(Style(Mathf.RoundToInt(12*u),false,true).CalcHeight(new GUIContent(SmithVariantDescription(mounted.mechanic,0)),(variantWidth-20)*u),Style(Mathf.RoundToInt(12*u),false,true).CalcHeight(new GUIContent(SmithVariantDescription(mounted.mechanic,1)),(variantWidth-20)*u))/u;
+                        float variantHeight=64+variantTextHeight;
                         if(draw)for(int variant=0;variant<2;variant++)
                         {
-                            Rect option=new Rect((8+variant*(width/2))*u,y*u,(width/2-16)*u,60*u);
+                            Rect option=new Rect((stackedVariants?8:8+variant*(width/2))*u,(y+(stackedVariants?variant*(variantHeight+8):0))*u,variantWidth*u,variantHeight*u);
                             bool selected=mounted.variant==variant;
                             Fill(option,card);Border(option,selected?jade:muted,selected?2:1);
                             DrawIcon(new Rect(option.x+10*u,option.y+12*u,36*u,36*u),UIIconAtlas.Utility(variant==0?"core":"attack"),selected?jade:pale);
-                            Text(new Rect(option.x+50*u,option.y,option.width-54*u,option.height),variant==0?"形态 A":"形态 B",Mathf.RoundToInt(12*u),pale,true,false,TextAnchor.MiddleLeft);
+                            Text(new Rect(option.x+50*u,option.y,option.width-54*u,56*u),variant==0?"形态 A":"形态 B",Mathf.RoundToInt(12*u),pale,true,false,TextAnchor.MiddleLeft);
                             DrawIcon(new Rect(option.xMax-18*u,option.y,18*u,18*u),UIIconAtlas.Utility(selected?"confirm":mounted.variantUnlocked?"help":"lock"),selected?jade:gold);
-                            if(QuietAction(option,"",!selected&&SmithServiceActive)){smithVariantMechanic=mounted.mechanic;smithVariantChoice=variant;}
+                            Text(new Rect(option.x+10*u,option.y+56*u,option.width-20*u,variantTextHeight*u),SmithVariantDescription(mounted.mechanic,variant),Mathf.RoundToInt(12*u),pale,false,true);
+                            if(QuietAction(option,"",true)){smithVariantMechanic=mounted.mechanic;smithVariantChoice=variant;}
                         }
-                        y+=68;
+                        y+=(variantHeight+8)*(stackedVariants?2:1);
                     }
                 }
 

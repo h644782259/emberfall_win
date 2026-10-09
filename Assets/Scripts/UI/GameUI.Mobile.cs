@@ -276,8 +276,7 @@ namespace Emberfall
                 var slot=saveSlots[i];Rect r=new Rect(0,(issueHeight+i*68)*ratio,(panelWidth-22)*ratio,60*ratio);
                 Fill(r,card);Border(r,selectedSaveId==slot.Id?gold:jade*.35f);
                 Text(new Rect(12*ratio,r.y+7*ratio,(panelWidth-200)*ratio,23*ratio),slot.DisplayName,TouchFont(16),pale,true);
-                string id=slot.Id=="legacy"?"旧存档":slot.Id.Substring(0,8);
-                Text(new Rect(12*ratio,r.y+34*ratio,(panelWidth-50)*ratio,19*ratio),id+"  ·  "+(slot.SavedAtUtc==System.DateTime.MinValue?"时间未知":slot.SavedAtUtc.ToLocalTime().ToString("yyyy-MM-dd HH:mm"))+(slot.DeletionPending?"  删除未完成":""),TouchFont(12),muted);
+                Text(new Rect(12*ratio,r.y+34*ratio,(panelWidth-50)*ratio,19*ratio),(slot.SavedAtUtc==System.DateTime.MinValue?"时间未知":slot.SavedAtUtc.ToLocalTime().ToString("yyyy-MM-dd HH:mm"))+(slot.DeletionPending?"  删除未完成":""),TouchFont(12),muted);
                 if(GUI.Button(r,GUIContent.none,invisibleButton)){selectedSaveId=slot.Id;saveSelectionError=null;}
             }
             EndTouchScroll();

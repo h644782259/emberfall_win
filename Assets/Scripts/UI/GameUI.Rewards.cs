@@ -87,7 +87,7 @@ namespace Emberfall
             Fill(w,new Color(.045f,.064f,.095f,.99f));Border(w,new Color(.52f,.60f,.67f,.3f));
             Text(new Rect(w.x+28,w.y+20,w.width-56,18),"F A L L E N   S T A R",10,gold,true);
             Text(new Rect(w.x+28,w.y+45,w.width-248,42),revealed?(complete?"宝箱奖励":"开启宝箱"):"通关馈赠",28,pale,true);
-            Text(new Rect(w.x+28,w.y+92,w.width-56,24),revealed?(complete?ChestRevealPresentation.Outcome(reward):"已保存奖励 · 可以跳过揭晓动画"):ChestRevealPresentation.ChoiceDisclosure,14,muted);
+            Text(new Rect(w.x+28,w.y+92,w.width-56,24),revealed&&!complete?"正在开启宝箱":"",14,muted);
             Rect body=new Rect(w.x+28,w.y+132,w.width-56,w.height-(!revealed&&string.IsNullOrEmpty(progression.LastError)?168:208));
             if(complete)DrawDesktopChestResult(body,reward,accent);
             else if(revealed)DrawChestRevealTransition(body,reward,new Rect(body.x,body.y,ChestRevealPresentation.DesktopArtSize(body.height),ChestRevealPresentation.DesktopArtSize(body.height)));
@@ -107,7 +107,6 @@ namespace Emberfall
 
             if(revealed)
             {
-                Text(new Rect(w.x+28,w.yMax-55,w.width-430,36),complete?"奖励已保存":"正在揭晓已保存的奖励",13,muted,false,true);
                 if(complete&&CanTrialChestReward(reward)&&PrimaryButton(new Rect(w.xMax-396,w.yMax-58,180,42), "收下并查看时装", jade)){AcceptChestForTrial();return;}
                 if(PrimaryButton(new Rect(w.xMax-208,w.yMax-58,180,42), complete?"收下":"跳过动画", jade, !chestDetails, null, true))
                 {if(!complete)chestRevealedAt=Time.unscaledTime-ChestDuration;else FinishChestReveal();BlockUITransition();}
@@ -115,7 +114,7 @@ namespace Emberfall
             else
             {
                 bool failed=!string.IsNullOrEmpty(progression.LastError);
-                Text(new Rect(w.x+28,w.yMax-50,w.width-(failed?300:56),36),failed?progression.LastError:"开启后奖励先保存，再展示结果",13,muted,false,true);
+                Text(new Rect(w.x+28,w.yMax-50,w.width-(failed?300:56),36),failed?progression.LastError:"",13,muted,false,true);
                 if(failed&&Button(new Rect(w.xMax-260,w.yMax-58,232,42),"商人 · 整理容量",jade))OpenChestRecoveryService();
             }
         }
@@ -182,7 +181,7 @@ namespace Emberfall
             float size=Mathf.Min(area.width,area.height),unit=size/200f;
             for(int i=0;i<3;i++)
             {Rect bar=new Rect(area.center.x-52*unit+(i-1)*8*unit,area.center.y+(1-i)*24*unit,104*unit,28*unit);Fill(bar,accent*(.65f+i*.12f));Border(bar,gold);}
-            Text(new Rect(area.x,area.yMax-38*unit,area.width,28*unit),"金币已入账",Mathf.RoundToInt(16*unit),accent,true,false,TextAnchor.MiddleCenter);
+            Text(new Rect(area.x,area.yMax-38*unit,area.width,28*unit),"金币",Mathf.RoundToInt(16*unit),accent,true,false,TextAnchor.MiddleCenter);
         }
 
         private static bool CanTrialChestReward(ChestReward reward)

@@ -10,7 +10,7 @@ namespace Emberfall
         public bool DungeonSelectionOpen { get; private set; }
         private readonly int[] selectedAdventureTiers={1,1,1,1,1};
         public int SelectedDungeonTier { get { return Progression==null?1:Mathf.Clamp(selectedAdventureTiers[Mathf.Clamp(SelectedArenaMode+1,0,4)],1,MaximumDungeonTier); } set { selectedAdventureTiers[Mathf.Clamp(SelectedArenaMode+1,0,4)]=value; } }
-        public int MaximumDungeonTier { get { return AdventureRewardRules.MaximumDungeonIndex(Progression.Profile.level); } }
+        public int MaximumDungeonTier { get { return Mathf.Min(AdventureRewardRules.MaximumDungeonIndex(Progression.Profile.level),Progression.UnlockedAdventureTier(SelectedArenaMode)); } }
         public bool SelectedChallengeMode { get { return false; } set { } }
         // Compatibility accessors cannot re-enable the removed healing restriction.
         public bool ChallengeRun { get { return false; } private set { } }

@@ -7,10 +7,11 @@ namespace Emberfall
   private Rect entryRewardViewport,entryRewardPopupRect,entryRewardAnchor;
   private EntryRewardPreview entryRewardPopup;
   private Vector2 entryRewardScreenAnchor,entryRewardScreenEnd,entryRewardPopupScroll;
-  private bool entryRewardPopupVisible;
+  private bool entryRewardPopupVisible,entryRewardAnchorIsRoot;
+  private Vector2 entryRewardContentOrigin;
   private void BeginEntryRewardPopup()
   {
-   entryRewardPopup=null;
+   entryRewardPopup=null;entryRewardAnchorIsRoot=false;
    if(!MobileControls.Active||!entryRewardPopupVisible||Event.current.type!=EventType.MouseDown)return;
    Vector2 point=Event.current.mousePosition;
    if(entryRewardPopupRect.Contains(point))
@@ -25,8 +26,7 @@ namespace Emberfall
    entryRewardPopupVisible=entryRewardPopup!=null;
    if(entryRewardPopup==null)return;
    float u=MobileControls.Active?TouchRatio:1f;
-   Vector2 at=GUIUtility.ScreenToGUIPoint(entryRewardScreenAnchor),end=GUIUtility.ScreenToGUIPoint(entryRewardScreenEnd);
-   entryRewardAnchor=new Rect(at.x,at.y,end.x-at.x,end.y-at.y);
+   if(!entryRewardAnchorIsRoot){Vector2 at=GUIUtility.ScreenToGUIPoint(entryRewardScreenAnchor),end=GUIUtility.ScreenToGUIPoint(entryRewardScreenEnd);entryRewardAnchor=new Rect(at.x,at.y,end.x-at.x,end.y-at.y);}
    if(!entryRewardViewport.Overlaps(entryRewardAnchor)){entryRewardPopupVisible=false;return;}
    float w=Mathf.Min(320*u,width-24*u),textWidth=w-40*u;
    float contentHeight=DrawEntryRewardRows(entryRewardPopup,textWidth/u,u,false)*u;
@@ -58,7 +58,7 @@ namespace Emberfall
    if(!MobileControls.Active&&hover)entryRewardHoverKey=item.Key;
    if(MobileControls.Active?entryRewardSelection==item.Key:hover||entryRewardPopupVisible&&entryRewardHoverKey==item.Key&&entryRewardPopupRect.Contains(Mouse))
    {
-    tooltip=null;entryRewardViewport=new Rect(0,0,width,height);entryRewardPopup=item;
+    tooltip=null;entryRewardAnchorIsRoot=false;entryRewardViewport=new Rect(0,0,width,height);entryRewardPopup=item;
     entryRewardScreenAnchor=GUIUtility.GUIToScreenPoint(hit.position);entryRewardScreenEnd=GUIUtility.GUIToScreenPoint(new Vector2(hit.xMax,hit.yMax));
    }
   }
@@ -78,7 +78,7 @@ namespace Emberfall
    if(fashion){DrawIcon(icon,UIIconAtlas.ControlDisc(),new Color(.23f,.10f,.33f));DrawIcon(icon,UIIconAtlas.ControlRing(),new Color(.87f,.65f,1));}
    else {Fill(icon,card);Border(icon,item.Tint,2*u);}
    DrawIcon(new Rect(icon.x+7*u,icon.y+5*u,34*u,34*u),item.Icon,item.Tint);
-   Rect label=new Rect(icon.x,icon.yMax-12*u,icon.width,12*u);Fill(label,fashion?new Color(.36f,.16f,.48f):new Color(.08f,.15f,.19f));
+   Rect label=new Rect(icon.x+2*u,icon.yMax-14*u,icon.width-4*u,12*u);Fill(label,fashion?new Color(.36f,.16f,.48f):new Color(.08f,.15f,.19f));
    Text(label,EntryRewardKind(item),Mathf.RoundToInt(9*u),fashion?new Color(.94f,.78f,1):pale,true,false,TextAnchor.MiddleCenter);
   }
   private float DrawEntryRewardRows(EntryRewardPreview item,float available,float u,bool draw)
@@ -108,8 +108,12 @@ namespace Emberfall
   {
    public string Key,Name,Description;public Texture2D Icon;public Color Tint;public Rarity Rarity;public bool Clear;
   }
+  private readonly System.Collections.Generic.Dictionary<string,System.Collections.Generic.List<EntryRewardPreview>> entryPreviewCache = new System.Collections.Generic.Dictionary<string,System.Collections.Generic.List<EntryRewardPreview>>();
   private System.Collections.Generic.List<EntryRewardPreview> EntryRewardPreviews(int mode,int tier,bool chapter)
   {
+   string cacheKey=session.Progression.CurrentSlotId+":"+session.Progression.Profile.heroClass+":"+session.Progression.Profile.level+":"+mode+":"+tier+":"+chapter+":"+session.SelectedChapterNode+":"+session.SelectedChapterDifficulty+":"+session.SelectedChapterTier;
+   System.Collections.Generic.List<EntryRewardPreview> cached;
+   if(entryPreviewCache.TryGetValue(cacheKey,out cached))return cached;
    var result=new System.Collections.Generic.List<EntryRewardPreview>();int level=chapter?ProgressionService.EquipmentGenerationLevel(session.Progression.Profile.level):AdventureRewardRules.DungeonLevel(tier);
    int enemyTier=chapter?session.SelectedChapterTier:tier;
    bool hasBoss=chapter?session.SelectedChapterNode==ChapterNode.StarPlatform:mode==-1||mode==2||mode==3;
@@ -139,7 +143,8 @@ namespace Emberfall
 
     result.Add(new EntryRewardPreview{Key="mechanic:"+mechanic+":"+rarity,Rarity=rarity,Name=BuildCatalog.MechanicName(mechanic),Icon=UIIconAtlas.EquipmentCardIcon(BuildCatalog.MechanicSlot(mechanic),level,rarity,session.Progression.Profile.heroClass),Tint=GameBalance.RarityColor(rarity),Description=ProgressionService.EquipmentDropPreview(BuildCatalog.MechanicSlot(mechanic),rarity,level,mechanic)});
    }
-   return result;
+   if(entryPreviewCache.Count>=64)entryPreviewCache.Clear();
+   entryPreviewCache[cacheKey]=result;return result;
   }
   private float DrawEntryRewardPreviews(float available,float u,int mode,int tier,bool chapter,bool draw)
   {
@@ -165,14 +170,14 @@ namespace Emberfall
       Rect icon=new Rect(hit.center.x-24*u,hit.y,48*u,48*u);DrawEntryRewardIcon(icon,item,u);
       Text(new Rect(hit.x,hit.y+50*u,hit.width,labelHeight*u),item.Name,Mathf.RoundToInt(11*u),pale,false,true,TextAnchor.MiddleCenter);
       if(MobileControls.Active&&GUI.Button(hit,GUIContent.none,invisibleButton)){entryRewardSelection=entryRewardSelection==item.Key?null:item.Key;entryRewardPopupScroll=Vector2.zero;}
-      bool hover=entryRewardViewport.Contains(Mouse)&&hit.Contains(Event.current.mousePosition)&&GUI.enabled;
+      Rect rootHit=new Rect(entryRewardContentOrigin.x+hit.x,entryRewardContentOrigin.y+hit.y,hit.width,hit.height);
+      bool hover=entryRewardViewport.Contains(Mouse)&&rootHit.Contains(Mouse)&&GUI.enabled;
       if(!MobileControls.Active&&hover)entryRewardHoverKey=item.Key;
       bool show=MobileControls.Active?entryRewardSelection==item.Key:hover||entryRewardPopupVisible&&entryRewardHoverKey==item.Key&&entryRewardPopupRect.Contains(Mouse);
       if(show)
       {
-       Vector2 screen=GUIUtility.GUIToScreenPoint(icon.position),screenEnd=GUIUtility.GUIToScreenPoint(new Vector2(icon.xMax,icon.yMax));
-       // Defer drawing until all scroll groups have closed, avoiding clipped or bottom-appended details.
-       entryRewardPopup=item;entryRewardScreenAnchor=screen;entryRewardScreenEnd=screenEnd;
+       entryRewardPopup=item;entryRewardAnchorIsRoot=true;
+       entryRewardAnchor=new Rect(entryRewardContentOrigin.x+icon.x,entryRewardContentOrigin.y+icon.y,icon.width,icon.height);
       }
      }
      end+=rowHeight;
@@ -199,14 +204,15 @@ namespace Emberfall
     Text(new Rect(r.x+8*u,r.y+6*u,r.width-16*u,25*u),names[i],Mathf.RoundToInt(14*u),chosen?gold:pale,true);
     Text(new Rect(r.x+8*u,r.y+33*u,r.width-16*u,18*u),i==5?"双印路线":i==0?"三波 · 首领":i==1?"守点":i==2?"限时":i==3?"首领连战":"五房远征",Mathf.RoundToInt(11*u),muted);
     if(GUI.Button(r,GUIContent.none,invisibleButton))
-    {adventureChapterSelected=i==5;if(i<5)session.SelectedArenaMode=i-1;adventureDetailScroll=Vector2.zero;adventureRewardHint=null;CancelMobileScroll();BlockUITransition();}
+    {adventureChapterSelected=i==5;if(i<5)session.SelectedArenaMode=i-1;adventureDetailScroll=Vector2.zero;adventureRewardHint=null;CancelMobileScroll();}
    }
    EndTouchScroll();
    int mode=session.SelectedArenaMode,tier=session.SelectedDungeonTier;float contentWidth=l.Details.Width-18;
    string detail=adventureChapterSelected?"星路章节 · 双印路线":names[mode+1]+" · Lv"+AdventureRewardRules.DungeonLevel(tier);
-   adventureDetailScroll=BeginTouchScroll("adventure-detail",AdventureRect(l.Details,u),adventureDetailScroll,new Rect(0,0,contentWidth*u,Mathf.Max(l.Details.Height*u,(48+DrawEntryRewardPreviews(contentWidth,u,mode,tier,false,false))*u)));
+   float rewardHeight=adventureChapterSelected?0:DrawEntryRewardPreviews(contentWidth,u,mode,tier,false,false);
+   adventureDetailScroll=BeginTouchScroll("adventure-detail",AdventureRect(l.Details,u),adventureDetailScroll,new Rect(0,0,contentWidth*u,Mathf.Max(l.Details.Height*u,(48+rewardHeight)*u)));
    Text(new Rect(8*u,4*u,(contentWidth-12)*u,32*u),detail,Mathf.RoundToInt(18*u),pale,true);
-   if(!adventureChapterSelected){entryRewardViewport=AdventureRect(l.Details,u);GUI.BeginGroup(new Rect(0,48*u,contentWidth*u,DrawEntryRewardPreviews(contentWidth,u,mode,tier,false,false)*u));DrawEntryRewardPreviews(contentWidth,u,mode,tier,false,true);GUI.EndGroup();}
+   if(!adventureChapterSelected){entryRewardViewport=AdventureRect(l.Details,u);entryRewardContentOrigin=new Vector2(entryRewardViewport.x-adventureDetailScroll.x,entryRewardViewport.y+48*u-adventureDetailScroll.y);GUI.BeginGroup(new Rect(0,48*u,contentWidth*u,rewardHeight*u));DrawEntryRewardPreviews(contentWidth,u,mode,tier,false,true);GUI.EndGroup();}
    EndTouchScroll();
    float x=l.X,y=l.FooterY;
 

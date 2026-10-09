@@ -525,9 +525,9 @@ namespace Emberfall
                 chargeDirection = attackForward;
                 float length = Mathf.Clamp(CombatFx.Flat(targetPoint - attackOrigin).magnitude + 1f, 2.2f, 9.5f);
                 chargeEnd = ClipPath(attackOrigin, attackOrigin + chargeDirection * length, true);
-                telegraph = EnemyAttackTelegraph.Charge(attackOrigin, chargeEnd, BossAttackPolicy.ChargeHalfWidth);
+                if(IsBoss)telegraph = EnemyAttackTelegraph.Charge(attackOrigin, chargeEnd, BossAttackPolicy.ChargeHalfWidth);
             }
-            else if (attackType == AttackType.Fan || attackType == AttackType.Bolt)
+            else if (IsBoss && (attackType == AttackType.Fan || attackType == AttackType.Bolt))
             {
                 int count = attackType == AttackType.Fan ? 5 : 2;
                 var directions = new Vector3[count];
@@ -542,7 +542,8 @@ namespace Emberfall
                 }
                 telegraph = EnemyAttackTelegraph.Fan(muzzle, directions, lengths, .78f);
             }
-            else telegraph = EnemyAttackTelegraph.Circle(targetPoint, ImpactRadius, transform);
+            else if(IsBoss)telegraph = EnemyAttackTelegraph.Circle(targetPoint, ImpactRadius, transform);
+            if(telegraph==null)return;
             warning = telegraph.gameObject;
             telegraph.SetInterruptible(CanBeSkillInterrupted);
             telegraph.SetProgress(1f - windup / Mathf.Max(.01f, totalWindup));

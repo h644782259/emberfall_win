@@ -38,6 +38,9 @@ namespace Emberfall
         private float CombatAttack { get { return stats.Damage * RunAttackMultiplier; } }
 
         private float attackCooldown, attackAnimation, hurtTimer, dodgeCooldown, invulnerability, skillFeedbackCooldown;
+        private const float BlinkProtectionDuration = .38f;
+        private float blinkInvulnerableUntil;
+        public bool IsBlinkInvulnerable { get { return Time.time < blinkInvulnerableUntil; } }
         private float guardTime, guardPower, guardReduction, guardRadius, guardPulseTimer;
         private int guardRank, mobilityRank, guardCastId;
         private float healingProtectionTime, healingReduction, mobilityTime;
@@ -160,6 +163,23 @@ namespace Emberfall
             }
         }
 
+        // Same-world relocation keeps combat ownership, buffs and cooldowns intact.
+        public void RepositionAtOrigin(Vector3 position)
+        {
+            if (targeting != null) targeting.Cancel();
+            if (charge != null) charge.Cancel();
+            CancelCombatPose();
+            ClearMobilePinnedTarget();
+            AimTarget = null;
+            aimGeometry.Clear();
+            transform.position = WorldTraversal.NearestWalkable(position, .45f);
+            platformFallSpeed = 0;
+            jumping = rangerVault = false;
+            jumpAge = movementSkillLock = 0;
+            aimPoint = transform.position + transform.forward * 5f;
+            if (model != null) model.ResetLocomotion();
+        }
+
         public void Teleport(Vector3 position)
         {
             SummonedCompanion.RefreshBuild(this);
@@ -188,6 +208,7 @@ namespace Emberfall
             slowTime = slowStrength = 0;
             attackAnimation = 0;
             attackCooldown = .15f;
+            blinkInvulnerableUntil = 0;
             invulnerability = .65f;
             SummonedCompanion.TransferPermanentPartners(this);
         }
@@ -236,7 +257,7 @@ namespace Emberfall
             CombatImpactBatch.BeginAction();
             try
             {
-            if (session == null || IsDead || session.CombatEnded || invulnerability > 0 || !session.HasStarted || amount <= 0 || float.IsNaN(amount) || float.IsInfinity(amount)) return;
+            if (session == null || IsDead || session.CombatEnded || IsBlinkInvulnerable || invulnerability > 0 || !session.HasStarted || amount <= 0 || float.IsNaN(amount) || float.IsInfinity(amount)) return;
             float damage = Mathf.Max(1, amount * CombatBalance.ArmorDamageMultiplier(stats.Armor, session.Progression.Profile.level));
             if (chargedWardTime > 0) damage *= .75f;
             if(coreWardTime>0)damage*=1f-masteryCore.WardReduction;
@@ -405,7 +426,7 @@ namespace Emberfall
                 float movementBonus = passiveTime>0?passiveSpeed:0;
                 if (mobilityTime>0) movementBonus += .1f+mobilityRank*.05f;
                 if (pursuitTime > 0) movementBonus += .2f;
-                if (burnStrideTime > 0) movementBonus += .2f;
+                if (burnStrideTime > 0) movementBonus += .6f;
                 Vector3 walkingStart = transform.position;
                 transform.position = WorldTraversal.MovePlayer(transform.position, movement * stats.MoveSpeed * (1f+movementBonus) * MovementMultiplier * dt, dt, ref platformFallSpeed, .45f);
                 walkingDisplacement = CombatFx.Flat(transform.position - walkingStart);
@@ -1098,8 +1119,8 @@ namespace Emberfall
             Vector3 travel=Vector3.ClampMagnitude(CombatFx.Flat(direction),1);
             if(travel.sqrMagnitude>.0001f)
             {
-                float bonus=(passiveTime>0?passiveSpeed:0)+(mobilityTime>0?.1f+mobilityRank*.05f:0)+(pursuitTime>0?.2f:0)+(burnStrideTime>0?.2f:0);
-                float distance=stats.MoveSpeed*(1+bonus)*MovementMultiplier*.55f*travel.magnitude;
+                float bonus=(passiveTime>0?passiveSpeed:0)+(mobilityTime>0?.1f+mobilityRank*.05f:0)+(pursuitTime>0?.2f:0)+(burnStrideTime>0?.6f:0);
+                float distance=Mathf.Max(6f,stats.MoveSpeed*(1+bonus)*.55f)*MovementMultiplier*travel.magnitude;
                 Vector3 landing;
                 if(WorldTraversal.TryResolvePlatformJump(origin,travel,distance,.45f,out landing))jumpDestination=landing;
                 else if(origin.y<=.05f&&WorldTraversal.TryResolveBlink(origin,travel,distance,.45f,session.ArenaRadius-.65f,out landing))jumpDestination=landing;
@@ -1147,9 +1168,9 @@ namespace Emberfall
             if (charge != null) charge.Cancel();
             CancelCombatPose();
             model.ResetLocomotion();
+            blinkInvulnerableUntil = Time.time + BlinkProtectionDuration;
             transform.position = destination;
             dodgeCooldown = 2.1f;
-            invulnerability = Mathf.Max(invulnerability, .38f);
             traversalFrame = Time.frameCount;
             perfectDodgeWindow = .55f; perfectDodgeAwarded = false;
             foreach (EnemyController enemy in session.Enemies)
@@ -1159,7 +1180,7 @@ namespace Emberfall
             session.RecordCombatAction("成功闪避");
             Color color = GameBalance.ClassColor(HeroClass);
             AdvancedSkillVfx.Rune(this, origin, .9f, color, .3f, 1);
-            AdvancedSkillVfx.Rune(this, destination, 1.1f, color, .38f, 1);
+            AdvancedSkillVfx.Rune(this, destination, 1.1f, color, BlinkProtectionDuration, 1);
             AdvancedSkillVfx.Beam(this, origin + Vector3.up, destination + Vector3.up, color, .28f, .14f);
             GameAudio.Play(SoundCue.Dodge);
             return true;
@@ -1170,8 +1191,7 @@ namespace Emberfall
             if (!jumping || deltaTime <= 0 || float.IsNaN(deltaTime) || float.IsInfinity(deltaTime)) return;
             jumpAge += deltaTime;
             float progress = Mathf.Clamp01(jumpAge / .55f);
-            Vector3 ground=Vector3.Lerp(jumpOrigin,jumpDestination,progress);
-            transform.position = ground + Vector3.up * (Mathf.Sin(progress * Mathf.PI) * 1.65f);
+            transform.position = WorldTraversal.JumpPosition(jumpOrigin,jumpDestination,progress);
             if (progress >= 1f)
             {
                 jumping = false;
@@ -1277,7 +1297,7 @@ namespace Emberfall
 
         public void ApplySlow(float duration, float strength)
         {
-            if (IsDead || duration <= 0 || strength <= 0 || float.IsNaN(duration) || float.IsInfinity(duration) || float.IsNaN(strength) || float.IsInfinity(strength)) return;
+            if (IsDead || IsBlinkInvulnerable || duration <= 0 || strength <= 0 || float.IsNaN(duration) || float.IsInfinity(duration) || float.IsNaN(strength) || float.IsInfinity(strength)) return;
             slowTime = Mathf.Max(slowTime, duration);
             slowStrength = Mathf.Max(slowStrength, Mathf.Clamp(strength, 0, .7f));
             CombatFx.Ring(transform.position, .9f, new Color(.42f, .85f, .3f), .3f, .08f);

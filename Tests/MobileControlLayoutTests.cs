@@ -101,7 +101,8 @@ public static class MobileControlLayoutTests
             {
                 var notice=l.LootNotice(i);if(notice.Width<=0)continue;
                 foreach(var r in reserved)Check(!notice.Overlaps(r),"loot notice clears wave, map and controls");
-                if(i>0)Check(!notice.Overlaps(l.LootNotice(0)),"queued notices remain separate");
+                Check(notice.Y>=l.Map.Y+l.Map.Height+12,"pickup notices stay below minimap");
+                if(i>0){var previous=l.LootNotice(i-1);Check(notice.X==previous.X&&notice.Y>=previous.Y+previous.Height+8,"queued notices stack downward");}
             }
         }
         Check(MobileControlLayout.DeadZone(.1f)==0,"deadzone rejects drift");

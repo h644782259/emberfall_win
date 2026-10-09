@@ -42,7 +42,7 @@ namespace Emberfall
         private bool critical,mechanism,counted;
         private string display;
         private CombatTextLayout.Box bounds;
-        private float Duration {get{return mechanism?1.25f:critical?1.12f:.88f;}}
+        private float Duration {get{return mechanism?1.25f:critical?1.8f:1.5f;}}
         private static float Density {get{return MobileControls.Active?MobileControls.Layout.Scale:Mathf.Clamp(Screen.dpi>=120?Screen.dpi/163f:Screen.height/1080f,1,3);}}
 
         public static bool CanSpawn(Vector3 origin,bool isCritical=false)
@@ -171,7 +171,7 @@ namespace Emberfall
         }
         private void Update()
         {
-            life+=Time.deltaTime;float alpha=Mathf.Clamp01((Duration-life)/.25f);
+            life+=Time.deltaTime;float alpha=Mathf.Clamp01((Duration-life)/(mechanism?.25f:.45f));
             if(textMesh!=null)textMesh.color=new Color(color.r,color.g,color.b,alpha);
             foreach(TextMesh edge in outline)if(edge!=null)edge.color=new Color(.045f,.025f,.035f,alpha*.98f);
             if(life>Duration)Retire();

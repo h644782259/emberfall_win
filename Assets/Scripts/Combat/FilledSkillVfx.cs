@@ -13,7 +13,7 @@ namespace Emberfall
             public float Delay, Phase, TravelScale=1; public int Motion; public bool Anchored, Secondary; public Mesh OwnedMesh;
         }
         private static Mesh identityBlade,identityFork,identityContract,identityProtection;
-        private static Mesh icePrimary,firePrimary;
+        private static Mesh icePrimary,firePrimary,energyCore;
         private static Mesh crescent, crystal, flame, sword, lightning, arcane, rupture, arcaneShard, arrow, vine;
         private static Material sharedMaterial;
         private static bool assetsReady;
@@ -76,6 +76,7 @@ namespace Emberfall
             finales.Clear();
             if(identityBlade!=null)Destroy(identityBlade);if(identityFork!=null)Destroy(identityFork);if(identityContract!=null)Destroy(identityContract);if(identityProtection!=null)Destroy(identityProtection);identityBlade=identityFork=identityContract=identityProtection=null;
 
+            if(energyCore!=null)Destroy(energyCore);energyCore=null;
             if(icePrimary!=null)Destroy(icePrimary);if(firePrimary!=null)Destroy(firePrimary);icePrimary=firePrimary=null;
             if(crescent!=null)Destroy(crescent);if(crystal!=null)Destroy(crystal);if(flame!=null)Destroy(flame);
             if(sword!=null)Destroy(sword);if(lightning!=null)Destroy(lightning);if(arcane!=null)Destroy(arcane);if(rupture!=null)Destroy(rupture);if(arcaneShard!=null)Destroy(arcaneShard);
@@ -103,6 +104,7 @@ namespace Emberfall
             yield return null;
             if(firePrimary==null)firePrimary=AuthoredSpellBases.Load("FirePrimary");
             yield return null;
+            if(energyCore==null)energyCore=Mesh(FilledVfxRecipes.EnergyCore(),"Elemental luminous core");
             if(crescent==null)crescent=AuthoredSpellBases.Load("Crescent")??Mesh(FilledVfxRecipes.Crescent(),"Filled curved crescent volume");
             yield return null;
             if(crystal==null)crystal=AuthoredSpellBases.Load("Crystal")??Mesh(FilledVfxRecipes.Crystal(),"Faceted ice spear");
@@ -134,6 +136,7 @@ namespace Emberfall
             if(identityProtection==null)identityProtection=AuthoredSpellBases.Identity("ProtectionCage");
             if(icePrimary==null)icePrimary=AuthoredSpellBases.Load("IcePrimary");
             if(firePrimary==null)firePrimary=AuthoredSpellBases.Load("FirePrimary");
+            if(energyCore==null)energyCore=Mesh(FilledVfxRecipes.EnergyCore(),"Elemental luminous core");
             if(crescent==null)crescent=AuthoredSpellBases.Load("Crescent")??Mesh(FilledVfxRecipes.Crescent(),"Filled curved crescent volume");
             if(crystal==null)crystal=AuthoredSpellBases.Load("Crystal")??Mesh(FilledVfxRecipes.Crystal(),"Faceted ice spear");
             if(flame==null)flame=AuthoredSpellBases.Load("Flame")??Mesh(FilledVfxRecipes.Flame(),"Curved flame tongue volume");
@@ -188,6 +191,11 @@ namespace Emberfall
             Vector3 dimensions=type==FilledVfxKind.Sword?new Vector3(.95f,3.2f,.95f)*unit:type==FilledVfxKind.Lightning?new Vector3(1.3f,2.2f,1.3f)*unit:Vector3.one*unit*1.65f;
             fx.Add(main,Vector3.zero,dimensions,Quaternion.identity,0,motion,0,
                 type==FilledVfxKind.Sword?unit*.55f:type==FilledVfxKind.Lightning?unit*.85f:type==FilledVfxKind.Summon?unit*1.8f+fx.size*.3f:unit*2f,"Primary "+type,true);
+            if(type==FilledVfxKind.Fire||type==FilledVfxKind.Ice||type==FilledVfxKind.Lightning||type==FilledVfxKind.Arcane||type==FilledVfxKind.Summon)
+            {
+                Vector3 body=type==FilledVfxKind.Fire?new Vector3(1.6f,1.9f,1.6f):type==FilledVfxKind.Ice?new Vector3(1.3f,.85f,1.3f):type==FilledVfxKind.Lightning?new Vector3(.7f,2.3f,.7f):new Vector3(1.5f,1.2f,1.5f);
+                fx.Add(energyCore,Vector3.up*.08f,body*unit,Quaternion.identity,0,18,2,unit*1.3f,"Luminous elemental body",true);
+            }
             fx.Add(rupture,Vector3.up*.11f,new Vector3(fx.size*.3f,.65f,fx.size*.3f),Quaternion.Euler(0,65,0),0,5,1,fx.size*.38f,"Contact flash",true);
             if(priority==CombatVisualPriority.Finale)
                 fx.Add(rupture,Vector3.up*.13f,new Vector3(fx.size*.2f,.35f,fx.size*.2f),Quaternion.identity,.12f,5,0,fx.size*.25f,"Finale short tail",true);
@@ -381,7 +389,7 @@ namespace Emberfall
             p.Transform.localPosition=at;p.Transform.localScale=scale;p.Transform.localRotation=rotation;
             // Placement reserved the complete motion footprint once. Do not toggle a whole
             // primary silhouette each frame when a growing bounds circle grazes a wall.
-            Color color=tint;if(p.Motion==17)color.a*=local<.07f?1:local<.14f?.48f:local<.22f?.82f:.55f;if(p.Secondary)color.a*=.55f*Mathf.Clamp01((.62f-local)/.2f);color.a*=f.Opacity*(kind==FilledVfxKind.Charge?.35f:.9f)*Mathf.Lerp(.55f,1,EffectPreferences.EffectsScale);
+            Color color=tint;if(p.Motion==17)color.a*=local<.07f?1:local<.14f?.48f:local<.22f?.82f:.55f;if(p.Secondary)color.a*=.55f*Mathf.Clamp01((.62f-local)/.2f);color.a*=(kind==FilledVfxKind.Charge?.35f:.9f)*Mathf.Lerp(.55f,1,EffectPreferences.EffectsScale);
             float opacity=f.Opacity;
             if(p.Motion==20)
             {

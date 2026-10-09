@@ -56,6 +56,8 @@ namespace Emberfall
         private Texture2D trackTexture;
         private readonly Texture2D[] crestTextures = new Texture2D[4];
         private string tooltip;
+        private Rect tooltipAnchor;
+        private string tooltipAnchorText;
         private readonly Color ink = new Color(.035f, .065f, .10f, .97f);
         private readonly Color card = new Color(.06f, .105f, .15f, .96f);
         private readonly Color jade = new Color(.32f, .91f, .77f);
@@ -279,7 +281,7 @@ namespace Emberfall
             GUI.contentColor = Color.white;
             GUI.enabled = !session.BackgroundPaused && !LifecycleTouchBlocked && MerchantServiceLayout.StablePanelEvent(UITransitionBlocked,true,Event.current.type==EventType.Repaint||Event.current.type==EventType.Layout);
             blockedRects.Clear();
-            tooltip = null;
+            tooltip = null;tooltipAnchorText=null;
             BeginEntryRewardPopup();
             if(exitRequest.Open)
             {
@@ -487,7 +489,7 @@ namespace Emberfall
 
         private void ContinueRecentAdventure()
         {
-            RefreshSaveSlots();
+            if(saveSlotsDirty)RefreshSaveSlots();
             var recent=RecentAdventureSlot();
             if(recent==null){OpenSaveSelection();return;}
             selectedSaveId=recent.Id;
@@ -648,7 +650,7 @@ namespace Emberfall
                 if (slot.CanLoad) DrawCrest(new Rect(row.x + 12, row.y + 9, 52, 56), slot.HeroClass, accent);
                 else DrawIcon(new Rect(row.x + 21, row.y + 22, 32, 32), UIIconAtlas.Utility("inventory"), muted);
                 Text(new Rect(row.x + 81, row.y + 12, 307, 25), slot.DisplayName, 17, slot.CanLoad ? pale : muted, true);
-                Text(new Rect(row.x + 81, row.y + 43, 307, 20), (slot.CanLoad ? "编号 " : "损坏 · 编号 ") + (slot.Id=="legacy"?"旧存档":slot.Id.Substring(0,8)), 13, accent);
+                Text(new Rect(row.x + 81, row.y + 43, 307, 20), slot.CanLoad ? GameBalance.ClassName(slot.HeroClass)+" · Lv"+slot.Level : "存档暂时无法读取", 13, accent);
                 string saved = slot.SavedAtUtc == System.DateTime.MinValue ? "保存时间未知" : slot.SavedAtUtc.ToLocalTime().ToString("yyyy-MM-dd HH:mm");
                 Text(new Rect(row.x + 399, row.y + 17, 232, 21), saved, 13, muted);
                 string state = slot.DeletionPending ? "删除未完成" : !slot.CanLoad ? "无法读取" : slot.RecoveredFromBackup ? "可从备份恢复" : slot.IsCurrent ? "当前存档" : "";
@@ -848,7 +850,7 @@ namespace Emberfall
             else Text(new Rect(objective.x+13,objective.y+measured.ProgressY,255,progressHeight),progressText,12,muted,false,true);
             if(showCharge)Text(new Rect(objective.x+13,objective.y+measured.ChargeY,255,chargeHeight),chargeText,17,gold,true,true);
             if (objective.Contains(Mouse) && GUI.enabled)
-                tooltip = PlatformText(session.Objective + (session.InDungeon ? "\n通关后按 T 返回营地。远离敌人后可按 H 提前撤离。" : "\n靠近紫色传送门按 T 进入副本。远离敌人后可按 H 回营。"));
+                tooltip = PlatformText(session.Objective + (session.InDungeon ? "\n通关后按 T 返回营地。按 H 返回当前地图起点。" : "\n靠近紫色传送门按 T 进入副本。按 H 返回当前地图起点。"));
             DrawMinimap();
             DrawDesktopGoalInteraction(objective);
             DrawHotbar();
@@ -909,10 +911,11 @@ namespace Emberfall
             Fill(new Rect(rect.x, rect.y, filled, Mathf.Min(2, rect.height)), new Color(1, 1, 1, .2f));
         }
 
+        private Rect DesktopMinimapRect { get { return new Rect(width-166,70,150,154); } }
         private void DrawMinimap()
         {
             float x = width - 166;
-            Rect map = new Rect(x, 70, 150, 154);
+            Rect map = DesktopMinimapRect;
             blockedRects.Add(map);
             Box(map, jade);
             Text(new Rect(x + 8, 77, 134, 19), session.ZoneName, 11, pale, true, false, TextAnchor.MiddleCenter);
@@ -1195,7 +1198,7 @@ namespace Emberfall
                 Fill(label, new Color(.06f, .08f, .10f));
                 Text(label, badge, 9, gold, true, false, TextAnchor.MiddleCenter);
             }
-            if (hover) tooltip = PlatformText(hint);
+            if (hover){tooltip=PlatformText(hint);tooltipAnchor=r;tooltipAnchorText=tooltip;}
             bool clicked = GUI.Button(r, GUIContent.none, invisibleButton);
             if (clicked) GameAudio.Play(SoundCue.UI);
             return clicked;
@@ -1217,8 +1220,8 @@ namespace Emberfall
                 TogglePanel(Panel.Inventory);
             if (IconButton(new Rect(x + 276, y, 38, 38), "skills", "K", "技能 · K\n按分支学习或进阶技能，配置十格快捷栏。\n可用技能点：" + p.skillPoints, jade, p.skillPoints > 0 ? "+" + p.skillPoints : null))
                 TogglePanel(Panel.Skills);
-            if (IconButton(new Rect(x, y, 38, 38), "camp", "H", "返回营地 · H\n附近没有敌人时可以返回营地整备。", jade))
-                session.ReturnToCamp();
+            if (IconButton(new Rect(x, y, 38, 38), "camp", "H", "回到起点 · H\n只传送人物，保留当前地图与怪物。", jade))
+                session.ReturnToOrigin();
             if (IconButton(new Rect(x + 46, y, 38, 38), "portal", "T", session.InDungeon ? "返回营地 · T\n通关后返回营地；提前撤离需要远离敌人。" : "进入副本 · T\n靠近北面的青色传送门后进入副本。", jade))
             {
                 if(session.NearRoomExit)session.EnterNextRoom();
@@ -1739,12 +1742,12 @@ namespace Emberfall
         private void DrawSaveLocation()
         {
             if(MobileControls.Active){DrawMobileSaveLocation();return;}
-            Rect w = Modal(800, 500, "存档位置与迁移", "游戏安装目录与角色存档分开保存，重新安装游戏可继续原有冒险。");
+            Rect w = Modal(800, 500, "存档位置与迁移", "备份与迁移角色进度");
             if (PopupCloseButton(new Rect(w.xMax - 69, w.y + 20, 44, 32))) ClosePanel();
             string path = session.Progression.SaveDirectory;
             Fill(new Rect(w.x + 24, w.y + 113, 752, 79), card);
             Text(new Rect(w.x + 40, w.y + 123, 720, 17), "当前存档文件夹", 11, jade, true);
-            Text(new Rect(w.x + 40, w.y + 147, 720, 37), path, 13, pale, false, true);
+            Text(new Rect(w.x + 40, w.y + 147, 720, 37), "角色进度保存在本机，可打开文件夹进行备份。", 13, pale, false, true);
             if (NavigationButton(new Rect(w.x + 24, w.y + 207, 367, 40), "打开存档文件夹", jade))
             {
                 try
@@ -1760,8 +1763,7 @@ namespace Emberfall
                 GUIUtility.systemCopyBuffer = path;
                 session.Notify("已复制存档目录路径");
             }
-            Text(new Rect(w.x + 28, w.y + 268, 744, 23), "角色文件：" + System.IO.Path.GetFileName(session.Progression.SaveFilePath), 14, jade, true);
-            Text(new Rect(w.x + 28, w.y + 307, 744, 96), "同一台电脑可将游戏安装或移动到任意目录，存档仍从上面的固定位置读取。\n\n迁移前先退出两端游戏并备份完整存档目录，再复制角色 .json、对应 .bak、可恢复 .tmp 与 .delete-pending 删除标记。不要单独恢复旧备份或省略删除标记。启动后从存档列表读取角色。", 14, pale, false, true);
+            Text(new Rect(w.x + 28, w.y + 307, 744, 96), "迁移前，请退出两台设备上的游戏，并备份整个存档文件夹。\n\n将完整文件夹复制到新设备的存档位置，不要遗漏其中的文件。重新启动游戏后，选择角色继续冒险。", 14, pale, false, true);
             Text(new Rect(w.x + 28, w.y + 415, 744, 21), "建议迁移前保留一份备份；新电脑的存档目录也可从此页面打开。", 12, muted);
             if (NavigationButton(new Rect(w.x + 24, w.y + 451, 752, 31), "返回设置", jade)) ClosePanel();
         }
@@ -1793,6 +1795,18 @@ namespace Emberfall
             float boxHeight = Style(13, false, true).CalcHeight(new GUIContent(tooltip), 288) + 22;
             Vector2 mouse = Mouse;
             Rect r = new Rect(Mathf.Clamp(mouse.x - 154, 12, width - 324), Mathf.Clamp(mouse.y - boxHeight - 14, 12, height - boxHeight - 12), 312, boxHeight);
+            if(tooltipAnchorText==tooltip)
+            {
+                float gap=10;
+                r.x=Mathf.Clamp(tooltipAnchor.center.x-r.width*.5f,12,width-r.width-12);
+                if(tooltipAnchor.yMax+gap+r.height<=height-12)r.y=tooltipAnchor.yMax+gap;
+                else if(tooltipAnchor.y-gap-r.height>=12)r.y=tooltipAnchor.y-gap-r.height;
+                else
+                {
+                    r.x=tooltipAnchor.x-r.width-gap>=12?tooltipAnchor.x-r.width-gap:tooltipAnchor.xMax+gap;
+                    r.y=Mathf.Clamp(tooltipAnchor.center.y-r.height*.5f,12,height-r.height-12);
+                }
+            }
             Box(r, jade);
             Text(new Rect(r.x + 12, r.y + 10, 288, boxHeight - 20), tooltip, 13, pale, false, true);
         }

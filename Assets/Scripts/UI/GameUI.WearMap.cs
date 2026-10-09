@@ -35,7 +35,6 @@ namespace Emberfall
                 if(slotUpgrade)DrawIcon(new Rect(r.xMax-18*u,r.yMax-31*u,18*u,18*u),UIIconAtlas.EquipmentUpgradeArrow(),new Color(.25f,1f,.4f));
                 if(QuietAction(r,"",item!=null&&!inventoryComparisonOpen))
                 {mobileInventoryTab=0;OpenInventoryPopup(item.id,r);}
-                if(r.Contains(Mouse)&&item!=null)tooltip=item.name+" · 已穿戴";
             }
         }
         private void DrawFashionWearSlots(Rect area,float u)
@@ -55,7 +54,6 @@ namespace Emberfall
                 {
                     Text(new Rect(r.xMax-18*u,r.y+2*u,16*u,16*u),"✓",Mathf.RoundToInt(11*u),jade,true);
                     if(QuietAction(r,"",!inventoryComparisonOpen)){OpenInventoryPopup("@fashion:"+item.id,r);}
-                    if(!MobileControls.Active&&r.Contains(Mouse))tooltip=label+" · "+GameBalance.RarityName(item.rarity)+" · 已穿戴\n"+ProgressionService.FashionBonus(slot,item.rarity);
                 }
             }
         }

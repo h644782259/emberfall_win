@@ -298,8 +298,8 @@ namespace Emberfall
                 if(Input.GetKeyDown(KeyCode.E)){if(NearDungeonReturn)ReturnToCamp();else if(SideEventAvailable)StartSideEvent();}
                 bool touchPotionRequested = MobileControls.ConsumePotion();
                 if (Input.GetKeyDown(KeyCode.F) || touchPotionRequested) DrinkPotion();
-                if (Input.GetKeyDown(KeyCode.T)) { if(NearChapterExit)EnterNextChapterRoom();else if(NearRoomExit)EnterNextRoom();else if (InDungeon) { if (DungeonCleared) ReturnToCamp(); else Notify("先击败本轮敌人；按 H 可放弃副本返回营地。"); } else EnterDungeon(); }
-                if (Input.GetKeyDown(KeyCode.H)) ReturnToCamp();
+                if (Input.GetKeyDown(KeyCode.T)) { if(NearChapterExit)EnterNextChapterRoom();else if(NearRoomExit)EnterNextRoom();else if (InDungeon) { if (DungeonCleared) ReturnToCamp(); else Notify("先击败本轮敌人后再返回营地。"); } else EnterDungeon(); }
+                if (Input.GetKeyDown(KeyCode.H)) ReturnToOrigin();
             }
             if(InDungeon && reinforcementQueue.Count>0 && Enemies.Count<=6)TrySpawnReinforcements();
             if (!InDungeon && CurrentHub==0)
@@ -365,6 +365,20 @@ namespace Emberfall
             UpdateTimeScale();
         }
 
+        public void ReturnToOrigin()
+        {
+            if (!HasStarted || IsDead || Player == null || InputBlocked) return;
+            Vector3 origin = ChapterActive ? chapterPlan.Entrance : InDungeon && RoomChainRun != null
+                ? TacticalRoomGeometry.Entrance : new Vector3(0, 0, InDungeon ? -9 : -10);
+            Player.RepositionAtOrigin(origin);
+            var camera = Camera.main;
+            if (camera != null)
+            {
+                var adventureCamera = camera.GetComponent<AdventureCamera>();
+                if (adventureCamera != null) adventureCamera.Snap();
+            }
+        }
+
         public void ReturnToCamp()
         {
             if(PracticeActive){EndPractice("主动离开 · 记录提前结束");return;}
@@ -373,11 +387,11 @@ namespace Emberfall
             {
                 foreach (EnemyController enemy in Enemies)
                     if (enemy != null && !enemy.IsDead && Vector3.Distance(enemy.transform.position, Player.transform.position) < 6f)
-                    { Notify("附近有敌人！拉开至少 6 米距离后可按 H 返回营地。"); return; }
+                    { Notify("附近有敌人！拉开至少 6 米距离后可返回营地。"); return; }
             }
             bool abandoned = InDungeon && !DungeonCleared;
             if (!ChangeZone(false)) return;
-            Notify(abandoned ? "已撤离遗迹，生命恢复。随时可以重新挑战。" : "已回到营地，生命已恢复。按 I 整理战利品，按 K 学习技能。");
+            Notify(abandoned ? "已撤离遗迹，生命恢复。随时可以重新挑战。" : "已回到营地，生命已恢复。");
         }
 
         private bool ChangeZone(bool dungeon)

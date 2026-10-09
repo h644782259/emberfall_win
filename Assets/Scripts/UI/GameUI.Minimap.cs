@@ -9,29 +9,42 @@ namespace Emberfall
         private float terrainMapRadius;
         private const int TerrainMapSize = 384;
         private readonly Color[] terrainMapPixels = new Color[TerrainMapSize * TerrainMapSize];
+        private Coroutine terrainMapBuild;
+        private int terrainMapRequestedRevision=int.MinValue;
+        private float terrainMapRequestedRadius;
+        private System.Collections.IEnumerator BuildTerrainMap(float radius,int revision)
+        {
+            yield return null; // Never bake terrain in the opening GUI event.
+            float sliceStart=Time.realtimeSinceStartup;
+            for(int y=0;y<TerrainMapSize;y++)
+            {
+                if(WorldTraversal.Revision!=revision){terrainMapBuild=null;yield break;}
+                for(int x=0;x<TerrainMapSize;x++)
+                {
+                    Vector3 point=new Vector3(((x+.5f)/TerrainMapSize*2-1)*radius,0,((y+.5f)/TerrainMapSize*2-1)*radius);
+                    terrainMapPixels[y*TerrainMapSize+x]=WorldTraversal.IsWalkable(point,.16f)?new Color(.14f,.22f,.23f,.65f):WorldTraversal.IsOpenWater(point,.16f)?new Color(.13f,.39f,.58f,.95f):new Color(.38f,.43f,.48f,.95f);
+                }
+                if(Time.realtimeSinceStartup-sliceStart>=.002f||y%8==7){yield return null;sliceStart=Time.realtimeSinceStartup;}
+            }
+            if(WorldTraversal.Revision!=revision){terrainMapBuild=null;yield break;}
+            if(terrainMap==null)terrainMap=new Texture2D(TerrainMapSize,TerrainMapSize,TextureFormat.RGBA32,false){hideFlags=HideFlags.HideAndDontSave,filterMode=FilterMode.Bilinear,wrapMode=TextureWrapMode.Clamp};
+            terrainMap.SetPixels(terrainMapPixels);terrainMap.Apply(false,false);
+            terrainMapRevision=revision;terrainMapRadius=radius;terrainMapBuild=null;
+        }
         private void DrawMinimapTerrain(Rect r)
         {
-            float radius = session.ArenaRadius;
-            if (terrainMap == null || terrainMapRevision != WorldTraversal.Revision || terrainMapRadius != radius)
+            float radius=session.ArenaRadius;int revision=WorldTraversal.Revision;
+            if(terrainMapRevision!=revision||terrainMapRadius!=radius)
             {
-                if (terrainMap == null)
-                    terrainMap = new Texture2D(TerrainMapSize, TerrainMapSize, TextureFormat.RGBA32, false)
-                    { hideFlags = HideFlags.HideAndDontSave, filterMode = FilterMode.Bilinear, wrapMode = TextureWrapMode.Clamp };
-                for (int y = 0; y < TerrainMapSize; y++) for (int x = 0; x < TerrainMapSize; x++)
+                if(terrainMapBuild==null||terrainMapRequestedRevision!=revision||terrainMapRequestedRadius!=radius)
                 {
-                    Vector3 point = new Vector3(((x + .5f) / TerrainMapSize * 2 - 1) * radius, 0,
-                        ((y + .5f) / TerrainMapSize * 2 - 1) * radius);
-                    terrainMapPixels[y * TerrainMapSize + x] = WorldTraversal.IsWalkable(point, .16f)
-                        ? new Color(.14f, .22f, .23f, .65f)
-                        : WorldTraversal.IsOpenWater(point, .16f) ? new Color(.13f, .39f, .58f, .95f)
-                        : new Color(.38f, .43f, .48f, .95f);
+                    if(terrainMapBuild!=null)StopCoroutine(terrainMapBuild);
+                    terrainMapRequestedRevision=revision;terrainMapRequestedRadius=radius;
+                    terrainMapBuild=StartCoroutine(BuildTerrainMap(radius,revision));
                 }
-                terrainMap.SetPixels(terrainMapPixels);
-                terrainMap.Apply(false, false); // One reusable texture; future broken props update its pixels.
-                terrainMapRevision = WorldTraversal.Revision;
-                terrainMapRadius = radius;
             }
-            GUI.DrawTexture(r, terrainMap, ScaleMode.StretchToFill, true);
+            if(terrainMap!=null&&terrainMapRevision==revision&&terrainMapRadius==radius)GUI.DrawTexture(r,terrainMap,ScaleMode.StretchToFill,true);
+            else Fill(r,new Color(.055f,.10f,.12f,.9f));
             // Only the original forest actually has these road/bridge landmarks.
             // Other hubs, arenas and linked rooms derive their map from geometry.
             if (!session.InDungeon && session.CurrentHub == 0)

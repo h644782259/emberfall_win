@@ -45,20 +45,28 @@ namespace Emberfall
             float height=StandingHeight(point,radius,point.y);
             return Mathf.Abs(point.y-height)<.035f&&ClearAtHeight(point,radius,height)&&(height>0||IsWalkable(point,radius));
         }
+        public static Vector3 JumpPosition(Vector3 from,Vector3 to,float progress)
+        {
+            float t=Mathf.Clamp01(progress);
+            // Rise clear of the starting ledge before moving across its side.
+            float travel=Mathf.Clamp01((t-.25f)/.5f);
+            return Vector3.Lerp(from,to,travel)+Vector3.up*(Mathf.Sin(t*Mathf.PI)*1.65f);
+        }
         public static bool TryResolvePlatformJump(Vector3 from,Vector3 direction,float distance,float radius,out Vector3 landing)
         {
             landing=from;direction=CombatFx.Flat(direction).normalized;
             if(!CanStand(from,radius)||direction.sqrMagnitude<.01f)return false;
             // Try the intended distance first; shorter safe points allow landing on
             // a narrow box without requiring pixel-perfect movement input.
+            for(int pass=0;pass<(from.y<=.05f?2:1);pass++)
             for(float d=distance;d>=.05f;d-=.05f)
             {
                 var to=CombatFx.Flat(from)+direction*d;to.y=SurfaceHeight(to,radius);
-                if(to.y<=0&&from.y<=0)continue;
+                if(from.y<=.05f&&(pass==0?to.y<=0:to.y>0))continue;
                 if(!CanStand(to,radius))continue;
                 int samples=Mathf.Max(24,Mathf.CeilToInt(d/.08f));bool clear=true;
                 for(int i=0;i<=samples;i++)
-                {float t=i/(float)samples;var p=Vector3.Lerp(from,to,t);float y=p.y+Mathf.Sin(t*Mathf.PI)*1.65f;if(!ClearAtHeight(p,radius,y)){clear=false;break;}}
+                {float t=i/(float)samples;var p=JumpPosition(from,to,t);if(!ClearAtHeight(p,radius,p.y)){clear=false;break;}}
                 if(clear){landing=to;return true;}
             }
             return false;

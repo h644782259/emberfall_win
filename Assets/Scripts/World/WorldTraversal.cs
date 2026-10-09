@@ -191,8 +191,9 @@ namespace Emberfall
         public static Vector3 ResolveSkillLanding(Vector3 from, Vector3 direction, float distance, float radius, float bound)
         {
             Vector3 landing;
+            if(from.y>.05f)
+            {return TryResolvePlatformJump(from,direction,distance,radius,out landing)?landing:from;}
             TryResolveBlink(from,direction,distance,radius,bound,out landing);
-            if(from.y>.05f)return from;
             return landing;
         }
 
