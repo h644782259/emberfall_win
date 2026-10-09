@@ -61,6 +61,7 @@ namespace Emberfall
             {
                 var layout=MobileControls.Layout;
                 if(MobileDungeonEntranceVisible)return layout.DungeonEntrance;
+                if(session!=null&&(session.NearRoomExit||session.NearChapterExit))return new MobileControlLayout.Area(layout.Width*.5f-90,52,180,44);
                 if(session!=null&&(session.SideEventAvailable||session.NearDungeonReturn))return new MobileControlLayout.Area(layout.Width*.5f-66,layout.Height*.62f-22,132,44);
                 return layout.Interact;
             }
@@ -121,7 +122,7 @@ namespace Emberfall
             }
             Rect map=TouchRect(l.Map);blockedRects.Add(map);Box(map,jade,false);DrawMinimapTerrain(map);
             if(!session.InDungeon){MapDot(map,new Vector3(0,0,11),jade,4*TouchRatio);for(int npc=0;npc<3;npc++)MapDot(map,GameSession.HubNpcPosition(npc),gold,3*TouchRatio);}
-            else MapDot(map,new Vector3(0,0,-16),jade,4*TouchRatio);
+            else if(session.DungeonReturnAvailable)MapDot(map,session.DungeonReturnPosition,jade,4*TouchRatio);
             if(session.Player!=null)MapDot(map,session.Player.transform.position,jade,4*TouchRatio);
             foreach(var enemy in session.Enemies)if(enemy!=null&&!enemy.IsDead)MapDot(map,enemy.transform.position,enemy.IsBoss?gold:new Color(1,.4f,.3f),2*TouchRatio);
             if(GUI.Button(map,GUIContent.none,invisibleButton))OpenTravelMap();
@@ -149,14 +150,14 @@ namespace Emberfall
             // This is presentation only: a second IMGUI Button here would dispatch
             // again after a room transition changed the context on pointer release.
             Box(interact,CanMobileInteract?gold:muted,false);
-            Text(interact,interaction,TouchFont(11),CanMobileInteract?gold:muted,true,true,TextAnchor.MiddleCenter);
+            Text(interact,interaction,TouchFont(11),CanMobileInteract?gold:muted,true,false,TextAnchor.MiddleCenter);
 
             }
             EnemyController boss=null;foreach(var e in session.Enemies)if(e!=null&&e.IsBoss&&!e.IsDead){boss=e;break;}
             if(boss!=null){Rect bossBar=HubServicesAvailable?TouchRect(l.BossHealth.X,58,l.BossHealth.Width,l.BossHealth.Height):TouchRect(l.BossHealth);blockedRects.Add(bossBar);Bar(bossBar,boss.Health/Mathf.Max(1,boss.MaxHealth),new Color(.93f,.34f,.29f));}
             var targeting=session.Player==null?null:session.Player.GetComponent<SkillTargetingController>();
             var charge=session.Player==null?null:session.Player.GetComponent<SkillChargeController>();
-            if(charge!=null&&charge.IsCharging)Bar(TouchRect(26,l.Height-12,128,5),charge.Progress,gold);
+            if(charge!=null&&charge.IsCharging)Bar(TouchRect(26,l.Height-40,128,5),charge.Progress,gold);
         }
         private bool OtherMobilePageReady()
         {
@@ -213,7 +214,6 @@ namespace Emberfall
         {
             float hp=session.Player==null?0:session.Player.Health,max=session.Player==null?1:session.Player.MaxHealth;
             blockedRects.Add(TouchRect(layout.PlayerStatus));
-            Text(TouchRect(layout.PlayerHealth.X+layout.PlayerHealth.Width+6,layout.PlayerHealth.Y-3,44,18),"Lv"+session.Progression.Profile.level,TouchFont(11),gold,true,false,TextAnchor.MiddleLeft);
             Bar(TouchRect(layout.PlayerHealth),hp/Mathf.Max(1,max),new Color(.86f,.16f,.19f));
             Text(TouchRect(layout.PlayerHealth),Mathf.CeilToInt(hp)+" / "+Mathf.CeilToInt(max),TouchFont(MobileControls.IsIPad?11:9),pale,true,false,TextAnchor.MiddleCenter);
             Bar(TouchRect(layout.PlayerEnergy),session.Player==null?0:session.Player.Energy/Mathf.Max(1,session.Player.MaxEnergy),new Color(.35f,.63f,1));
@@ -307,7 +307,7 @@ namespace Emberfall
         private void DrawMobileGuide()
         {
             var l=MobileControls.Layout;float x=(l.Width-510)/2,y=(l.Height-300)/2;
-            Fill(new Rect(0,0,width,height),new Color(.018f,.029f,.048f,1));
+            Box(TouchRect(x-12,y-6,534,312),jade,false);
             Text(TouchRect(x,y,510,30),"触屏操作",TouchFont(22),pale,true);
             string[] tips={"左侧拖动移动 · 右下按住普攻，可同时操作", "主动技能分两页，每页最多4个；大招固定，被动自动生效", "轻点技能自动瞄准并施放，无须圈选或二次确认", "点敌人固定目标；点战场空白取消，恢复自动瞄准", "蓄力自动完成；点取消或闪避可中断", "灰色技能尚未学会；到技能学习后直接可用"};
             for(int i=0;i<tips.Length;i++)Text(TouchRect(x,y+43+i*32,510,28),tips[i],TouchFont(14),i==2?jade:pale);
@@ -334,7 +334,7 @@ namespace Emberfall
             float panelWidth=Mathf.Min(720,layout.Width-24),x=(layout.Width-panelWidth)*.5f,y=12;
             float titleWidth=panelWidth-52;
             float headerHeight=Mathf.Max(44,Style(TouchFont(23),true).CalcHeight(new GUIContent("设置"),titleWidth*TouchRatio)/TouchRatio+8);
-            Fill(new Rect(0, 0, width, height), new Color(.012f, .025f, .04f, .94f));
+            Box(TouchRect(x-4,4,panelWidth+8,layout.Height-8),jade,false);
             Text(TouchRect(x,y,titleWidth,headerHeight), "设置", TouchFont(23), pale, true);
             Rect close=TouchRect(x+panelWidth-44,y,44,44);
 

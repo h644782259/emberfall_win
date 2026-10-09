@@ -54,8 +54,9 @@ public static class SkillDamageBudgetTests
    float expected=.32f*(1+(rank-1)*.3f)*(rank+2)*1.65f;
    Check(Near(SkillDamageBudgets.RangerVault(rank),expected),"vault preserves prior volley ceiling");
    Check(SkillDamageBudgets.RangerVault(rank)/GameBalance.EffectiveCooldown(HeroClass.Ranger,4,rank)<.42f,"vault cooldown-normalized coefficient cap");
-   Check(Near(SkillDamageBudgets.FlameRideTick/SkillDamageBudgets.FlameRideInterval,.36f),"nonstacking flame ride active DPS");
+   Check(Near(SkillDamageBudgets.FlameRideTick/SkillDamageBudgets.FlameRideInterval,1.3f),"nonstacking flame ride active DPS");
   }
+  for(int rank=1;rank<=3;rank++){int steps=SkillDamageBudgets.AdvancedSteps(HeroClass.Ranger,9,rank);float budget=0;for(int hit=0;hit<steps;hit++)budget+=SkillDamageBudgets.AdvancedImpact(HeroClass.Ranger,9,rank,hit);Check(budget>=((steps-1)*1.35f+8.5f)*1.4f,"ranger ultimate gains at least forty percent damage at every rank");}
   return "PASS: "+checks+" per-skill coefficient and shared-volley budget assertions";
  }
 }

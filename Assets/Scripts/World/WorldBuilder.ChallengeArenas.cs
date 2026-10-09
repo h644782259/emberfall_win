@@ -7,8 +7,16 @@ namespace Emberfall
   // navigation grid. Heights are decorative; reachable surfaces remain planar.
   private static void BuildChallengeArena(Transform parent,WorldResources r,int mode)
   {
-   Material stone=r.Material(mode==0?new Color(.18f,.29f,.25f):mode==1?new Color(.27f,.19f,.17f):new Color(.15f,.17f,.29f));
-   Material edge=r.Material(mode==0?new Color(.32f,.42f,.31f):mode==1?new Color(.43f,.29f,.21f):new Color(.31f,.29f,.44f));
+   if(mode==2)
+   {
+    RenderSettings.ambientSkyColor=new Color(.48f,.52f,.65f);
+    RenderSettings.ambientEquatorColor=new Color(.32f,.35f,.46f);
+    RenderSettings.ambientGroundColor=new Color(.2f,.22f,.3f);
+    RenderSettings.fogColor=new Color(.13f,.15f,.23f);
+    RenderSettings.fogDensity=.009f;
+   }
+   Material stone=r.Material(mode==0?new Color(.18f,.29f,.25f):mode==1?new Color(.27f,.19f,.17f):new Color(.29f,.33f,.43f));
+   Material edge=r.Material(mode==0?new Color(.32f,.42f,.31f):mode==1?new Color(.43f,.29f,.21f):new Color(.43f,.44f,.56f));
    Material glow=r.Material(mode==0?new Color(.3f,.77f,.56f):mode==1?new Color(1,.34f,.08f):new Color(.56f,.45f,1),true);
    Primitive(parent,"Challenge island foundation",PrimitiveType.Cylinder,new Vector3(0,-.8f,0),new Vector3(39,.7f,39),stone);
    Vector2[] rim=new Vector2[32];for(int n=0;n<rim.Length;n++){float a=n*Mathf.PI*2/rim.Length;rim[n]=new Vector2(Mathf.Cos(a)*19,Mathf.Sin(a)*19);}

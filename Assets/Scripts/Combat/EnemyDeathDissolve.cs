@@ -16,6 +16,11 @@ namespace Emberfall
         private Transform[] motes;
         private Material moteMaterial;
         private float age;
+        private GameSession session;private PlayerController owner;private int epoch;
+        private static readonly System.Collections.Generic.List<EnemyDeathDissolve> active=new System.Collections.Generic.List<EnemyDeathDissolve>();
+        internal static bool IsPresenting(GameSession game)
+        {foreach(var v in active)if(v!=null&&v.boss&&v.gameObject.activeInHierarchy&&v.session==game&&v.owner!=null&&game.Player==v.owner&&v.owner.CombatEpoch==v.epoch)return true;return false;}
+        private void OnDisable(){active.Remove(this);}
         private bool slime, boss;
 
         public void Initialize(CombatModel body, bool isSlime, bool boss)
@@ -24,6 +29,7 @@ namespace Emberfall
             visual = body.transform;
             slime = isSlime;
             this.boss = boss;
+            session=GameSession.Instance;owner=session==null?null:session.Player;epoch=owner==null?0:owner.CombatEpoch;if(boss)active.Add(this);
             model.BeginDeath(); // Finalize the displayed pose before capturing death ownership.
             startRotation = visual.localRotation;
             startPosition = visual.localPosition;
@@ -56,15 +62,19 @@ namespace Emberfall
         private void Update()
         {
             if (model == null) { Destroy(gameObject); return; }
-            age += Time.deltaTime;
-            float fall = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(age / FallTime));
+            if(session!=null&&(owner==null||session.Player!=owner||owner.CombatEpoch!=epoch)){Destroy(gameObject);return;}
+            if(session!=null&&(session.Paused||session.BackgroundPaused))return;
+            age += Time.unscaledDeltaTime;
+            float stagger=boss?.55f:0f,fallDuration=boss?1.05f:FallTime,restDuration=boss?1.4f:RestTime;
+            float fall = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((age-stagger) / fallDuration));
             visual.localRotation = Quaternion.Slerp(startRotation,
                 startRotation * Quaternion.Euler(slime ? 0f : 9f, 0f, slime ? 0f : 84f), fall);
-            visual.localPosition = startPosition + Vector3.down * (slime ? .3f : .08f) * fall;
+            if(boss&&age<stagger)visual.localRotation=startRotation*Quaternion.Euler(0,0,Mathf.Sin(age*23)*5*(1-age/stagger));
+            visual.localPosition = startPosition + Vector3.down * (slime ? .3f : boss?.22f:.08f) * fall;
             Vector3 fallenScale = slime ? Vector3.Scale(startScale,
                 new Vector3(1f + .3f * fall, 1f - .55f * fall, 1f + .3f * fall)) : startScale;
             visual.localScale = fallenScale;
-            float fade = Mathf.Clamp01((age - FallTime - RestTime) / FadeTime);
+            float fade = Mathf.Clamp01((age - stagger - fallDuration - restDuration) / FadeTime);
             if (fade > 0f)
             {
                 if (ash != null && !ash.isPlaying)

@@ -242,9 +242,13 @@ namespace Emberfall
             ClearPieces();kind=FilledVfxKind.ArrowRain;transform.position=at;age=0;life=final?1.05f:.65f;size=nextSize;
             if(final){RegisterFinale(finaleCast);if(lease!=null)lease.Promote(CombatVisualPriority.Finale);}
             Add(rupture,Vector3.up*.08f,Vector3.one*(final?size*.65f:.3f),Quaternion.identity,0,5,0,final?size:.4f,"Arrow landing contact",true);
-            Add(arrow,Vector3.zero,new Vector3(final?1.7f:.8f,final?3.2f:1.1f,final?1.7f:.8f),Quaternion.identity,0,11,0,.3f,"Primary falling arrow",true);
+            Add(arrow,Vector3.zero,new Vector3(final?2.4f:.8f,final?5.2f:1.1f,final?2.4f:.8f),Quaternion.identity,0,11,0,.3f,"Primary falling arrow",true);
             Add(rupture,Vector3.up*.1f,Vector3.one*.22f,Quaternion.identity,0,4,0,final?3.5f:2.3f,"Arrow impact fragments");
             bool ultimate=finaleCast>0;
+            if(ultimate&&final)
+            {
+                Add(rupture,Vector3.up*.13f,Vector3.one*(size*.8f),Quaternion.Euler(0,45,0),.08f,5,0,size,"Ultimate expanding crown",true);
+            }
             int maximum=ultimate?(EffectPreferences.ReducedEffects?5:10):(EffectPreferences.ReducedEffects?3:4);
             for(int i=0;i<maximum;i++)
             {

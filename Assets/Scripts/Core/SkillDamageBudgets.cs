@@ -108,7 +108,7 @@ namespace Emberfall
             bool final=step>=AdvancedSteps(hero,skill,rank)-1;
             if(hero==HeroClass.Vanguard){if(skill==5)return 5.2f;if(skill==7)return 2.8f;if(skill==9)return step==0?8f:2.2f;}
             if(hero==HeroClass.Arcanist){if(skill==4)return 2.9f;if(skill==7)return final?(Rank(rank)==3?6f:4f):.85f;if(skill==9)return final?9f:2.2f;}
-            if(hero==HeroClass.Ranger){if(skill==4)return 1.65f;if(skill==5)return .7f;if(skill==7)return 1.05f;if(skill==9)return final?8.5f:1.35f;}
+            if(hero==HeroClass.Ranger){if(skill==4)return 1.65f;if(skill==5)return .7f;if(skill==7)return 1.05f;if(skill==9)return final?12f:2f;}
             return 0;
         }
         public static float FanTargetCap(int rank){return Rank(rank)==1?3.2f:Rank(rank)==2?4.8f:6.4f;}

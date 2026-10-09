@@ -36,6 +36,7 @@ namespace Emberfall
                 if(attention!=null&&attention.Skills)
                 {foreach(int skill in attention.LearnableSkills){title="学习"+GameBalance.SkillName(p.Profile.heroClass,skill);step="职业技能中有可用点数 · 本次只需完成这一步";return true;}}
             }
+            if(selected&&goal.Done&&p.Profile.progressionGoal==ProgressionGoalKind.Tier)return false;
             if(selected)
             {
                 title=goal.Title+(goal.Done?" · 已完成":"");

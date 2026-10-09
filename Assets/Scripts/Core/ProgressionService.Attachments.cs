@@ -44,7 +44,7 @@ namespace Emberfall
                 if(string.IsNullOrEmpty(a.id)||a.id.Length>80)a.id=Guid.NewGuid().ToString("N");
                 a.level=Clamp(a.level,1,MaximumLevel);a.upgradeRank=Clamp(a.upgradeRank,0,MaximumAttachmentRank);
                 a.ascensionRank=a.ascensionRank<0?(a.rarity==Rarity.Legendary?1:0):Clamp(a.ascensionRank,0,3);
-                if(a.ascensionRank>0&&BuildCatalog.HasMechanicVariant(a.mechanic))a.variantUnlocked=true;
+                a.variantUnlocked=a.ascensionRank>0&&BuildCatalog.HasMechanicVariant(a.mechanic);
                 a.rarity=(Rarity)Clamp((int)a.rarity,0,3);a.variant=a.variantUnlocked?Clamp(a.variant,0,1):0;
                 var existing=result.Find(x=>x.mechanic==a.mechanic);
                 if(existing!=null)
@@ -96,8 +96,8 @@ namespace Emberfall
             foreach(var a in result)
             {
                 if(a.ascensionRank<0)a.ascensionRank=a.rarity==Rarity.Legendary?1:0;
-                if(a.ascensionRank>0&&BuildCatalog.HasMechanicVariant(a.mechanic))a.variantUnlocked=true;
-                if(profile.variantKnowledge.Contains(a.mechanic))a.variantUnlocked=true;
+                a.variantUnlocked=a.ascensionRank>0&&BuildCatalog.HasMechanicVariant(a.mechanic);
+                a.variant=a.variantUnlocked?Clamp(a.variant,0,1):0;
                 if(a.variantUnlocked&&!profile.variantKnowledge.Contains(a.mechanic))profile.variantKnowledge.Add(a.mechanic);
             }
             profile.attachmentRevision=1;
@@ -147,7 +147,7 @@ namespace Emberfall
         {
             var a=Attachment(mechanic);
             if(!inCamp||a==null||!BuildCatalog.GemCompatible(mechanic,Profile.heroClass)||!BuildCatalog.HasMechanicVariant(mechanic))return Fail("请在营地选择支持变体的本职业宝石。");
-            if(!a.variantUnlocked)return Fail("升至3阶并完成首次升华后解锁形态。");
+            if(a.ascensionRank<=0||!a.variantUnlocked)return Fail("升至3阶并完成首次升华后解锁形态。");
             var candidate=Snapshot();a=candidate.attachments.Find(x=>x.mechanic==mechanic);
             a.variant=1-a.variant;
             if(!candidate.variantKnowledge.Contains(mechanic))candidate.variantKnowledge.Add(mechanic);

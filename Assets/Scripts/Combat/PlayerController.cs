@@ -35,7 +35,7 @@ namespace Emberfall
         private SkillRuntime skillRuntime;
         private RunChoices ActiveRunBonuses { get { return session != null && session.InDungeon ? session.RunChoices : null; } }
         internal float RunAttackMultiplier { get { return ActiveRunBonuses == null ? 1f : ActiveRunBonuses.AttackMultiplier; } }
-        private float CombatAttack { get { return stats.Damage * RunAttackMultiplier * (Health>=MaxHealth*.8f?1f+stats.GemHealthyDamage:1f); } }
+        private float CombatAttack { get { return stats.Damage * RunAttackMultiplier * (1f+(Health>=MaxHealth*.8f?stats.GemHealthyDamage:Health<=MaxHealth*.5f?stats.GemLowHealthDamage:0)); } }
 
         private float attackCooldown, attackAnimation, hurtTimer, dodgeCooldown, invulnerability, skillFeedbackCooldown;
         private const float BlinkProtectionDuration = .38f;
@@ -258,7 +258,7 @@ namespace Emberfall
             try
             {
             if (session == null || IsDead || session.CombatEnded || IsBlinkInvulnerable || invulnerability > 0 || !session.HasStarted || amount <= 0 || float.IsNaN(amount) || float.IsInfinity(amount)) return;
-            float damage = Mathf.Max(1, amount * CombatBalance.ArmorDamageMultiplier(stats.Armor, session.Progression.Profile.level))*(1f-stats.DamageReduction)*(Health<=MaxHealth*.5f?1f-stats.GemLowHealthGuard:1f);
+            float damage = Mathf.Max(1, amount * CombatBalance.ArmorDamageMultiplier(stats.Armor, session.Progression.Profile.level))*(1f-stats.DamageReduction)*(1f-(Health<=MaxHealth*.5f?stats.GemLowHealthGuard:Health>=MaxHealth*.8f?stats.GemHealthyGuard:0));
             if (chargedWardTime > 0) damage *= .75f;
             if(coreWardTime>0)damage*=1f-masteryCore.WardReduction;
             if (guardTime > 0)
@@ -366,7 +366,7 @@ namespace Emberfall
             if (FocusTarget == null) { focusedEnemy = null; focusTime = 0; }
             if (IsDead) return;
             skillRuntime.Advance(dt);
-            skillRuntime.RestoreEnergy(dt*SkillRuntime.EnergyPerSecond*(stats.EnergyRecovery+(Energy<50?stats.GemLowEnergyRecovery:0)));
+            skillRuntime.RestoreEnergy(dt*SkillRuntime.EnergyPerSecond*(stats.EnergyRecovery+(Energy<MaxEnergy*.5f?stats.GemLowEnergyRecovery:stats.GemHighEnergyRecovery)));
             if (ActiveRunBonuses != null) skillRuntime.RestoreEnergy(dt * ActiveRunBonuses.ExtraEnergyPerSecond);
             slowTime = Mathf.Max(0, slowTime - dt);
             if (slowTime <= 0) slowStrength = 0;
@@ -668,6 +668,24 @@ namespace Emberfall
             return RollDirectDamage(CombatAttack * multiplier);
         }
 
+        private EnemyController ResolveDesktopBasicTarget()
+        {
+            float range=HeroClass==HeroClass.Vanguard?3.6f:14f;
+            EnemyController chosen=null;float nearest=range;
+            var focused=FocusTarget;
+            if(ValidAimTarget(focused)&&CombatFx.Flat(focused.transform.position-transform.position).magnitude<=range+focused.HitFootprintBonus&&CombatSight.Direct(transform.position,focused.transform.position))return focused;
+            foreach(var enemy in session.Enemies)
+            {
+                if(!ValidAimTarget(enemy)||!CombatSight.Direct(transform.position,enemy.transform.position))continue;
+                float distance=CombatFx.Flat(enemy.transform.position-transform.position).magnitude;
+                if(distance>range+enemy.HitFootprintBonus)continue;
+                if(enemy==FocusTarget)return enemy;
+                if(enemy==AimTarget){chosen=enemy;break;}
+                float effective=Mathf.Max(0,distance-enemy.HitFootprintBonus);
+                if(effective<=nearest){nearest=effective;chosen=enemy;}
+            }
+            return chosen;
+        }
         private void BasicAttack()
         {
             CombatImpactBatch.BeginAction();
@@ -676,6 +694,7 @@ namespace Emberfall
             if (TraversalStartedThisFrame || skillBasicRecovery.Blocked) return;
             if(!MobilePinnedActionAllowed(-1,true))return;
             if (charge != null && (charge.IsCharging || charge.ConsumedThisFrame)) return;
+            if(!MobileControls.Active)AimTarget=ResolveDesktopBasicTarget();
             if ((HeroClass==HeroClass.Arcanist || HeroClass==HeroClass.Summoner) && !ValidAimTarget(AimTarget)) AimTarget=MagicConeTarget();
             FaceAim();
             GameAudio.Play(SoundCue.Attack);

@@ -5,8 +5,8 @@ namespace Emberfall
     public sealed partial class GameSession
     {
         public ChapterNode SelectedChapterNode {get;set;}
-        public ChapterDifficulty SelectedChapterDifficulty {get{return ChapterProgression.LevelDifficulty(SelectedChapterNode,Progression.Profile.level);}set{}}
-        public int SelectedChapterTier {get{return ChapterProgression.LevelTier(Progression.Profile.level);}set{}}
+        public ChapterDifficulty SelectedChapterDifficulty {get{return ChapterProgression.AvailableDifficulty(Progression.Profile,SelectedChapterNode);}set{}}
+        public int SelectedChapterTier {get{return ChapterProgression.AvailableTier(Progression.Profile,SelectedChapterNode);}set{}}
         public bool SelectedChapterLimitedHealing {get{return false;}set{}}
         public int SelectedChapterTactic {get;set;}=-1;
         public ChapterCombatRun ChapterRun {get;private set;}
@@ -37,7 +37,7 @@ namespace Emberfall
         {
             if(!CanRetryChapter||!SaveBeforeLeaving())return false;
             ChapterRunReceipt receipt;
-            if(!Progression.TryBeginChapterNode(ChapterRun.Node,ChapterProgression.LevelDifficulty(ChapterRun.Node,Progression.Profile.level),ChapterProgression.LevelTier(Progression.Profile.level),out receipt))
+            if(!Progression.TryBeginChapterNode(ChapterRun.Node,ChapterProgression.LevelDifficulty(ChapterRun.Node,Progression.Profile.level),ChapterProgression.AvailableTier(Progression.Profile,SelectedChapterNode),out receipt))
             {Notify(Progression.LastError);return false;}
             // A new receipt invalidates all callbacks from the failed attempt. Seed and
             // the admitted tactic are frozen, independent of mutable selection controls.

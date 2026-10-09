@@ -74,7 +74,7 @@ namespace Emberfall
             string title=buildPlanChoosing?"手动选择替换装备":buildPlanAction==BuildPlanAction.Replace?"确认单部位引用替换？":buildPlanAction==BuildPlanAction.Reset?"免费重置配点？":buildPlanAction==BuildPlanAction.Save?
                 (session.Progression.HasBuildPreset(buildPlanSlot)?"覆盖配装方案 ":"记录配装方案 ")+BuildPlanName(buildPlanSlot)+"？":
                 buildPlanAction==BuildPlanAction.Apply?"应用配装方案 "+BuildPlanName(buildPlanSlot)+"？":"配装方案 · A / B";
-            Fill(new Rect(0,0,width,height),new Color(.008f,.018f,.03f,.35f));
+
             blockedRects.Add(new Rect(0,0,width,height));
             Box(BuildPlanRect(layout.Frame,unit),gold,false);
             Text(BuildPlanRect(layout.Header,unit),title,Mathf.RoundToInt(21*unit),pale,true);
@@ -222,7 +222,7 @@ namespace Emberfall
             if(!MerchantServiceActive){CancelPresetSale();return false;}
             var p=session.Progression;if(presetSaleOwner!=p||session.IsDead||session.PracticeActive){presetSaleOpen=false;return false;}
             float unit=MobileControls.Active?TouchRatio:1;var layout=new MobileDialogLayout(width/unit,height/unit);
-            Fill(new Rect(0,0,width,height),new Color(.008f,.018f,.03f,.35f));blockedRects.Add(new Rect(0,0,width,height));Box(BuildPlanRect(layout.Frame,unit),gold,false);
+            blockedRects.Add(new Rect(0,0,width,height));Box(BuildPlanRect(layout.Frame,unit),gold,false);
             Text(BuildPlanRect(layout.Header,unit),"出售会影响已存方案",Mathf.RoundToInt(21*unit),gold,true);
             bool fresh=presetSaleState==p.BuildStateFingerprint();
             string body=presetSaleImpact+"\n出售后相关方案将缺失装备引用，需手动替换才能应用；不会自动挑选替代物。\n"+(fresh?"确认出售？":"装备或方案已变化，请取消后重新选择。")+"\n"+presetSaleError;

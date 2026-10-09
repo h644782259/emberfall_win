@@ -36,13 +36,22 @@ namespace Emberfall
         public static bool Valid(ChapterNode node){return (int)node>=0&&(int)node<3;}
         public static int UnlockLevel(ChapterNode node){return Valid(node)?30+(int)node*10:101;}
         public static int LevelTier(int level){return Math.Max(1,Math.Min(10,level/10));}
+        public static int AvailableTier(GameProfile profile,ChapterNode node)
+        {
+            if(profile==null||!Valid(node))return 1;
+            int first=UnlockLevel(node)/10;
+            int best=profile.chapterBestTiers!=null&&profile.chapterBestTiers.Length>=(int)node+1?profile.chapterBestTiers[(int)node]:0;
+            return Math.Min(LevelTier(profile.level),Math.Max(first,best+1));
+        }
+        public static ChapterDifficulty AvailableDifficulty(GameProfile profile,ChapterNode node)
+        {return LevelDifficulty(node,AvailableTier(profile,node)*10);}
         public static ChapterDifficulty LevelDifficulty(ChapterNode node,int level)
         {return (ChapterDifficulty)Math.Max(0,Math.Min(2,(level-UnlockLevel(node))/10));}
         public static bool IsUnlocked(GameProfile profile,ChapterNode node){return profile!=null&&Valid(node)&&profile.level>=UnlockLevel(node);}
         public static int HighestCompletedDifficulty(GameProfile profile,ChapterNode node)
         {return profile==null||!Valid(node)||profile.chapterHighestDifficulties==null||profile.chapterHighestDifficulties.Length<3?-1:Math.Max(-1,Math.Min(2,profile.chapterHighestDifficulties[(int)node]-1));}
         public static bool CanEnter(GameProfile profile,ChapterNode node,ChapterDifficulty difficulty)
-        {return IsUnlocked(profile,node)&&(int)difficulty>=0&&(int)difficulty<=2&&(int)difficulty<=(int)LevelDifficulty(node,profile.level);}
+        {return IsUnlocked(profile,node)&&(int)difficulty>=0&&(int)difficulty<=2&&(int)difficulty<=(int)AvailableDifficulty(profile,node);}
         public static int MaterialReward(ChapterNode node,int tier){return TierRewardBand.Materials(ChapterDefinition.Get(node).BaseMaterials,tier);}
         public static int CompletionMaterials(GameProfile profile,ChapterNode node,int tier)
         {return MaterialReward(node,tier)+((profile.chapterFirstRewardMask&(1<<(int)node))==0?1:0);}

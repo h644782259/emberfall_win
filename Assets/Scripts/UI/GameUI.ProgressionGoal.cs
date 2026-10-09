@@ -68,7 +68,7 @@ namespace Emberfall
         {
             ReconcileProgressionGoalSurface();if(!progressionGoalsOpen)return false;
             float u=MobileControls.Active?TouchRatio:1;var l=new MobileDialogLayout(width/u,height/u);
-            Fill(new Rect(0,0,width,height),new Color(.018f,.031f,.048f,.35f));blockedRects.Add(new Rect(0,0,width,height));
+            blockedRects.Add(new Rect(0,0,width,height));
             Box(BuildPlanRect(l.Frame,u),jade,false);
             Text(BuildPlanRect(l.Header,u),"成就",Mathf.RoundToInt(21*u),pale,true);
             int available=session.Progression.ClaimableAchievements;

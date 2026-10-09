@@ -85,7 +85,7 @@ namespace Emberfall
             ReconcileClassSwitchSurface();
             if(!classSwitchOpen)return false;
             float unit=MobileControls.Active?TouchRatio:1;var layout=new MobileDialogLayout(width/unit,height/unit);
-            Fill(new Rect(0,0,width,height),new Color(.008f,.018f,.03f,.35f));blockedRects.Add(new Rect(0,0,width,height));
+            blockedRects.Add(new Rect(0,0,width,height));
             Box(BuildPlanRect(layout.Frame,unit),gold,false);Text(BuildPlanRect(layout.Header,unit),"营地 · 切换职业",Mathf.RoundToInt(21*unit),pale,true);
             float bodyWidth=layout.Body.Width-18,bodyHeight=DrawClassSwitchContent(bodyWidth,unit,false);
             classSwitchScroll=BeginTouchScroll("class-switch",BuildPlanRect(layout.Body,unit),classSwitchScroll,new Rect(0,0,bodyWidth*unit,Mathf.Max(layout.Body.Height,bodyHeight)*unit));

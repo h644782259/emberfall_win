@@ -53,7 +53,7 @@ namespace Emberfall
             var p=session.Progression;float u=MobileControls.Active?TouchRatio:1;
             float fw=Mathf.Min(width-24*u,1020*u),fh=Mathf.Min(height-24*u,620*u);
             Rect frame=new Rect((width-fw)*.5f,(height-fh)*.5f,fw,fh);
-            Fill(new Rect(0,0,width,height),new Color(.012f,.025f,.04f,.32f));Box(frame,gold);blockedRects.Add(frame);
+            Box(frame,gold);blockedRects.Add(frame);
             if(PopupCloseButton(new Rect(frame.xMax-48*u,frame.y+6*u,40*u,36*u)))return true;
             Text(new Rect(frame.x+16*u,frame.y+8*u,fw-80*u,32*u),session.LastRunRecap!=null&&!session.LastRunRecap.Won?"挑战结束":"结算与奖励",Mathf.RoundToInt(22*u),gold,true);
             var snapshot=session.LastRunRecap;
@@ -132,12 +132,12 @@ namespace Emberfall
             if(icons.Count==0){DrawChestResourceVisuals(new Rect(art.x,art.center.y,art.width,art.height*.4f),reward);return;}
             int cols=Mathf.Min(3,icons.Count),rows=(icons.Count+cols-1)/cols;
             float cell=Mathf.Min(66*u,Mathf.Min(art.width/(cols+.5f),stage.height/(rows+1))),gap=8*u;
-            float scale=Mathf.SmoothStep(.35f,1,Mathf.Clamp01((progress-.55f)/.35f));
+            // Reward art keeps its own square frame throughout the reveal.
             for(int i=0;i<icons.Count;i++)
             {
                 float x=stage.center.x-(cols*cell+(cols-1)*gap)*.5f+(i%cols)*(cell+gap);
                 float y=stage.center.y-(rows*cell+(rows-1)*gap)*.5f+(i/cols)*(cell+gap)-12*u;
-                Rect icon=new Rect(x+(1-scale)*cell*.5f,y+(1-scale)*cell*.5f,cell*scale,cell*scale);
+                Rect icon=new Rect(x,y,cell,cell);
                 DrawEntryRewardIcon(icon,icons[i],u);InspectRewardItem(icon,icons[i]);
             }
             if(!animating)Text(new Rect(stage.x,stage.yMax-28*u,stage.width,24*u),"奖励已获得",Mathf.RoundToInt(13*u),gold,true,false,TextAnchor.MiddleCenter);
@@ -163,7 +163,7 @@ namespace Emberfall
             RunRecapPresentation data=recapPresentation;
             Color accent=snapshot!=null&&snapshot.Won?gold:jade;
             Rect frame=RecapRect(layout.Frame,unit),header=RecapRect(layout.Header,unit);
-            Fill(new Rect(0,0,width,height),new Color(.012f,.025f,.04f,.84f));
+
             Box(frame,accent);Fill(new Rect(frame.x,frame.y,4*unit,frame.height),accent);
             if(!death&&PopupCloseButton(new Rect(frame.xMax-48*unit,frame.y+8*unit,40*unit,36*unit)))return true;
             float iconSize=mobile?35:44;

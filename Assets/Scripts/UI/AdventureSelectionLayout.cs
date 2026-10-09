@@ -21,6 +21,6 @@ namespace Emberfall
         public MobilePanelLayout.Area EntryReward(int index){var a=Entry(index);return new MobilePanelLayout.Area(a.X+8,a.Y+33,a.Width-16,18);}
         public MobilePanelLayout.Area EntryEncounter(int index){return EntryReward(index);}
         public static float LogHeight(int messages,bool expanded){return messages<=0?0:Math.Min(expanded?8:3,messages)*39+34;}
-        public static float WorkshopY(float height,int messages,bool expanded){return Math.Min(height-223,height-16-LogHeight(messages,expanded)-44);}
+        public static float WorkshopY(float height,int messages,bool expanded){return Math.Min(height-223,height-54-LogHeight(messages,expanded)-44);}
     }
 }

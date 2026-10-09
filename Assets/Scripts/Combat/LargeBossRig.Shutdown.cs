@@ -34,7 +34,7 @@ namespace Emberfall
         }
         internal void SampleShutdown(float progress)
         {
-            float t=Mathf.Clamp01(progress),drop=Mathf.SmoothStep(0,1,t),spread=Mathf.SmoothStep(0,1,Mathf.Clamp01((t-.12f)/.66f));
+            float t=Mathf.Clamp01(progress),drop=Mathf.SmoothStep(0,1,Mathf.Clamp01((t-.16f)/.42f)),spread=Mathf.SmoothStep(0,1,Mathf.Clamp01((t-.12f)/.66f));
             body.localPosition=shutdownBody+Vector3.down*(.75f*drop);
             core.localScale=shutdownCore*Mathf.Max(.03f,1-t*1.2f);
             firstRing.localRotation=shutdownFirstRing*Quaternion.Euler(28*drop,45*drop,0);

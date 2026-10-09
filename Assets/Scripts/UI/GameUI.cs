@@ -214,7 +214,7 @@ namespace Emberfall
                 return;
             }
             if(!session.Paused&&(session.ModeFinished||session.DungeonCleared)&&!session.FinishedResultDismissed)
-            {if(Input.GetKeyDown(KeyCode.Escape))CloseSettlement();return;}
+            {if(session.FinishedResultReady&&Input.GetKeyDown(KeyCode.Escape))CloseSettlement();return;}
             if(masteryResetConfirm&&panel==Panel.Skills&&Input.GetKeyDown(KeyCode.Escape)){masteryResetConfirm=false;return;}
             EnsurePendingChestPanel();
             if ((session.DungeonSelectionOpen || session.RunChoices.AwaitingChoice) && !session.Paused && !PauseUtilityVisible)
@@ -339,7 +339,7 @@ namespace Emberfall
                 else if (session.DungeonSelectionOpen) DrawDungeonSelection();
                 else if (session.RoomBranchChoiceOpen) DrawRoomBranchChoice();
                 else if (session.RunChoices.AwaitingChoice) DrawBlessingChoice();
-                else if((session.ModeFinished||session.DungeonCleared)&&!session.FinishedResultDismissed){if(DrawStructuredRunRecap(false))CloseSettlement();}
+                else if((session.ModeFinished||session.DungeonCleared)&&!session.FinishedResultDismissed){if(session.FinishedResultReady&&DrawStructuredRunRecap(false))CloseSettlement();}
                 else if (DrawPresetSaleConfirmation()) {}
                 else if (panel == Panel.Inventory) DrawInventory();
                 else if (panel == Panel.Skills) DrawSkills();
@@ -654,7 +654,7 @@ namespace Emberfall
             if(DrawSaveFlowConfirmation())return;
             if(DrawSaveDeletionConfirmation())return;
             if(MobileControls.Active){DrawMobileSaveSelection();return;}
-            Fill(new Rect(0, 0, width, height), new Color(.018f, .029f, .048f, 1f));
+            if(!session.HasStarted)Fill(new Rect(0, 0, width, height), new Color(.018f, .029f, .048f, 1f));
             Rect w = Modal(900, 570, "选择存档", "");
             Text(new Rect(w.x + 620, w.y + 29, 186, 23), saveSlots.Count + " 份存档", 13, muted, false, false, TextAnchor.MiddleRight);
             if (PopupCloseButton(new Rect(w.xMax - 69, w.y + 20, 44, 32))) ClosePanel();
@@ -816,9 +816,29 @@ namespace Emberfall
             }
         }
 
+        private void DrawHudVital(Rect rect,float fraction,Color tint,string label)
+        {
+            Bar(rect,fraction,tint);
+            var textStyle=new GUIStyle(Style(12,true,false,TextAnchor.MiddleCenter));
+            textStyle.fontSize=Mathf.Min(Mathf.RoundToInt(rect.height*.58f),textStyle.fontSize);
+            textStyle.padding=new RectOffset(0,0,0,0);textStyle.normal.textColor=Color.white;
+            GUI.Label(rect,label,textStyle);
+        }
+        private void DrawScreenExperience()
+        {
+            var p=session.Progression.Profile;float u=MobileControls.Active?TouchRatio:1;
+            bool capped=p.level>=ProgressionService.MaximumLevel;
+            // Keep labels within the safe area; the thin rail continues to the screen edges.
+            float railY=(Screen.height-guiOffset.y)/scale-5*u;
+            Bar(new Rect(-guiOffset.x/scale,railY,Screen.width/scale,5*u),capped?1:p.xp/(float)GameBalance.XpToNext(p.level),gold);
+            Rect label=new Rect(12*u,height-29*u,260*u,22*u);
+            Fill(label,new Color(.025f,.045f,.06f,.85f));
+            Text(label,"Lv."+p.level+"   "+(capped?"满级":p.xp+" / "+GameBalance.XpToNext(p.level)),Mathf.RoundToInt(11*u),gold,true,false,TextAnchor.MiddleLeft);
+        }
         private void DrawHUD()
         {
             DrawComboCounter();
+            DrawScreenExperience();
             if(MobileControls.Active){DrawMobileHUD();return;}
             GameProfile p = session.Progression.Profile;
             Color accent = GameBalance.ClassColor(p.heroClass);
@@ -830,15 +850,10 @@ namespace Emberfall
             DrawPrice(new Rect(169,26,74,20),p.gold,false,1);
             float hp = session.Player == null ? 0 : session.Player.Health;
             float maxHp = session.Player == null ? 1 : session.Player.MaxHealth;
-            Bar(new Rect(28, 54, 216, 10), hp / Mathf.Max(1, maxHp), new Color(.86f, .16f, .19f));
-            float energy = session.Player == null ? 0 : session.Player.Energy;
-            float maxEnergy = session.Player == null ? 100 : session.Player.MaxEnergy;
-            Bar(new Rect(28, 71, 216, 7), energy / Mathf.Max(1, maxEnergy), new Color(.28f, .57f, .91f));
-            bool maxLevel = p.level >= ProgressionService.MaximumLevel;
-            Bar(new Rect(28, 88, 216, 3), maxLevel ? 1 : p.xp / (float)GameBalance.XpToNext(p.level), gold);
-            Text(new Rect(194,50,216,16),Mathf.CeilToInt(hp)+" / "+Mathf.CeilToInt(maxHp),10,pale,true,false,TextAnchor.MiddleCenter);
-            Text(new Rect(194,69,216,14),Mathf.FloorToInt(energy)+" / "+Mathf.RoundToInt(maxEnergy),9,pale,true,false,TextAnchor.MiddleCenter);
-            Text(new Rect(194,87,216,13),maxLevel?"满级":p.xp+" / "+GameBalance.XpToNext(p.level),9,pale,true,false,TextAnchor.MiddleCenter);
+            DrawHudVital(new Rect(28,48,216,23),hp/Mathf.Max(1,maxHp),new Color(.86f,.16f,.19f),Mathf.CeilToInt(hp)+" / "+Mathf.CeilToInt(maxHp));
+            float energy=session.Player==null?0:session.Player.Energy;
+            float maxEnergy=session.Player==null?100:session.Player.MaxEnergy;
+            DrawHudVital(new Rect(28,75,216,21),energy/Mathf.Max(1,maxEnergy),new Color(.28f,.57f,.91f),Mathf.FloorToInt(energy)+" / "+Mathf.RoundToInt(maxEnergy));
             string objectiveText = session.SpecialAdventure?session.ModeName:session.InDungeon
                 ? session.DungeonCleared ? "沉星遗迹已通关" : "击败本轮敌人"
                 : p.level < 2 ? "击败原野怪物，升至 2 级"
@@ -1300,7 +1315,7 @@ namespace Emberfall
 
         private Rect Modal(float modalWidth, float modalHeight, string title, string subtitle)
         {
-            Fill(new Rect(0, 0, width, height), new Color(.012f, .025f, .04f, .32f));
+
             Rect window = new Rect((width - modalWidth) * .5f, (height - modalHeight) * .5f, modalWidth, modalHeight);
             Box(window, jade);
             Fill(new Rect(window.x, window.y, 4, window.height), jade);
@@ -1339,7 +1354,7 @@ namespace Emberfall
             if(QuietAction(new Rect(middle+152,w.y+108,64,32),"时装",true,null,mobileInventoryTab==3))SelectInventoryTab(3);
             if(mobileInventoryTab==3){DrawBagFashion(InventoryArea(bagArea));return;}
             if(mobileInventoryTab==2){DrawBagSupplies(InventoryArea(bagArea));return;}
-            Text(new Rect(middle+248, w.y + 112, 200, 23), "装备 · " + bagItems.Count + " 件", 16, jade, true);
+
             Text(new Rect(middle + 690, w.y + 117, 144, 17), "总容量 " + p.inventory.Count + " / " + ProgressionService.InventoryCapacity, 11, muted, false, false, TextAnchor.MiddleRight);
             Rect viewport=bagArea;
             DrawEquipmentIconGrid(viewport,ref inventoryScroll,1);

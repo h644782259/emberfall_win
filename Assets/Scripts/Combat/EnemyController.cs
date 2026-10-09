@@ -255,7 +255,7 @@ namespace Emberfall
             if (healthRoot != null) healthRoot.gameObject.SetActive(false);
             if(model!=null&&model.TryBeginLargeBossShutdown()){gameObject.SetActive(false);Destroy(gameObject);return;}
             if (model != null && GetComponent<EnemyDeathDissolve>() == null)
-                gameObject.AddComponent<EnemyDeathDissolve>().Initialize(model, Kind == EnemyKind.Slime, IsBoss);
+                gameObject.AddComponent<EnemyDeathDissolve>().Initialize(model, Kind == EnemyKind.Slime, IsBoss&&session.FinalBossEncounter);
             else if (model == null) Destroy(gameObject);
         }
 

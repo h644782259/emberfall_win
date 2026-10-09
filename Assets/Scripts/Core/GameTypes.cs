@@ -64,7 +64,7 @@ namespace Emberfall
             for(int i=(int)EquipmentMechanic.WeaponPower;i<=(int)EquipmentMechanic.RelicRuin;i++)gems.Add((EquipmentMechanic)i);
             return gems.ToArray();
         }
-        public static int GemAttribute(EquipmentMechanic gem){return (int)gem-(int)EquipmentMechanic.WeaponPower;}
+        public static int GemAttribute(EquipmentMechanic gem){return IsAttributeGem(gem)?(int)gem-(int)EquipmentMechanic.WeaponPower:MechanicAttribute(gem);}
         public static float GemAttributeValue(EquipmentMechanic gem,Rarity rarity,int rank)
         {float[] basis={.03f,.015f,.06f,.05f,.08f,.01f,.04f,.015f,.02f};int attribute=GemAttribute(gem);return basis[Math.Max(0,Math.Min(8,attribute))]*(1+(int)rarity)*(1+.2f*rank);}
         public static string AttributeLabel(int attribute)
@@ -75,7 +75,31 @@ namespace Emberfall
         public static int MechanicAttribute(EquipmentMechanic gem)
         {return gem==EquipmentMechanic.CinderTrail?0:gem==EquipmentMechanic.ReturningBlade?2:gem==EquipmentMechanic.FrostEcho?4:gem==EquipmentMechanic.VenomSpread?1:3;}
         public static float MechanicAttributeValue(EquipmentMechanic gem,int rank)
-        {return rank*(gem==EquipmentMechanic.CinderTrail?.02f:gem==EquipmentMechanic.VenomSpread?.005f:.03f);}
+        {return (rank+1)*(gem==EquipmentMechanic.CinderTrail?.02f:gem==EquipmentMechanic.VenomSpread?.005f:.03f);}
+        public static string GemFormName(EquipmentMechanic gem,int variant)
+        {
+            if(IsAttributeGem(gem))return MechanicSlot(gem)==ItemSlot.Weapon?(variant==0?"锐势":"背水"):MechanicSlot(gem)==ItemSlot.Armor?(variant==0?"坚韧":"守御"):(variant==0?"回流":"蓄能");
+            if(gem==EquipmentMechanic.TwinSummonResonance)return variant==0?"双契强袭":"双契守护";
+            if(gem==EquipmentMechanic.CinderTrail)return variant==0?"燎原余烬":"凝焰火核";
+            if(gem==EquipmentMechanic.FrostEcho)return variant==0?"凝霜回响":"扩散霜环";
+            if(gem==EquipmentMechanic.ReturningBlade)return variant==0?"回刃弹射":"闪避反击";
+            return variant==0?"毒种传播":"收束毒矢";
+        }
+        public static string GemFormDescription(EquipmentMechanic gem,int variant,int ascension)
+        {
+            int rank=Math.Max(1,Math.Min(3,ascension));
+            if(IsAttributeGem(gem))
+            {
+                string value=(GemAscensionValue(gem,rank)*100).ToString("0");
+                if(MechanicSlot(gem)==ItemSlot.Weapon)return (variant==0?"生命≥80%时，伤害 +":"生命≤50%时，伤害 +")+(variant==0?value:(GemAscensionValue(gem,rank)*150).ToString("0"))+"%。";
+                if(MechanicSlot(gem)==ItemSlot.Armor)return (variant==0?"生命≤50%时，受到伤害 -":"生命≥80%时，受到伤害 -")+value+"%。";
+                return (variant==0?"能量低于50%时，回复速度 +":"能量达到50%时，回复速度 +")+value+"%。";
+            }
+            if(gem==EquipmentMechanic.TwinSummonResonance)return variant==0?"普通伙伴上限2；伤害 +60%、生命 +20%，强化协同进攻。":"普通伙伴上限2；伤害 +25%、生命 +65%，强化生存与牵制。";
+            string description=MechanicDescription(gem);int split=description.IndexOf("变体B：",StringComparison.Ordinal);
+            if(split>=0)description=variant==0?description.Substring(0,split):description.Substring(split);
+            return description.Replace("变体A：","").Replace("变体B：","").Trim();
+        }
         public static string GemAscensionLabel(EquipmentMechanic gem)
         {return MechanicSlot(gem)==ItemSlot.Weapon?"生命≥80%时伤害":MechanicSlot(gem)==ItemSlot.Armor?"生命≤50%时减伤":"能量<50%时回复";}
         public static float GemAscensionValue(EquipmentMechanic gem,int rank)
@@ -121,21 +145,21 @@ namespace Emberfall
         public static bool ConcentratedVenomEquipped(GameProfile profile)
         {
             if(profile==null||profile.heroClass!=HeroClass.Ranger||profile.inventory==null)return false;
-            if(profile.attachments!=null){var a=profile.attachments.Find(x=>x.mechanic==EquipmentMechanic.VenomSpread);if(a!=null)return a.mounted&&a.variantUnlocked&&a.variant==1;}
+            if(profile.attachments!=null){var a=profile.attachments.Find(x=>x.mechanic==EquipmentMechanic.VenomSpread);if(a!=null)return a.mounted&&a.ascensionRank>0&&a.variantUnlocked&&a.variant==1;}
             var item=profile.inventory.Find(x=>x.id==profile.relicId);
             return item!=null&&item.slot==ItemSlot.Relic&&item.mechanic==EquipmentMechanic.VenomSpread&&item.mechanicVariantUnlocked&&item.mechanicVariant==1;
         }
         public static string VenomSkillOverride(GameProfile profile,int skill,int rank)
         {
             if(profile==null||profile.heroClass!=HeroClass.Ranger||skill!=0||profile.inventory==null)return "";
-            if(profile.attachments!=null){var a=profile.attachments.Find(x=>x.mechanic==EquipmentMechanic.VenomSpread);if(a!=null)return !a.mounted?"":VenomSkillSummary(Math.Max(1,Math.Min(3,rank)),a.variantUnlocked&&a.variant==1);}
+            if(profile.attachments!=null){var a=profile.attachments.Find(x=>x.mechanic==EquipmentMechanic.VenomSpread);if(a!=null)return !a.mounted||a.ascensionRank<=0?"":VenomSkillSummary(Math.Max(1,Math.Min(3,rank)),a.variantUnlocked&&a.variant==1);}
             var item=profile.inventory.Find(x=>x.id==profile.relicId);
             if(item==null||item.slot!=ItemSlot.Relic||item.mechanic!=EquipmentMechanic.VenomSpread)return "";
             return VenomSkillSummary(Math.Max(1,Math.Min(3,rank)),item.mechanicVariantUnlocked&&item.mechanicVariant==1);
         }
 
         public static bool HasMechanicVariant(EquipmentMechanic mechanic)
-        { return mechanic == EquipmentMechanic.FrostEcho || mechanic == EquipmentMechanic.CinderTrail || mechanic == EquipmentMechanic.ReturningBlade || mechanic == EquipmentMechanic.VenomSpread; }
+        { return mechanic!=EquipmentMechanic.None&&Enum.IsDefined(typeof(EquipmentMechanic),mechanic); }
 
         public static string GemName(EquipmentMechanic mechanic)
         {
@@ -165,7 +189,7 @@ namespace Emberfall
 
         public static string MechanicDescription(EquipmentMechanic mechanic)
         {
-            if(IsAttributeGem(mechanic))return GameBalance.SlotName(MechanicSlot(mechanic))+"宝石 · 提高"+GemAttributeLabel(mechanic)+"，品质和阶数越高，加成越强。3、6、9阶可升华："+GemAscensionLabel(mechanic)+"，每次 +"+(GemAscensionValue(mechanic,1)*100).ToString("0")+"%。";
+            if(IsAttributeGem(mechanic))return "基础属性："+GemAttributeLabel(mechanic)+"加成。首次升华解锁两种形态；3、6、9阶各可升华一次。变体A："+GemFormDescription(mechanic,0,1)+"变体B："+GemFormDescription(mechanic,1,1);
             switch (mechanic)
             {
                 case EquipmentMechanic.FrostEcho: return "变体A：凝霜回响 · 新星首击保留80%伤害；0.7秒后原范围回响造成60%基础伤害并再次控制。变体B：扩散霜环 · 回响范围扩大35%；首击保留65%、回响造成45%基础伤害，适合控制分散敌人。灼燃专精仅减速。";
@@ -511,7 +535,7 @@ namespace Emberfall
         public float CritChance;
         public float CritDamageBonus;
         public float DamageReduction,EnergyRecovery,CooldownReduction;
-        public float GemHealthyDamage,GemLowHealthGuard,GemLowEnergyRecovery;
+        public float GemHealthyDamage,GemLowHealthGuard,GemLowEnergyRecovery,GemLowHealthDamage,GemHealthyGuard,GemHighEnergyRecovery;
     }
 
     public static class GameBalance

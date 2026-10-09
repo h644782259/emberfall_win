@@ -37,7 +37,7 @@ namespace Emberfall
             }
             float frameHeight=Mathf.Min(layout.Height-24,70+previewHeight+cardHeight+76);
             float frameX=(layout.Width-frameWidth)*.5f,frameY=(layout.Height-frameHeight)*.5f;
-            Fill(new Rect(0,0,width,height),new Color(.008f,.018f,.03f,.86f));blockedRects.Add(new Rect(0,0,width,height));
+            blockedRects.Add(new Rect(0,0,width,height));
             Box(TouchRect(frameX,frameY,frameWidth,frameHeight),jade,false);
             Text(TouchRect(frameX+16,frameY+12,frameWidth-76,30),"星烬祝福 · 选择一项",TouchFont(22),pale,true);
             if(PopupCloseButton(TouchRect(frameX+frameWidth-52,frameY+8,44,44))){session.SetPaused(true);return;}

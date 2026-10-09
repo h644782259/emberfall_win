@@ -279,8 +279,8 @@ namespace Emberfall
                 if (look.HasRunes)
                     for (int i = 0; i < 3; i++)
                         GlowingPart("Blade rune", PrimitiveType.Sphere, new Vector3(0, .44f + i * .22f, .067f),
-                            Vector3.one * (.055f + look.UpgradeRank * .002f), look.Glow, equipmentWeapon);
-                for (int i = 0; i < look.UpgradeRank; i++)
+                            Vector3.one * (.055f + Mathf.Min(9,look.UpgradeRank) * .002f), look.Glow, equipmentWeapon);
+                for (int i = 0; i < Mathf.Min(9,look.UpgradeRank); i++)
                     GlowingPart("Forging mark", PrimitiveType.Sphere,
                         new Vector3((i % 5 - 2) * .1f, .13f - i / 5 * .11f, .09f),
                         Vector3.one * .055f, look.Glow, equipmentWeapon);
@@ -335,8 +335,8 @@ namespace Emberfall
                 }
                 if (look.HasRunes)
                     GlowingPart("Bow focus", PrimitiveType.Sphere, new Vector3(0, 0, .37f),
-                        Vector3.one * (.17f + look.UpgradeRank * .008f), look.Glow, equipmentWeapon);
-                for (int i = 0; i < look.UpgradeRank; i++)
+                        Vector3.one * (.17f + Mathf.Min(9,look.UpgradeRank) * .008f), look.Glow, equipmentWeapon);
+                for (int i = 0; i < Mathf.Min(9,look.UpgradeRank); i++)
                     GlowingPart("Bow forging mark", PrimitiveType.Sphere,
                         new Vector3(0, (i - 4.5f) * .1f, .32f - Mathf.Abs(i - 4.5f) * .025f),
                         Vector3.one * .055f, look.Glow, equipmentWeapon);
@@ -382,7 +382,7 @@ namespace Emberfall
             for (int i = 0; i < look.Tier; i++)
                 Part("Waist plate", PrimitiveType.Cube, new Vector3(0, 1.07f - i * .105f, .3f),
                     new Vector3(width - i * .055f, .1f, .13f), i % 2 == 0 ? look.Metal : look.Accent, equipmentArmor);
-            for (int i = 0; i < look.UpgradeRank; i++)
+            for (int i = 0; i < Mathf.Min(9,look.UpgradeRank); i++)
                 GlowingPart("Armor forging mark", PrimitiveType.Sphere,
                     new Vector3((i % 5 - 2) * .11f, 1.58f - i / 5 * .09f, .41f),
                     Vector3.one * .055f, look.Glow, equipmentArmor);

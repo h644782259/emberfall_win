@@ -110,9 +110,10 @@ namespace Emberfall
             selectedMastery=Mathf.Clamp(selectedMastery,0,3);
             if(draw)
             {
-                Text(new Rect(4*u,y*u,(width-132)*u,36*u),"可用精通点 "+p.Profile.skillPoints,Mathf.RoundToInt(16*u),gold,true);
+                Text(new Rect(4*u,y*u,(width-132)*u,44*u),"可用精通点 "+p.Profile.skillPoints,Mathf.RoundToInt(16*u),gold,true);
+                if(Button(new Rect((width-128)*u,y*u,124*u,44*u),"重置精通",jade,session.IsInCamp))masteryResetConfirm=true;
             }
-            y+=44;
+            y+=52;
             int columns=width>=760?4:2,cap=ProgressionService.MasteryCap(p.Profile.level);
             float tileWidth=(width-(columns-1)*10)/columns,tileHeight=174;
             for(int i=0;i<4;i++)
@@ -154,13 +155,7 @@ namespace Emberfall
             y+=46;
             GoalParagraph(ref y,width,u,"仅一个核心生效 · "+MasteryCoreRules.EnhancedInvestment+" 点增强"+(!session.IsInCamp?" · 返回营地可切换核心":""),12,muted,false,draw);
             y=DrawSpecializationChoices(width,u,y+8,draw)+16;
-            if(draw)
-            {
-                Rule(0,y*u,width*u,muted*.3f);
-                if(Button(new Rect((width-128)*u,(y+10)*u,124*u,44*u),"重置精通",jade,session.IsInCamp))
-                {masteryResetConfirm=true;}
-            }
-            return y+66;
+            return y+8;
         }
     }
 }

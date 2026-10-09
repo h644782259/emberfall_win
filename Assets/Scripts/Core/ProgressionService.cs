@@ -758,9 +758,9 @@ namespace Emberfall
                     int ascension=Math.Max(0,a.ascensionRank);
                     switch(BuildCatalog.MechanicSlot(a.mechanic))
                     {
-                        case ItemSlot.Weapon:stats.GemHealthyDamage+=.05f*ascension;break;
-                        case ItemSlot.Armor:stats.GemLowHealthGuard+=.05f*ascension;break;
-                        case ItemSlot.Relic:stats.GemLowEnergyRecovery+=.2f*ascension;break;
+                        case ItemSlot.Weapon:if(a.variant==1)stats.GemLowHealthDamage+=.075f*ascension;else stats.GemHealthyDamage+=.05f*ascension;break;
+                        case ItemSlot.Armor:if(a.variant==1)stats.GemHealthyGuard+=.05f*ascension;else stats.GemLowHealthGuard+=.05f*ascension;break;
+                        case ItemSlot.Relic:if(a.variant==1)stats.GemHighEnergyRecovery+=.2f*ascension;else stats.GemLowEnergyRecovery+=.2f*ascension;break;
                     }
                 }
                 else ApplyGemAttribute(ref stats,BuildCatalog.MechanicAttribute(a.mechanic),BuildCatalog.MechanicAttributeValue(a.mechanic,a.upgradeRank));
@@ -860,9 +860,9 @@ namespace Emberfall
             }
             if (!BuildCatalog.GemCompatible(mechanic,Profile.heroClass)) return false;
             var attachment=Attachment(mechanic);
-            if(attachment!=null)return attachment.mounted;
+            if(attachment!=null)return attachment.mounted&&attachment.ascensionRank>0;
             ItemData equipped = Equipped(BuildCatalog.MechanicSlot(mechanic));
-            return equipped != null && equipped.mechanic == mechanic;
+            return equipped != null && equipped.mechanic == mechanic && equipped.mechanicVariantUnlocked;
         }
 
         private bool SelectedMechanicB(EquipmentMechanic mechanic)
@@ -1960,7 +1960,7 @@ namespace Emberfall
             GameProfile candidate=Snapshot();candidate.currentHub=hub;candidate.unlockedHubMask=mask;return CommitCandidate(candidate);
         }
 
-        public int HighestAdventureTier {get{int best=Math.Max(Profile.highestAdventureTier,Profile.bestFloor);if(Profile.chapterBestLevels!=null)foreach(int level in Profile.chapterBestLevels)best=Math.Max(best,level/10);return Clamp(best,0,10);}}
+        public int HighestAdventureTier {get{return HighestCompletedAdventureTier(Profile);}}
         public bool CollectGroundSupplies(int gold,int potions) {
             if(gold<0||potions<0)return false;
             var candidate=Snapshot();int g=Math.Min(gold,candidate.groundGold),p=Math.Min(Math.Max(0,99-candidate.potions),Math.Min(potions,candidate.groundPotions));
@@ -1969,7 +1969,7 @@ namespace Emberfall
             candidate.gold=(int)Math.Min(MaximumGold,(long)candidate.gold+g);candidate.potions=Math.Min(99,candidate.potions+p);
             return CommitCandidate(candidate);
         }
-        public int UnlockedChapterTier(ChapterNode node){return ChapterProgression.IsUnlocked(Profile,node)?ChapterProgression.LevelTier(Profile.level):0;}
+        public int UnlockedChapterTier(ChapterNode node){return ChapterProgression.IsUnlocked(Profile,node)?ChapterProgression.AvailableTier(Profile,node):0;}
         public int UnlockedAdventureTier(int mode) { int i=Clamp(mode+1,0,4); return Math.Min(100,1+(Profile.adventureBestTiers!=null && Profile.adventureBestTiers.Length==5?Profile.adventureBestTiers[i]:0)); }
         public int HighestUnlockedAdventureTier {get{return Math.Min(AdventureRewardRules.MaximumDungeonIndex(Profile.level),HighestAdventureTier+1);}}
         public bool RecordTutorialEvidence(int bit)

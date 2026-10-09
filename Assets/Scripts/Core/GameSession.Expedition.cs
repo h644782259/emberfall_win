@@ -9,6 +9,11 @@ namespace Emberfall
         public RunChoices RunChoices { get; private set; } = new RunChoices();
         public bool DungeonSelectionOpen { get; private set; }
         private readonly int[] selectedAdventureTiers={1,1,1,1,1};
+        private void ResetAdventureEntryTiers()
+        {
+            for(int i=0;i<selectedAdventureTiers.Length;i++)
+                selectedAdventureTiers[i]=Mathf.Max(1,Mathf.Min(AdventureRewardRules.MaximumDungeonIndex(Progression.Profile.level),Progression.UnlockedAdventureTier(i-1)));
+        }
         public int SelectedDungeonTier { get { return Progression==null?1:Mathf.Clamp(selectedAdventureTiers[Mathf.Clamp(SelectedArenaMode+1,0,4)],1,MaximumDungeonTier); } set { selectedAdventureTiers[Mathf.Clamp(SelectedArenaMode+1,0,4)]=value; } }
         public int MaximumDungeonTier { get { return Mathf.Min(AdventureRewardRules.MaximumDungeonIndex(Progression.Profile.level),Progression.UnlockedAdventureTier(SelectedArenaMode)); } }
         public bool SelectedChallengeMode { get { return false; } set { } }
@@ -26,8 +31,11 @@ namespace Emberfall
         {if(sideCrystal!=null&&sideCrystal.activeInHierarchy!=SideEventEntryOpen)sideCrystal.SetActive(SideEventEntryOpen);}
 
         private GameObject dungeonReturnMarker;
-        private Vector3 dungeonReturnPosition=new Vector3(0,0,-16);
+        private Vector3 dungeonReturnPosition=Vector3.zero;
         private PlayerController dismissedResultOwner;private int dismissedResultEpoch=-1;
+        public bool FinalBossEncounter {get{return InDungeon&&DungeonWave>=TotalWaves;}}
+        public bool BossDeathPresenting {get{return EnemyDeathDissolve.IsPresenting(this)||LargeBossShutdownVisual.IsPresenting(this);}}
+        public bool FinishedResultReady {get{return (ModeFinished||DungeonCleared)&&!BossDeathPresenting;}}
         public bool FinishedResultDismissed {get{return Player!=null&&dismissedResultOwner==Player&&dismissedResultEpoch==Player.CombatEpoch;}}
         public void DismissFinishedResult()
         {if(Player==null||IsDead)return;dismissedResultOwner=Player;dismissedResultEpoch=Player.CombatEpoch;SetUIBlocking(false);UpdateTimeScale();}
@@ -38,8 +46,9 @@ namespace Emberfall
         {
             if(DungeonReturnAvailable&&dungeonReturnMarker==null)
             {
-                Vector3 entrance=ChapterActive&&chapterPlan!=null?chapterPlan.Entrance:RoomChainRun!=null?TacticalRoomGeometry.Entrance:new Vector3(0,0,-16);
-                dungeonReturnPosition=WorldTraversal.NearestWalkable(entrance,.65f);
+                dungeonReturnPosition=WorldTraversal.NearestWalkable(Vector3.zero,.65f);
+                if(Player!=null&&!WorldTraversal.CanReach(Player.transform.position,dungeonReturnPosition,.65f))
+                    dungeonReturnPosition=WorldTraversal.NearestWalkable(Vector3.Lerp(Player.transform.position,Vector3.zero,.5f),.65f);
                 dungeonReturnMarker=WorldBuilder.MakeDungeonReturnMarker(dungeonReturnPosition);transientObjects.Add(dungeonReturnMarker);
             }
             if(dungeonReturnMarker!=null&&dungeonReturnMarker.activeInHierarchy!=DungeonReturnAvailable)dungeonReturnMarker.SetActive(DungeonReturnAvailable);

@@ -377,7 +377,7 @@ namespace Emberfall
             StatBlock stats = session.Progression.GetStats();
             damage = stats.Damage * CompanionRules.RankPower(rank)*(session.Progression.Profile.summonerRoute==SummonerRoute.Bonded?1.2f:.8f);
             baseMaxHealth = stats.MaxHealth * CompanionRules.HealthFraction((int)Form, rank, IsStarter);
-            float maximum = baseMaxHealth * CompanionRules.HealthMultiplier(Owner.HasMechanic(EquipmentMechanic.TwinSummonResonance))*session.Progression.MechanicRangeMultiplier(EquipmentMechanic.TwinSummonResonance);
+            float maximum = baseMaxHealth * (Owner.HasMechanic(EquipmentMechanic.TwinSummonResonance)&&session.Progression.AttachmentVariant(EquipmentMechanic.TwinSummonResonance)==1?1.65f:CompanionRules.HealthMultiplier(Owner.HasMechanic(EquipmentMechanic.TwinSummonResonance)))*session.Progression.MechanicRangeMultiplier(EquipmentMechanic.TwinSummonResonance);
             // Build/gear/rank changes must not heal a damaged living body. This
             // also makes repeated preset application and transfers idempotent.
             Health = fill ? maximum : CompanionRules.PreserveRecastHealth(Health, maximum);
@@ -427,7 +427,7 @@ namespace Emberfall
             else cooldown = Mathf.Min(cooldown, CompanionRules.CommandReadyDelay);
         }
 
-        private float AttackMultiplier { get { return CompanionRules.DamageMultiplier(Owner.HasMechanic(EquipmentMechanic.TwinSummonResonance)) * (commandTime > 0 ? commandMultiplier : 1f) * Owner.RunAttackMultiplier; } }
+        private float AttackMultiplier { get { return (Owner.HasMechanic(EquipmentMechanic.TwinSummonResonance)&&session.Progression.AttachmentVariant(EquipmentMechanic.TwinSummonResonance)==1?1.25f:CompanionRules.DamageMultiplier(Owner.HasMechanic(EquipmentMechanic.TwinSummonResonance)))*session.Progression.MechanicPowerMultiplier(EquipmentMechanic.TwinSummonResonance) * (commandTime > 0 ? commandMultiplier : 1f) * Owner.RunAttackMultiplier; } }
 
         public void OnConfirmedHit(EnemyController enemy)
         {

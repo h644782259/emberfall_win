@@ -43,7 +43,7 @@ namespace Emberfall
         private void DrawExitConfirmation()
         {
             if (!exitRequest.Open) return;
-            Fill(new Rect(0, 0, width, height), new Color(.008f, .015f, .025f, .96f));
+
             bool mobile = MobileControls.Active;
             Rect r = mobile ? TouchRect((MobileControls.Layout.Width - 480) / 2, (MobileControls.Layout.Height - 270) / 2, 480, 270)
                 : new Rect((width - 580) / 2, (height - 290) / 2, 580, 290);

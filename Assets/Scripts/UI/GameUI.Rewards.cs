@@ -102,7 +102,7 @@ namespace Emberfall
             Color accent=reward!=null&&reward.Rarity.HasValue?GameBalance.RarityColor(reward.Rarity.Value):gold;
             if(revealed&&complete&&!rewardSoundPlayed)
             {rewardSoundPlayed=true;GameAudio.Play(reward==null||!reward.Rarity.HasValue||reward.Duplicate?SoundCue.UI:reward.Rarity.Value==Rarity.Legendary?SoundCue.Victory:reward.Rarity.Value==Rarity.Epic?SoundCue.LevelUp:reward.Rarity.Value==Rarity.Rare?SoundCue.Loot:SoundCue.Cast);}
-            Fill(new Rect(0,0,width,height),new Color(.018f,.025f,.045f,.9f));
+
             float ww=Mathf.Min(860,width-32),wh=Mathf.Min(550,height-24);
             Rect w=new Rect((width-ww)*.5f,(height-wh)*.5f,ww,wh);
             Fill(w,new Color(.045f,.064f,.095f,.99f));Border(w,new Color(.52f,.60f,.67f,.3f));

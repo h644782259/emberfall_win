@@ -41,9 +41,8 @@ namespace Emberfall
                 var gem=progression.Attachment(mechanic);
                 if(gem==null||!gem.mounted)continue;
                 if(text.Length>0)text.Append("\n");
-                string effect=BuildCatalog.IsAttributeGem(mechanic)?BuildCatalog.GemAttributeSummary(mechanic,gem.rarity,gem.upgradeRank):BuildCatalog.MechanicDescription(mechanic);
-                int split=effect.IndexOf("变体B：",StringComparison.Ordinal);
-                if(split>=0)effect=gem.variantUnlocked&&gem.variant==1?effect.Substring(split).Replace("变体B：",""):effect.Substring(0,split).Replace("变体A：","");
+                string effect=BuildCatalog.IsAttributeGem(mechanic)?BuildCatalog.GemAttributeSummary(mechanic,gem.rarity,gem.upgradeRank):BuildCatalog.AttributeLabel(BuildCatalog.MechanicAttribute(mechanic))+" +"+(BuildCatalog.MechanicAttributeValue(mechanic,gem.upgradeRank)*100).ToString("0.#")+"%";
+                effect+="\n"+(gem.ascensionRank>0?BuildCatalog.GemFormName(mechanic,gem.variant)+" · "+BuildCatalog.GemFormDescription(mechanic,gem.variant,gem.ascensionRank):"首次升华解锁机制形态");
                 text.Append(BuildCatalog.GemName(mechanic)).Append(" · 已镶嵌\n").Append(effect);
             }
             return text.Length==0?"宝石槽为空 · 未镶嵌":text.ToString();

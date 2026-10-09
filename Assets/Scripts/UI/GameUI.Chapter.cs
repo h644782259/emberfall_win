@@ -152,10 +152,11 @@ namespace Emberfall
             return new Rect(x+area.X*u,y+area.Y*u,area.Width*u,area.Height*u);}
         private void DrawChapterFrame(MobilePanelLayout layout,float u,string title,string subtitle)
         {
-            Fill(new Rect(0,0,width,height),new Color(.018f,.031f,.048f,.35f));
+
             Rect frame=ChapterRect(new MobilePanelLayout.Area(0,0,layout.Width,layout.Height),u);
             Fill(frame,new Color(.025f,.045f,.068f,1));
             Border(frame,new Color(.24f,.37f,.44f,.55f));
+            Box(ChapterRect(new MobilePanelLayout.Area(8,4,layout.Width-16,layout.Height-8),u),jade,false);
             DrawChapterSymbol(ChapterRect(new MobilePanelLayout.Area(16,16,14,14),u),session.ChapterFinished?session.ActiveChapterNode:session.SelectedChapterNode,gold);
             Text(ChapterRect(new MobilePanelLayout.Area(36,10,layout.Width-52,28),u),title,Mathf.RoundToInt(22*u),pale,true);
             Text(ChapterRect(new MobilePanelLayout.Area(16,40,layout.Width-32,18),u),subtitle,Mathf.RoundToInt(12*u),muted);

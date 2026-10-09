@@ -31,7 +31,7 @@ namespace Emberfall
         {
             float unit=MobileControls.Active?TouchRatio:1;
             var layout=new MobileDialogLayout(width/unit,height/unit);
-            Fill(new Rect(0,0,width,height),new Color(.008f,.018f,.03f,.35f));blockedRects.Add(new Rect(0,0,width,height));
+            blockedRects.Add(new Rect(0,0,width,height));
             Box(BuildPlanRect(layout.Frame,unit),gold,false);
             Text(BuildPlanRect(layout.Header,unit),"营地配点草稿 · 尚未应用",Mathf.RoundToInt(21*unit),pale,true);
             float contentWidth=layout.Body.Width-18;

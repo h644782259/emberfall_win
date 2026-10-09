@@ -199,7 +199,7 @@ namespace Emberfall
             if (clips[cue] == null) clips[cue] = Synthesize((SoundCue)cue);
             lastPlayed[cue] = now;
             voice.volume = DefaultVolume * masterVolume * (cue == (int)SoundCue.UI ? .55f : 1f);
-            voice.mute = false;
+            voice.mute = false;voice.enabled=true;
             voice.clip = skillClip!=null?skillClip:clips[cue];
             voice.Play();
         }
@@ -224,6 +224,8 @@ namespace Emberfall
 
         private void EnsureListener()
         {
+            if(!muted&&!quitting&&!lifecycle.BackgroundPaused)
+            {AudioListener.pause=false;AudioListener.volume=1f;}
             if (listener != null && listener.isActiveAndEnabled) return;
 #if UNITY_6000_6_OR_NEWER
             AudioListener[] existing = FindObjectsByType<AudioListener>();
@@ -244,7 +246,8 @@ namespace Emberfall
         private void StartBackground()
         {
             if (muted || quitting || lifecycle.BackgroundPaused || !isActiveAndEnabled) return;
-            EnsurePool();
+            EnsurePool();EnsureListener();
+            ambientSource.enabled=true;
             if (ambientClip == null){musicTheme=requestedTheme=CurrentMusicTheme();ambientClip=MusicClip(musicTheme);}
             ambientSource.clip = ambientClip;
             ambientSource.volume = BackgroundVolume * masterVolume * musicFade;
@@ -442,6 +445,7 @@ namespace Emberfall
             }
             else if(!muted&&instance.isActiveAndEnabled)
             {
+                instance.EnsureListener();instance.ApplyVolumes();instance.ResetThrottle();
                 if(instance.ambientPaused&&instance.ambientSource!=null)
                 {instance.ambientSource.UnPause();instance.ambientPaused=false;}
                 else instance.StartBackground();
@@ -493,6 +497,7 @@ namespace Emberfall
         {
             listener = null;
             nextListenerCheck = 0;
+            EnsureListener();ApplyVolumes();ResetThrottle();
             if (ambientSource != null)
             {
                 if(ambientResumeSample<0&&ambientSource.clip!=null)ambientResumeSample=ambientSource.timeSamples;

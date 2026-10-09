@@ -349,6 +349,7 @@ namespace Emberfall
             if (Progression.Profile.pendingFashionChest || Progression.Profile.pendingChestReveal) { Notify("请先开启上次通关的宝箱。"); return; }
             if (!NearPortal()) { Notify("请前往原野北方发光的传送门（小地图菱形），靠近后按 T。"); return; }
             if (Progression.Profile.level < 2) { Notify("遗迹需要 2 级。先在原野战斗，并学习第一个职业技能。"); return; }
+            ResetAdventureEntryTiers();
             DungeonSelectionOpen = true;
             SelectedDungeonTier = MaximumDungeonTier;
             UpdateTimeScale();
@@ -375,7 +376,7 @@ namespace Emberfall
             if(InCombat){Notify("正在战斗，脱离战斗后可返回营地。");return;}
             bool abandoned = InDungeon && !DungeonCleared;
             if (!ChangeZone(false)) return;
-            Notify(abandoned ? "已撤离遗迹，生命恢复。随时可以重新挑战。" : "已回到营地，生命已恢复。");
+            if(abandoned)Notify("已撤离遗迹，生命恢复。随时可以重新挑战。");
         }
 
         private bool ChangeZone(bool dungeon)

@@ -75,7 +75,7 @@ namespace Emberfall
             float y = mobile ? (MobileControls.Layout.Height - logicalHeight) * .5f : (height - logicalHeight) * .5f;
             float unit = mobile ? TouchRatio : 1f;
             Rect w = mobile ? TouchRect(x, y, logicalWidth, logicalHeight) : new Rect(x, y, logicalWidth, logicalHeight);
-            Fill(new Rect(0, 0, width, height), new Color(.008f, .018f, .03f, 1));
+
             Box(w, gold, false);
             float left = w.x + 16 * unit, available = w.width - 32 * unit;
             int normal = mobile ? TouchFont(13) : 16, small = mobile ? TouchFont(11) : 13;

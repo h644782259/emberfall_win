@@ -12,12 +12,13 @@ namespace Emberfall
         {if(!force&&merchantMode==mode)return;merchantGemSaleConfirmation=EquipmentMechanic.None;merchantMode=mode;merchantSelection=mode==2?-1:0;merchantGridScroll=Vector2.zero;}
         private bool StartMerchantAction()
         {if(Time.unscaledTime<merchantActionUntil)return false;merchantActionUntil=Time.unscaledTime+.35f;return true;}
-        private Rarity merchantGemRarity=Rarity.Epic;
+        private Rarity merchantGemRarity=Rarity.Common;
         private void DrawMerchantService()
         {
             var p=session.Progression;float u=MobileControls.Active?TouchRatio:1;
             var l=new MerchantServiceLayout(width/u,height/u,MobileControls.IsIPad);
-            Fill(new Rect(0,0,width,height),new Color(.018f,.031f,.048f,.35f));blockedRects.Add(new Rect(0,0,width,height));
+            blockedRects.Add(new Rect(0,0,width,height));
+            Box(BuildPlanRect(l.Frame,u),jade,false);
             Text(BuildPlanRect(l.Header,u),"商人",Mathf.RoundToInt(22*u),pale,true);
             DrawServiceBalances(BuildPlanRect(l.Balance,u),u);
             if(PopupCloseButton(BuildPlanRect(l.Close,u))){ClosePanel();return;}
@@ -71,7 +72,7 @@ namespace Emberfall
                 Text(new Rect(tile.x+6*u,tile.y+52*u,tile.width-12*u,30*u),caption,Mathf.RoundToInt(11*u),pale,false,true,TextAnchor.MiddleCenter);
                 if(merchantMode==1)
                 {
-                    string stats=BuildCatalog.IsAttributeGem(mechanic)?BuildCatalog.GemAttributeSummary(mechanic,merchantGemRarity,p.Attachment(mechanic)?.upgradeRank??0):"机制强度 "+BuildCatalog.AscensionPower(p.Attachment(mechanic)?.ascensionRank??0).ToString("0.00")+"×";
+                    string stats=BuildCatalog.IsAttributeGem(mechanic)?BuildCatalog.GemAttributeSummary(mechanic,merchantGemRarity,p.Attachment(mechanic)?.upgradeRank??0):BuildCatalog.AttributeLabel(BuildCatalog.MechanicAttribute(mechanic))+" +"+(BuildCatalog.MechanicAttributeValue(mechanic,p.Attachment(mechanic)?.upgradeRank??0)*100).ToString("0.#")+"%";
                     Text(new Rect(tile.x+6*u,tile.y+82*u,tile.width-12*u,18*u),GameBalance.SlotName(BuildCatalog.MechanicSlot(mechanic))+" · "+GameBalance.RarityName(merchantGemRarity),Mathf.RoundToInt(11*u),GameBalance.RarityColor(merchantGemRarity),true,false,TextAnchor.MiddleCenter);
                     Text(new Rect(tile.x+6*u,tile.y+100*u,tile.width-12*u,30*u),stats,Mathf.RoundToInt(11*u),jade,true,true,TextAnchor.MiddleCenter);
                 }

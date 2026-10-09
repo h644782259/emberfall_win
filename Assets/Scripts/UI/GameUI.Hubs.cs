@@ -19,7 +19,7 @@ namespace Emberfall
             panel=Panel.Inventory;
             hubServiceScroll=Vector2.zero;inventoryFilter=-1;mobileInventoryNpcRequest=HubNpcKind.None;
             if(kind==HubNpcKind.Blacksmith)smithPreviewMechanic=EquipmentMechanic.None;
-            if(kind==HubNpcKind.Merchant){bool first=session.Progression.Profile.pendingFirstClearReward&&!session.Progression.Profile.firstClearRewardClaimed;if(first)merchantGemRarity=Rarity.Epic;SelectMerchantMode(first?1:0,true);}
+            if(kind==HubNpcKind.Merchant){bool first=session.Progression.Profile.pendingFirstClearReward&&!session.Progression.Profile.firstClearRewardClaimed;merchantGemRarity=Rarity.Common;SelectMerchantMode(first?1:0,true);}
             if(kind==HubNpcKind.Blacksmith)selectedItem=session.Progression.Profile.weaponId;
             session.SetUIBlocking(true);
             BlockUITransition();

@@ -148,7 +148,7 @@ namespace Emberfall
             if(messages.Count==0)return;
             int show=systemHistory?Mathf.Min(8,messages.Count):Mathf.Min(3,messages.Count);
             float panelHeight=AdventureSelectionLayout.LogHeight(messages.Count,systemHistory);
-            float bottom=height-(MobileControls.Active?220:16);
+            float bottom=height-(MobileControls.Active?220:54);
             Rect r=new Rect(16,bottom-panelHeight,344,panelHeight);
             Fill(r,new Color(.025f,.045f,.065f,.88f));
             Text(new Rect(r.x+10,r.y+6,228,20),"系统信息",12,jade,true);

@@ -16,7 +16,7 @@ namespace Emberfall
         public bool TryBeginChapterNode(ChapterNode node,ChapterDifficulty difficulty,int tier,out ChapterRunReceipt receipt)
         {
             receipt=null;
-            if(!HasActiveSave||!ChapterProgression.CanEnter(Profile,node,difficulty)||tier!=ChapterProgression.LevelTier(Profile.level)||difficulty!=ChapterProgression.LevelDifficulty(node,Profile.level)||Profile.chapterRewardSequence==long.MaxValue)return Fail("人物等级不足，或章节难度已更新，请重新进入。");
+            if(!HasActiveSave||!ChapterProgression.CanEnter(Profile,node,difficulty)||tier!=ChapterProgression.AvailableTier(Profile,node)||difficulty!=ChapterProgression.AvailableDifficulty(Profile,node)||Profile.chapterRewardSequence==long.MaxValue)return Fail("人物等级不足，或章节难度已更新，请重新进入。");
             int materials=ChapterProgression.CompletionMaterials(Profile,node,tier);
             receipt=new ChapterRunReceipt(node,difficulty,tier,materials,Profile.chapterRewardSequence+1,SaveFilePath);
             receipt.MasteryEligible=difficulty!=ChapterDifficulty.Normal&&(Profile.chapterCompletedMask&(1<<(int)node))!=0;

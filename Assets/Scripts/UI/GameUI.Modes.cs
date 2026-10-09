@@ -77,7 +77,8 @@ namespace Emberfall
    bool fashion=item.Key.StartsWith("fashion:");
    if(fashion){DrawIcon(icon,UIIconAtlas.ControlDisc(),new Color(.23f,.10f,.33f));DrawIcon(icon,UIIconAtlas.ControlRing(),new Color(.87f,.65f,1));}
    else {Fill(icon,card);Border(icon,item.Tint,2*u);}
-   DrawIcon(new Rect(icon.x+7*u,icon.y+5*u,34*u,34*u),item.Icon,item.Tint);
+   float artSize=Mathf.Max(1,Mathf.Min(icon.width-12*u,icon.height-22*u));
+   DrawIcon(new Rect(icon.center.x-artSize*.5f,icon.y+(icon.height-14*u-artSize)*.5f,artSize,artSize),item.Icon,item.Tint);
    Rect label=new Rect(icon.x+2*u,icon.yMax-14*u,icon.width-4*u,12*u);Fill(label,fashion?new Color(.36f,.16f,.48f):new Color(.08f,.15f,.19f));
    Text(label,EntryRewardKind(item),Mathf.RoundToInt(9*u),fashion?new Color(.94f,.78f,1):pale,true,false,TextAnchor.MiddleCenter);
   }
@@ -181,7 +182,8 @@ namespace Emberfall
   private void DrawArenaSelection()
   {
    float u=MobileControls.Active?TouchRatio:1f;var l=new AdventureSelectionLayout(width/u,height/u);
-   Fill(new Rect(0,0,width,height),new Color(.012f,.025f,.04f,.96f));blockedRects.Add(new Rect(0,0,width,height));
+   blockedRects.Add(new Rect(0,0,width,height));
+   Box(AdventureRect(l.Frame,u),jade,false);
    Text(new Rect(l.X*u,l.Y*u,l.Frame.Width*u,36*u),"选择冒险",Mathf.RoundToInt(20*u),pale,true);
    if(PopupCloseButton(new Rect((l.X+l.Frame.Width-44)*u,l.Y*u,44*u,36*u))){adventureChapterSelected=false;session.CancelDungeonSelection();BlockUITransition();return;}
    string[] names={"沉星遗迹","守望林庭","烬河突围","蚀星斗场","回廊远征","星路章节"};
