@@ -141,7 +141,7 @@ namespace Emberfall
             for(int i=0;i<3;i++)
             {
                 var node=(ChapterNode)i;bool unlocked=ChapterProgression.IsUnlocked(chapterSelectionOwner,node);
-                if(Button(new Rect(area.x+i*(cell+8*u),area.y,cell,58*u),ChapterDefinition.Get(node).Name+"\n"+ChapterProgression.UnlockLevel(node)+"级开启",node==session.SelectedChapterNode?gold:jade,unlocked))SelectChapterNode(node);
+                if(Button(new Rect(area.x+i*(cell+8*u),area.y,cell,58*u),ChapterDefinition.Get(node).Name+(unlocked?"":"\n"+ChapterProgression.UnlockLevel(node)+"级开启"),node==session.SelectedChapterNode?gold:jade,unlocked))SelectChapterNode(node);
             }
             DrawChapterEntryDetails(new Rect(area.x,area.y+70*u,area.width,Mathf.Max(48*u,area.height-70*u)),u);
         }
@@ -152,7 +152,7 @@ namespace Emberfall
             return new Rect(x+area.X*u,y+area.Y*u,area.Width*u,area.Height*u);}
         private void DrawChapterFrame(MobilePanelLayout layout,float u,string title,string subtitle)
         {
-            Fill(new Rect(0,0,width,height),new Color(.018f,.031f,.048f,1));
+            Fill(new Rect(0,0,width,height),new Color(.018f,.031f,.048f,.35f));
             Rect frame=ChapterRect(new MobilePanelLayout.Area(0,0,layout.Width,layout.Height),u);
             Fill(frame,new Color(.025f,.045f,.068f,1));
             Border(frame,new Color(.24f,.37f,.44f,.55f));

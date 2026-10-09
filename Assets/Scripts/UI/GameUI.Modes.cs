@@ -144,7 +144,7 @@ namespace Emberfall
    for(int group=0;group<1;group++)
    {
     bool clear=group==0;var section=items.FindAll(item=>item.Clear==clear);
-    if(draw)Text(new Rect(8*u,end*u,(available-16)*u,26*u),"通关宝箱 · 三选一",Mathf.RoundToInt(13*u),clear?gold:jade,true);
+    if(draw)Text(new Rect(8*u,end*u,(available-16)*u,26*u),"通关宝箱",Mathf.RoundToInt(13*u),clear?gold:jade,true);
     end+=30;
     for(int row=0;row*columns<section.Count;row++)
     {

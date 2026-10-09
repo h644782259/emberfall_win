@@ -14,7 +14,7 @@ namespace Emberfall
         private float progress;
         private readonly float[] sealProgress=new float[2];
         public float SealProgress(int index){return index>=0&&index<2?sealProgress[index]:0;}
-        public bool SealComplete(int index){return index>=0&&index<2&&sealProgress[index]>=3f;}
+        public bool SealComplete(int index){return index>=0&&index<2&&sealProgress[index]>=2f;}
         public bool DoorUnlocked {get;private set;}
         public bool Finished {get;private set;}
         public bool Failed {get;private set;}
@@ -42,17 +42,17 @@ namespace Emberfall
         public void AdvanceSeal(int index,float delta,bool active,bool inside,bool contested)
         {
             if(Objective!=RoomObjective.Purify||index<0||index>=2||SealComplete(index)||!CanAdvance(delta,active,inside,contested))return;
-            sealProgress[index]=Math.Min(3f,sealProgress[index]+Math.Min(delta,.25f));
-            if(sealProgress[index]+.00001f<3f)return;
-            sealProgress[index]=3f;Seals++;if(Seals==2)DoorUnlocked=true;
+            sealProgress[index]=Math.Min(2f,sealProgress[index]+Math.Min(delta,.25f));
+            if(sealProgress[index]+.00001f<2f)return;
+            sealProgress[index]=2f;Seals++;if(Seals==2)DoorUnlocked=true;
         }
         public void Advance(float delta,bool active,bool inside,bool contested)
         {
             // Legacy hosts retain ordered purification; chapter hosts address either seal explicitly.
             if(Objective==RoomObjective.Purify){AdvanceSeal(SealComplete(0)?1:0,delta,active,inside,contested);return;}
             if(Objective!=RoomObjective.Escape||!CanAdvance(delta,active,inside,contested))return;
-            progress=Math.Min(4f,progress+Math.Min(delta,.25f));
-            if(progress+.00001f>=4f){progress=4f;Seals=1;DoorUnlocked=true;}
+            progress=Math.Min(2.5f,progress+Math.Min(delta,.25f));
+            if(progress+.00001f>=2.5f){progress=2.5f;Seals=1;DoorUnlocked=true;}
         }
         public bool Exit(bool near,bool blocked)
         {if(Finished||!DoorUnlocked||!near||blocked)return false;if(RoomIndex>=ChapterDefinition.RoomCount(Node)-1){Finished=true;return true;}RoomIndex++;Epoch=-1;DoorUnlocked=false;return true;}

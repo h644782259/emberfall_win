@@ -30,7 +30,7 @@ namespace Emberfall
                 return Time.unscaledTime < notificationUntil ? notification : "";
             }
         }
-        public bool InputBlocked { get { return !HasStarted || Paused || uiBlocking || IsDead || (ModeFinished&&!FinishedResultDismissed) || (PracticeActive&&PracticeRecord!=null&&PracticeRecord.Finished) || RunChoices.AwaitingChoice || RoomBranchChoiceOpen || DungeonSelectionOpen || pauseState.BackgroundPaused; } }
+        public bool InputBlocked { get { return !HasStarted || Paused || uiBlocking || IsDead || ((ModeFinished||DungeonCleared)&&!FinishedResultDismissed) || (PracticeActive&&PracticeRecord!=null&&PracticeRecord.Finished) || RunChoices.AwaitingChoice || RoomBranchChoiceOpen || DungeonSelectionOpen || pauseState.BackgroundPaused; } }
         public bool PointerOverUI { get { return ui != null && ui.IsPointerOverUI; } }
         public bool CanChangeLoadout { get { return HasStarted && !IsDead; } }
         public string Objective
@@ -335,7 +335,7 @@ namespace Emberfall
         }
         private void UpdateTimeScale()
         {
-            Time.timeScale = pauseState.CanAdvance(HasStarted, Paused, uiBlocking || RunChoices.AwaitingChoice || RoomBranchChoiceOpen || DungeonSelectionOpen || (ModeFinished&&!FinishedResultDismissed), IsDead) ? 1 : 0;
+            Time.timeScale = pauseState.CanAdvance(HasStarted, Paused, uiBlocking || RunChoices.AwaitingChoice || RoomBranchChoiceOpen || DungeonSelectionOpen || ((ModeFinished||DungeonCleared)&&!FinishedResultDismissed), IsDead) ? 1 : 0;
             UpdateMobileFrameRate();
         }
 
@@ -573,7 +573,7 @@ namespace Emberfall
                 bool settled=TrySettleDungeonReward();
                 LastRunSummary = BuildRunSummary(true);
                 Player.Heal(Player.MaxHealth);
-                Notify(settled?"遗迹通关 · 前往传送点领取奖励或继续挑战":"遗迹已通关，但奖励尚未保存。请重试结算，或打开菜单处理存档。");
+                Notify(settled?"遗迹通关":"遗迹已通关，但奖励尚未保存。请重试结算，或打开菜单处理存档。");
             }
             waveRoutine = null;
         }

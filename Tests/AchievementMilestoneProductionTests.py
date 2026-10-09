@@ -66,10 +66,33 @@ class Program{static int n;static void C(bool b,string s){n++;if(!b)throw new Ex
  gem.mounted=true;gem.ascensionRank=3;v=statsService.GetStats();C(i<3?v.GemHealthyDamage>.14f:i<6?v.GemLowHealthGuard>.14f:v.GemLowEnergyRecovery>.59f,"ascension improves slot-specific conditional mechanic");
  }
  statsService.Profile.attachments.Clear();statsService.Profile.attachments.Add(new MechanicAttachment{id="off-class",mechanic=EquipmentMechanic.CinderTrail,mounted=true,upgradeRank=9,ascensionRank=3});C(statsService.GetStats().Damage==plain.Damage,"off-class gem inactive");
+
+ var batch=new ProgressionService(Path.Combine(args[0],"claim-all"));batch.NewGame(HeroClass.Ranger);batch.Profile.level=100;batch.Profile.highestAdventureTier=10;batch.Save();
+ int ready=batch.ClaimableAchievements,initialGold=batch.Profile.gold,initialShards=batch.Profile.mechanicMaterials;
+ C(ready>2,"batch has multiple eligible rewards");Directory.CreateDirectory(batch.SaveFilePath+".tmp");
+ C(!batch.ClaimAllAchievements()&&batch.Profile.gold==initialGold&&batch.Profile.mechanicMaterials==initialShards&&batch.ClaimableAchievements==ready,"batch write failure is all or nothing");Directory.Delete(batch.SaveFilePath+".tmp");
+ C(batch.ClaimAllAchievements()&&batch.ClaimableAchievements==0,"claim all collects each eligible receipt");int allGold=batch.Profile.gold;
+ C(!batch.ClaimAllAchievements()&&batch.Profile.gold==allGold,"repeat batch cannot duplicate rewards");
+ var batchReload=new ProgressionService(Path.Combine(args[0],"claim-all"));C(batchReload.LoadSlot(batch.CurrentSlotId)&&batchReload.ClaimableAchievements==0&&batchReload.Profile.gold==allGold,"batch durable across restart");
+ var trade=new ProgressionService(Path.Combine(args[0],"trades"));trade.NewGame(HeroClass.Arcanist);trade.Profile.clearedRuns=1;trade.Profile.pendingFirstClearReward=true;trade.Profile.attachments.Add(new MechanicAttachment{id="ownedlegend",mechanic=EquipmentMechanic.CinderTrail,rarity=Rarity.Legendary,upgradeRank=6,ascensionRank=2,mounted=false});trade.Save();
+ var firstQuote=trade.PrepareMerchantPurchase(EquipmentMechanic.CinderTrail,true,Rarity.Epic);C(firstQuote!=null,"owned gem no longer deadlocks first clear");int shardsBefore=trade.Profile.mechanicMaterials;
+ Directory.CreateDirectory(trade.SaveFilePath+".tmp");C(!trade.BuyAtMerchant(firstQuote,true)&&!trade.Profile.firstClearRewardClaimed&&trade.Profile.mechanicMaterials==shardsBefore,"first claim rolls back on save failure");Directory.Delete(trade.SaveFilePath+".tmp");
+ C(trade.BuyAtMerchant(firstQuote,true)&&trade.Profile.firstClearRewardClaimed&&trade.Profile.mechanicMaterials==shardsBefore+3,"duplicate first claim converts exactly once");
+ C(trade.Attachment(EquipmentMechanic.CinderTrail).rarity==Rarity.Legendary&&trade.Attachment(EquipmentMechanic.CinderTrail).upgradeRank==6,"free duplicate never downgrades owned gem");
+ C(!trade.BuyAtMerchant(firstQuote,true)&&trade.Profile.mechanicMaterials==shardsBefore+3,"stale first-clear quote cannot grant twice");
+ var firstAttribute=new ProgressionService(Path.Combine(args[0],"first-attribute"));firstAttribute.NewGame(HeroClass.Ranger);firstAttribute.Profile.clearedRuns=1;firstAttribute.Profile.pendingFirstClearReward=true;firstAttribute.Save();
+ var attributeQuote=firstAttribute.PrepareMerchantPurchase(EquipmentMechanic.WeaponPower,true,Rarity.Epic);C(attributeQuote!=null&&firstAttribute.BuyAtMerchant(attributeQuote,true)&&firstAttribute.Attachment(EquipmentMechanic.WeaponPower).rarity==Rarity.Epic&&firstAttribute.Profile.firstClearRewardClaimed,"attribute gem can be selected as first-clear reward");
+ trade.Attachment(EquipmentMechanic.CinderTrail).mounted=true;C(!trade.SellGem(EquipmentMechanic.CinderTrail,true),"mounted gems protected from sale");trade.Attachment(EquipmentMechanic.CinderTrail).mounted=false;
+ var legacy=trade.Equipped(ItemSlot.Weapon);legacy.mechanic=EquipmentMechanic.CinderTrail;trade.Save();trade.Attachment(EquipmentMechanic.CinderTrail).mounted=false;trade.Save();
+ int saleGold=trade.Profile.gold,saleValue=trade.GemSellValue(EquipmentMechanic.CinderTrail);Directory.CreateDirectory(trade.SaveFilePath+".tmp");
+ C(!trade.SellGem(EquipmentMechanic.CinderTrail,true)&&trade.Attachment(EquipmentMechanic.CinderTrail)!=null&&trade.Profile.gold==saleGold,"failed sale keeps gem and balance");Directory.Delete(trade.SaveFilePath+".tmp");
+ C(trade.SellGem(EquipmentMechanic.CinderTrail,true)&&trade.Attachment(EquipmentMechanic.CinderTrail)==null&&trade.Profile.gold==saleGold+saleValue,"gem sale atomic receipt");
+ C(!trade.SellGem(EquipmentMechanic.CinderTrail,true)&&trade.Profile.gold==saleGold+saleValue,"gem cannot sell twice");
+ var soldReload=new ProgressionService(Path.Combine(args[0],"trades"));C(soldReload.LoadSlot(trade.CurrentSlotId)&&soldReload.Attachment(EquipmentMechanic.CinderTrail)==null,"legacy equipment cannot resurrect sold gem after reload");
  Console.WriteLine("PASS "+n+" achievement boundary/persistence assertions");}}
 '''
 with tempfile.TemporaryDirectory(prefix='achievement-milestones-') as tmp:
- p=Path(tmp);names=['SkillRuntime','GameTypes','ProgressionService','ProgressionService.Attachments','ProgressionService.AutomaticGrowth','CombatBalance','SkillDamageBudgets','HubTravelRules','MasteryCoreRuntime','TierRewardRules','TierRewardBand','ProgressionGoalState','ChapterProgression','ProgressionService.Chapter','ProgressionService.Reforge','ReforgeQuote','RoomTactics','CombatImpactBatch','SafeSaveFlow']
+ p=Path(tmp);names=['SkillRuntime','GameTypes','ProgressionService','ProgressionService.Attachments','ProgressionService.AutomaticGrowth','ProgressionService.Trading','CombatBalance','SkillDamageBudgets','HubTravelRules','MasteryCoreRuntime','TierRewardRules','TierRewardBand','ProgressionGoalState','ChapterProgression','ProgressionService.Chapter','ProgressionService.Reforge','ReforgeQuote','RoomTactics','CombatImpactBatch','SafeSaveFlow']
  sources=[root/('Assets/Scripts/Core/'+name+'.cs') for name in names]+[root/'Tests/ProgressionTests.cs'];project=cv.write_project(p/'project',sources,program)
  sdk='/Applications/Unity/Hub/Editor/6000.6.4f1/Unity.app/Contents/Resources/Scripting/DotNetSdk/dotnet'
  subprocess.run([sdk,'run','--project',str(project),'--',str(p/'saves')],check=True,env=dict(os.environ,DOTNET_CLI_HOME=str(p/'cli'),DOTNET_NOLOGO='1'))

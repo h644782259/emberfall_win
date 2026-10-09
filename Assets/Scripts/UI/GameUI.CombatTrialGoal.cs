@@ -19,7 +19,7 @@ namespace Emberfall
             if(!session.IsInCamp){ClosePanel();session.ReturnToCamp();if(!session.IsInCamp)return;}
             progressionGoalsOpen=false;merchantExchangeOpen=false;panel=Panel.None;session.SetUIBlocking(false);
             session.Player.Teleport(WorldTraversal.NearestWalkable(GameSession.HubNpcPosition(0),.45f));
-            session.Notify("已定位商人，请对话进入机制兑换。");
+            session.Notify("已定位商人，请对话进入宝石兑换。");
             BlockUITransition();
         }
         private void NavigateSmithAttachment(ProgressionGoalState goal)

@@ -193,7 +193,14 @@ namespace Emberfall
             Rect pageHit=TouchRect(l.SkillPage);blockedRects.Add(pageHit);
             float pageIcon=(MobileControls.IsIPad?28.8f:24f)*TouchRatio;
             DrawIcon(new Rect(pageHit.center.x-pageIcon*.5f,pageHit.center.y-pageIcon*.5f,pageIcon,pageIcon),UIIconAtlas.SkillPageArrow(),Color.white);
-            Badge(new Rect(pageHit.center.x-pageIcon*.5f,pageHit.center.y-pageIcon*.5f,pageIcon,pageIcon),OtherMobilePageReady());
+            if(OtherMobilePageReady())
+            {
+                float pulse=.5f+.5f*Mathf.Sin(Time.unscaledTime*4);
+                Rect aura=new Rect(pageHit.center.x-pageIcon*.65f,pageHit.center.y-pageIcon*.65f,pageIcon*1.3f,pageIcon*1.3f);
+                DrawIcon(aura,UIIconAtlas.ControlRing(true),new Color(.25f,1f,.85f,.35f+.45f*pulse));
+                float flow=Mathf.Repeat(Time.unscaledTime*.55f,1);
+                DrawIcon(new Rect(aura.x+flow*aura.width-3*TouchRatio,aura.yMax-5*TouchRatio,6*TouchRatio,6*TouchRatio),UIIconAtlas.Utility("gem"),jade);
+            }
             controlOpacity=priorOpacity;
         }
         private void DrawMobileControlSurface(Rect r,bool ready,bool pressed)

@@ -230,7 +230,7 @@ namespace Emberfall
         {
             fraction=0;contested=complete=false;
             if(!ChapterActive||ChapterFinished||ChapterRun.Objective!=RoomObjective.Purify||index<0||index>=2)return false;
-            complete=ChapterRun.SealComplete(index);fraction=complete?1:ChapterRun.SealProgress(index)/3f;contested=!complete&&ChapterSealContested(index);return true;
+            complete=ChapterRun.SealComplete(index);fraction=complete?1:ChapterRun.SealProgress(index)/2f;contested=!complete&&ChapterSealContested(index);return true;
         }
         public Vector3 ChapterNextObjectivePoint
         {
@@ -281,7 +281,7 @@ namespace Emberfall
         private void FailChapter(string reason)
         {if(!ChapterActive||ChapterFinished)return;ChapterResult=CaptureChapterResult(true,reason);ChapterRun.Fail();RunChoices.Reset();Progression.CancelChapterRun();Notify(reason);SuspendInputs();UpdateTimeScale();}
         private void FinalizeChapter()
-        {ChapterResult=CaptureChapterResult(false,null);DungeonCleared=true;TrySettleChapterReward();LastRunSummary=BuildRunSummary(true);DismissFinishedResult();UpdateTimeScale();GameAudio.Play(SoundCue.Victory);}
+        {ChapterResult=CaptureChapterResult(false,null);DungeonCleared=true;TrySettleChapterReward();LastRunSummary=BuildRunSummary(true);UpdateTimeScale();GameAudio.Play(SoundCue.Victory);}
         public bool TrySettleChapterReward()
         {
             if(!ChapterRewardPending)return true;

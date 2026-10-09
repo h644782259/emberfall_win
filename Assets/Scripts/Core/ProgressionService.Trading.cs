@@ -34,6 +34,32 @@ namespace Emberfall
             var candidate=Snapshot();candidate.inventory.RemoveAll(item=>item!=null&&quote.Ids.Contains(item.id));
             candidate.gold+=quote.Gold;return CommitCandidate(candidate);
         }
+        public int GemSellValue(EquipmentMechanic mechanic)
+        {var gem=Attachment(mechanic);return gem==null?0:40+((int)gem.rarity+1)*60+gem.upgradeRank*25+gem.ascensionRank*60;}
+        public string GemSaleLock(EquipmentMechanic mechanic,bool atMerchant)
+        {
+            var gem=Attachment(mechanic);
+            if(!atMerchant||IsPracticeOnly||gem==null)return "无法出售";
+            if(gem.mounted)return "请先卸下";
+            var plans=new System.Collections.Generic.List<BuildPreset>();
+            if(Profile.buildPresets!=null)plans.AddRange(Profile.buildPresets);
+            if(Profile.classStates!=null)foreach(var state in Profile.classStates)if(state!=null&&state.buildPresets!=null)plans.AddRange(state.buildPresets);
+            foreach(var plan in plans)if(plan!=null&&plan.populated&&plan.mountedAttachments!=null&&System.Array.IndexOf(plan.mountedAttachments,mechanic)>=0)return "方案使用中";
+            if(Profile.gold>MaximumGold-GemSellValue(mechanic))return "金币已满";
+            return "";
+        }
+        public bool SellGem(EquipmentMechanic mechanic,bool atMerchant)
+        {
+            string reason=GemSaleLock(mechanic,atMerchant);if(reason.Length>0)return Fail(reason);
+            var candidate=Snapshot();int value=GemSellValue(mechanic);
+            candidate.attachments.RemoveAll(a=>a!=null&&a.mechanic==mechanic);
+            // Old equipment may still carry the migrated mechanism. Clear those legacy links,
+            // otherwise normalizing a save could recreate a sold attachment.
+            var items=new System.Collections.Generic.List<ItemData>(candidate.inventory);
+            items.AddRange(candidate.pendingLoot);items.AddRange(candidate.recoveryLoot);
+            foreach(var item in items)if(item!=null&&item.mechanic==mechanic){item.mechanic=EquipmentMechanic.None;item.mechanicVariant=0;item.mechanicVariantUnlocked=false;}
+            candidate.gold+=value;return CommitCandidate(candidate,true);
+        }
         public sealed class MerchantPurchaseQuote
         {
             internal ProgressionService Owner;
@@ -51,8 +77,9 @@ namespace Emberfall
             {
                 if(!System.Enum.IsDefined(typeof(EquipmentMechanic),mechanic)||!BuildCatalog.GemCompatible(mechanic,Profile.heroClass))return null;
                 var owned=Attachment(mechanic);
-                if(owned!=null&&owned.rarity>=rarity)return null;
-                bool free=first&&!BuildCatalog.IsAttributeGem(mechanic)&&rarity==Rarity.Epic&&owned==null;
+                bool free=first&&rarity==Rarity.Epic;
+                if(owned!=null&&owned.rarity>=rarity&&!free)return null;
+                if(free&&owned!=null&&owned.rarity>=rarity&&Profile.mechanicMaterials>999996)return null;
                 if(!free&&Profile.mechanicMaterials<BuildCatalog.GemPrice(rarity))return null;
             }
             return new MerchantPurchaseQuote{Owner=this,Gold=Profile.gold,Materials=Profile.mechanicMaterials,Potions=Profile.potions,First=first,Mechanic=mechanic,Rarity=rarity};
@@ -63,12 +90,13 @@ namespace Emberfall
             if(quote.Gold!=Profile.gold||quote.Materials!=Profile.mechanicMaterials||quote.Potions!=Profile.potions||quote.First!=(Profile.pendingFirstClearReward&&!Profile.firstClearRewardClaimed)||PrepareMerchantPurchase(quote.Mechanic,atMerchant,quote.Rarity)==null)
                 return Fail("余额、物品或兑换资格已变化，请重新核对；尚未扣费。");
             if(quote.Mechanic==EquipmentMechanic.None)return BuyPotion();
-            bool free=quote.First&&!BuildCatalog.IsAttributeGem(quote.Mechanic)&&quote.Rarity==Rarity.Epic&&Attachment(quote.Mechanic)==null;
+            bool free=quote.First&&quote.Rarity==Rarity.Epic;
             int cost=free?0:BuildCatalog.GemPrice(quote.Rarity);
             var candidate=Snapshot();candidate.mechanicMaterials-=cost;
             var gem=candidate.attachments.Find(a=>a.mechanic==quote.Mechanic);
-            if(gem==null){gem=new MechanicAttachment{id=System.Guid.NewGuid().ToString("N"),mechanic=quote.Mechanic,ascensionRank=0,level=EquipmentGenerationLevel(Profile.level),mounted=false};candidate.attachments.Add(gem);}
-            gem.rarity=quote.Rarity;
+            if(gem==null){gem=new MechanicAttachment{id=System.Guid.NewGuid().ToString("N"),mechanic=quote.Mechanic,rarity=Rarity.Common,ascensionRank=0,level=EquipmentGenerationLevel(Profile.level),mounted=false};candidate.attachments.Add(gem);}
+            if(gem.rarity>=quote.Rarity&&free)candidate.mechanicMaterials+=3;
+            else gem.rarity=(Rarity)System.Math.Max((int)gem.rarity,(int)quote.Rarity);
             if(free){candidate.firstClearRewardClaimed=true;candidate.pendingFirstClearReward=false;}
             if(!CommitCandidate(candidate,true))return false;
             PublishRewardMoment(free?RewardMomentKind.FirstCore:RewardMomentKind.MechanicExchange,materials:-cost,attachment:Attachment(quote.Mechanic));return true;

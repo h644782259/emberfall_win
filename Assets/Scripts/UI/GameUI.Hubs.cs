@@ -19,7 +19,7 @@ namespace Emberfall
             panel=Panel.Inventory;
             hubServiceScroll=Vector2.zero;inventoryFilter=-1;mobileInventoryNpcRequest=HubNpcKind.None;
             if(kind==HubNpcKind.Blacksmith)smithPreviewMechanic=EquipmentMechanic.None;
-            if(kind==HubNpcKind.Merchant)SelectMerchantMode(0,true);
+            if(kind==HubNpcKind.Merchant){bool first=session.Progression.Profile.pendingFirstClearReward&&!session.Progression.Profile.firstClearRewardClaimed;if(first)merchantGemRarity=Rarity.Epic;SelectMerchantMode(first?1:0,true);}
             if(kind==HubNpcKind.Blacksmith)selectedItem=session.Progression.Profile.weaponId;
             session.SetUIBlocking(true);
             BlockUITransition();
@@ -96,12 +96,69 @@ namespace Emberfall
                 Fill(tile,card);Border(tile,current?gold:jade);
                 Text(new Rect(tile.x+6*u,tile.y+8*u,tile.width-12*u,26*u),HubTravelRules.Name(hub),Mathf.RoundToInt(14*u),unlocked?pale:muted,true,false,TextAnchor.MiddleCenter);
                 Text(new Rect(tile.x+8*u,tile.y+38*u,tile.width-16*u,36*u),unlocked?"":HubTravelRules.UnlockHint(hub),Mathf.RoundToInt(11*u),muted,false,true,TextAnchor.MiddleCenter);
+                DrawTownPostcard(new Rect(tile.x+8*u,tile.y+78*u,tile.width-16*u,Mathf.Max(32*u,tile.height-138*u)),hub,unlocked);
                 if(Button(new Rect(tile.x+6*u,tile.yMax-50*u,tile.width-12*u,44*u),current?"当前城镇":unlocked?"前往":"尚未解锁",jade,unlocked&&!current&&session.CanOpenTravelMap&&!UITransitionBlocked))
                 {
                     if(session.TravelToHub(hub)){travelReturnPause=false;CloseTravelMap();return;}
                     travelError=string.IsNullOrEmpty(session.Progression.LastError)?"旅行未完成，请安全返回营地后重试。":session.Progression.LastError;
                 }
             }
+        }
+
+        private void DrawTownPostcard(Rect area,int hub,bool unlocked)
+        {
+            GUI.BeginGroup(area);
+            float w=area.width,h=area.height;
+            Color sky=hub==0?new Color(.10f,.24f,.28f):hub==1?new Color(.37f,.16f,.13f):new Color(.07f,.10f,.25f);
+            Color light=hub==0?new Color(.65f,.83f,.63f):hub==1?new Color(1,.66f,.32f):new Color(.65f,.75f,1);
+            for(int y=0;y<48;y++)Fill(new Rect(0,y*h/48,w,h/48+1),Color.Lerp(sky,light*.62f,y/48f));
+            DrawIcon(new Rect(w*.72f,h*.12f,w*.15f,w*.15f),UIIconAtlas.ControlDisc(),light);
+            for(int layer=0;layer<3;layer++)for(int x=0;x<80;x++)
+            {
+                float ridge=(.48f+layer*.12f+Mathf.Sin(x*.10f+hub+layer)*.075f+Mathf.Sin(x*.24f+layer)*.035f)*h;
+                Fill(new Rect(x*w/80,ridge,w/80+1,h-ridge),Color.Lerp(sky,new Color(.025f,.07f,.09f),layer*.32f));
+            }
+            if(hub==0)
+            {
+                for(int i=0;i<7;i++)
+                {
+                    float x=(.04f+i*.145f)*w,baseY=h*(.78f+(i%2)*.13f),th=h*(.27f+(i%3)*.07f);
+                    Fill(new Rect(x-2,baseY-th*.35f,4,th*.45f),new Color(.30f,.21f,.13f));
+                    for(int row=0;row<24;row++){float span=(row/24f)*w*.12f;Fill(new Rect(x-span*.5f,baseY-th+row*th/24,span,th/24+1),new Color(.10f,.28f,.21f));}
+                }
+                for(int i=0;i<2;i++)
+                {
+                    float x=w*(.3f+i*.31f),baseY=h*.86f;
+                    for(int row=0;row<28;row++){float span=row/28f*w*.31f;Fill(new Rect(x-span*.5f,baseY-h*.28f+row*h*.28f/28,span,h*.28f/28+1),i==0?new Color(.78f,.64f,.39f):new Color(.42f,.59f,.54f));}
+                    Fill(new Rect(x-4,baseY-h*.11f,8,h*.11f),sky);
+                }
+            }
+            else if(hub==1)
+            {
+                for(int i=0;i<4;i++)
+                {
+                    float x=w*(.12f+i*.22f),bh=h*(.20f+(i%2)*.10f),bw=w*.20f;
+                    Fill(new Rect(x,h*.83f-bh,bw,bh),new Color(.40f,.22f,.15f));
+                    Fill(new Rect(x-3,h*.83f-bh-5,bw+6,7),new Color(.67f,.35f,.20f));
+                    Fill(new Rect(x+bw*.35f,h*.83f-bh*.7f,bw*.3f,bh*.3f),light);
+                }
+                Fill(new Rect(w*.69f,h*.35f,w*.04f,h*.31f),new Color(.30f,.20f,.16f));
+                for(int i=0;i<3;i++)DrawIcon(new Rect(w*.66f+i*w*.018f,h*(.19f+i*.05f),w*.11f,w*.11f),UIIconAtlas.ControlDisc(),new Color(.45f,.32f,.27f,.55f));
+            }
+            else
+            {
+                for(int i=0;i<5;i++)
+                {
+                    float x=w*(.12f+i*.18f),bh=h*(i==2?.58f:.28f+(i%2)*.12f),bw=w*.13f;
+                    Fill(new Rect(x,h*.86f-bh,bw,bh),new Color(.29f,.36f,.48f));
+                    for(int row=0;row<14;row++){float span=row/14f*bw*1.4f;Fill(new Rect(x+bw*.5f-span*.5f,h*.86f-bh-h*.12f+row*h*.12f/14,span,h*.12f/14+1),new Color(.35f,.48f,.72f));}
+                    Fill(new Rect(x+bw*.4f,h*.86f-bh*.7f,bw*.2f,bh*.4f),light);
+                }
+                for(int i=0;i<13;i++)Fill(new Rect((.06f+Mathf.Repeat(i*.273f,.88f))*w,(.06f+Mathf.Repeat(i*.113f,.33f))*h,2,2),light);
+            }
+            Fill(new Rect(0,h*.91f,w,h*.09f),new Color(.025f,.055f,.07f));
+            if(!unlocked)Fill(new Rect(0,0,w,h),new Color(.04f,.05f,.06f,.6f));
+            GUI.EndGroup();Border(area,unlocked?jade*.4f:muted*.3f);
         }
 
         private void DrawExpandedMap(Rect body,float u)

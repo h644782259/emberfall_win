@@ -4,6 +4,7 @@ namespace Emberfall
     public sealed partial class GameUI
     {
         private int skillSection;
+        private bool masteryResetConfirm;
         private Vector2 skillDevelopmentScroll;
         private void DrawSkillTabs(Rect rect)
         {
@@ -50,14 +51,24 @@ namespace Emberfall
             return y+82+descriptionHeight+12;
         }
         private bool DrawSkillSubsurface()
-        {return DrawClassSwitchSurface()||DrawBuildPlanSurface();}
+        {
+            if(!masteryResetConfirm)return DrawClassSwitchSurface()||DrawBuildPlanSurface();
+            float u=MobileControls.Active?TouchRatio:1;
+            Rect r=Modal(Mathf.Min(460*u,width-24*u),Mathf.Min(240*u,height-24*u),"重置职业精通","");
+            Text(new Rect(r.x+24*u,r.y+100*u,r.width-48*u,40*u),"确认重置所有精通加点并返还精通点？",Mathf.RoundToInt(14*u),pale,false,true);
+            if(Button(new Rect(r.x+24*u,r.yMax-60*u,(r.width-60*u)/2,40*u),"取消",jade))masteryResetConfirm=false;
+            if(Button(new Rect(r.center.x+6*u,r.yMax-60*u,(r.width-60*u)/2,40*u),"确认重置",gold,session.IsInCamp))
+            {bool saved=session.Progression.ResetMastery(true);masteryChangeNotice=saved?"职业精通已重置，精通点已返还":session.Progression.LastError;if(saved)masteryResetConfirm=false;}
+            if(PopupCloseButton(new Rect(r.xMax-52*u,r.y+12*u,40*u,36*u)))masteryResetConfirm=false;
+            return true;
+        }
         private void DrawSkillDevelopment()
         {
             var p=session.Progression;
             if(MobileControls.Active)
             {
                 var l=MobilePanelGeometry();
-                if(DrawMobilePanelChrome(l,"职业精通","精通点 "+p.Profile.skillPoints+"",showNotice:false,headerRightReserve:276))return;
+                if(DrawMobilePanelChrome(l,"职业精通","",showNotice:false,headerRightReserve:276))return;
                 DrawSkillTabs(TouchRect(l.Close.X-276,8,264,44));
                 if(skillSection!=1)return;
                 var body=new MobilePanelLayout.Area(l.Body.X,l.Body.Y,l.Body.Width,l.Height-l.Body.Y-12);
@@ -65,11 +76,11 @@ namespace Emberfall
                 skillDevelopmentScroll=BeginTouchScroll("skill-development",MobilePanelRect(body),skillDevelopmentScroll,new Rect(0,0,mobileWidth*TouchRatio,Mathf.Max(body.Height,h)*TouchRatio));
                 h=8;DrawMobileWorkshopAbilities(ref h,mobileWidth,true);EndTouchScroll();return;
             }
-            Rect w=Modal(980,660,"职业精通","可用精通点 "+p.Profile.skillPoints);
+            Rect w=Modal(1160,660,"职业精通","");
             if(PopupCloseButton(new Rect(w.xMax-69,w.y+20,44,32)))ClosePanel();
-            DrawSkillTabs(new Rect(w.xMax-357,w.y+20,264,36));
+            DrawSkillTabs(new Rect(w.x+330,w.y+20,264,36));
             if(skillSection!=1)return;
-            Rect desktopBody=new Rect(w.x+26,w.y+82,w.width-52,w.height-96);float available=desktopBody.width-18;
+            Rect desktopBody=new Rect(w.x+26,w.y+108,w.width-52,w.height-122);float available=desktopBody.width-18;
             float desktopHeight=DrawSkillDevelopmentContent(available,1,false);
             skillDevelopmentScroll=BeginTouchScroll("skill-development",desktopBody,skillDevelopmentScroll,new Rect(0,0,available,Mathf.Max(desktopBody.height,desktopHeight)));
             DrawSkillDevelopmentContent(available,1,true);EndTouchScroll();
@@ -146,10 +157,8 @@ namespace Emberfall
             if(draw)
             {
                 Rule(0,y*u,width*u,muted*.3f);
-                DrawIcon(new Rect(4*u,(y+18)*u,24*u,24*u),UIIconAtlas.Utility("reset"),muted);
-                Text(new Rect(38*u,(y+12)*u,(width-174)*u,40*u),"返还已投入的精通点",Mathf.RoundToInt(12*u),muted,false,true);
                 if(Button(new Rect((width-128)*u,(y+10)*u,124*u,44*u),"重置精通",jade,session.IsInCamp))
-                {bool saved=p.ResetMastery(true);masteryChangeNotice=saved?"职业精通已重置，精通点已返还":p.LastError;}
+                {masteryResetConfirm=true;}
             }
             return y+66;
         }

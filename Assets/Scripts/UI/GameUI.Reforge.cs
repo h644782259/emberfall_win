@@ -32,7 +32,7 @@ namespace Emberfall
         {
             ReconcileReforgeSurface();if(reforgeOwner==null)return false;
             float u=MobileControls.Active?TouchRatio:1;var l=new MobileDialogLayout(width/u,height/u);
-            Fill(new Rect(0,0,width,height),new Color(.018f,.031f,.048f,1));blockedRects.Add(new Rect(0,0,width,height));Box(BuildPlanRect(l.Frame,u),jade,false);
+            Fill(new Rect(0,0,width,height),new Color(.018f,.031f,.048f,.35f));blockedRects.Add(new Rect(0,0,width,height));Box(BuildPlanRect(l.Frame,u),jade,false);
             Text(BuildPlanRect(l.Header,u),"重铸 · 选择固定目标",Mathf.RoundToInt(21*u),pale,true);
             float bodyWidth=l.Body.Width-18;float h=DrawReforgeOptions(bodyWidth,u,false);
             reforgeScroll=BeginTouchScroll("reforge-options",BuildPlanRect(l.Body,u),reforgeScroll,new Rect(0,0,bodyWidth*u,Mathf.Max(l.Body.Height,h)*u));

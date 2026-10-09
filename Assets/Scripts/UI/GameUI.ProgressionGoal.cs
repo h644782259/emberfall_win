@@ -68,11 +68,11 @@ namespace Emberfall
         {
             ReconcileProgressionGoalSurface();if(!progressionGoalsOpen)return false;
             float u=MobileControls.Active?TouchRatio:1;var l=new MobileDialogLayout(width/u,height/u);
-            Fill(new Rect(0,0,width,height),new Color(.018f,.031f,.048f,1));blockedRects.Add(new Rect(0,0,width,height));
+            Fill(new Rect(0,0,width,height),new Color(.018f,.031f,.048f,.35f));blockedRects.Add(new Rect(0,0,width,height));
             Box(BuildPlanRect(l.Frame,u),jade,false);
             Text(BuildPlanRect(l.Header,u),"成就",Mathf.RoundToInt(21*u),pale,true);
             int available=session.Progression.ClaimableAchievements;
-            Text(new Rect((l.Frame.X+l.Frame.Width-222)*u,(l.Frame.Y+12)*u,154*u,32*u),available>0?available+" 项奖励可领取":"完成成就领取奖励",Mathf.RoundToInt(12*u),available>0?gold:muted,false,false,TextAnchor.MiddleRight);
+            if(PrimaryButton(new Rect((l.Frame.X+l.Frame.Width-222)*u,(l.Frame.Y+12)*u,154*u,32*u),"一键领取"+(available>0?" · "+available:""),gold,available>0))Feedback(session.Progression.ClaimAllAchievements(),"成就奖励已领取");
             DrawAchievements(BuildPlanRect(l.Body,u),u);
             if(PopupCloseButton(new Rect((l.Frame.X+l.Frame.Width-52)*u,(l.Frame.Y+12)*u,40*u,32*u)))CloseProgressionGoalSurface();
             return true;

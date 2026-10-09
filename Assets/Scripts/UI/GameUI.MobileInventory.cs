@@ -87,7 +87,7 @@ namespace Emberfall
             Rect equipmentTab=MobilePanelRect(new MobilePanelLayout.Area(bag.X,bag.Y,52,44));
             Rect supplyTab=MobilePanelRect(new MobilePanelLayout.Area(bag.X+58,bag.Y,52,44));
             if(QuietAction(equipmentTab,"装备",!inventoryComparisonOpen,null,mobileInventoryTab==0))SelectInventoryTab(0);
-            if(QuietAction(supplyTab,"补给",!inventoryComparisonOpen,null,mobileInventoryTab==2))SelectInventoryTab(2);
+            if(QuietAction(supplyTab,"道具",!inventoryComparisonOpen,null,mobileInventoryTab==2))SelectInventoryTab(2);
             if(QuietAction(MobilePanelRect(new MobilePanelLayout.Area(bag.X+116,bag.Y,52,44)),"时装",!inventoryComparisonOpen,null,mobileInventoryTab==3))SelectInventoryTab(3);
             var content=new MobilePanelLayout.Area(bag.X,bag.Y+48,bag.Width,bag.Height-48);
             if(mobileInventoryTab==3){DrawBagFashion(content);return;}

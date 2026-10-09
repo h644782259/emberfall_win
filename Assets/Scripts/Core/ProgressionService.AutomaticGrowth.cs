@@ -124,6 +124,21 @@ namespace Emberfall
         {return Profile.achievementReceipts!=null&&Profile.achievementReceipts.Contains(id);}
         public int ClaimableAchievements
         {get{int count=0;foreach(var a in Achievements)if(!AchievementClaimed(a.Id)&&a.Progress(Profile)>=a.Target)count++;return count;}}
+        public bool ClaimAllAchievements()
+        {
+            if(IsPracticeOnly)return Fail("当前模式不能领取成就奖励。");
+            var candidate=Snapshot();
+            if(candidate.achievementReceipts==null)candidate.achievementReceipts=new System.Collections.Generic.List<string>();
+            int count=0;
+            foreach(var a in Achievements)
+            {
+                if(AchievementClaimed(a.Id)||a.Progress(Profile)<a.Target)continue;
+                if(candidate.gold>MaximumGold-a.Gold||candidate.mechanicMaterials>999999-a.Shards)return Fail("货币已达上限，请消耗后再领取。");
+                candidate.achievementReceipts.Add(a.Id);candidate.gold+=a.Gold;candidate.mechanicMaterials+=a.Shards;count++;
+            }
+            if(count==0)return Fail("暂无可领取奖励。");
+            return CommitCandidate(candidate,true);
+        }
         public bool ClaimAchievement(string id)
         {
             if(IsPracticeOnly)return Fail("当前模式不能领取成就奖励。");

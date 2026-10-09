@@ -14,7 +14,7 @@ namespace Emberfall
         private bool RoomSealContested(int index)
         {if(!RoomPurifyLive||RoomChainRun.SealComplete(index))return false;foreach(var enemy in Enemies)if(IsRoomContestingPoint(enemy,RoomSealPoint(index)))return true;return false;}
         public bool TryGetRoomSeal(int index,out float fraction,out bool contested,out bool complete)
-        {fraction=0;contested=complete=false;if(!RoomPurifyLive||index<0||index>=2)return false;fraction=RoomChainRun.SealProgress(index)/3f;complete=RoomChainRun.SealComplete(index);contested=RoomSealContested(index);return true;}
+        {fraction=0;contested=complete=false;if(!RoomPurifyLive||index<0||index>=2)return false;fraction=RoomChainRun.SealProgress(index)/2f;complete=RoomChainRun.SealComplete(index);contested=RoomSealContested(index);return true;}
         public ChapterSealPresentation RoomSealView(int index)
         {float fraction;bool contested,complete;if(!TryGetRoomSeal(index,out fraction,out contested,out complete))return null;return new ChapterSealPresentation(index,RoomChainRun.SealProgress(index),RoomSealInside(index),contested,complete,InputBlocked);}
         public Vector3 RoomNextObjectivePoint
@@ -105,7 +105,7 @@ namespace Emberfall
         {
             fraction=0;contested=false;
             if(ChapterActive&&!ChapterFinished&&chapterObjective!=null&&!ChapterRun.DoorUnlocked)
-            {float required=ChapterRun.Objective==RoomObjective.Purify?3f:4f;int total=ChapterRun.Objective==RoomObjective.Purify?2:1;fraction=(ChapterRun.Seals+ChapterRun.Progress/required)/total;foreach(var enemy in Enemies)if(IsChapterContesting(enemy)){contested=true;break;}return true;}
+            {float required=ChapterRun.Objective==RoomObjective.Purify?2f:2.5f;int total=ChapterRun.Objective==RoomObjective.Purify?2:1;fraction=(ChapterRun.Seals+ChapterRun.Progress/required)/total;foreach(var enemy in Enemies)if(IsChapterContesting(enemy)){contested=true;break;}return true;}
             if(!RoomCaptureActive)return false;
             fraction=RoomChainRun.CaptureFraction;contested=RoomCaptureContested;return true;
         }

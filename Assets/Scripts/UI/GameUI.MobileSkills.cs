@@ -55,29 +55,37 @@ namespace Emberfall
 
         private Rect MobileSkillTreeNode(int skill,float width)
         {
-            float step=width/2;
-            return TouchRect(4+(skill%2)*step,4+(skill/2)*88,step-8,82);
+            float step=width/3;
+            return TouchRect(4+GameBalance.SkillTreeColumn(skill)*step,8+GameBalance.SkillTreeRow(skill)*108,step-8,82);
         }
         private float DrawMobileSkillTree(float width,bool draw)
         {
-            if(!draw)return ((GameBalance.SkillCount+1)/2)*88+8;
+            if(!draw)return 7*108+8;
             var p=session.Progression.Profile;
+            for(int child=0;child<GameBalance.SkillCount;child++)foreach(int parent in GameBalance.SkillPrerequisites[child])
+            {
+                Rect a=MobileSkillTreeNode(parent,width),b=MobileSkillTreeNode(child,width);
+                Color c=p.skillRanks[parent]>0?jade:muted*.45f;float mid=b.y-12*TouchRatio;
+                Fill(new Rect(a.center.x-TouchRatio,a.yMax,2*TouchRatio,Mathf.Max(0,mid-a.yMax)),c);
+                Fill(new Rect(Mathf.Min(a.center.x,b.center.x),mid,Mathf.Max(2*TouchRatio,Mathf.Abs(a.center.x-b.center.x)),2*TouchRatio),c);
+                Fill(new Rect(b.center.x-TouchRatio,mid,2*TouchRatio,b.y-mid),c);
+            }
             for(int skill=0;skill<GameBalance.SkillCount;skill++)
             {
                 int rank=p.skillRanks[skill];bool canLearn=Attention.LearnableSkills.Contains(skill);
                 Rect node=MobileSkillTreeNode(skill,width);Color accent=selectedSkill==skill?gold:rank>0?jade:muted;
-                // Compact two-column choices keep the persistent details beside the selection.
+                // Branch positions and connectors use the shared skill prerequisite graph.
                 Rect icon=new Rect(node.center.x-18*TouchRatio,node.y+5*TouchRatio,36*TouchRatio,36*TouchRatio);
                 DrawSkillIdentity(icon,p.heroClass,skill,rank,rank>0||canLearn,48);
                 if(selectedSkill==skill)DrawIcon(new Rect(node.center.x+20*TouchRatio,node.y+2*TouchRatio,12*TouchRatio,12*TouchRatio),UIIconAtlas.Utility("confirm"),gold);
-                Text(new Rect(node.x+4*TouchRatio,node.y+44*TouchRatio,node.width-8*TouchRatio,18*TouchRatio),GameBalance.SkillName(p.heroClass,skill),TouchFont(12),rank>0||canLearn?pale:muted,true,false,TextAnchor.MiddleCenter);
+                Text(new Rect(node.x+4*TouchRatio,node.y+44*TouchRatio,node.width-8*TouchRatio,22*TouchRatio),GameBalance.SkillName(p.heroClass,skill),TouchFont(10),rank>0||canLearn?pale:muted,true,false,TextAnchor.MiddleCenter);
                 string state="Lv."+GameBalance.SkillRequiredLevels[skill]+" · "+(canLearn?rank>0?"可进阶":"可学习":rank>0?GameBalance.SkillRankName(rank):GameBalance.IsPassive(skill)?"被动 · 未学":"未解锁");
                 Text(new Rect(node.x+4*TouchRatio,node.y+64*TouchRatio,node.width-8*TouchRatio,16*TouchRatio),state,TouchFont(10),canLearn?gold:accent,false,false,TextAnchor.MiddleCenter);
                 Badge(icon,canLearn);
                 if(MobileSkillRowClicked(node)&&selectedSkill!=skill)
                 {selectedSkill=skill;mobileSkillDetailScroll=Vector2.zero;mobileSkillStatus=null;CancelMobileScroll();}
             }
-            return ((GameBalance.SkillCount+1)/2)*88+8;
+            return 7*108+8;
         }
 
         private float DrawMobileSkillDescription(float width, bool draw)

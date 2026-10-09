@@ -42,10 +42,10 @@ namespace Emberfall
             var p=session.Progression;float u=MobileControls.Active?TouchRatio:1;
             bool prior=GUI.enabled;GUI.enabled=prior&&smithPreviewMechanic==EquipmentMechanic.None&&!smithSocketPicker;
             var l=new SmithServiceLayout(width/u,height/u,MobileControls.IsIPad);
-            Fill(new Rect(0,0,width,height),new Color(.018f,.031f,.048f,.985f));blockedRects.Add(new Rect(0,0,width,height));
-            Text(BuildPlanRect(l.Header,u),"铁匠",Mathf.RoundToInt(22*u),gold,true);
-            DrawServiceBalances(BuildPlanRect(l.Balance,u),u);
-            if(PopupCloseButton(BuildPlanRect(l.Close,u))){smithPreviewMechanic=EquipmentMechanic.None;GUI.enabled=prior;ClosePanel();return;}
+            Fill(new Rect(0,0,width,height),new Color(.018f,.031f,.048f,.35f));blockedRects.Add(new Rect(0,0,width,height));
+            Text(new Rect(16*u,10*u,width-360*u,36*u),"铁匠",Mathf.RoundToInt(22*u),gold,true);
+            DrawServiceBalances(new Rect(width-296*u,12*u,224*u,28*u),u);
+            if(PopupCloseButton(new Rect(width-56*u,10*u,42*u,36*u))){smithPreviewMechanic=EquipmentMechanic.None;GUI.enabled=prior;ClosePanel();return;}
             smithCategory=Mathf.Clamp(smithCategory,0,2);
             string[] categories={"强化","镶嵌","洗练"};
             for(int i=0;i<categories.Length;i++)
@@ -78,6 +78,13 @@ namespace Emberfall
                 else
                 {
                     float y=DrawSmithDetail(item,cardWidth-16,u,true);
+                    if(smithCategory==2)
+                    {
+                        string reason=p.RefinementLockReason(item.id,SmithServiceActive);
+                        float aw=Mathf.Min(180,cardWidth-32);
+                        Rect action=new Rect((cardWidth-16-aw)*.5f*u,tile.height-68*u,aw*u,44*u);
+                        if(Button(action,reason=="数值已满"?"数值已满":"洗练",gold,reason.Length==0))Feedback(p.RefineEquipment(item.id,SmithServiceActive),"洗练已保存");
+                    }
                     if(smithCategory==0)
                     {
                         var quote=p.PrepareSmithUpgrade(slot,SmithServiceActive);
@@ -173,16 +180,16 @@ namespace Emberfall
             Rect body=new Rect(box.x+12*u,box.y+56*u,w-24*u,h-68*u);
             if(candidates.Count==0){Text(body,"暂无可镶嵌的宝石",Mathf.RoundToInt(14*u),muted,false,true,TextAnchor.MiddleCenter);return;}
             float cw=(body.width/u-10)/2;
-            smithSocketScroll=BeginTouchScroll("smith-socket-picker",body,smithSocketScroll,new Rect(0,0,body.width,Mathf.Max(body.height,((candidates.Count+1)/2)*132*u)));
+            smithSocketScroll=BeginTouchScroll("smith-socket-picker",body,smithSocketScroll,new Rect(0,0,body.width,Mathf.Max(body.height,((candidates.Count+1)/2)*178*u)));
             for(int i=0;i<candidates.Count;i++)
             {
-                var a=candidates[i];Rect tile=new Rect((i%2)*(cw+10)*u,(i/2)*132*u,cw*u,122*u);
+                var a=candidates[i];Rect tile=new Rect((i%2)*(cw+10)*u,(i/2)*178*u,cw*u,168*u);
                 Fill(tile,new Color(.06f,.09f,.13f));Border(tile,a.mounted?jade:GameBalance.RarityColor(a.rarity));
                 DrawIcon(new Rect(tile.center.x-24*u,tile.y+12*u,48*u,48*u),UIIconAtlas.Utility("gem"),GameBalance.RarityColor(a.rarity));
                 Text(new Rect(tile.x+6*u,tile.y+65*u,tile.width-12*u,28*u),BuildCatalog.GemName(a.mechanic),Mathf.RoundToInt(13*u),pale,true,false,TextAnchor.MiddleCenter);
-                Text(new Rect(tile.x,tile.y+96*u,tile.width,20*u),BuildCatalog.IsAttributeGem(a.mechanic)?BuildCatalog.GemAttributeSummary(a.mechanic,a.rarity,a.upgradeRank):a.mounted?"已镶嵌":"阶数 "+a.upgradeRank,Mathf.RoundToInt(11*u),a.mounted?jade:muted,false,false,TextAnchor.MiddleCenter);
-                if(QuietAction(tile,"",SmithServiceActive&&!a.mounted))
-                {if(p.SetAttachmentMounted(a.mechanic,true,SmithServiceActive)){Feedback(true,"宝石已镶嵌");smithSocketPicker=false;}else Feedback(false,p.LastError);}
+                Text(new Rect(tile.x,tile.y+94*u,tile.width,30*u),BuildCatalog.IsAttributeGem(a.mechanic)?BuildCatalog.GemAttributeSummary(a.mechanic,a.rarity,a.upgradeRank):a.mounted?"已镶嵌":"阶数 "+a.upgradeRank,Mathf.RoundToInt(10*u),a.mounted?jade:muted,false,true,TextAnchor.MiddleCenter);
+                if(Button(new Rect(tile.x+8*u,tile.y+124*u,tile.width-16*u,36*u),a.mounted?"卸下":"镶嵌",jade,SmithServiceActive))
+                {if(p.SetAttachmentMounted(a.mechanic,!a.mounted,SmithServiceActive)){Feedback(true,"宝石已更新");smithSocketPicker=false;}else Feedback(false,p.LastError);}
             }
             EndTouchScroll();
         }
@@ -208,8 +215,7 @@ namespace Emberfall
             {
                 var cap=p.PreviewRefinementLimit(item.id);string reason=p.RefinementLockReason(item.id,SmithServiceActive);
                 if(cap==null)return y;
-                GoalParagraph(ref y,width,u,"装备洗练石 × "+p.Profile.refinementStones+" · 每次消耗1",13,gold,true,draw);
-                GoalParagraph(ref y,width,u,"只提升已有属性，上限按装备等级和品质计算。主要产地：赤岩断供。",12,muted,false,draw);
+                if(draw){DrawIcon(new Rect(8*u,y*u,24*u,24*u),UIIconAtlas.Utility("gem"),gold);Text(new Rect(40*u,y*u,(width-48)*u,24*u),"1 / "+p.Profile.refinementStones,Mathf.RoundToInt(13*u),gold,true);}y+=34;
                 string[] labels={"攻击","防御","生命","暴击率","暴击伤害"};
                 string[] current={item.attack.ToString(),item.defense.ToString(),item.health.ToString(),(item.criticalChance*100).ToString("0.##")+"%",(item.criticalDamageBonus*100).ToString("0.##")+"%"};
                 string[] limits={cap.attack.ToString(),cap.defense.ToString(),cap.health.ToString(),(cap.criticalChance*100).ToString("0.##")+"%",(cap.criticalDamageBonus*100).ToString("0.##")+"%"};
@@ -218,8 +224,8 @@ namespace Emberfall
                     bool present=stat==0?item.attack>0:stat==1?item.defense>0:stat==2?item.health>0:stat==3?item.criticalChance>0:item.criticalDamageBonus>0;if(!present)continue;
                     if(draw){Rect row=new Rect(8*u,y*u,(width-16)*u,34*u);Fill(row,card);Text(new Rect(row.x+6*u,row.y,row.width*.32f,row.height),labels[stat],Mathf.RoundToInt(12*u),muted);Text(new Rect(row.x+row.width*.34f,row.y,row.width*.66f,row.height),current[stat]+" / "+limits[stat],Mathf.RoundToInt(13*u),jade,true,false,TextAnchor.MiddleCenter);}y+=38;
                 }
-                GoalParagraph(ref y,width,u,reason.Length==0?"洗练结果立即保存，可连续操作":reason,12,muted,false,draw);
-                if(draw&&Button(new Rect(8*u,y*u,Mathf.Min(180,width-16)*u,44*u),reason=="数值已满"?"数值已满":"洗练 · 1枚洗练石",gold,reason.Length==0))Feedback(p.RefineEquipment(item.id,SmithServiceActive),"洗练已保存");y+=54;
+                if(reason.Length>0)GoalParagraph(ref y,width,u,reason,12,muted,false,draw);
+                y+=54;
             }
             else if(smithCategory==0)
             {
@@ -253,7 +259,7 @@ namespace Emberfall
                 }
                 if(draw)
                 {
-                    float size=64,socketX=mounted==null?(width-size)*.5f:8;
+                    float size=64,socketX=(width-size)*.5f;
                     Rect socket=new Rect(socketX*u,(y)*u,size*u,size*u);
                     Fill(socket,card);Border(socket,mounted==null?jade:GameBalance.RarityColor(mounted.rarity),2);
                     if(mounted==null)Text(socket,"+",Mathf.RoundToInt(32*u),jade,false,false,TextAnchor.MiddleCenter);
@@ -261,23 +267,21 @@ namespace Emberfall
                     if(QuietAction(socket,"",SmithServiceActive)){smithSelectedSlot=(int)item.slot;smithSocketPicker=true;smithSocketScroll=Vector2.zero;}
                     if(mounted!=null)
                     {
-                        float actionX=80,actionHeight=MobileControls.Active?44:30;
-                        int columns=MobileControls.Active&&width<380?2:3;
-                        float actionWidth=Mathf.Min(MobileControls.Active?112:96,(width-actionX-20)/columns);
-                        for(int action=0;action<3;action++)
+                        float actionHeight=MobileControls.Active?44:32,actionWidth=Mathf.Min(112,(width-24)/2);
+                        float actionX=(width-actionWidth*2-8)*.5f;
+                        for(int action=0;action<2;action++)
                         {
-                            Rect button=new Rect((actionX+(action%columns)*(actionWidth+6))*u,(y+(action/columns)*(actionHeight+6))*u,actionWidth*u,actionHeight*u);
-                            bool capped=action==0?mounted.upgradeRank>=ProgressionService.MaximumAttachmentRank:action==1&&mounted.ascensionRank>=3;
-                            string caption=action==0?(capped?"已满阶":"升阶"):action==1?(capped?"已升华":"升华"):"卸下";
-                            if(Button(button,caption,action==1?gold:action==2?muted:jade,SmithServiceActive&&!capped))
-                            {
-                                if(action<2)OpenGemPreview(mounted.mechanic,action==1);
-                                else {bool saved=p.SetAttachmentMounted(mounted.mechanic,false,SmithServiceActive);Feedback(saved,saved?"宝石已卸下":p.LastError);if(saved)return y+110;}
-                            }
+                            bool ascend=action==0;
+                            string reason=ascend?p.AttachmentAscensionLock(mounted.mechanic,SmithServiceActive):p.AttachmentUpgradeLock(mounted.mechanic,SmithServiceActive);
+                            Rect button=new Rect((actionX+action*(actionWidth+8))*u,(y+72)*u,actionWidth*u,actionHeight*u);
+                            string caption=ascend?(mounted.ascensionRank>=3?"升华已满":"升华"):(mounted.upgradeRank>=9?"已满阶级":"升阶");
+                            if(Button(button,caption,ascend?gold:jade,reason.Length==0))OpenGemPreview(mounted.mechanic,ascend);
                         }
+                        string ascendReason=p.AttachmentAscensionLock(mounted.mechanic,SmithServiceActive);
+                        if(ascendReason.Length>0)Text(new Rect(8*u,(y+120)*u,(width-16)*u,40*u),ascendReason,Mathf.RoundToInt(11*u),muted,false,true,TextAnchor.MiddleCenter);
                     }
                 }
-                y+=mounted==null?76:MobileControls.Active&&width<380?110:80;
+                y+=mounted==null?76:170;
                 if(mounted!=null)
                 {
                     if(BuildCatalog.HasMechanicVariant(mounted.mechanic))

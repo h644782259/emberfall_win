@@ -31,8 +31,8 @@ namespace Emberfall
         private readonly float[] sealProgress=new float[2];
         public float Progress {get{return Room!=null&&Room.Objective==RoomObjective.Purify?SealProgress(SealComplete(0)?1:0):progress;}}
         public float SealProgress(int index){return index>=0&&index<2?sealProgress[index]:0;}
-        public bool SealComplete(int index){return index>=0&&index<2&&sealProgress[index]>=3f;}
-        public float CaptureFraction {get{return Room!=null&&Room.Objective==RoomObjective.Purify?(sealProgress[0]+sealProgress[1])/6f:progress/4f;}}
+        public bool SealComplete(int index){return index>=0&&index<2&&sealProgress[index]>=2f;}
+        public float CaptureFraction {get{return Room!=null&&Room.Objective==RoomObjective.Purify?(sealProgress[0]+sealProgress[1])/4f:progress/2.5f;}}
         private bool[] spawned, defeated;
         private int spawnedCount, kills;
         public RoomBranch SelectedBranch {get;private set;}
@@ -64,9 +64,9 @@ namespace Emberfall
         public void AdvanceSeal(int index,float delta,bool active,bool inside,bool contested)
         {
             if(Room==null||Room.Objective!=RoomObjective.Purify||index<0||index>=2||SealComplete(index)||!CanCapture(delta,active,inside,contested))return;
-            sealProgress[index]=Math.Min(3f,sealProgress[index]+Math.Min(delta,.25f));
-            if(sealProgress[index]+.00001f<3f)return;
-            sealProgress[index]=3f;Seals++;if(Seals==2)DoorUnlocked=true;
+            sealProgress[index]=Math.Min(2f,sealProgress[index]+Math.Min(delta,.25f));
+            if(sealProgress[index]+.00001f<2f)return;
+            sealProgress[index]=2f;Seals++;if(Seals==2)DoorUnlocked=true;
         }
         public void Advance(float delta,bool active,bool inside,bool contested)
         {
@@ -74,8 +74,8 @@ namespace Emberfall
             // Compatibility only: the live host addresses each physical seal explicitly.
             if(Room.Objective==RoomObjective.Purify){AdvanceSeal(SealComplete(0)?1:0,delta,active,inside,contested);return;}
             if(Room.Objective!=RoomObjective.Escape||!CanCapture(delta,active,inside,contested))return;
-            progress=Math.Min(4f,progress+Math.Min(delta,.25f));
-            if(progress<4f)return;
+            progress=Math.Min(2.5f,progress+Math.Min(delta,.25f));
+            if(progress<2.5f)return;
             progress=0;Seals=1;DoorUnlocked=true;
         }
         public bool ChooseInterlude(){if(Finished||!Room.Interlude||DoorUnlocked)return false;DoorUnlocked=true;return true;}

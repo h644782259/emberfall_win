@@ -213,6 +213,9 @@ namespace Emberfall
                 if(Input.GetKeyDown(KeyCode.Escape))session.SetPaused(true);
                 return;
             }
+            if(!session.Paused&&(session.ModeFinished||session.DungeonCleared)&&!session.FinishedResultDismissed)
+            {if(Input.GetKeyDown(KeyCode.Escape))CloseSettlement();return;}
+            if(masteryResetConfirm&&panel==Panel.Skills&&Input.GetKeyDown(KeyCode.Escape)){masteryResetConfirm=false;return;}
             EnsurePendingChestPanel();
             if ((session.DungeonSelectionOpen || session.RunChoices.AwaitingChoice) && !session.Paused && !PauseUtilityVisible)
             {if(Input.GetKeyDown(KeyCode.Escape)){if(session.DungeonSelectionOpen)session.CancelDungeonSelection();else session.SetPaused(true);}return;}
@@ -233,7 +236,8 @@ namespace Emberfall
                     targeting.Cancel();
                     return;
                 }
-                if (panel == Panel.Chests) { session.SetPaused(false); ClosePanel(); BlockUITransition(); }
+                if(panel==Panel.Summary){CloseSettlement();}
+                else if (panel == Panel.Chests) { session.SetPaused(false); ClosePanel(); BlockUITransition(); }
                 else if (panel != Panel.None) ClosePanel();
                 else session.SetPaused(!session.Paused);
             }
@@ -335,8 +339,7 @@ namespace Emberfall
                 else if (session.DungeonSelectionOpen) DrawDungeonSelection();
                 else if (session.RoomBranchChoiceOpen) DrawRoomBranchChoice();
                 else if (session.RunChoices.AwaitingChoice) DrawBlessingChoice();
-                else if(session.ChapterFinished&&!session.FinishedResultDismissed){if(DrawStructuredRunRecap(false))session.DismissFinishedResult();}
-                else if(session.ModeFinished&&!session.FinishedResultDismissed){if(DrawStructuredRunRecap(false))session.DismissFinishedResult();}
+                else if((session.ModeFinished||session.DungeonCleared)&&!session.FinishedResultDismissed){if(DrawStructuredRunRecap(false))CloseSettlement();}
                 else if (DrawPresetSaleConfirmation()) {}
                 else if (panel == Panel.Inventory) DrawInventory();
                 else if (panel == Panel.Skills) DrawSkills();
@@ -833,8 +836,9 @@ namespace Emberfall
             Bar(new Rect(28, 71, 216, 7), energy / Mathf.Max(1, maxEnergy), new Color(.28f, .57f, .91f));
             bool maxLevel = p.level >= ProgressionService.MaximumLevel;
             Bar(new Rect(28, 88, 216, 3), maxLevel ? 1 : p.xp / (float)GameBalance.XpToNext(p.level), gold);
-            if (playerRect.Contains(Mouse) && GUI.enabled)
-                tooltip = "生命 " + Mathf.CeilToInt(hp) + " / " + Mathf.CeilToInt(maxHp) + "\n" + GameBalance.EnergyName(p.heroClass) + " " + Mathf.FloorToInt(energy) + " / " + Mathf.RoundToInt(maxEnergy) + "\n" + (maxLevel ? "已达最高等级" : "经验 " + p.xp + " / " + GameBalance.XpToNext(p.level)) + "\n金币 " + p.gold + " · 生命药剂 " + p.potions;
+            Text(new Rect(194,50,216,16),Mathf.CeilToInt(hp)+" / "+Mathf.CeilToInt(maxHp),10,pale,true,false,TextAnchor.MiddleCenter);
+            Text(new Rect(194,69,216,14),Mathf.FloorToInt(energy)+" / "+Mathf.RoundToInt(maxEnergy),9,pale,true,false,TextAnchor.MiddleCenter);
+            Text(new Rect(194,87,216,13),maxLevel?"满级":p.xp+" / "+GameBalance.XpToNext(p.level),9,pale,true,false,TextAnchor.MiddleCenter);
             string objectiveText = session.SpecialAdventure?session.ModeName:session.InDungeon
                 ? session.DungeonCleared ? "沉星遗迹已通关" : "击败本轮敌人"
                 : p.level < 2 ? "击败原野怪物，升至 2 级"
@@ -1296,7 +1300,7 @@ namespace Emberfall
 
         private Rect Modal(float modalWidth, float modalHeight, string title, string subtitle)
         {
-            Fill(new Rect(0, 0, width, height), new Color(.012f, .025f, .04f, .72f));
+            Fill(new Rect(0, 0, width, height), new Color(.012f, .025f, .04f, .32f));
             Rect window = new Rect((width - modalWidth) * .5f, (height - modalHeight) * .5f, modalWidth, modalHeight);
             Box(window, jade);
             Fill(new Rect(window.x, window.y, 4, window.height), jade);
@@ -1321,22 +1325,22 @@ namespace Emberfall
             if (PopupCloseButton(new Rect(w.xMax - 69, w.y + 20, 44, 32))) ClosePanel();
             DrawPrice(new Rect(w.x + 921, w.y + 28, 136, 30),p.gold,false,1);
             float left = w.x + 24;
-            DrawCurrentWear(new Rect(left,w.y+148,232,232),1);
+            DrawCurrentWear(new Rect(left,w.y+100,232,232),1);
             StatBlock stats = progression.GetStats();
-            Rule(left, w.y + 389, 232, jade);
-            Text(new Rect(left, w.y + 402, 232, 22), "角色属性 · Lv." + p.level, 15, jade, true);
-            DrawCharacterStats(new Rect(left,w.y+430,232,174),1);
+            Rule(left, w.y + 337, 232, jade);
+            Text(new Rect(left, w.y + 346, 232, 22), "角色属性 · Lv." + p.level, 15, jade, true);
+            DrawCharacterStats(new Rect(left,w.y+374,232,230),1);
 
             float middle = w.x + 272;
             Rect bagArea=new Rect(middle,w.y+144,864,462);
             if(inventoryFashionOpen){mobileInventoryTab=3;inventoryFashionOpen=false;inventoryComparisonOpen=false;}
-            if(QuietAction(new Rect(middle+460,w.y+108,64,32),"装备",true,null,mobileInventoryTab==0))SelectInventoryTab(0);
-            if(QuietAction(new Rect(middle+532,w.y+108,64,32),"补给",true,null,mobileInventoryTab==2))SelectInventoryTab(2);
-            if(QuietAction(new Rect(middle+604,w.y+108,64,32),"时装",true,null,mobileInventoryTab==3))SelectInventoryTab(3);
+            if(QuietAction(new Rect(middle,w.y+108,64,32),"装备",true,null,mobileInventoryTab==0))SelectInventoryTab(0);
+            if(QuietAction(new Rect(middle+76,w.y+108,64,32),"道具",true,null,mobileInventoryTab==2))SelectInventoryTab(2);
+            if(QuietAction(new Rect(middle+152,w.y+108,64,32),"时装",true,null,mobileInventoryTab==3))SelectInventoryTab(3);
             if(mobileInventoryTab==3){DrawBagFashion(InventoryArea(bagArea));return;}
             if(mobileInventoryTab==2){DrawBagSupplies(InventoryArea(bagArea));return;}
-            Text(new Rect(middle, w.y + 112, 280, 23), "装备 · " + bagItems.Count + " 件", 16, jade, true);
-            Text(new Rect(middle + 280, w.y + 117, 144, 17), "总容量 " + p.inventory.Count + " / " + ProgressionService.InventoryCapacity, 11, muted, false, false, TextAnchor.MiddleRight);
+            Text(new Rect(middle+248, w.y + 112, 200, 23), "装备 · " + bagItems.Count + " 件", 16, jade, true);
+            Text(new Rect(middle + 690, w.y + 117, 144, 17), "总容量 " + p.inventory.Count + " / " + ProgressionService.InventoryCapacity, 11, muted, false, false, TextAnchor.MiddleRight);
             Rect viewport=bagArea;
             DrawEquipmentIconGrid(viewport,ref inventoryScroll,1);
         }
@@ -1501,7 +1505,6 @@ namespace Emberfall
             Rect branchHeading = new Rect(w.x + 24, w.y + 112, 267, 24);
             Text(branchHeading, "职业分支", 15, jade, true);
             if (branchHeading.Contains(Mouse)) tooltip = "达到对应等级自动习得与进阶。";
-            if (!MobileControls.Active && NavigationButton(new Rect(w.x + 325, w.y + 108, 205, 29), "自定义快捷键", gold)) OpenBindings();
             Rect viewport = new Rect(w.x + 24, w.y + 147, 506, 468);
             Fill(viewport, new Color(.025f, .05f, .075f));
             Rect content = new Rect(0, 0, 490, 738);
@@ -1625,7 +1628,6 @@ namespace Emberfall
                 if (PauseSidebarTab(new Rect(w.x+24,w.y+110+i*54,152,48), tabs[tabOrder[i]], desktopPauseTab == tabOrder[i],1) && desktopPauseTab != tabOrder[i])
                 { desktopPauseTab = tabOrder[i]; }
             if(PrimaryButton(new Rect(w.x+212,w.yMax-70,536,48),"保存并退出",gold))RequestExit(MobileControls.Active);
-            Text(new Rect(w.x + 212, w.y + 164, 536, 30), session.ZoneName + "  ·  " + ActiveCharacterName(), 17, jade, true, false, TextAnchor.MiddleCenter);
             if (desktopPauseTab == 0)
             {
                 if(NavigationButton(new Rect(w.x+212,w.y+210,536,48),"营地 / 撤离",jade))LeaveMobilePauseForCamp();
@@ -1820,6 +1822,7 @@ namespace Emberfall
 
         private void ClosePanel()
         {
+            masteryResetConfirm=false;merchantGemSaleConfirmation=EquipmentMechanic.None;
             if(SmithServiceActive&&smithPreviewMechanic!=EquipmentMechanic.None){smithPreviewMechanic=EquipmentMechanic.None;return;}
             if(presetSaleOpen){CancelPresetSale();return;}
             if(MerchantServiceActive||SmithServiceActive){inventoryHubNpc=HubNpcKind.None;merchantExchangeOpen=false;panel=Panel.None;session.SetUIBlocking(false);BlockUITransition();return;}

@@ -26,7 +26,7 @@ namespace Emberfall
         {
             var controls=MobileControls.Layout;
             var layout=new MobileDialogLayout(controls.Width,controls.Height);
-            Fill(new Rect(0,0,width,height),new Color(.008f,.018f,.03f,1));
+            Fill(new Rect(0,0,width,height),new Color(.008f,.018f,.03f,.35f));
             blockedRects.Add(new Rect(0,0,width,height));
             Box(MobilePanelRect(layout.Frame),accent,false);
             Text(MobilePanelRect(layout.Header),title,TouchFont(21),pale,true);
@@ -35,7 +35,7 @@ namespace Emberfall
         // Returns true only when the existing close/navigation lifecycle was used.
         private bool DrawMobilePanelChrome(MobilePanelLayout layout,string title,string subtitle,bool canClose=true,bool pauseInstead=false,bool showNotice=true,float headerRightReserve=0,bool showClose=true)
         {
-            Fill(new Rect(0,0,width,height),new Color(.018f,.031f,.048f,.985f));
+            Fill(new Rect(0,0,width,height),new Color(.018f,.031f,.048f,.35f));
             blockedRects.Add(new Rect(0,0,width,height));
             Rect titleRect=TouchRect(layout.Header.X,layout.Header.Y,Mathf.Max(1,layout.Header.Width-headerRightReserve),30);
             int titleFont=TouchFont(22);

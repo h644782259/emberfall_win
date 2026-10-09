@@ -10,7 +10,7 @@ namespace Emberfall
         public ChapterSealPresentation(int index,float seconds,bool occupied,bool contested,bool complete,bool paused)
         {
             Seconds=seconds;Occupied=occupied;Complete=complete;Contested=!complete&&contested;
-            Label=(occupied?"▶ ":"")+(index==0?"A":"B")+" · "+seconds.ToString("0.0",CultureInfo.InvariantCulture)+"/3秒 · "+
+            Label=(occupied?"▶ ":"")+(index==0?"A":"B")+" · "+seconds.ToString("0.0",CultureInfo.InvariantCulture)+"/2秒 · "+
                 (complete?"完成":Contested?"争夺":paused?"暂停":occupied?"累计中":"待占领");
         }
     }

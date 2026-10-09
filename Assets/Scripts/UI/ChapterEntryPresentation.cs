@@ -54,7 +54,7 @@ namespace Emberfall
 
                 "完成奖励 "+(total+firstDifficulty)+" 碎片（通关 "+repeat+(total>repeat?" + 首次通关1":"")+(firstDifficulty>0?" + 难度首通4":"")+"）。\n"+
                 "首次通关困难或英雄难度，各额外获得4碎片；每段星路的首通奖励仅领取一次。\n"+
-                (!profile.firstClearRewardClaimed?(profile.pendingFirstClearReward?"首通核心待领取：返回营地领取。\n":"首次通关全部三段星路，可在营地领取首通核心。\n"):"")+TierEffect(node)+MasteryProgress(profile,node,difficulty);
+                (!profile.firstClearRewardClaimed?(profile.pendingFirstClearReward?"首通宝石待领取：返回营地领取。\n":"首次通关全部三段星路，可在营地领取首通宝石。\n"):"")+TierEffect(node)+MasteryProgress(profile,node,difficulty);
         }
         private static string MechanismReport(ChapterResultSnapshot result)
         {
@@ -75,7 +75,7 @@ namespace Emberfall
             if(!result.Saved)return text+"挑战完成 · 进度尚未保存\n请重试保存，以领取奖励并记录通关进度。"+MechanismReport(result);
             if(result.RewardDetailsUnavailable)return text+"通关进度与奖励已保存，可返回营地继续冒险。"+MechanismReport(result);
             text=ChapterDefinition.Get(result.Node).Name+" · "+DifficultyName(result.Difficulty)+" · 第 "+result.Tier+" 阶\n奖励已保存";
-            if(result.FirstCoreAvailable)text+="\n首通核心已可领取：返回营地领取";
+            if(result.FirstCoreAvailable)text+="\n首通宝石已可领取：返回营地领取";
             if(result.UnlockedNode>=0)text+="\n新节点："+ChapterDefinition.Get((ChapterNode)result.UnlockedNode).Name;
             if(result.UnlockedDifficulty>=0)text+="\n本节点新难度："+DifficultyName((ChapterDifficulty)result.UnlockedDifficulty);
             if(result.SharedAfter>result.SharedBefore)text+="\n已解锁第 "+result.SharedAfter+" 阶挑战";

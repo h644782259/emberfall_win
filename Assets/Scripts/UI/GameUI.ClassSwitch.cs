@@ -26,10 +26,10 @@ namespace Emberfall
             }
             else
             {
-                Rect w=Modal(1040,540,"切换职业","");
+                Rect w=Modal(1160,660,"切换职业","");
                 if(PopupCloseButton(new Rect(w.xMax-69,w.y+20,44,32))){ClosePanel();return;}
-                DrawSkillTabs(new Rect(w.xMax-357,w.y+20,264,36));
-                body=new Rect(w.x+24,w.y+88,w.width-48,w.height-112);
+                DrawSkillTabs(new Rect(w.x+330,w.y+20,264,36));
+                body=new Rect(w.x+24,w.y+108,w.width-48,w.height-132);
             }
             if(skillSection!=2)return;
             string[] roles={"近战 · 斩击 · 耐久","法术 · 控制 · 爆发","远程 · 灵活 · 射击","召唤 · 协同 · 灵兽"};
@@ -85,7 +85,7 @@ namespace Emberfall
             ReconcileClassSwitchSurface();
             if(!classSwitchOpen)return false;
             float unit=MobileControls.Active?TouchRatio:1;var layout=new MobileDialogLayout(width/unit,height/unit);
-            Fill(new Rect(0,0,width,height),new Color(.008f,.018f,.03f,1));blockedRects.Add(new Rect(0,0,width,height));
+            Fill(new Rect(0,0,width,height),new Color(.008f,.018f,.03f,.35f));blockedRects.Add(new Rect(0,0,width,height));
             Box(BuildPlanRect(layout.Frame,unit),gold,false);Text(BuildPlanRect(layout.Header,unit),"营地 · 切换职业",Mathf.RoundToInt(21*unit),pale,true);
             float bodyWidth=layout.Body.Width-18,bodyHeight=DrawClassSwitchContent(bodyWidth,unit,false);
             classSwitchScroll=BeginTouchScroll("class-switch",BuildPlanRect(layout.Body,unit),classSwitchScroll,new Rect(0,0,bodyWidth*unit,Mathf.Max(layout.Body.Height,bodyHeight)*unit));

@@ -28,7 +28,7 @@ namespace Emberfall{
  enum CampRouteAction{None,Skill}class Route{public string Name="Route",Loop="Loop",Requirements="Requirement",Enhancement="Enhancement",NextStep="Step";public bool Ready=true;public CampRouteAction NextAction=CampRouteAction.Skill;}
  static class CampRouteCards{public static Route Describe(Profile p,bool mobile,int i)=>new Route();}
  partial class GameUI{
- Session session=new Session();Color pale,jade,gold,muted,card;Vector2 Mouse;object invisibleButton;string tooltip;int Opens,RouteCalls,Requests,RequestSlot,ResultCalls;enum BuildPlanAction{Save,Apply,Reset}BuildPlanAction Requested;
+ bool masteryResetConfirm;Session session=new Session();Color pale,jade,gold,muted,card;Vector2 Mouse;object invisibleButton;string tooltip;int Opens,RouteCalls,Requests,RequestSlot,ResultCalls;enum BuildPlanAction{Save,Apply,Reset}BuildPlanAction Requested;
  int SelectedMarkers;string Click;int Ordinal=1,Seen;float Scale=1;List<Rect> Targets=new List<Rect>();List<bool> Enables=new List<bool>();List<string> Captions=new List<string>();
  bool InventoryPictogramAction(Rect r,string s,object icon,bool enabled=true,bool selected=false,bool throttle=false){Targets.Add(r);Enables.Add(enabled);Captions.Add(s);if(s!=Click)return false;Seen++;return enabled&&Seen==Ordinal;}
  bool Button(Rect r,string s,Color c,bool enabled=true)=>InventoryPictogramAction(r,s,null,enabled);
@@ -45,8 +45,8 @@ namespace Emberfall{
  foreach(float width in new[]{340f,520f,700f,900f})foreach(float u in new[]{.85f,1f,1.5f}){
  var ui=new GameUI();ui.Draw(width,u);C(!ui.Captions.Contains("配点管理")&&ui.Captions.FindAll(v=>v=="重置精通").Count==1,"reset is directly exposed once");
  int reset=ui.Captions.IndexOf("重置精通");var rect=ui.Targets[reset];C(rect.x>=0&&rect.xMax<=width*u+.01&&rect.height>=44*u,"reset stays in bounds with touch height");
- C(ui.session.Progression.Resets==0,"rendering does not reset");ui.Draw(width,u,click:"重置精通");C(ui.session.Progression.Resets==1,"direct reset invokes service once");
- ui.session.IsInCamp=false;ui.Draw(width,u,click:"重置精通");C(ui.session.Progression.Resets==1,"camp gate preserved");
+ C(ui.session.Progression.Resets==0,"rendering does not reset");ui.Draw(width,u,click:"重置精通");C(ui.session.Progression.Resets==0&&ui.masteryResetConfirm,"first reset click only requests confirmation");ui.masteryResetConfirm=false;
+ ui.session.IsInCamp=false;ui.Draw(width,u,click:"重置精通");C(ui.session.Progression.Resets==0&&!ui.masteryResetConfirm,"camp gate preserved");
  }
  Console.WriteLine("PASS "+count+" direct mastery reset geometry and dispatch assertions; managed GUI boundary");}
  static string BuildModeName(ElementalistSpecialization m)=>m==ElementalistSpecialization.None?"均衡":m==ElementalistSpecialization.Shatter?"碎冰":"灼燃";

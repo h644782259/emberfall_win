@@ -1,11 +1,11 @@
 using System;using System.IO;using System.Collections.Generic;using System.Linq;using Emberfall;using UnityEngine;
 namespace UnityEngine{
- public enum TextAnchor{MiddleRight,MiddleCenter}
+ public enum TextAnchor{MiddleRight,MiddleCenter,MiddleLeft}
  public class GUIContent{public string text;public GUIContent(string s){text=s;}}
  public class GUIStyle{public float CalcHeight(GUIContent c,float width)=>Math.Max(20,(float)Math.Ceiling(c.text.Length*12/Math.Max(1,width))*16);}
  public struct Vector2{public float x,y;public static Vector2 zero=>new Vector2();}
- public struct Rect{public float x,y,width,height;public float xMax=>x+width;public float yMax=>y+height;public Rect(float a,float b,float w,float h){x=a;y=b;width=w;height=h;}}
- public static class Mathf{public static float Min(float a,float b)=>Math.Min(a,b);public static float Max(float a,float b)=>Math.Max(a,b);public static int RoundToInt(float x)=>(int)Math.Round(x);public static float Clamp(float x,float a,float b)=>Math.Min(b,Math.Max(a,x));public static int Clamp(int x,int a,int b)=>Math.Min(b,Math.Max(a,x));}
+ public struct Rect{public float x,y,width,height;public Vector2 center=>new Vector2{x=x+width/2,y=y+height/2};public float xMax=>x+width;public float yMax=>y+height;public Rect(float a,float b,float w,float h){x=a;y=b;width=w;height=h;}}
+ public static class Mathf{public static int Min(int a,int b)=>Math.Min(a,b);public static float Clamp01(float v)=>Math.Min(1,Math.Max(0,v));public static float SmoothStep(float a,float b,float t)=>a+(b-a)*t;public static float Min(float a,float b)=>Math.Min(a,b);public static float Max(float a,float b)=>Math.Max(a,b);public static int RoundToInt(float x)=>(int)Math.Round(x);public static float Clamp(float x,float a,float b)=>Math.Min(b,Math.Max(a,x));public static int Clamp(int x,int a,int b)=>Math.Min(b,Math.Max(a,x));}
  public static class Time{public static float unscaledTime;}
  public static class GUI{public static bool enabled=true;}
 }
@@ -15,11 +15,11 @@ namespace Emberfall{
  public static class EffectPreferences{public static bool ReducedEffects;}
  public enum SoundCue{UI,Cast,Loot,LevelUp,Victory}public static class GameAudio{public static void Play(SoundCue s){}}
  public class PlayerController{public int CombatEpoch;}
- public class GameSession{public PlayerController Player=new PlayerController();public bool ChapterRewardPending;public bool TrySettleChapterReward(){if(FailSettlement)return false;ChapterRewardPending=false;return true;}public bool DungeonRewardPending,ModeRewardPending,FailSettlement;public bool TrySettleDungeonReward(){if(FailSettlement)return false;DungeonRewardPending=false;return true;}public bool TrySettleArenaReward(){if(FailSettlement)return false;ModeRewardPending=false;return true;}public bool HasStarted=true,Paused,IsDead,InputBlocked,InDungeon,NearDungeonReturn;public ProgressionService Progression;public void LogSystem(string s){}public void SetUIBlocking(bool b){InputBlocked=b;}public void SetPaused(bool b){}}
+ public class GameSession{public RunRecapSnapshot LastRunRecap;public bool FinishedResultDismissed;public void DismissFinishedResult(){FinishedResultDismissed=true;InputBlocked=false;}public PlayerController Player=new PlayerController();public bool ChapterRewardPending;public bool TrySettleChapterReward(){if(FailSettlement)return false;ChapterRewardPending=false;return true;}public bool DungeonRewardPending,ModeRewardPending,FailSettlement;public bool TrySettleDungeonReward(){if(FailSettlement)return false;DungeonRewardPending=false;return true;}public bool TrySettleArenaReward(){if(FailSettlement)return false;ModeRewardPending=false;return true;}public bool HasStarted=true,Paused,IsDead,InputBlocked,InDungeon,NearDungeonReturn;public ProgressionService Progression;public void LogSystem(string s){}public void SetUIBlocking(bool b){InputBlocked=b;}public void SetPaused(bool b){}}
  public sealed partial class GameUI{
   private ChestReward settlementChest;private PlayerController settlementOwner;private string settlementSlot;private int settlementEpoch=-1;
   bool SmithServiceActive=>true;
-  bool MerchantServiceActive=>true;enum Panel{DungeonExit,Summary,None,Chests,Camp,Skills,Inventory}Panel panel=Panel.Chests;GameSession session;float width,height,TouchRatio=1;Color gold,jade,pale,muted,card;GUIStyle Style(int size,bool bold=false,bool wrap=false)=>new GUIStyle();
+  bool MerchantServiceActive=>true;enum Panel{DungeonExit,Summary,None,Chests,Camp,Skills,Inventory}Panel panel=Panel.Chests;GameSession session;float width,height,TouchRatio=1;List<Rect> blockedRects=new List<Rect>();void Box(Rect r,Color c){}Color gold,jade,pale,muted,card;GUIStyle Style(int size,bool bold=false,bool wrap=false)=>new GUIStyle();
   bool chestDetails,chestOpening,rewardSoundPlayed;int revealedChest=-1;string chestRevealResult,chestReceiptId,chestQualificationId,mobileChestError;float chestRevealedAt;Rect chestRevealOrigin;Vector2 desktopChestResultScroll,mobileChestScroll,mobileChestArtScroll;
   readonly List<(string caption,Rect bounds)> buttons=new List<(string,Rect)>();string click;bool clicked;int scrollDepth;
   bool Button(Rect r,string s,Color c,bool enabled=true,string reason=null,bool highlight=false){buttons.Add((s,r));if(!enabled||clicked||click!=s)return false;clicked=true;return true;}
@@ -57,11 +57,11 @@ namespace Emberfall{
     var ui=new GameUI{session=new GameSession{Progression=p,InDungeon=true}};ui.RefreshSettlementChest();
     ui.session.DungeonRewardPending=true;ui.session.FailSettlement=true;ui.CollectSettlementRewards();C(p.Profile.pendingFashionChest&&ui.settlementChest==null,"base save failure blocks chest grant");
     ui.session.FailSettlement=false;Directory.CreateDirectory(p.SaveFilePath+".tmp");ui.CollectSettlementRewards(2);Directory.Delete(p.SaveFilePath+".tmp");C(p.Profile.pendingFashionChest&&ui.settlementChest==null,"inline failed write keeps entitlement");
-    ui.CollectSettlementRewards(2);C(!p.Profile.pendingFashionChest&&!p.Profile.pendingChestReveal&&ui.settlementChest!=null,"inline reward and acknowledgment finish in same page");
+    ui.CollectSettlementRewards(2);C(!p.Profile.pendingFashionChest&&p.Profile.pendingChestReveal&&ui.settlementChest!=null&&!ui.ChestAnimationDone,"inline committed reward starts animation before acknowledgement");
     string saved=JsonUtility.ToJson(p.Profile,true),id=ui.settlementChest.id;ui.CollectSettlementRewards();ui.RefreshSettlementChest();C(saved==JsonUtility.ToJson(p.Profile,true)&&ui.settlementChest.id==id,"repeat claim and reopen never grant twice");
-    ui.session.Player.CombatEpoch++;ui.RefreshSettlementChest();C(ui.settlementChest==null,"new run cannot display previous chest");
+    ui.CloseSettlement();C(!p.Profile.pendingChestReveal&&!ui.session.InputBlocked,"closing acknowledges and releases input");ui.session.Player.CombatEpoch++;ui.RefreshSettlementChest();C(ui.settlementChest==null,"new run cannot display previous chest");
     p.PrepareDungeonChest();p.OpenDungeonChest();ui.RefreshSettlementChest();C(ui.settlementChest!=null,"pending durable reveal recovers inline");
-    Directory.CreateDirectory(p.SaveFilePath+".tmp");ui.CollectSettlementRewards(2);Directory.Delete(p.SaveFilePath+".tmp");C(p.Profile.pendingChestReveal&&ui.settlementChest!=null,"acknowledgment failure retains displayed receipt");ui.CollectSettlementRewards();C(!p.Profile.pendingChestReveal,"acknowledgment retries in place");
+    Directory.CreateDirectory(p.SaveFilePath+".tmp");ui.CloseSettlement();Directory.Delete(p.SaveFilePath+".tmp");C(p.Profile.pendingChestReveal&&ui.settlementChest!=null&&!ui.session.InputBlocked,"failed acknowledgement preserves receipt but never traps player");ui.CloseSettlement();C(!p.Profile.pendingChestReveal,"acknowledgment retries in place");
    }
    {
     var p=new ProgressionService(Path.Combine(root,"variant"));p.NewGame(HeroClass.Arcanist);p.Profile.mechanicMaterials=40;p.Profile.attachments.Add(new MechanicAttachment{id=Guid.NewGuid().ToString("N"),mechanic=EquipmentMechanic.CinderTrail,ascensionRank=1,variantUnlocked=true});p.Save();
@@ -71,6 +71,20 @@ namespace Emberfall{
     ui.SelectSmithVariant(EquipmentMechanic.CinderTrail,1);C(p.Profile.mechanicMaterials==40&&p.Attachment(EquipmentMechanic.CinderTrail).variant==1,"selected form click is inert");
     ui.SelectSmithVariant(EquipmentMechanic.CinderTrail,0);C(p.Profile.mechanicMaterials==40&&p.Attachment(EquipmentMechanic.CinderTrail).variant==0,"unlocked switching is immediate and free");
     Directory.CreateDirectory(p.SaveFilePath+".tmp");ui.SelectSmithVariant(EquipmentMechanic.CinderTrail,1);Directory.Delete(p.SaveFilePath+".tmp");C(p.Attachment(EquipmentMechanic.CinderTrail).variant==0,"failed write retains previous selected form");
+   }
+
+   foreach(var size in new[]{new[]{568f,320f,1f},new[]{844f,390f,1f},new[]{1024f,768f,1f},new[]{1280f,720f,1f},new[]{1136f,640f,2f}})
+   {
+    var p=new ProgressionService(Path.Combine(root,Guid.NewGuid().ToString("N")));p.NewGame(HeroClass.Ranger);p.PrepareDungeonChest();MobileControls.Active=size[0]<1200;Time.unscaledTime=0;
+    var ui=new GameUI{session=new GameSession{Progression=p,InDungeon=true},width=size[0],height=size[1],TouchRatio=size[2]};
+    ui.session.LastRunRecap=new RunRecapSnapshot(true,true,false,3,5,5,1,2,1,null,0,new[]{new KeyValuePair<string,int>("damage-total",12345)},null,null,true,false);
+    ui.DrawVictorySettlement();C(ui.scrollDepth==0&&ui.buttons.Count(b=>b.caption=="开启")==3,"unified settlement offers three chests without scrolling");
+    C(!ui.buttons.Any(b=>b.caption=="继续拾取"||b.caption=="返回营地"),"settlement does not include navigation");
+    foreach(var b in ui.buttons)C(b.bounds.x>=0&&b.bounds.y>=0&&b.bounds.xMax<=ui.width&&b.bounds.yMax<=ui.height,"settlement actions remain in screen bounds");
+    string unopened=JsonUtility.ToJson(p.Profile,true);ui.DrawVictorySettlement();C(unopened==JsonUtility.ToJson(p.Profile,true),"drawing choices does not mutate rewards");
+    ui.click="开启";ui.clicked=false;ui.DrawVictorySettlement();C(p.Profile.pendingChestReveal&&ui.settlementChest!=null&&!ui.ChestAnimationDone,"choice starts persisted reward animation in same settlement");
+    Time.unscaledTime+=10;string opened=JsonUtility.ToJson(p.Profile,true);ui.click=null;ui.DrawVictorySettlement();C(opened==JsonUtility.ToJson(p.Profile,true),"animation completion never regrants items");
+    ui.CloseSettlement();C(!p.Profile.pendingChestReveal&&ui.session.FinishedResultDismissed&&!ui.session.InputBlocked,"close dismisses result and unlocks world");
    }
    foreach(bool mobile in new[]{false,true})foreach(bool reduced in new[]{false,true})foreach(float ratio in new[]{1f,2f}){
     var p=new ProgressionService(Path.Combine(root,Guid.NewGuid().ToString("N")));p.NewGame(HeroClass.Vanguard);p.PrepareDungeonChest();int events=0;p.Changed+=()=>events++;

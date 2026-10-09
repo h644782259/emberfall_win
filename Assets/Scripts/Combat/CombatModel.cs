@@ -174,7 +174,7 @@ namespace Emberfall
                 if (equipmentWeapon != null) { equipmentWeapon.gameObject.SetActive(false); Destroy(equipmentWeapon.gameObject); }
                 equipmentWeapon = null;
                 SetBaseWeaponVisible(weapon == null);
-                weaponStructure = new WeaponStructure(weapon == null ? 0 : new EquipmentAppearance(weapon).Tier);
+                weaponStructure = new WeaponStructure(weapon == null ? 0 : new EquipmentAppearance(weapon).Tier,heroClass==HeroClass.Arcanist);
                 if (bowstring != null)
                 {
                     bowstring.SetPosition(0, WeaponAnchorLocal(WeaponVisualAnchor.BowUpperTip));
@@ -307,9 +307,9 @@ namespace Emberfall
                     for (int i = 0; i < 3; i++)
                         GlowingPart("Staff rune", PrimitiveType.Sphere, new Vector3(0, .16f + i * .3f, .13f),
                             Vector3.one * .065f, look.Glow, equipmentWeapon);
-                for (int i = 0; i < look.UpgradeRank; i++)
+                for (int i = 0; i < Mathf.Min(9,look.UpgradeRank); i++)
                     GlowingPart("Staff forging mark", PrimitiveType.Sphere,
-                        new Vector3(0, -.08f + i * .115f, .14f),
+                        new Vector3(Mathf.Cos(i*Mathf.PI*2/Mathf.Min(9,look.UpgradeRank))*.28f, weaponStructure.StaffCore+Mathf.Sin(i*Mathf.PI*2/Mathf.Min(9,look.UpgradeRank))*.28f, .14f),
                         Vector3.one * .055f, look.Glow, equipmentWeapon);
             }
             else

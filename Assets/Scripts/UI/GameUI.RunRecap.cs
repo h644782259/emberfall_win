@@ -24,21 +24,129 @@ namespace Emberfall
         }
         private void CollectSettlementRewards(int selected=-1)
         {
-            var progression=session.Progression;
-            if(progression.Profile.pendingFashionChest&&!progression.Profile.pendingChestReveal)
+            var p=session.Progression;
+            if(!p.Profile.pendingFashionChest&&!p.Profile.pendingChestReveal)
             {
-                if(selected<0)return;
-                if(progression.OpenChosenDungeonChest(selected)==null)return;
+                if(session.ChapterRewardPending&&!session.TrySettleChapterReward())return;
+                if(session.DungeonRewardPending&&!session.TrySettleDungeonReward())return;
+                if(session.ModeRewardPending&&!session.TrySettleArenaReward())return;
             }
-            if(progression.Profile.pendingChestReveal){settlementChest=progression.LastChestReward;progression.AcknowledgeChestReward();if(progression.Profile.pendingChestReveal)return;}
-            if(session.ChapterRewardPending&&!session.TrySettleChapterReward())return;
-            if(session.DungeonRewardPending&&!session.TrySettleDungeonReward())return;
-            if(session.ModeRewardPending&&!session.TrySettleArenaReward())return;
+            if(selected<0||!p.Profile.pendingFashionChest||p.Profile.pendingChestReveal)return;
+            string result=p.OpenChosenDungeonChest(selected);
+            if(result==null)return;
+            settlementChest=p.LastChestReward;revealedChest=selected;chestRevealResult=result;
+            chestReceiptId=settlementChest.Id;chestRevealedAt=Time.unscaledTime;rewardSoundPlayed=false;
+            GameAudio.Play(SoundCue.Cast);
+        }
+        private void CloseSettlement()
+        {
+            // A failed receipt acknowledgement keeps the durable receipt available for retry.
+            if(session.Progression.Profile.pendingChestReveal)session.Progression.AcknowledgeChestReward();
+            session.DismissFinishedResult();
+            dismissedChestOwner=session.Progression;dismissedChestSlot=session.Progression.CurrentSlotId;
+            dismissedChestId=session.Progression.Profile.pendingChestQualificationId;
+            panel=Panel.None;session.SetUIBlocking(false);BlockUITransition();
+        }
+        private bool DrawVictorySettlement()
+        {
+            RefreshSettlementChest();
+            var p=session.Progression;float u=MobileControls.Active?TouchRatio:1;
+            float fw=Mathf.Min(width-24*u,1020*u),fh=Mathf.Min(height-24*u,620*u);
+            Rect frame=new Rect((width-fw)*.5f,(height-fh)*.5f,fw,fh);
+            Fill(new Rect(0,0,width,height),new Color(.012f,.025f,.04f,.32f));Box(frame,gold);blockedRects.Add(frame);
+            if(PopupCloseButton(new Rect(frame.xMax-48*u,frame.y+6*u,40*u,36*u)))return true;
+            Text(new Rect(frame.x+16*u,frame.y+8*u,fw-80*u,32*u),session.LastRunRecap!=null&&!session.LastRunRecap.Won?"挑战结束":"结算与奖励",Mathf.RoundToInt(22*u),gold,true);
+            var snapshot=session.LastRunRecap;
+            var data=snapshot==null?null:new RunRecapPresentation(snapshot);
+            float contentWidth=fw-32*u,top=frame.y+48*u,metricHeight=48*u;
+            if(data!=null)
+            {
+                float cw=(contentWidth-16*u)/5;
+                for(int i=0;i<data.Metrics.Length&&i<5;i++)
+                {
+                    var metric=data.Metrics[i];Rect tile=new Rect(frame.x+16*u+i*(cw+4*u),top,cw,metricHeight);
+                    Fill(tile,card);DrawIcon(new Rect(tile.x+5*u,tile.y+6*u,16*u,16*u),UIIconAtlas.Utility(RunRecapPresentation.IconFor(metric.Key)),jade);
+                    Text(new Rect(tile.x+23*u,tile.y+2*u,tile.width-26*u,23*u),metric.Value.ToString("N0"),Mathf.RoundToInt(15*u),pale,true,false,TextAnchor.MiddleRight);
+                    Text(new Rect(tile.x+3*u,tile.y+26*u,tile.width-6*u,18*u),metric.Key,Mathf.RoundToInt(10*u),muted,false,false,TextAnchor.MiddleCenter);
+                }
+            }
+            top+=metricHeight+6*u;
+            long coins=(snapshot==null?0:snapshot.RewardGold)+(settlementChest==null?0:settlementChest.hasCurrencyDeltas?settlementChest.goldDelta:settlementChest.Gold);
+            long xp=snapshot==null?0:snapshot.RewardExperience;
+            long shards=(snapshot==null?0:snapshot.RewardMaterials)+(settlementChest!=null&&settlementChest.materialKind==RewardMaterialKind.StarAshFragment?settlementChest.materialsDelta:0);
+            long stones=snapshot==null?0:snapshot.RewardRefinementStones;
+            long[] amounts={coins,xp,shards,stones,settlementChest==null?0:settlementChest.threadsDelta};
+            string[] labels={"金币","经验","碎片","洗练石","星纹"},icons={"coin","upgrade","shard","gem","core"};
+            float rw=contentWidth/5;
+            for(int i=0;i<5;i++)
+            {
+                Rect r=new Rect(frame.x+16*u+i*rw,top,rw-4*u,32*u);
+                DrawIcon(new Rect(r.x,r.y+6*u,20*u,20*u),UIIconAtlas.Utility(icons[i]),i==0?gold:jade);
+                Text(new Rect(r.x+24*u,r.y,r.width-24*u,32*u),labels[i]+" +"+amounts[i],Mathf.RoundToInt(11*u),pale,true,false,TextAnchor.MiddleLeft);
+            }
+            top+=38*u;
+            Rect stage=new Rect(frame.x+16*u,top,contentWidth,Mathf.Max(80*u,frame.yMax-top-12*u));
+            if(p.Profile.pendingChestReveal&&settlementChest!=null)
+            {
+                if(chestReceiptId!=settlementChest.Id)ResetChestReveal();
+                DrawSettlementChestStage(stage,settlementChest,u);
+            }
+            else if(settlementChest!=null)DrawSettlementChestStage(stage,settlementChest,u);
+            else if(p.Profile.pendingFashionChest)
+            {
+                Text(new Rect(stage.x,stage.y,stage.width,24*u),"选择你的通关宝箱",Mathf.RoundToInt(15*u),gold,true,false,TextAnchor.MiddleCenter);
+                float cw=(stage.width-16*u)/3;int locked=p.SelectedRewardChest;
+                for(int i=0;i<3;i++)
+                {
+                    Rect tile=new Rect(stage.x+i*(cw+8*u),stage.y+28*u,cw,stage.height-28*u);
+                    Rect art=new Rect(tile.x+4*u,tile.y,tile.width-8*u,Mathf.Max(36*u,tile.height-44*u));
+                    DrawRewardChest(art,false,1,0);
+                    if(Button(new Rect(tile.x+4*u,tile.yMax-40*u,tile.width-8*u,36*u),locked==i?"继续开启":"开启",gold,locked<0||locked==i))
+                    {chestRevealOrigin=art;CollectSettlementRewards(i);}
+                }
+            }
+            else if(SettlementRewardsPending)
+            {
+                Text(new Rect(stage.x,stage.y,stage.width,40*u),"奖励尚未保存，请重试。",Mathf.RoundToInt(14*u),gold,false,true,TextAnchor.MiddleCenter);
+                if(Button(new Rect(stage.center.x-90*u,stage.center.y,180*u,40*u),"重试领取",gold))CollectSettlementRewards();
+            }
+            else Text(stage,"本次奖励已收下",Mathf.RoundToInt(16*u),jade,true,false,TextAnchor.MiddleCenter);
+            if(!string.IsNullOrEmpty(p.LastError))Text(new Rect(stage.x,stage.yMax-24*u,stage.width,24*u),"保存暂未完成，可重试或关闭后继续游戏",Mathf.RoundToInt(11*u),gold,false,false,TextAnchor.MiddleCenter);
+            return false;
+        }
+        private void DrawSettlementChestStage(Rect stage,ChestReward reward,float u)
+        {
+            float size=Mathf.Min(stage.height,stage.width*.62f);
+            Rect art=new Rect(stage.center.x-size*.5f,stage.y,size,size);
+            bool animating=chestReceiptId==reward.Id&&!ChestAnimationDone;
+            float progress=animating?ChestRevealPresentation.Progress(Time.unscaledTime-chestRevealedAt,ChestDuration):1;
+            if(animating)DrawChestRevealTransition(stage,reward,art);else DrawRewardChest(art,true,1,1);
+            if(progress<.55f)return;
+            var icons=new System.Collections.Generic.List<EntryRewardPreview>();
+            if(reward.equipmentIds!=null)foreach(string id in reward.equipmentIds)
+            {var item=session.Progression.Profile.inventory.Find(v=>v!=null&&v.id==id);if(item!=null)icons.Add(ActualEquipmentPreview(item));}
+            if(reward.Rarity.HasValue&&reward.Slot.HasValue)
+                icons.Add(new EntryRewardPreview{Key="fashion:"+reward.Id,Name=reward.Name,Rarity=reward.Rarity.Value,Tint=GameBalance.RarityColor(reward.Rarity.Value),Icon=UIIconAtlas.FashionCardIcon(reward.Slot.Value,(int)reward.Rarity.Value,session.Progression.Profile.heroClass),Description=ProgressionService.FashionBonus(reward.Slot.Value,reward.Rarity.Value)});
+            if(reward.gemMechanic!=EquipmentMechanic.None)
+                icons.Add(new EntryRewardPreview{Key="gem:"+reward.Id,Name=BuildCatalog.GemName(reward.gemMechanic),Rarity=reward.gemRarity,Tint=GameBalance.RarityColor(reward.gemRarity),Icon=UIIconAtlas.Utility("gem"),Description=BuildCatalog.MechanicDescription(reward.gemMechanic)});
+            if(icons.Count==0){DrawChestResourceVisuals(new Rect(art.x,art.center.y,art.width,art.height*.4f),reward);return;}
+            int cols=Mathf.Min(3,icons.Count),rows=(icons.Count+cols-1)/cols;
+            float cell=Mathf.Min(66*u,Mathf.Min(art.width/(cols+.5f),stage.height/(rows+1))),gap=8*u;
+            float scale=Mathf.SmoothStep(.35f,1,Mathf.Clamp01((progress-.55f)/.35f));
+            for(int i=0;i<icons.Count;i++)
+            {
+                float x=stage.center.x-(cols*cell+(cols-1)*gap)*.5f+(i%cols)*(cell+gap);
+                float y=stage.center.y-(rows*cell+(rows-1)*gap)*.5f+(i/cols)*(cell+gap)-12*u;
+                Rect icon=new Rect(x+(1-scale)*cell*.5f,y+(1-scale)*cell*.5f,cell*scale,cell*scale);
+                DrawEntryRewardIcon(icon,icons[i],u);InspectRewardItem(icon,icons[i]);
+            }
+            if(!animating)Text(new Rect(stage.x,stage.yMax-28*u,stage.width,24*u),"奖励已获得",Mathf.RoundToInt(13*u),gold,true,false,TextAnchor.MiddleCenter);
         }
 
         // Returns only the explicit primary action. Respawn/navigation stays with the caller.
         private bool DrawStructuredRunRecap(bool death)
         {
+            if(!death)return DrawVictorySettlement();
             RefreshSettlementChest();
             bool mobile=MobileControls.Active;
             float unit=mobile?TouchRatio:1f;
@@ -68,11 +176,7 @@ namespace Emberfall
             Rect viewport=RecapRect(layout.Viewport,unit);
             float statusHeight=RecapStatusHeight(layout,unit);
             float rewardHeight=settlementChest==null?0:DrawChestRewardContents(layout.ContentWidth,unit,settlementChest,null,false,false)+36;
-            var pickedIds=new List<string>();
-            foreach(string id in session.RunItemIds)
-                if(settlementChest==null||settlementChest.equipmentIds==null||System.Array.IndexOf(settlementChest.equipmentIds,id)<0)pickedIds.Add(id);
-            var pickedReward=new ChestReward{equipmentIds=pickedIds.ToArray()};
-            float pickupHeight=pickedIds.Count==0?0:DrawChestRewardContents(layout.ContentWidth,unit,pickedReward,null,false,false)+12;
+            float pickupHeight=0;
             float choiceHeight=session.Progression.Profile.pendingFashionChest?180:0;
             float contentHeight=RecapContentHeight(layout,data)+statusHeight+rewardHeight+pickupHeight+choiceHeight;
             recapScroll=BeginTouchScroll("recap",viewport,recapScroll,new Rect(0,0,layout.ContentWidth*unit,Mathf.Max(viewport.height,contentHeight*unit)));
@@ -89,12 +193,6 @@ namespace Emberfall
                 float rewardTop=(RecapContentHeight(layout,data)+statusHeight)*unit;
                 GUI.BeginGroup(new Rect(0,rewardTop,layout.ContentWidth*unit,rewardHeight*unit));
                 DrawChestRewardContents(layout.ContentWidth,unit,settlementChest,null,true,false);
-                GUI.EndGroup();
-            }
-            if(pickupHeight>0)
-            {
-                GUI.BeginGroup(new Rect(0,(RecapContentHeight(layout,data)+statusHeight+rewardHeight)*unit,layout.ContentWidth*unit,pickupHeight*unit));
-                DrawChestRewardContents(layout.ContentWidth,unit,pickedReward,null,true,false);
                 GUI.EndGroup();
             }
             if(choiceHeight>0)

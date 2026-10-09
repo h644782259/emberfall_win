@@ -90,7 +90,7 @@ namespace Emberfall
             float u=MobileControls.Active?TouchRatio:1;
             Rect w=Modal(Mathf.Min(width-24,780*u),Mathf.Min(height-24,300*u),"营地工坊","职业能力与精通已并入技能；兑换请与商人对话，试炼请打开右上目标。");
             if(PopupCloseButton(new Rect(w.xMax-64*u,w.y+20*u,40*u,32*u)))ClosePanel();
-            Text(new Rect(w.x+24*u,w.y+116*u,w.width-48*u,100*u),"技能：等级成长、职业精通与技能模式。\n目标：实战试炼、进度、奖励和下一步指引。\n商人：机制兑换、药剂与交易。",Mathf.RoundToInt(16*u),pale,false,true);
+            Text(new Rect(w.x+24*u,w.y+116*u,w.width-48*u,100*u),"技能：等级成长、职业精通与技能模式。\n目标：实战试炼、进度、奖励和下一步指引。\n商人：宝石兑换、药剂与交易。",Mathf.RoundToInt(16*u),pale,false,true);
         }
 
         private void DrawComboCounter()
@@ -114,9 +114,7 @@ namespace Emberfall
             Rect w=Modal(Mathf.Min(width-24,500*u),Mathf.Min(height-24,250*u),"传送点","");
             if(PopupCloseButton(new Rect(w.xMax-54*u,w.y+12*u,44*u,44*u))){ClosePanel();return;}
             float x=w.x+24*u,y=w.y+106*u,bw=(w.width-56*u)*.5f;
-            if(Button(new Rect(x,y,w.width-48*u,44*u),"结算与奖励",gold))
-            {panel=Panel.Summary;session.SetUIBlocking(true);BlockUITransition();return;}
-            y+=52*u;
+
             if(Button(new Rect(x,y,bw,44*u),"挑战下一阶",gold,session.CanChallengeNextTier))
             {
                 session.SetUIBlocking(false);
@@ -166,7 +164,7 @@ namespace Emberfall
 
         private void DrawRunSummary()
         {
-            if(DrawStructuredRunRecap(false))ClosePanel();
+            if(DrawStructuredRunRecap(false))CloseSettlement();
         }
 
         private void DrawAccessibilityStrip(Rect r)

@@ -268,7 +268,7 @@ namespace Emberfall
             float size=rect.width*.66f;GUI.DrawTexture(new Rect(rect.center.x-size*.5f,rect.center.y-size*.5f,size,size),UIIconAtlas.Utility(icon),ScaleMode.ScaleToFit,true);GUI.color=Color.white;
         }
         private Rect PotionVisualRect()
-        { Rect hit=Potion;float size=36*EffectPreferences.TouchVisualScale;return new Rect(hit.center.x-size*.5f,hit.center.y-size*.5f,size,size); }
+        { return VisualRect(Potion); }
         private void Circle(Rect rect, Color color, string icon,bool button=true)
         {
             if(button){rect=VisualRect(rect);color.a*=EffectPreferences.TouchOpacity;}

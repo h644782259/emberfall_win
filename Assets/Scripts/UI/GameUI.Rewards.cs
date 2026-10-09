@@ -26,14 +26,14 @@ namespace Emberfall
             dismissedChestId=session.Progression.Profile.pendingChestQualificationId;
             panel=Panel.None;session.SetUIBlocking(false);BlockUITransition();
         }
-        private bool PendingChestReturnVisible {get{return !session.InDungeon&&ChestDismissed&&panel==Panel.None&&!session.Paused&&!session.IsDead&&!session.InputBlocked&&(session.Progression.Profile.pendingFashionChest||session.Progression.Profile.pendingChestReveal);}}
+        private bool PendingChestReturnVisible {get{return (ChestDismissed||session.InDungeon&&session.FinishedResultDismissed&&SettlementRewardsPending)&&panel==Panel.None&&!session.Paused&&!session.IsDead&&!session.InputBlocked&&SettlementRewardsPending;}}
         private Rect PendingChestReturnRect()
         {float u=MobileControls.Active?TouchRatio:1;return new Rect((width-168*u)*.5f,12*u,168*u,44*u);}
         private void DrawPendingChestReturn()
         {
             if(!PendingChestReturnVisible)return;
             if(Button(PendingChestReturnRect(),"领取宝箱",gold))
-            {dismissedChestOwner=null;ResetChestReveal();mobileChestError=null;panel=Panel.Chests;session.SetUIBlocking(true);BlockUITransition();}
+            {dismissedChestOwner=null;ResetChestReveal();mobileChestError=null;panel=session.InDungeon?Panel.Summary:Panel.Chests;session.SetUIBlocking(true);BlockUITransition();}
         }
 
         private void OpenChestRecoveryService()

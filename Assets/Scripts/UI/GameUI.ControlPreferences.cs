@@ -69,7 +69,7 @@ namespace Emberfall
         private void DrawMobileBindingEditor()
         {
             EnsureMobileBindings();var layout=MobileControls.Layout;float u=TouchRatio;
-            Fill(new Rect(0,0,width,height),new Color(.012f,.025f,.04f,.97f));
+            Fill(new Rect(0,0,width,height),new Color(.012f,.025f,.04f,.35f));
             float panelWidth=Mathf.Min(880,layout.Width-24),x=(layout.Width-panelWidth)*.5f;
             Text(TouchRect(x,8,panelWidth-100,34),"技能按键配置",TouchFont(21),pale,true);
             if(QuietAction(TouchRect(x+panelWidth-96,8,96,40),"返回设置"))

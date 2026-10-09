@@ -100,7 +100,7 @@ namespace Emberfall
    {
     arenaResultRecorded=true;DungeonCleared=ModeRun.Status==ExpeditionModeStatus.Won;
     if(DungeonCleared){TrySettleArenaReward();GameAudio.Play(SoundCue.Victory);}else Notify(ModeObjectiveStatus);
-    LastRunSummary=BuildRunSummary(DungeonCleared);SuspendInputs();if(DungeonCleared)DismissFinishedResult();UpdateTimeScale();
+    LastRunSummary=BuildRunSummary(DungeonCleared);SuspendInputs();UpdateTimeScale();
    }
   }
   private bool ConfirmArenaBlessing(int index)

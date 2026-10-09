@@ -107,7 +107,7 @@ namespace Emberfall
    if(RoomChainRun==null||!RoomChainRun.Finished||roomResultRecorded)return;
    roomResultRecorded=true;DungeonCleared=!RoomChainRun.Failed;
    if(DungeonCleared){TrySettleRoomReward();GameAudio.Play(SoundCue.Victory);}
-   LastRunSummary=BuildRunSummary(DungeonCleared);SuspendInputs();if(DungeonCleared)DismissFinishedResult();UpdateTimeScale();
+   LastRunSummary=BuildRunSummary(DungeonCleared);SuspendInputs();UpdateTimeScale();
   }
   private bool TrySettleRoomReward()
   {

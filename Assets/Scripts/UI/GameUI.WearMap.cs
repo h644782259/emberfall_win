@@ -12,17 +12,16 @@ namespace Emberfall
         private void DrawCharacterStats(Rect area,float u)
         {
             var stats=session.Progression.GetStats();
-            string[] labels={"攻击","防御","生命上限","移动速度","暴击率","暴击伤害","护甲减伤","额外减伤","能量上限","能量回复 / 秒","技能冷却缩减","高生命伤害加成","低生命额外减伤","低能量回复加成"};
-            string[] values={Mathf.RoundToInt(stats.Damage).ToString(),Mathf.RoundToInt(stats.Armor).ToString(),Mathf.RoundToInt(stats.MaxHealth).ToString(),stats.MoveSpeed.ToString("0.00"),(stats.CritChance*100).ToString("0.##")+"%",((1.65f+stats.CritDamageBonus)*100).ToString("0.##")+"%",((1-CombatBalance.ArmorDamageMultiplier(stats.Armor,session.Progression.Profile.level))*100).ToString("0.#")+"%",(stats.DamageReduction*100).ToString("0.#")+"%",SkillRuntime.MaximumEnergy.ToString("0"),(SkillRuntime.EnergyPerSecond*(1+stats.EnergyRecovery)).ToString("0.##"),(stats.CooldownReduction*100).ToString("0.#")+"%",(stats.GemHealthyDamage*100).ToString("0.#")+"%",(stats.GemLowHealthGuard*100).ToString("0.#")+"%",(stats.GemLowEnergyRecovery*100).ToString("0.#")+"%"};
+            string[] labels={"攻击","防御","生命上限","移动速度","暴击率","暴击伤害","护甲减伤","额外减伤","能量上限","能量回复 / 秒"};
+            string[] values={Mathf.RoundToInt(stats.Damage).ToString(),Mathf.RoundToInt(stats.Armor).ToString(),Mathf.RoundToInt(stats.MaxHealth).ToString(),stats.MoveSpeed.ToString("0.00"),(stats.CritChance*100).ToString("0.##")+"%",((1.65f+stats.CritDamageBonus)*100).ToString("0.##")+"%",((1-CombatBalance.ArmorDamageMultiplier(stats.Armor,session.Progression.Profile.level))*100).ToString("0.#")+"%",(stats.DamageReduction*100).ToString("0.#")+"%",SkillRuntime.MaximumEnergy.ToString("0"),(SkillRuntime.EnergyPerSecond*(1+stats.EnergyRecovery)).ToString("0.##")};
             float contentWidth=area.width-18*u,rowHeight=32*u;
-            inventoryStatsScroll=BeginTouchScroll("inventory-character-stats",area,inventoryStatsScroll,new Rect(0,0,contentWidth,(labels.Length*32+62)*u));
+            inventoryStatsScroll=BeginTouchScroll("inventory-character-stats",area,inventoryStatsScroll,new Rect(0,0,contentWidth,labels.Length*32*u));
             for(int i=0;i<labels.Length;i++)
             {
                 Rect row=new Rect(0,i*rowHeight,contentWidth,rowHeight-2*u);if(i%2==0)Fill(row,new Color(.03f,.06f,.08f,.8f));
                 Text(new Rect(5*u,row.y,row.width*.64f-5*u,row.height),labels[i],Mathf.RoundToInt(11*u),muted);
                 Text(new Rect(row.width*.64f,row.y,row.width*.36f-5*u,row.height),values[i],Mathf.RoundToInt(12*u),i==0?gold:pale,true,false,TextAnchor.MiddleRight);
             }
-            Text(new Rect(4*u,labels.Length*rowHeight,contentWidth-8*u,60*u),"常驻属性（含装备、宝石、精通和最高品质时装）\n高生命≥80% · 低生命≤50% · 低能量<50%",Mathf.RoundToInt(10*u),muted,false,true);
             EndTouchScroll();
         }
         private void DrawCurrentWear(Rect area,float u)
@@ -51,7 +50,8 @@ namespace Emberfall
                 bool slotUpgrade=false;
                 foreach(var candidate in p.Profile.inventory)if(candidate.slot==(ItemSlot)slot&&UnreviewedEquipmentUpgrade(candidate)){slotUpgrade=true;break;}
                 if(slotUpgrade)DrawIcon(new Rect(r.xMax-18*u,r.yMax-31*u,18*u,18*u),UIIconAtlas.EquipmentUpgradeArrow(),new Color(.25f,1f,.4f));
-                if(QuietAction(r,"",item!=null&&!inventoryComparisonOpen))
+                if(item!=null)DesktopInventoryGesture(r,r,item.id);
+                if(MobileControls.Active&&QuietAction(r,"",item!=null&&!inventoryComparisonOpen))
                 {mobileInventoryTab=0;OpenInventoryPopup(item.id,r);}
             }
         }
@@ -71,7 +71,8 @@ namespace Emberfall
                 if(item!=null)
                 {
                     Text(new Rect(r.xMax-18*u,r.y+2*u,16*u,16*u),"✓",Mathf.RoundToInt(11*u),jade,true);
-                    if(QuietAction(r,"",!inventoryComparisonOpen)){OpenInventoryPopup("@fashion:"+item.id,r);}
+                    DesktopInventoryGesture(r,r,"@fashion:"+item.id);
+                    if(MobileControls.Active&&QuietAction(r,"",!inventoryComparisonOpen)){OpenInventoryPopup("@fashion:"+item.id,r);}
                 }
             }
         }
@@ -81,7 +82,7 @@ namespace Emberfall
             var owned=new System.Collections.Generic.List<FashionData>(session.Progression.Profile.fashions);
             owned.RemoveAll(f=>f==null);owned.Sort((a,b)=>{int c=a.slot.CompareTo(b.slot);if(c==0)c=b.rarity.CompareTo(a.rarity);return c!=0?c:string.CompareOrdinal(a.id,b.id);});
             var grid=new InventoryGridGeometry(bounds.width/u-18,MobileControls.Active?60:44);float h=Mathf.Max(bounds.height,((owned.Count+grid.Columns-1)/grid.Columns)*grid.Stride*u);
-            bool prior=GUI.enabled;GUI.enabled=prior&&!inventoryComparisonOpen&&inventoryPopupDismissed!=Time.frameCount;
+            bool prior=GUI.enabled;GUI.enabled=prior&&(!MobileControls.Active||!inventoryComparisonOpen)&&inventoryPopupDismissed!=Time.frameCount;
             Vector2 before=mobileFashionScroll;mobileFashionScroll=BeginTouchScroll("inventory-fashion-grid",bounds,mobileFashionScroll,new Rect(0,0,bounds.width-18*u,h));
             string chosen=null;Rect anchor=default;
             for(int i=0;i<owned.Count;i++)
@@ -93,7 +94,9 @@ namespace Emberfall
                 for(int pip=0;pip<=(int)f.rarity;pip++)Fill(new Rect(tile.x+(3+pip*5)*u,tile.y+3*u,3*u,3*u),pale);
                 var worn=session.Progression.EquippedFashion(f.slot);bool equipped=worn!=null&&worn.id==f.id;
                 Text(new Rect(tile.x+2*u,tile.yMax-14*u,tile.width-4*u,14*u),(equipped?"✓ ":"")+(f.slot==FashionSlot.Wings?"翼":"刃"),Mathf.RoundToInt(9*u),pale,true,false,TextAnchor.MiddleRight);
-                if(GUI.Button(tile,GUIContent.none,invisibleButton)){chosen="@fashion:"+f.id;anchor=new Rect(bounds.x+tile.x,bounds.y+tile.y-mobileFashionScroll.y,tile.width,tile.height);}
+                Rect screenTile=new Rect(bounds.x+tile.x,bounds.y+tile.y-mobileFashionScroll.y,tile.width,tile.height);
+                DesktopInventoryGesture(tile,screenTile,"@fashion:"+f.id);
+                if(GUI.Button(tile,GUIContent.none,invisibleButton)){if(MobileControls.Active){chosen="@fashion:"+f.id;anchor=screenTile;}else DesktopInventoryClick("@fashion:"+f.id);}
             }
             if(owned.Count==0)Text(new Rect(8*u,12*u,bounds.width-34*u,48*u),"暂无已拥有时装",Mathf.RoundToInt(13*u),muted);
             EndTouchScroll();GUI.enabled=prior;if(before!=mobileFashionScroll)inventoryComparisonOpen=false;
@@ -107,13 +110,13 @@ namespace Emberfall
             Rect tile=new Rect(bounds.x,bounds.y,cellSize*u,cellSize*u);Fill(tile,card);Border(tile,jade);
             DrawIcon(new Rect(tile.x+5*u,tile.y+3*u,tile.width-10*u,tile.height-17*u),UIIconAtlas.Utility("potion"),jade);
             Text(new Rect(tile.x,tile.yMax-14*u,tile.width-2*u,14*u),session.Progression.Profile.potions.ToString(),Mathf.RoundToInt(9*u),pale,true,false,TextAnchor.MiddleRight);
-            bool prior=GUI.enabled;GUI.enabled=prior&&!inventoryComparisonOpen&&inventoryPopupDismissed!=Time.frameCount;
-            if(GUI.Button(tile,GUIContent.none,invisibleButton))OpenInventoryPopup("@potion",tile);
+            bool prior=GUI.enabled;GUI.enabled=prior&&(!MobileControls.Active||!inventoryComparisonOpen)&&inventoryPopupDismissed!=Time.frameCount;
+            DesktopInventoryGesture(tile,tile,"@potion");
+            if(GUI.Button(tile,GUIContent.none,invisibleButton)){if(MobileControls.Active)OpenInventoryPopup("@potion",tile);else DesktopInventoryClick("@potion");}
             Rect stone=new Rect(bounds.x,bounds.y+(cellSize+12)*u,cellSize*u,cellSize*u);Fill(stone,card);Border(stone,gold);
             DrawIcon(new Rect(stone.x+5*u,stone.y+3*u,stone.width-10*u,stone.height-17*u),UIIconAtlas.Utility("gem"),gold);
             Text(new Rect(stone.x,stone.yMax-16*u,stone.width-3*u,16*u),session.Progression.Profile.refinementStones.ToString(),Mathf.RoundToInt(10*u),pale,true,false,TextAnchor.MiddleRight);
             Text(new Rect(stone.xMax+10*u,stone.y,bounds.width-stone.width-12*u,24*u),"装备洗练石",Mathf.RoundToInt(13*u),gold,true);
-            Text(new Rect(stone.xMax+10*u,stone.y+26*u,bounds.width-stone.width-12*u,52*u),"铁匠洗练装备 · 数值只升不降\n主要产地：赤岩断供",Mathf.RoundToInt(11*u),muted,false,true);
             GUI.enabled=prior;DrawInventoryPopup(bounds,u);
         }
     }

@@ -254,7 +254,7 @@ namespace Emberfall
                 random=Mix(unchecked(random+0x9e3779b9u));int swap=(int)(random%(uint)(i+1));
                 var old=enemies[i];enemies[i]=enemies[swap];enemies[swap]=old;
             }
-            return new ExpeditionPhasePlan(phase,phaseSeed,enemies,Math.Min(8,count),Mode==ExpeditionModeKind.HoldPoint?12+phase*3:0,ExpeditionBossPattern.None);
+            return new ExpeditionPhasePlan(phase,phaseSeed,enemies,Math.Min(8,count),Mode==ExpeditionModeKind.HoldPoint?5+phase:0,ExpeditionBossPattern.None);
         }
         private static uint Mix(uint value)
         {

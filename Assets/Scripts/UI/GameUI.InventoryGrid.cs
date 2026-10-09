@@ -96,6 +96,11 @@ namespace Emberfall
         private void PrepareInventoryPopupInput()
         {
             if(!inventoryComparisonOpen)return;
+            if(!MobileControls.Active)
+            {
+                if(!inventoryPopupRect.Contains(Mouse)&&!inventoryPopupAnchor.Contains(Mouse))inventoryComparisonOpen=false;
+                return;
+            }
             var e=Event.current;
             if(e.type==EventType.ScrollWheel || e.type==EventType.MouseDown&&!inventoryPopupRect.Contains(Mouse))
             {inventoryComparisonOpen=false;inventoryPopupDismissed=Time.frameCount;CancelMobileScroll();BlockUITransition();e.Use();}
@@ -106,6 +111,35 @@ namespace Emberfall
             inventoryComparisonOpen=true;inventoryPopupOpened=Time.frameCount;inventoryComparisonScroll=Vector2.zero;
             if(!id.StartsWith("@")){selectedItem=id;ReviewEquipment(session.Progression.Profile.inventory.Find(v=>v!=null&&v.id==id));}
             CancelMobileScroll();
+        }
+        private string inventoryLastClick;
+        private float inventoryLastClickAt=-10;
+        private bool DesktopInventoryGesture(Rect local,Rect anchor,string id)
+        {
+            if(MobileControls.Active)return false;
+            if(local.Contains(Event.current.mousePosition)&&Event.current.type==EventType.Repaint)
+            {
+                if(!inventoryComparisonOpen||inventoryPopupItem!=id)OpenInventoryPopup(id,anchor);
+                else inventoryPopupAnchor=anchor;
+            }
+            return true;
+        }
+        private void DesktopInventoryClick(string id)
+        {
+            bool twice=inventoryLastClick==id&&Time.unscaledTime-inventoryLastClickAt<.4f;
+            inventoryLastClick=id;inventoryLastClickAt=Time.unscaledTime;
+            if(!twice)return;
+            inventoryLastClick=null;
+            var p=session.Progression;
+            if(id=="@potion")session.DrinkPotion();
+            else if(id.StartsWith("@fashion:"))MobileFashionResult(p.EquipFashion(id.Substring(9)),"外观已穿戴");
+            else MobileInventoryResult(p.Equip(id),"装备已穿戴");
+        }
+        private Rect DesktopInventorySheet(float w,float h)
+        {
+            float x=inventoryPopupAnchor.xMax+12;
+            if(x+w>width-12)x=inventoryPopupAnchor.x-w-12;
+            return new Rect(Mathf.Clamp(x,12,Mathf.Max(12,width-w-12)),Mathf.Clamp(inventoryPopupAnchor.y,12,Mathf.Max(12,height-h-12)),w,h);
         }
         private void DrawInventoryIcon(Rect tile,ItemData item,float u)
         {
@@ -129,13 +163,13 @@ namespace Emberfall
                 Rect hit=new Rect(area.X*u,area.Y*u,area.Width*u,area.Height*u);
                 bool selected=inventoryFilter==index-1;
                 if(selected)Fill(hit,new Color(gold.r,gold.g,gold.b,.08f));
-                if(QuietAction(hit,filters[index],!inventoryComparisonOpen,null,selected))
+                if(QuietAction(hit,filters[index],(!MobileControls.Active||!inventoryComparisonOpen),null,selected))
                 {inventoryFilter=index-1;scroll=Vector2.zero;RebuildBagItems();ResolveSelectedItem();CancelMobileScroll();}
             }
             viewport.width-=InventoryGridGeometry.FilterRailWidth*u;
             float available=viewport.width/u-18;var geometry=new InventoryGridGeometry(available,MobileControls.Active?60:44);
             float contentHeight=Mathf.Max(viewport.height/u,((bagItems.Count+geometry.Columns-1)/geometry.Columns)*geometry.Stride+4);
-            bool previous=GUI.enabled;GUI.enabled=previous&&!inventoryComparisonOpen&&inventoryPopupDismissed!=Time.frameCount;
+            bool previous=GUI.enabled;GUI.enabled=previous&&(!MobileControls.Active||!inventoryComparisonOpen)&&inventoryPopupDismissed!=Time.frameCount;
             Vector2 before=scroll;
             scroll=BeginTouchScroll("inventory-icon-grid",viewport,scroll,new Rect(0,0,available*u,contentHeight*u));
             string chosen=null;Rect anchor=default;
@@ -144,7 +178,9 @@ namespace Emberfall
                 var cell=geometry.Tile(index);Rect tile=new Rect(cell.X*u,cell.Y*u,cell.Width*u,cell.Height*u);
                 if(tile.yMax<scroll.y||tile.y>scroll.y+viewport.height)continue;
                 var item=bagItems[index];DrawInventoryIcon(tile,item,u);
-                if(GUI.Button(tile,GUIContent.none,invisibleButton)){chosen=item.id;anchor=new Rect(viewport.x+tile.x,viewport.y+tile.y-scroll.y,tile.width,tile.height);}
+                Rect screenTile=new Rect(viewport.x+tile.x,viewport.y+tile.y-scroll.y,tile.width,tile.height);
+                DesktopInventoryGesture(tile,screenTile,item.id);
+                if(GUI.Button(tile,GUIContent.none,invisibleButton)){if(MobileControls.Active){chosen=item.id;anchor=screenTile;}else DesktopInventoryClick(item.id);}
             }
             if(bagItems.Count==0)Text(new Rect(8*u,12*u,available*u-16*u,48*u),"这个分类暂无装备",Mathf.RoundToInt(14*u),muted);
             EndTouchScroll();GUI.enabled=previous;
@@ -156,7 +192,7 @@ namespace Emberfall
         {
             bool compactCompare=inventoryPopupCompare&&height/u<400;
             float sheetWidth=Mathf.Min(compactCompare?520:380,(width/u)-40),sheetHeight=Mathf.Min(480,(height/u)-32);
-            Rect r=inventoryPopupRect=new Rect((width-sheetWidth*u)*.5f,(height-sheetHeight*u)*.5f,sheetWidth*u,sheetHeight*u);
+            Rect r=inventoryPopupRect=MobileControls.Active?new Rect((width-sheetWidth*u)*.5f,(height-sheetHeight*u)*.5f,sheetWidth*u,sheetHeight*u):DesktopInventorySheet(sheetWidth,sheetHeight);
             Fill(r,new Color(.025f,.055f,.075f,.995f));Border(r,jade);
             bool prior=GUI.enabled;GUI.enabled=prior&&Time.frameCount!=inventoryPopupOpened;
             Text(new Rect(r.x+12*u,r.y+4*u,46*u,36*u),"Lv"+item.level,Mathf.RoundToInt(13*u),item.level>session.Progression.Profile.level?new Color(1f,.35f,.3f):gold,true,false,TextAnchor.MiddleLeft);
@@ -200,7 +236,7 @@ namespace Emberfall
             while(font>Mathf.RoundToInt(11*u)&&Style(font,false,true).CalcHeight(new GUIContent(mechanism),mechanismRect.width)>mechanismRect.height)font--;
             Text(mechanismRect,mechanism,font,pale,false,true);
             bool worn=IsEquipped(item);float buttonWidth=r.width-24*u;
-            if(InventoryPictogramAction(new Rect(r.x+12*u,r.yMax-52*u,buttonWidth,44*u),worn?"脱下":"穿戴",UIIconAtlas.Utility("confirm"),worn||item.level<=p.Profile.level,worn,true))
+            if(MobileControls.Active&&InventoryPictogramAction(new Rect(r.x+12*u,r.yMax-52*u,buttonWidth,44*u),worn?"脱下":"穿戴",UIIconAtlas.Utility("confirm"),worn||item.level<=p.Profile.level,worn,true))
             {
                 bool saved=worn?p.Unequip(item.slot):p.Equip(item.id);MobileInventoryResult(saved,worn?"装备已脱下":"装备已穿戴");
                 inventoryPopupOpened=Time.frameCount;if(saved){inventoryComparisonOpen=false;CancelMobileScroll();}
@@ -218,7 +254,7 @@ namespace Emberfall
             if(item!=null){DrawEquipmentSheet(item,u);return;}
             var area=InventoryGridGeometry.Popup(new MobilePanelLayout.Area(bounds.x/u,bounds.y/u,bounds.width/u,bounds.height/u),new MobilePanelLayout.Area(inventoryPopupAnchor.x/u,inventoryPopupAnchor.y/u,inventoryPopupAnchor.width/u,inventoryPopupAnchor.height/u),inventoryPopupCompare||item!=null);
             Rect r=inventoryPopupRect=new Rect(area.X*u,area.Y*u,area.Width*u,area.Height*u);
-            if(fashion){float fw=Mathf.Min(420*u,width-24*u),fh=Mathf.Min(240*u,height-24*u);r=inventoryPopupRect=new Rect((width-fw)*.5f,(height-fh)*.5f,fw,fh);}
+            if(fashion){float fw=Mathf.Min(420*u,width-24*u),fh=Mathf.Min(320*u,height-24*u);r=inventoryPopupRect=MobileControls.Active?new Rect((width-fw)*.5f,(height-fh)*.5f,fw,fh):DesktopInventorySheet(fw,fh);}
             Fill(r,new Color(.025f,.055f,.075f,.99f));Border(r,jade);
             bool prior=GUI.enabled;GUI.enabled=prior&&Time.frameCount!=inventoryPopupOpened;
             if(potion||fashion)
@@ -242,7 +278,22 @@ namespace Emberfall
 
             if(PopupCloseButton(new Rect(r.xMax-44*u,r.y,44*u,44*u))){inventoryComparisonOpen=false;BlockUITransition();}
             if(potion||fashion)Text(new Rect(r.x+8*u,r.y+42*u,r.width-16*u,22*u),potion?"恢复50%生命":"时装 · "+GameBalance.RarityName(appearance.rarity),Mathf.RoundToInt(12*u),muted);
-            if(fashion)Text(new Rect(r.x+12*u,r.y+120*u,r.width-24*u,Mathf.Max(30*u,r.height-132*u)),ProgressionService.FashionBonus(appearance.slot,appearance.rarity)+"\n同部位按已收藏的最高品质生效",Mathf.RoundToInt(13*u),pale,false,true);
+            if(fashion)
+            {
+                var current=session.Progression.EquippedFashion(appearance.slot);
+                float top=MobileControls.Active?120:76,cell=(r.width-32*u)/2;
+                for(int col=0;col<2;col++)
+                {
+                    var f=col==0?current:appearance;Rect compare=new Rect(r.x+(12+col*(cell/u+8))*u,r.y+top*u,cell,r.height-(top+12)*u);
+                    Fill(compare,card);Text(new Rect(compare.x+6*u,compare.y,compare.width-12*u,24*u),col==0?"当前穿戴":"所选时装",Mathf.RoundToInt(12*u),col==0?muted:jade,true);
+                    if(f!=null)
+                    {
+                        DrawIcon(new Rect(compare.center.x-20*u,compare.y+28*u,40*u,40*u),UIIconAtlas.FashionCardIcon(f.slot,(int)f.AppearanceRarity,session.Progression.Profile.heroClass),GameBalance.RarityColor(f.rarity));
+                        Text(new Rect(compare.x+6*u,compare.y+72*u,compare.width-12*u,compare.height-76*u),ProgressionService.FashionName(f.slot,f.AppearanceRarity,session.Progression.Profile.heroClass)+"\n"+ProgressionService.FashionBonus(f.slot,f.rarity),Mathf.RoundToInt(11*u),pale,false,true);
+                    }
+                    else Text(new Rect(compare.x+6*u,compare.y+40*u,compare.width-12*u,32*u),"未穿戴",Mathf.RoundToInt(12*u),muted);
+                }
+            }
             float actionWidth=(r.width-16*u)*.5f;
             if(potion)
             {
@@ -252,7 +303,7 @@ namespace Emberfall
             else if(fashion)
             {
                 var current=session.Progression.EquippedFashion(appearance.slot);bool worn=current!=null&&current.id==appearance.id;
-                if(InventoryPictogramAction(new Rect(r.x+8*u,r.y+68*u,r.width-16*u,44*u),worn?"卸下":"穿戴",UIIconAtlas.FashionCardIcon(appearance.slot,(int)appearance.AppearanceRarity,session.Progression.Profile.heroClass),true,worn,true))
+                if(MobileControls.Active&&InventoryPictogramAction(new Rect(r.x+8*u,r.y+68*u,r.width-16*u,44*u),worn?"卸下":"穿戴",UIIconAtlas.FashionCardIcon(appearance.slot,(int)appearance.AppearanceRarity,session.Progression.Profile.heroClass),true,worn,true))
                 {MobileFashionResult(worn?session.Progression.UnequipFashion(appearance.slot):session.Progression.EquipFashion(appearance.id),worn?"已卸下外观":"外观已穿戴");inventoryPopupOpened=Time.frameCount;}
             }
             else

@@ -40,7 +40,7 @@ namespace Emberfall
             Dodge=Centered(Width-30,Height-30,48);
             Jump=Centered(Width-30,Height-99,48);Cancel=Jump;
             float bottomLift=Width<700?36:0;
-            Potion=Centered(Width*.5f-108,Height-26,44);
+            Potion=Centered(Width*.5f-108,Height-30,52);
             // Width already excludes Screen.safeArea insets. Never subtract them again.
             Menu=Centered(Width-28,32,44);Inventory=Centered(Width-74,32,44);
             SkillsMenu=Centered(Width-120,32,44);Catalog=Centered(Width-166,32,44);
@@ -76,7 +76,7 @@ namespace Emberfall
                 SkillsMenu=Centered(Width-148.4f,38,52.8f);Catalog=Centered(Width-203.6f,38,52.8f);
                 Smith=Centered(Width-258.8f,38,52.8f);Shop=Centered(Width-314,38,52.8f);
                 DungeonEntrance=new Area(Width*.5f-58,76,116,44);
-                Potion=Centered(Width*.5f-151,Height-33,63.36f);
+                Potion=Centered(Width*.5f-151,Height-34,62.4f);
             }
             int[] opportunityIdentities={0,1,2,4,5,6,7,9};
             for(int index=0;index<opportunityIdentities.Length;index++)
