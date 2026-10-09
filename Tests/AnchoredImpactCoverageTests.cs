@@ -66,8 +66,20 @@ public static class AnchoredImpactCoverageTests
   }
   Check(witnessed>0,"animation oracle observes initially visible lightning");Reset();return "PASS: "+witnessed+" initially visible finite-cover lightning animations";
  }
+ public static string RunFastPath()
+ {
+  var hero=Reset();var source=new Mesh{vertices=new[]{new Vector3(-1,0,-1),new Vector3(1,0,-1),new Vector3(1,0,1),new Vector3(-1,0,1)},uv=new[]{new Vector2(),new Vector2(),new Vector2(),new Vector2()},triangles=Enumerable.Range(0,1000).SelectMany(i=>i%2==0?new[]{0,1,2}:new[]{0,2,3}).ToArray()};
+  var original=source.vertices.ToArray();WorldTraversal.TestTriangleCalls=WorldTraversal.TestSegmentCalls=0;
+  var result=AnchoredImpactMesh.Create(source,hero.transform,Vector3.zero,Vector3.one,Quaternion.identity);
+  Check(result.triangles.Length==3000,"open ground retains all 1000 source triangles");
+  Check(WorldTraversal.TestTriangleCalls==2&&WorldTraversal.TestSegmentCalls==0,"open ground requires exactly two face certificates and zero vertex rays");
+  Check(original.SequenceEqual(source.vertices),"fast path cannot mutate shared source vertices");
+  UnityEngine.Object.Destroy(result);UnityEngine.Object.Destroy(source);Reset();
+  return "PASS: 1000-face open-ground mesh: two certificates, zero vertex rays, unchanged shared source";
+ }
  public static string Run()
  {
+  Console.WriteLine(RunFastPath());
   Console.WriteLine(RunNearWall());
   Console.WriteLine(RunMotion());
   foreach(var type in new[]{FilledVfxKind.Arcane,FilledVfxKind.Lightning})

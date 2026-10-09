@@ -9,14 +9,28 @@ namespace Emberfall
         internal static Mesh Create(Mesh source,Transform root,Vector3 offset,Vector3 scale,Quaternion rotation)
         {
             Vector3 origin=CombatFx.Flat(root.position);Vector3[] points=(Vector3[])source.vertices.Clone();
+            var sourceUv=source.uv;var original=source.triangles;
+            float minX=float.PositiveInfinity,minZ=float.PositiveInfinity,maxX=float.NegativeInfinity,maxZ=float.NegativeInfinity;
             for(int i=0;i<points.Length;i++)
             {
-                Vector3 world=root.TransformPoint(offset+rotation*Vector3.Scale(points[i],scale));
-                Vector3 clipped=CombatSight.BoundaryPoint(CombatSightKind.Area,origin,world);clipped.y=world.y;
-                points[i]=clipped;
+                Vector3 world=root.TransformPoint(offset+rotation*Vector3.Scale(points[i],scale));points[i]=world;
+                minX=Mathf.Min(minX,world.x);minZ=Mathf.Min(minZ,world.z);maxX=Mathf.Max(maxX,world.x);maxZ=Mathf.Max(maxZ,world.z);
+            }
+            // Two exact whole-face certificates cover the complete transformed bounds.
+            // Open ground needs no per-vertex rays or recursive face clipping.
+            Vector3 cornerA=new Vector3(minX,0,minZ),cornerB=new Vector3(maxX,0,minZ),cornerC=new Vector3(maxX,0,maxZ),cornerD=new Vector3(minX,0,maxZ);
+            if(points.Length>0&&original.Length<=MaximumTriangles*3&&CombatSight.VisualTriangle(origin,cornerA,cornerB,cornerC)&&CombatSight.VisualTriangle(origin,cornerA,cornerC,cornerD))
+            {
+                for(int i=0;i<points.Length;i++)points[i]=root.InverseTransformPoint(points[i]);
+                var clearMesh=new Mesh{name=source.name+" / certified open ground",vertices=points,uv=sourceUv,triangles=original};
+                clearMesh.RecalculateNormals();clearMesh.RecalculateBounds();return clearMesh;
+            }
+            for(int i=0;i<points.Length;i++)
+            {
+                Vector3 world=points[i];Vector3 clipped=CombatSight.BoundaryPoint(CombatSightKind.Area,origin,world);clipped.y=world.y;points[i]=clipped;
             }
             var vertices=new List<Vector3>();var uv=new List<Vector2>();var triangles=new List<int>();
-            var sourceUv=source.uv;var original=source.triangles;int remainingChecks=MaximumChecks;
+            int remainingChecks=MaximumChecks;
             for(int i=0;i<original.Length;i+=3)
             {
                 int a=original[i],b=original[i+1],c=original[i+2];

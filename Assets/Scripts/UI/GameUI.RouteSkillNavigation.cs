@@ -15,7 +15,7 @@ namespace Emberfall
             routeSkillOwner=session.Progression;routeSkillSlot=routeSkillOwner.CurrentSlotId;routeSkillTab=campTab;routeSkillReturnPanel=panel;skillSection=0;
             ReconcileMobileSkillOwner();
             if(selectedSkill!=skill){mobileSkillStatus=null;mobileSkillStatusFailed=false;}
-            selectedSkill=skill;mobileSkillDetail=true;mobileSkillDetailScroll=Vector2.zero;
+            selectedSkill=skill;mobileSkillDetailScroll=Vector2.zero;
             desktopDetailScroll=Vector2.zero;desktopDetailSkill=skill;panel=Panel.Skills;
             CancelMobileScroll();session.SetUIBlocking(true);BlockUITransition();
         }

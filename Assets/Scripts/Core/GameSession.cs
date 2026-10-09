@@ -112,6 +112,8 @@ namespace Emberfall
             ui.Initialize(this);
             gameObject.AddComponent<MobileControls>().Initialize(this);
             Time.timeScale = 0f;
+            StartCoroutine(FilledSkillVfx.Prewarm());
+            StartCoroutine(ElementalCombatVfx.Prewarm());
         }
 
         private void ConfigureCamera()

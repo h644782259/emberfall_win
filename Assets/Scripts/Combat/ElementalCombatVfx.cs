@@ -8,6 +8,8 @@ namespace Emberfall
         private static readonly Texture2D[] detailTextures=new Texture2D[3];
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetTextures(){for(int i=0;i<detailTextures.Length;i++){if(detailTextures[i]!=null)Object.Destroy(detailTextures[i]);detailTextures[i]=null;}}
+        internal static System.Collections.IEnumerator Prewarm()
+        {foreach(Element element in System.Enum.GetValues(typeof(Element))){DetailTexture(element);yield return null;}}
         private static Texture2D DetailTexture(Element element)
         {
             int index=(int)element;if(detailTextures[index]!=null)return detailTextures[index];

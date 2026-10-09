@@ -16,6 +16,7 @@ namespace Emberfall
         private static Mesh icePrimary,firePrimary;
         private static Mesh crescent, crystal, flame, sword, lightning, arcane, rupture, arcaneShard, arrow, vine;
         private static Material sharedMaterial;
+        private static bool assetsReady;
         private static int active;
         private readonly Piece[] pieces=new Piece[FilledVfxRecipes.MaximumParts];
         private MaterialPropertyBlock block;
@@ -69,6 +70,7 @@ namespace Emberfall
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetAssets()
         {
+            assetsReady=false;
             foreach(var fx in new System.Collections.Generic.List<FilledSkillVfx>(instances))if(fx!=null){fx.disposing=true;fx.gameObject.SetActive(false);Destroy(fx.gameObject);}
             instances.Clear();idle.Clear();
             finales.Clear();
@@ -86,8 +88,46 @@ namespace Emberfall
             for(int i=0;i<vertices.Length;i++){vertices[i]=new Vector3(data.Positions[i*3],data.Positions[i*3+1],data.Positions[i*3+2]);uv[i]=new Vector2(data.Uv[i*2],data.Uv[i*2+1]);}
             var mesh=new Mesh{name=name};mesh.vertices=vertices;mesh.uv=uv;mesh.triangles=data.Triangles;mesh.RecalculateNormals();mesh.RecalculateBounds();return mesh;
         }
+        internal static System.Collections.IEnumerator Prewarm()
+        {
+            if(assetsReady)yield break;
+            if(identityBlade==null)identityBlade=AuthoredSpellBases.Identity("BladeSlices");
+            yield return null;
+            if(identityFork==null)identityFork=AuthoredSpellBases.Identity("ForkPulse");
+            yield return null;
+            if(identityContract==null)identityContract=AuthoredSpellBases.Identity("ContractSigil");
+            yield return null;
+            if(identityProtection==null)identityProtection=AuthoredSpellBases.Identity("ProtectionCage");
+            yield return null;
+            if(icePrimary==null)icePrimary=AuthoredSpellBases.Load("IcePrimary");
+            yield return null;
+            if(firePrimary==null)firePrimary=AuthoredSpellBases.Load("FirePrimary");
+            yield return null;
+            if(crescent==null)crescent=AuthoredSpellBases.Load("Crescent")??Mesh(FilledVfxRecipes.Crescent(),"Filled curved crescent volume");
+            yield return null;
+            if(crystal==null)crystal=AuthoredSpellBases.Load("Crystal")??Mesh(FilledVfxRecipes.Crystal(),"Faceted ice spear");
+            yield return null;
+            if(flame==null)flame=AuthoredSpellBases.Load("Flame")??Mesh(FilledVfxRecipes.Flame(),"Curved flame tongue volume");
+            yield return null;
+            if(sword==null)sword=AuthoredSpellBases.Load("Sword")??Mesh(FilledVfxRecipes.Sword(),"Ridged sword blade guard and grip");
+            yield return null;
+            if(lightning==null)lightning=AuthoredSpellBases.Load("Lightning")??Mesh(FilledVfxRecipes.Lightning(),"Angular branched lightning volume");
+            yield return null;
+            if(arcane==null)arcane=Mesh(FilledVfxRecipes.Arcane(),"Arcane cubical lattice");
+            yield return null;
+            if(rupture==null)rupture=AuthoredSpellBases.Load("Rupture")??Mesh(FilledVfxRecipes.Rupture(),"Ground rupture branches");
+            yield return null;
+            if(arcaneShard==null)arcaneShard=AuthoredSpellBases.Load("ArcaneShard")??Mesh(FilledVfxRecipes.ArcaneShard(),"Broken arcane strut");
+            yield return null;
+            if(arrow==null)arrow=AuthoredSpellBases.Load("Arrow")??Mesh(FilledVfxRecipes.Arrow(),"Narrow arrow shaft head and fletching");
+            yield return null;
+            if(vine==null)vine=AuthoredSpellBases.Load("Vine")??Mesh(FilledVfxRecipes.Vine(),"Branching poison vine");
+            yield return null;
+            EnsureAssets();
+        }
         private static void EnsureAssets()
         {
+            if(assetsReady)return;
             if(identityBlade==null)identityBlade=AuthoredSpellBases.Identity("BladeSlices");
             if(identityFork==null)identityFork=AuthoredSpellBases.Identity("ForkPulse");
             if(identityContract==null)identityContract=AuthoredSpellBases.Identity("ContractSigil");
@@ -106,6 +146,7 @@ namespace Emberfall
             if(vine==null)vine=AuthoredSpellBases.Load("Vine")??Mesh(FilledVfxRecipes.Vine(),"Branching poison vine");
             if(sharedMaterial==null)
             {Shader shader=Resources.Load<Shader>("FilledSpell");sharedMaterial=new Material(shader!=null?shader:Shader.Find("Sprites/Default"));sharedMaterial.renderQueue=3070;}
+            assetsReady=true;
         }
         private static FilledSkillVfx Create(PlayerController hero,Vector3 at,Vector3 forward,FilledVfxKind type,float radius,Color color,float duration,Transform parent=null,CombatVisualPriority priority=CombatVisualPriority.Decoration)
         {

@@ -338,7 +338,7 @@ namespace Emberfall
                 tooltip = null;
                 DrawIcon(new Rect(Mouse.x + 11, Mouse.y + 11, 36, 36), HotbarIcon(session.Progression.Profile, hotbarPointerSkill), Color.white);
             }
-            if(panel==Panel.Skills&&skillSection==1)tooltip=null;
+            if(panel==Panel.Skills||MobileControls.Active&&panel==Panel.Inventory&&inventoryComparisonOpen)tooltip=null;
             DrawTooltip();
             DrawEntryRewardPopup();
             DrawExitConfirmation();
@@ -1061,7 +1061,7 @@ namespace Emberfall
                 Border(slot,selected?gold:ready?jade:new Color(accent.r,accent.g,accent.b,locked?.23f:.55f),selected||ready?2:1);
                 if (hover && GUI.enabled)
                 {
-                    tooltip = empty ? "未配置" : potion ? PotionTooltip(p) : SkillTooltip(p, skill, rank);
+                    tooltip = potion ? PotionTooltip(p) : null;
                 }
                 if (!session.PracticeActive && !mobile && hover && GUI.enabled && Event.current.type == EventType.MouseDown && Event.current.button == 1)
                 {
@@ -1549,9 +1549,6 @@ namespace Emberfall
                 string state = rank > 0 ? GameBalance.SkillRankName(rank) + (canLearn ? " · 可进阶" : " · 已学习") : canLearn ? "可学习" : !prerequisitesMet ? "需要前置" : p.level < required ? "等级未达" : "需要技能点";
                 Text(new Rect(node.x + 5, node.y + 57, 134, 17), state, 11, accent, true, false, TextAnchor.MiddleCenter);
                 Badge(node,Attention.LearnableSkills.Contains(i));
-                Rect visibleNode = new Rect(viewport.x + node.x, viewport.y + node.y - skillScroll.y, node.width, node.height);
-                if (viewport.Contains(Mouse) && visibleNode.Contains(Mouse))
-                    tooltip = SkillTooltip(p, i, rank);
                 if (GUI.Button(node, GUIContent.none, invisibleButton)) selectedSkill = i;
             }
             EndTouchScroll();

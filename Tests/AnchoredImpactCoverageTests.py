@@ -13,6 +13,7 @@ def once(s,a,b):
  return s.replace(a,b)
 s=(ROOT/'Tests/FilledVfxAllocationTests.cs').read_text();shell='using System;using System.Linq;using System.Collections.Generic;using System.Reflection;using UnityEngine;'+s[s.index('namespace Emberfall'):]
 shell=shell.replace(member(shell,'public static class CombatSight'),'').replace('    public enum CombatSightKind { Area }','')
+shell=shell.replace(member(shell,'public static class WorldTraversal'),'')
 math=(ROOT/'Tests/DestructibleTraversalTests.cs').read_text()
 shell=shell.replace(member(shell,'public struct Vector2'),member(math,'public struct Vector2'))
 shell=shell.replace('public struct Vector3\n','public partial struct Vector3\n').replace('public static class Mathf\n','public static partial class Mathf\n')
@@ -21,6 +22,7 @@ files=['Core/FilledVfxRecipes','Core/FilledVfxPlacement','Core/CombatVisualBudge
 dotnet=sys.argv[1] if len(sys.argv)>1 else os.environ.get('DOTNET','dotnet')
 with tempfile.TemporaryDirectory(prefix='anchored-impact-') as temp:
  for mode,expected in [('current',None),('old-origin-disk','legal near-wall impact retains positive-area primary and horizontal contact'),('old-sparse-face','retained anchored triangle crosses actual finite-cover LOS'),('old-anisotropic-motion','animated anchored vertex crosses actual finite-cover LOS')]:
+  if os.environ.get('EMBERFALL_FAST_CHECK') and mode!='current':continue
   d=Path(temp)/mode;d.mkdir();(d/'Shell.cs').write_text(shell)
   for f in files:
    code=(ROOT/('Assets/Scripts/'+f+'.cs')).read_text()
@@ -40,7 +42,7 @@ with tempfile.TemporaryDirectory(prefix='anchored-impact-') as temp:
    if mode=='old-anisotropic-motion' and f.endswith('FilledSkillVfx'):
     code=once(code,'float radial=Mathf.Min(1,Mathf.Min(scale.x,scale.z));scale.x=scale.z=radial;','scale.x=Mathf.Min(1,scale.x);scale.z=Mathf.Min(1,scale.z);')
    (d/(Path(f).name+'.cs')).write_text(code)
-  (d/'Tests.cs').write_text((ROOT/'Tests/AnchoredImpactCoverageTests.cs').read_text());(d/'Program.cs').write_text('System.Console.WriteLine(AnchoredImpactCoverageTests.'+('RunMotion()' if mode=='old-anisotropic-motion' else 'RunNearWall()' if mode=='old-origin-disk' else 'Run()')+');');(d/'NuGet.Config').write_text('<configuration><packageSources><clear /></packageSources></configuration>');p=d/'Test.csproj';p.write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net8.0</TargetFramework><OutputType>Exe</OutputType></PropertyGroup></Project>')
+  (d/'Tests.cs').write_text((ROOT/'Tests/AnchoredImpactCoverageTests.cs').read_text());(d/'Program.cs').write_text('System.Console.WriteLine(AnchoredImpactCoverageTests.'+('RunFastPath()' if os.environ.get('EMBERFALL_FAST_CHECK') else 'RunMotion()' if mode=='old-anisotropic-motion' else 'RunNearWall()' if mode=='old-origin-disk' else 'Run()')+');');(d/'NuGet.Config').write_text('<configuration><packageSources><clear /></packageSources></configuration>');p=d/'Test.csproj';p.write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net8.0</TargetFramework><OutputType>Exe</OutputType></PropertyGroup></Project>')
   build=subprocess.run([dotnet,'build',str(p),'--configfile',str(d/'NuGet.Config'),'-v:q'],capture_output=True,text=True)
   if build.returncode:print(build.stdout+build.stderr);build.check_returncode()
   result=subprocess.run([dotnet,str(d/'bin/Debug/net8.0/Test.dll')],capture_output=True,text=True)

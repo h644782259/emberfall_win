@@ -21,8 +21,6 @@ namespace Emberfall
             DrawSkillIdentity(new Rect(r.x+18,r.y+15,48,48),p.heroClass,skill,rank,rank>0,48);
             Text(new Rect(r.x + 78, r.y + 15, 490, 35), GameBalance.SkillName(p.heroClass, skill), 27, pale, true);
             Text(new Rect(r.x + 78, r.y + 54, 490, 20), (passive ? "被动" : "主动") + " / " + GameBalance.CategoryName(category) + " / " + GameBalance.SkillRankName(rank), 12, accent, true);
-            if (passive && new Rect(r.x + 18, r.y + 15, 550, 60).Contains(Mouse))
-                tooltip = SkillTooltip(p, skill, rank);
             if (desktopDetailSkill != skill) { desktopDetailSkill=skill; desktopDetailScroll=Vector2.zero; }
             string description=BuildCatalog.VenomSkillOverride(p,skill,rank);
             if(description.Length==0)description=GameBalance.SkillDescription(p.heroClass,skill);

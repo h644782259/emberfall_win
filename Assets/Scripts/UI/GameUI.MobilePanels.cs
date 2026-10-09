@@ -37,7 +37,10 @@ namespace Emberfall
         {
             Fill(new Rect(0,0,width,height),new Color(.018f,.031f,.048f,.985f));
             blockedRects.Add(new Rect(0,0,width,height));
-            Text(TouchRect(layout.Header.X,layout.Header.Y,Mathf.Max(1,layout.Header.Width-headerRightReserve),29),title,TouchFont(22),pale,true);
+            Rect titleRect=TouchRect(layout.Header.X,layout.Header.Y,Mathf.Max(1,layout.Header.Width-headerRightReserve),30);
+            int titleFont=TouchFont(22);
+            while(titleFont>1&&(Style(titleFont,true).CalcSize(new GUIContent(title)).x>titleRect.width||Style(titleFont,true).CalcHeight(new GUIContent(title),titleRect.width)>titleRect.height))titleFont--;
+            Text(titleRect,title,titleFont,pale,true,false,TextAnchor.MiddleLeft);
             // Keep transient feedback inside a reserved header row; full failures
             // are repeated in measured body content, never over active tabs.
             string notice=showNotice?session.Notification:null;

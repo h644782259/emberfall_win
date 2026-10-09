@@ -568,7 +568,7 @@ namespace Emberfall
         public static string ClassName(HeroClass value) { return ClassNames[(int)value]; }
         public static Color ClassColor(HeroClass value) { return ClassColors[(int)value]; }
         public static string SkillName(HeroClass value, int slot) { return SkillNames[(int)value, slot]; }
-        public static string SkillDescription(HeroClass value, int slot) { return SkillDescriptions[(int)value, slot] + "\n" + BuildCatalog.DamageRules; }
+        public static string SkillDescription(HeroClass value, int slot) { return SkillDescriptions[(int)value, slot]; }
         public static string EnergyName(HeroClass value) { return new[] { "战意", "奥能", "专注", "灵力" }[(int)value]; }
         public static bool IsPassive(int skill) { return skill == 3 || skill == 8; }
         public static int SkillPointBudget(int level) { return Math.Max(1, level - 1); }

@@ -57,7 +57,7 @@ namespace Emberfall
             if(MobileControls.Active)
             {
                 var l=MobilePanelGeometry();
-                if(DrawMobilePanelChrome(l,"技能 · 职业与精通","技能点 "+p.Profile.skillPoints+" · 共用配点",showNotice:false,headerRightReserve:188))return;
+                if(DrawMobilePanelChrome(l,"职业精通","技能点 "+p.Profile.skillPoints+" · 共用配点",showNotice:false,headerRightReserve:188))return;
                 DrawSkillTabs(TouchRect(l.Close.X-188,8,176,44));
                 if(skillSection==0)return;
                 var body=new MobilePanelLayout.Area(l.Body.X,l.Body.Y,l.Body.Width,l.Height-l.Body.Y-12);
@@ -65,7 +65,7 @@ namespace Emberfall
                 skillDevelopmentScroll=BeginTouchScroll("skill-development",MobilePanelRect(body),skillDevelopmentScroll,new Rect(0,0,mobileWidth*TouchRatio,Mathf.Max(body.Height,h)*TouchRatio));
                 h=8;DrawMobileWorkshopAbilities(ref h,mobileWidth,true);EndTouchScroll();return;
             }
-            Rect w=Modal(980,660,"技能 · 职业与精通","可用技能点 "+p.Profile.skillPoints);
+            Rect w=Modal(980,660,"职业精通","可用技能点 "+p.Profile.skillPoints);
             if(PopupCloseButton(new Rect(w.xMax-69,w.y+20,44,32)))ClosePanel();
             DrawSkillTabs(new Rect(w.xMax-269,w.y+20,176,36));
             if(skillSection==0)return;

@@ -5,11 +5,8 @@ namespace Emberfall
     {
         private bool MobileSkillRowClicked(Rect row)
         { return GUI.enabled && touchScrollSuppressed != Time.frameCount && GUI.Button(row, GUIContent.none, invisibleButton); }
-        private bool CloseMobileSkillDetail()
-        {
-            if (!MobileControls.Active || panel != Panel.Skills || !mobileSkillDetail) return false;
-            mobileSkillDetail = false; CancelMobileScroll(); BlockUITransition(); return true;
-        }
-        private void ResetMobileSkillNavigation() { routeSkillOwner=null;routeSkillSlot=null;mobileSkillDetail = false; CancelMobileScroll(); }
+        // Details are a persistent column; closing the page no longer consumes a hidden popup step.
+        private bool CloseMobileSkillDetail() { return false; }
+        private void ResetMobileSkillNavigation() { routeSkillOwner=null;routeSkillSlot=null; CancelMobileScroll(); }
     }
 }

@@ -68,7 +68,7 @@ namespace Emberfall
             ItemData picked = ResolveSelectedItem();
             var layout = MobilePanelGeometry();
             const float statusWidth=260;
-            if(DrawMobilePanelChrome(layout,HubInventoryTitle,"",showNotice:false,headerRightReserve:statusWidth))return;
+            if(DrawMobilePanelChrome(layout,HubInventoryTitle,"",canClose:!inventoryComparisonOpen,showNotice:false,headerRightReserve:statusWidth))return;
             {
                 float x=layout.Close.X-statusWidth-8,y=layout.Header.Y+4;
                 Text(TouchRect(x,y,46,28),"Lv."+profile.level,TouchFont(13),pale,true,false,TextAnchor.MiddleLeft);
@@ -83,9 +83,9 @@ namespace Emberfall
             if(inventoryFashionOpen){mobileInventoryTab=3;inventoryFashionOpen=false;inventoryComparisonOpen=false;}
             Rect equipmentTab=MobilePanelRect(new MobilePanelLayout.Area(bag.X,bag.Y,52,44));
             Rect supplyTab=MobilePanelRect(new MobilePanelLayout.Area(bag.X+58,bag.Y,52,44));
-            if(QuietAction(equipmentTab,"装备",true,null,mobileInventoryTab==0))SelectInventoryTab(0);
-            if(QuietAction(supplyTab,"补给",true,null,mobileInventoryTab==2))SelectInventoryTab(2);
-            if(QuietAction(MobilePanelRect(new MobilePanelLayout.Area(bag.X+116,bag.Y,52,44)),"时装",true,null,mobileInventoryTab==3))SelectInventoryTab(3);
+            if(QuietAction(equipmentTab,"装备",!inventoryComparisonOpen,null,mobileInventoryTab==0))SelectInventoryTab(0);
+            if(QuietAction(supplyTab,"补给",!inventoryComparisonOpen,null,mobileInventoryTab==2))SelectInventoryTab(2);
+            if(QuietAction(MobilePanelRect(new MobilePanelLayout.Area(bag.X+116,bag.Y,52,44)),"时装",!inventoryComparisonOpen,null,mobileInventoryTab==3))SelectInventoryTab(3);
             var content=new MobilePanelLayout.Area(bag.X,bag.Y+48,bag.Width,bag.Height-48);
             if(mobileInventoryTab==3){DrawBagFashion(content);return;}
             if(mobileInventoryTab==2)
