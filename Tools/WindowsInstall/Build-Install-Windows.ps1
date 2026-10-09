@@ -9,7 +9,16 @@ param(
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
-$projectRoot = Split-Path -Parent $PSScriptRoot
+$projectRoot = $PSScriptRoot
+while ($projectRoot) {
+    if ((Test-Path -LiteralPath (Join-Path $projectRoot 'Assets') -PathType Container) -and
+        (Test-Path -LiteralPath (Join-Path $projectRoot 'ProjectSettings') -PathType Container) -and
+        (Test-Path -LiteralPath (Join-Path $projectRoot 'Tools\Build-Windows.ps1') -PathType Leaf)) {
+        break
+    }
+    $projectRoot = Split-Path -Parent $projectRoot
+}
+if (-not $projectRoot) { throw 'Cannot locate the Unity project. Keep this folder inside the complete Windows repository.' }
 $toolsRoot = Join-Path $projectRoot 'Tools'
 
 function Get-ExternalDirectory([string]$Path) {

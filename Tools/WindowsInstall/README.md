@@ -23,7 +23,7 @@
 在仓库根目录打开 PowerShell：
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\WindowsInstall\Build-Install-Windows.ps1 -InstallDirectory "E:\Emberfall" -PackageDirectory "E:\Emberfall\安装包"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Tools\WindowsInstall\Build-Install-Windows.ps1 -InstallDirectory "E:\Emberfall" -PackageDirectory "E:\Emberfall\安装包"
 ```
 
 其他电脑可以替换为存在的盘符和目录。安装目录及安装包目录必须位于代码仓库外，并且不能是磁盘根目录。默认用户目录通常不需要管理员权限；自定义路径需要对安装目录及其父目录具有写入权限，安装器会在父目录创建临时目录。
