@@ -84,6 +84,7 @@ namespace Emberfall
             Ribbon(lowland, r, "Pebble stream banks", stream, 3.4f, .032f, r.Material(new Color(.40f,.46f,.41f)));
             BuildWaterSurface(lowland,r,"Brook water",stream,2.4f,.038f,WaterEnvironment.Brook);
             BuildWaterBankDetail(lowland,r,stream);
+            BuildCampRiverBlocks(camp,r);
             // The deck is the only ground crossing. Both banks remain reachable
             // by the shared creature route planner; leaps may clear the water.
             Material timber = r.Material(new Color(.43f,.32f,.215f),false,VisualSurface.Wood);
@@ -154,6 +155,20 @@ namespace Emberfall
                 float angle = i * Mathf.PI / 6;
                 Vector3 p = new Vector3(Mathf.Cos(angle) * 31, -3 - i % 4, Mathf.Sin(angle) * 31);
                 Rock(parent, r, p, 2 + i % 3, i);
+            }
+        }
+
+        private static void BuildCampRiverBlocks(Transform parent,WorldResources resources)
+        {
+            for(int i=0;i<2;i++)
+            {
+                Vector3 point=new Vector3(-5.5f-i*3.4f,0,-3.3f);
+                Vector2 size=new Vector2(2.2f,1.8f);
+                float height=i==0?.65f:.95f;
+                WorldTraversal.AddPlatform(point,size,height);
+                Primitive(parent,i==0?"Camp river low block":"Camp river high block",PrimitiveType.Cube,
+                    point+Vector3.up*(height*.5f),new Vector3(size.x,height,size.y),
+                    resources.Material(new Color(.43f,.48f,.47f),false,VisualSurface.Stone));
             }
         }
 

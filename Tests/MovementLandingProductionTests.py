@@ -51,6 +51,30 @@ class Program{
   }
   WorldTraversal.Reset(ZoneKind.Wilderness);WorldTraversal.AddPlatform(Vector3.zero,new Vector2(2.4f,1.8f),.65f);
   Vector3 box;Check(WorldTraversal.TryResolvePlatformJump(new Vector3(-3,0,0),right,3,.45f,out box)&&box.y==.65f,"existing box platforms preserved");
+  foreach(int fps in new[]{30,60,120}){
+   WorldTraversal.Reset(ZoneKind.Wilderness);WorldTraversal.AddPlatform(Vector3.zero,new Vector2(2.4f,1.8f),.65f);
+   var actor=new Vector3(0,.65f,0);float velocity=0;bool fell=false;
+   for(int frame=0;frame<fps;frame++){
+    var previous=actor;
+    actor=WorldTraversal.MovePlayer(actor,right*(3f/fps),1f/fps,ref velocity);
+    if(actor.y<previous.y&&actor.y>0)fell=true;
+    Check(actor.y>=0&&actor.y<=.651f,"gravity never rises or sinks below ground");
+   }
+   Check(actor.x>2.9f&&actor.y==0&&fell,"walk off naturally at "+fps+" FPS");
+   Check(WorldTraversal.IsWalkable(actor),"walk-off ends outside platform sides");
+  }
+  WorldTraversal.Reset(ZoneKind.Wilderness);WorldTraversal.AddPlatform(Vector3.zero,new Vector2(2.4f,1.8f),.95f);
+  var stoppedFall=new Vector3(0,.95f,0);float fallSpeed=0;
+  for(int i=0;i<36;i++)stoppedFall=WorldTraversal.MovePlayer(stoppedFall,right*.05f,1f/60,ref fallSpeed);
+  Check(stoppedFall.y>0&&stoppedFall.y<.95f,"edge departure starts a gradual fall");
+  float stoppedX=stoppedFall.x;
+  for(int i=0;i<60;i++)stoppedFall=WorldTraversal.MovePlayer(stoppedFall,Vector3.zero,1f/60,ref fallSpeed);
+  Check(stoppedFall.y==0&&Math.Abs(stoppedFall.x-stoppedX)<.001f,"releasing movement still falls without horizontal snap");
+  var grounded=WorldTraversal.MovePlayer(new Vector3(-3,0,0),right*3,1,ref fallSpeed);
+  Check(grounded.x<-1.6f&&grounded.y==0,"walking cannot climb a vertical box face");
+  WorldTraversal.Reset(ZoneKind.Wilderness);
+  WorldTraversal.SetRiver(new[]{new Vector3(-11,0,2),new Vector3(-5,0,.5f),new Vector3(0,0,-1)},2.4f,new Rect(-1.9f,-3.9f,3.8f,5.8f));
+  for(int i=0;i<2;i++)Check(WorldTraversal.IsWalkable(new Vector3(-5.5f-i*3.4f,0,-3.3f),1.7f),"camp river block footprint is on dry bank");
   Console.WriteLine(n+" production landing checks passed");
  }
 }

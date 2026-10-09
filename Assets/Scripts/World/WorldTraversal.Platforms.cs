@@ -42,7 +42,7 @@ namespace Emberfall
         }
         public static bool CanStand(Vector3 point,float radius=.45f)
         {
-            float height=SurfaceHeight(point,radius);
+            float height=StandingHeight(point,radius,point.y);
             return Mathf.Abs(point.y-height)<.035f&&ClearAtHeight(point,radius,height)&&(height>0||IsWalkable(point,radius));
         }
         public static bool TryResolvePlatformJump(Vector3 from,Vector3 direction,float distance,float radius,out Vector3 landing)
@@ -63,18 +63,50 @@ namespace Emberfall
             }
             return false;
         }
-        private static Vector3 MoveOnPlatform(Vector3 from,Vector3 delta,float radius)
+        private static float StandingHeight(Vector3 point,float radius,float ceiling)
         {
-            delta=CombatFx.Flat(delta);int steps=Mathf.Max(1,Mathf.CeilToInt(delta.magnitude/.12f));var step=delta/steps;
+            float height=0;
+            foreach(var o in obstacles)
+            {
+                if(o.Height<=0||o.Height>ceiling+.035f)continue;
+                Vector2 d=new Vector2(point.x-o.Center.x,point.z-o.Center.y);
+                float clearance=o.Radius>0?Mathf.Min(radius,.12f):radius;
+                bool overlap;
+                if(o.Radius>0)overlap=d.sqrMagnitude<(o.Radius+clearance)*(o.Radius+clearance);
+                else {var nearest=new Vector2(Mathf.Max(0,Mathf.Abs(d.x)-o.Half.x),Mathf.Max(0,Mathf.Abs(d.y)-o.Half.y));overlap=nearest.sqrMagnitude<=radius*radius;}
+                if(overlap)height=Mathf.Max(height,o.Height);
+            }
+            return height;
+        }
+        // Keep horizontal control while gravity settles the player onto the next lower surface.
+        public static Vector3 MovePlayer(Vector3 from,Vector3 delta,float deltaTime,ref float fallSpeed,float radius=.45f)
+        {
+            if(!Finite(deltaTime)||deltaTime<=0)return from;
+            if(from.y<=.001f){fallSpeed=0;return Move(from,delta,radius);}
+            delta=CombatFx.Flat(delta);
+            int steps=Mathf.Max(1,Mathf.Max(Mathf.CeilToInt(delta.magnitude/.08f),Mathf.CeilToInt(deltaTime/.02f)));
+            float dt=deltaTime/steps;
             for(int i=0;i<steps;i++)
             {
-                var next=from+step;float top=SurfaceHeight(next,radius);
-                // Ground actors cannot walk onto a raised top. Leaving its rim is
-                // blocked until jumping down, so a stationary actor never sinks.
-                if(Mathf.Abs(top-from.y)>.035f||!ClearAtHeight(next,radius,top))break;
-                next.y=top;from=next;
+                Vector3 next=from+delta/steps;
+                if(!ClearAtHeight(next,radius,from.y)||IsOpenWater(next,radius))next=from;
+                float support=StandingHeight(next,radius,from.y);
+                if(from.y<=support+.001f){next.y=support;fallSpeed=0;}
+                else
+                {
+                    float oldSpeed=fallSpeed;
+                    fallSpeed+=18f*dt;
+                    next.y=Mathf.Max(support,from.y-(oldSpeed+fallSpeed)*.5f*dt);
+                    if(next.y<=support+.001f)fallSpeed=0;
+                }
+                from=next;
             }
             return from;
+        }
+        private static Vector3 MoveOnPlatform(Vector3 from,Vector3 delta,float radius)
+        {
+            float speed=0;
+            return MovePlayer(from,delta,1f/60f,ref speed,radius);
         }
         public static bool HeightAttackAllowed(Vector3 from,Vector3 to,bool ranged)
         {return Mathf.Abs(from.y-to.y)<(ranged?2.5f:.65f);}

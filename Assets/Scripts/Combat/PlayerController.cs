@@ -50,6 +50,7 @@ namespace Emberfall
         private float jumpAge, movementSkillLock;
         private Vector3 jumpOrigin;
         private Vector3 jumpDestination;
+        private float platformFallSpeed;
         private int traversalFrame = -1;
         private float passiveCooldown, passiveTime, passiveReduction, passiveSpeed;
         private Vector3 aimPoint;
@@ -173,6 +174,7 @@ namespace Emberfall
             aimGeometry.Clear();
             position = WorldTraversal.NearestWalkable(position, .45f);
             transform.position = position;
+            platformFallSpeed=0;
             if (model != null) model.ResetLocomotion();
             jumping = false;
             rangerVault = false;
@@ -407,7 +409,7 @@ namespace Emberfall
                 if (pursuitTime > 0) movementBonus += .2f;
                 if (burnStrideTime > 0) movementBonus += .2f;
                 Vector3 walkingStart = transform.position;
-                transform.position = WorldTraversal.Move(transform.position, movement * stats.MoveSpeed * (1f+movementBonus) * MovementMultiplier * dt, .45f);
+                transform.position = WorldTraversal.MovePlayer(transform.position, movement * stats.MoveSpeed * (1f+movementBonus) * MovementMultiplier * dt, dt, ref platformFallSpeed, .45f);
                 walkingDisplacement = CombatFx.Flat(transform.position - walkingStart);
             }
             // Readiness and landing are checked before expiring an older input,
@@ -1102,7 +1104,7 @@ namespace Emberfall
             if (session == null || IsDead || !session.HasStarted || session.InputBlocked || jumping || TraversalStartedThisFrame || movementSkillLock > 0 || (charge != null && charge.IsCharging)) return false;
             Vector3 origin=transform.position;
             if(!WorldTraversal.CanStand(origin,.45f))return false;
-            jumpOrigin=origin;jumpDestination=origin;
+            jumpOrigin=origin;jumpDestination=origin;platformFallSpeed=0;
             Vector3 travel=Vector3.ClampMagnitude(CombatFx.Flat(direction),1);
             if(travel.sqrMagnitude>.0001f)
             {
@@ -1183,7 +1185,7 @@ namespace Emberfall
             if (progress >= 1f)
             {
                 jumping = false;
-                transform.position = jumpDestination;
+                transform.position = jumpDestination;platformFallSpeed=0;
                 if(rangerVault)
                 {
                     rangerVault=false;
