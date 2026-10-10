@@ -171,7 +171,7 @@ namespace Emberfall
                 float size=Mathf.Clamp(rowHeight-64,28,44);Rect socket=new Rect(8*u,(top+4)*u,size*u,size*u);
                 Fill(socket,card);Border(socket,gem==null?jade:GameBalance.RarityColor(gem.rarity),2);
                 if(gem==null)Text(socket,"+",Mathf.RoundToInt(24*u),jade,false,false,TextAnchor.MiddleCenter);
-                else DrawIcon(socket,UIIconAtlas.Utility("gem"),GameBalance.RarityColor(gem.rarity));
+                else {DrawIcon(socket,UIIconAtlas.Utility("gem"),GameBalance.RarityColor(gem.rarity));DrawWornIconBadge(socket,u,"已镶嵌");}
                 if(QuietAction(socket,"",SmithServiceActive)){smithSocketPicker=true;smithSocketScroll=Vector2.zero;}
                 if(gem==null)
                 {
@@ -284,7 +284,9 @@ namespace Emberfall
             {
                 var a=candidates[i];Rect tile=new Rect((i%2)*(cw+10)*u,(i/2)*178*u,cw*u,168*u);
                 Fill(tile,new Color(.06f,.09f,.13f));Border(tile,a.mounted?jade:GameBalance.RarityColor(a.rarity));
-                DrawIcon(new Rect(tile.center.x-24*u,tile.y+12*u,48*u,48*u),UIIconAtlas.Utility("gem"),GameBalance.RarityColor(a.rarity));
+                Rect gemIcon=new Rect(tile.center.x-24*u,tile.y+12*u,48*u,48*u);
+                DrawIcon(gemIcon,UIIconAtlas.Utility("gem"),GameBalance.RarityColor(a.rarity));
+                if(a.mounted)DrawWornIconBadge(gemIcon,u,"已镶嵌");
                 Text(new Rect(tile.x+6*u,tile.y+65*u,tile.width-12*u,28*u),BuildCatalog.GemName(a.mechanic),Mathf.RoundToInt(13*u),pale,true,false,TextAnchor.MiddleCenter);
                 Text(new Rect(tile.x,tile.y+94*u,tile.width,30*u),BuildCatalog.IsAttributeGem(a.mechanic)?BuildCatalog.GemAttributeSummary(a.mechanic,a.rarity,a.upgradeRank):a.mounted?"已镶嵌":"阶数 "+a.upgradeRank,Mathf.RoundToInt(10*u),a.mounted?jade:muted,false,true,TextAnchor.MiddleCenter);
                 string mountReason=p.AttachmentMountLock(a.mechanic,SmithServiceActive);
@@ -377,7 +379,7 @@ namespace Emberfall
                     Rect socket=new Rect(socketX*u,(y)*u,size*u,size*u);
                     Fill(socket,card);Border(socket,mounted==null?jade:GameBalance.RarityColor(mounted.rarity),2);
                     if(mounted==null)Text(socket,"+",Mathf.RoundToInt(32*u),jade,false,false,TextAnchor.MiddleCenter);
-                    else DrawIcon(new Rect(socket.x+8*u,socket.y+8*u,48*u,48*u),UIIconAtlas.Utility("gem"),GameBalance.RarityColor(mounted.rarity));
+                    else {Rect gemIcon=new Rect(socket.x+8*u,socket.y+8*u,48*u,48*u);DrawIcon(gemIcon,UIIconAtlas.Utility("gem"),GameBalance.RarityColor(mounted.rarity));DrawWornIconBadge(gemIcon,u,"已镶嵌");}
                     if(QuietAction(socket,"",SmithServiceActive)){smithSelectedSlot=(int)item.slot;smithSocketPicker=true;smithSocketScroll=Vector2.zero;}
                     if(mounted!=null)
                     {

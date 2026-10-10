@@ -60,7 +60,9 @@ namespace Emberfall
                 if(merchantMode==2&&index>=saleItems.Count)
                 {
                     var gem=saleGems[index-saleItems.Count];Color tint=GameBalance.RarityColor(gem.rarity);
-                    DrawIcon(new Rect(tile.center.x-23*u,tile.y+6*u,46*u,46*u),UIIconAtlas.Utility("gem"),tint);
+                    Rect gemIcon=new Rect(tile.center.x-23*u,tile.y+6*u,46*u,46*u);
+                    DrawIcon(gemIcon,UIIconAtlas.Utility("gem"),tint);
+                    if(gem.mounted)DrawWornIconBadge(gemIcon,u,"已镶嵌");
                     Text(new Rect(tile.x+6*u,tile.y+54*u,tile.width-12*u,28*u),BuildCatalog.GemName(gem.mechanic),Mathf.RoundToInt(11*u),pale,false,true,TextAnchor.MiddleCenter);
                     DrawPrice(new Rect(tile.x+8*u,tile.y+80*u,tile.width-16*u,20*u),p.GemSellValue(gem.mechanic),true,u);
                     InspectRewardItem(new Rect(tile.x,tile.y,tile.width,100*u),new EntryRewardPreview{Key="merchant:gem:sale:"+gem.mechanic,Name=BuildCatalog.GemName(gem.mechanic),Rarity=gem.rarity,Tint=tint,Icon=UIIconAtlas.Utility("gem"),Description=GemRewardDescription(gem.mechanic,gem.rarity,gem.upgradeRank)},true);

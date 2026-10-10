@@ -284,7 +284,9 @@ namespace Emberfall
             bool rewardOverlayEnabled=GUI.enabled;
             bool rewardOverlayPointer=entryRewardPopupVisible&&entryRewardPopupRect.Contains(Mouse);
             BeginEntryRewardPopup();
-            if(rewardOverlayPointer)GUI.enabled=false;
+            // Block input under the popup while keeping Repaint/Layout enabled:
+            // Unity applies a disabled tint to textures when GUI.enabled is false.
+            if(rewardOverlayPointer&&Event.current.type!=EventType.Repaint&&Event.current.type!=EventType.Layout)GUI.enabled=false;
             if(exitRequest.Open)
             {
                 ClearRewardMoment();DrawExitConfirmation();GUI.matrix=oldMatrix;GUI.color=oldColor;GUI.contentColor=oldContentColor;GUI.enabled=oldEnabled;return;

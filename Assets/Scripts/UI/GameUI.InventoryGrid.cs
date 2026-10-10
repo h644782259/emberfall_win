@@ -136,6 +136,13 @@ namespace Emberfall
             if(x+w>width-12)x=inventoryPopupAnchor.x-w-12;
             return new Rect(Mathf.Clamp(x,12,Mathf.Max(12,width-w-12)),Mathf.Clamp(inventoryPopupAnchor.y,12,Mathf.Max(12,height-h-12)),w,h);
         }
+        private void DrawWornIconBadge(Rect icon,float u,string caption)
+        {
+            float badgeWidth=Mathf.Min(icon.width,38*u);
+            Rect badge=new Rect(icon.x,icon.yMax-14*u,badgeWidth,14*u);
+            Fill(badge,new Color(.035f,.22f,.18f,1f));Border(badge,jade);
+            Text(badge,caption,Mathf.RoundToInt(9*u),pale,true,false,TextAnchor.MiddleCenter);
+        }
         private void DrawInventoryIcon(Rect tile,ItemData item,float u)
         {
             Color rarity=GameBalance.RarityColor(item.rarity);
@@ -143,9 +150,9 @@ namespace Emberfall
             DrawIcon(new Rect(tile.x+6*u,tile.y+5*u,tile.width-12*u,tile.height-17*u),UIIconAtlas.EquipmentCardIcon(item.slot,item.level,item.rarity,session.Progression.Profile.heroClass),rarity);
             // Counted pips encode rarity without relying on color alone.
             for(int pip=0;pip<=(int)item.rarity;pip++)Fill(new Rect(tile.x+3*u+pip*5*u,tile.y+3*u,3*u,3*u),pale);
-            Text(new Rect(tile.x+2*u,tile.yMax-15*u,tile.width-4*u,14*u),"Lv"+item.level,Mathf.RoundToInt(9*u),item.level>session.Progression.Profile.level?new Color(1f,.35f,.3f):pale,true,false,TextAnchor.MiddleRight);
+            Text(new Rect(tile.x+2*u,tile.yMax-(IsEquipped(item)?29:15)*u,tile.width-4*u,14*u),"Lv"+item.level,Mathf.RoundToInt(9*u),item.level>session.Progression.Profile.level?new Color(1f,.35f,.3f):pale,true,false,TextAnchor.MiddleRight);
             if(item.locked)DrawIcon(new Rect(tile.xMax-14*u,tile.y+2*u,12*u,12*u),UIIconAtlas.EquipmentLock(true),Color.white);
-            if(IsEquipped(item))DrawIcon(new Rect(tile.x+2*u,tile.yMax-16*u,14*u,14*u),UIIconAtlas.Utility("confirm"),jade);
+            if(IsEquipped(item))DrawWornIconBadge(tile,u,"已穿戴");
             if(UnreviewedEquipmentUpgrade(item))DrawIcon(new Rect(tile.xMax-18*u,tile.yMax-31*u,18*u,18*u),UIIconAtlas.EquipmentUpgradeArrow(),new Color(.25f,1f,.4f));
         }
         private void DrawEquipmentIconGrid(Rect viewport,ref Vector2 scroll,float u)
@@ -186,9 +193,9 @@ namespace Emberfall
         private void DrawEquipmentSheet(ItemData item,float u)
         {
             var p=session.Progression;var next=p.PreviewEquippedItem(item);
-            inventoryPopupCompare=true;
+            inventoryPopupCompare=!IsEquipped(item);
             bool compactCompare=height/u<400;
-            float sheetWidth=Mathf.Min(compactCompare?620:600,(width/u)-40),sheetHeight=Mathf.Min(480,(height/u)-32);
+            float sheetWidth=Mathf.Min(IsEquipped(item)?340:compactCompare?620:600,(width/u)-40),sheetHeight=Mathf.Min(480,(height/u)-32);
             Rect r=inventoryPopupRect=MobileControls.Active?new Rect((width-sheetWidth*u)*.5f,(height-sheetHeight*u)*.5f,sheetWidth*u,sheetHeight*u):DesktopInventorySheet(sheetWidth,sheetHeight);
 
             bool prior=GUI.enabled;GUI.enabled=prior&&Time.frameCount!=inventoryPopupOpened;

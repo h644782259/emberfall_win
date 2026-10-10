@@ -2417,6 +2417,9 @@ namespace Emberfall
         public static int EquipmentGenerationLevel(int level)
         { return Clamp(level,1,MaximumLevel); }
 
+        public static int EquipmentAffixLimit(Rarity rarity)
+        {return rarity==Rarity.Common?0:rarity==Rarity.Legendary?3:2;}
+
         private static readonly float[] EquipmentRollMinimum={.85f,1.10f,1.45f,1.90f},EquipmentRollMaximum={1.05f,1.40f,1.85f,2.50f};
         public static string EquipmentDropPreview(ItemSlot slot,Rarity rarity,int level,EquipmentMechanic mechanic=EquipmentMechanic.None)
         {
@@ -2425,7 +2428,7 @@ namespace Emberfall
             if(slot==ItemSlot.Weapon)text+="\n攻击  "+EquipmentPreviewRange(5+level*2.5f,quality);
             else if(slot==ItemSlot.Armor)text+="\n防御  "+EquipmentPreviewRange(3+level*1.2f,quality)+"\n生命  "+EquipmentPreviewRange(10+level*4,quality);
             else text+="\n攻击  "+EquipmentPreviewRange(2+level,quality)+"\n生命  "+EquipmentPreviewRange(6+level*3,quality);
-            if(quality>0)text+="\n随机附加\n攻击加成  "+new[]{"","2%～5%","4%～8%","6%～12%"}[quality]+"\n暴击率  "+new[]{"","1%～3%","2%～5%","3%～8%"}[quality]+"\n暴击伤害  "+new[]{"","5%～10%","8%～15%","12%～20%"}[quality]+(quality==1?"\n至多一项":"\n可能同时获得两项");
+            if(quality>0)text+="\n随机附加\n攻击加成  "+new[]{"","2%～5%","4%～8%","6%～12%"}[quality]+"\n暴击率  "+new[]{"","1%～3%","2%～5%","3%～8%"}[quality]+"\n暴击伤害  "+new[]{"","5%～10%","8%～15%","12%～20%"}[quality]+"\n最多"+EquipmentAffixLimit(rarity)+"项";
             text+=mechanic==EquipmentMechanic.None?"":"\n机制 · "+BuildCatalog.MechanicName(mechanic)+"\n"+BuildCatalog.MechanicDescription(mechanic);
             return text;
         }
@@ -2457,7 +2460,12 @@ namespace Emberfall
             if(roll.Next(100)<chance)
             {
                 int first=roll.Next(3);RollEquipmentAffix(item,quality,first,roll);
-                if(quality>=2&&roll.Next(100)<(quality==3?45:20))RollEquipmentAffix(item,quality,(first+1+roll.Next(2))%3,roll);
+                if(quality>=1&&roll.Next(100)<(quality==3?45:20))
+                {
+                    int second=(first+1+roll.Next(2))%3;
+                    RollEquipmentAffix(item,quality,second,roll);
+                    if(quality==3&&roll.Next(100)<25)RollEquipmentAffix(item,quality,3-first-second,roll);
+                }
             }
             item.statRollRevision=1;
         }

@@ -35,7 +35,7 @@ namespace Emberfall
             candidate.gold+=quote.Gold;return CommitCandidate(candidate);
         }
         public int GemSellValue(EquipmentMechanic mechanic)
-        {var gem=Attachment(mechanic);return gem==null?0:System.Math.Max(0,gem.upgradeRank)*AttachmentUpgradeCost+System.Math.Max(0,gem.ascensionRank)*AscensionCost;}
+        {var gem=Attachment(mechanic);return gem==null?0:BuildCatalog.GemPrice(gem.rarity)/2+System.Math.Max(0,gem.upgradeRank)*AttachmentUpgradeCost+System.Math.Max(0,gem.ascensionRank)*AscensionCost;}
         public string GemSaleLock(EquipmentMechanic mechanic,bool atMerchant)
         {
             var gem=Attachment(mechanic);
