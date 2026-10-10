@@ -58,7 +58,9 @@ try {
         throw "The installation drive does not exist: $InstallDirectory"
     }
 
-    Write-Host '[1/5] Building current local Windows source...'
+    Write-Host '[0/5] Updating source from origin/main...'
+    & (Join-Path $PSScriptRoot 'Update-Main.ps1') -ProjectDirectory $projectRoot
+    Write-Host '[1/5] Building updated Windows source...'
     Write-Host "Source repository: $projectRoot"
     $sourceCommit = 'Git unavailable'
     if (Get-Command git -ErrorAction SilentlyContinue) {

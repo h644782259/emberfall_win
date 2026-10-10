@@ -7,7 +7,7 @@
 ## 构建电脑准备
 
 - 64 位 Windows 10 / Windows 11，Windows PowerShell 5.1 或更新版本。
-- 从 GitHub 获取完整 `emberfall_win` 仓库。需要最新代码时，先更新本地代码；脚本不会自动拉取、提交或推送 Git。
+- 从 GitHub 获取完整 `emberfall_win` 仓库并安装 Git for Windows，提前配置 GitHub 访问凭据。每次构建前脚本自动执行 `git pull --ff-only origin main`；不弹出凭据输入，不自动提交或推送。
 - 在 Unity Hub 安装 Unity 6，并安装 Windows Build Support (Mono)。版本参考项目 `ProjectSettings/ProjectVersion.txt`。
 - 在 Unity Hub 登录并激活有效的 Unity Editor 许可证。首次构建可能需要联网解析项目依赖。
 - 关闭游戏和打开此项目的 Unity 编辑器。
@@ -18,7 +18,7 @@
 
 默认安装到当前用户的 `%LOCALAPPDATA%\Programs\Emberfall`，无需固定盘符。安装器和 ZIP 默认保存在安装目录的 `Installer` 子目录，桌面会生成 `Emberfall` 快捷方式。
 
-脚本依次执行：Unity 构建 → 打包并验证安装包 → 安装或更新 → 对比全部构建文件的 SHA-256 → 创建快捷方式。任何步骤失败都会停止，不会继续安装旧构建。安装和更新保留游戏的独立存档。
+脚本依次执行：更新 main → Unity 构建 → 打包并验证安装包 → 安装或更新 → 对比全部构建文件的 SHA-256 → 创建快捷方式。更新失败、当前不是 main、存在未提交源码改动或分支不能快进时直接停止，不会继续构建旧代码。Unity 自动修改的 `ProjectVersion.txt` 可以保留，但若它阻碍拉取，也会停止。安装和更新保留游戏的独立存档。
 
 ## 自定义路径
 

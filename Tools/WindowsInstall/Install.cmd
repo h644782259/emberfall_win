@@ -1,3 +1,3 @@
 @echo off
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0Build-Install-Windows.ps1" %*
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0Run-Install.ps1" %*
 exit /b %errorlevel%
