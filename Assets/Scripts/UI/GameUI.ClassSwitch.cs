@@ -9,7 +9,7 @@ namespace Emberfall
         private ProgressionService.ClassSwitchTransaction classSwitchPreview;
         private string classSwitchFingerprint,classSwitchMessage;
         private Vector2 classSwitchScroll;
-        internal bool ClassSwitchHasPendingEdit {get{return allocationDraft!=null||buildPlanAction!=BuildPlanAction.None||buildPlanChoosing||presetSaleOpen||reforgeOwner!=null;}}
+        internal bool ClassSwitchHasPendingEdit {get{return allocationDraft!=null||reforgeOwner!=null;}}
         private void OpenClassSwitch()
         {
             panel=Panel.Skills;skillSection=2;classSwitchMessage=null;CancelMobileScroll();
@@ -106,7 +106,7 @@ namespace Emberfall
         {
             float y=4;var p=session.Progression;
             BuildPlanParagraph(ref y,bodyWidth,unit,"当前："+GameBalance.ClassName(p.Profile.heroClass),gold,draw,true);
-            BuildPlanParagraph(ref y,bodyWidth,unit,"共享等级、装备与地图进度。每个职业独立保留配点、路线、快捷栏和方案 A / B。首次切换按技能位置保留合法配点，不复制教程或已存方案。",muted,draw);
+            BuildPlanParagraph(ref y,bodyWidth,unit,"共享等级、装备与地图进度。每个职业独立保留配点、路线和快捷栏。首次切换按技能位置保留合法配点，不复制教程。",muted,draw);
             BuildPlanParagraph(ref y,bodyWidth,unit,"真实装备及其数值、品质、强化保持；专属机制不会转成其他职业收益。切换保持生命比例与能量，冷却继续计时，不重复发奖。",muted,draw);
             BuildPlanParagraph(ref y,bodyWidth,unit,classSwitchMessage,gold,draw,true);
             BuildPlanParagraph(ref y,bodyWidth,unit,session.ClassSwitchLockReason(),gold,draw);

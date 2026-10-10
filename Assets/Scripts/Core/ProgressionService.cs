@@ -52,7 +52,6 @@ namespace Emberfall
         public const int RecoveryLootCapacity = 256;
         public const int MechanicExchangeCost = 12;
         public const int MaximumMasteryRank = MasteryProgressionRules.MaximumRank;
-        public const int BuildPresetCount = 2;
         public const int FashionChoiceCost = 30;
         public const int AscensionCost = 24;
         public const int AscensionMilestone = 5;
@@ -985,9 +984,8 @@ namespace Emberfall
             var candidate=Snapshot();candidate.autoSellCommon=candidate.autoSellRare=false;return CommitCandidate(candidate);
         }
 
-        public int BulkSellLowQuality(bool confirmPresetReferences=false)
+        public int BulkSellLowQuality()
         {
-            if(!confirmPresetReferences&&BulkSalePresetImpact().Length>0){Fail("清理会使这些方案引用缺失："+BulkSalePresetImpact()+"；请确认后再出售。");return 0;}
             GameProfile candidate = Snapshot();
             int sold = 0;
             for (int index = candidate.inventory.Count - 1; index >= 0; index--)
@@ -1309,15 +1307,13 @@ namespace Emberfall
                 preview.Profile=history[history.Count-1];history.RemoveAt(history.Count-1);Error=null;return true;
             }
             public void Cancel() { completed=true;history.Clear(); }
-            public bool Apply(bool inCamp,int saveSlot=-1)
+            public bool Apply(bool inCamp)
             {
                 if(!inCamp)return Reject("只能在营地应用草稿。");
                 if(!IsCurrent)return Reject("角色资料已变化，请取消并重新打开草稿。");
-                if(saveSlot < -1||saveSlot>=BuildPresetCount)return Reject("无效的方案位置。");
-                BuildPreset preset=preview.CaptureBuild();string reason=owner.ValidateBuildPreset(preset);
+                BuildConfiguration configuration=preview.CaptureBuild();string reason=owner.ValidateBuildConfiguration(configuration);
                 if(!string.IsNullOrEmpty(reason))return Reject(reason);
                 GameProfile candidate=preview.Snapshot();candidate.skillPoints=Points;
-                if(saveSlot>=0){EnsureBuildPresetSlots(candidate);candidate.buildPresets[saveSlot]=preset;}
                 if(!owner.CommitCandidate(candidate,true))return Reject(owner.LastError);
                 completed=true;history.Clear();Error=null;return true;
             }
@@ -1342,15 +1338,32 @@ namespace Emberfall
             return CommitCandidate(candidate);
         }
 
-        public bool HasBuildPreset(int slot)
+        private sealed class BuildConfiguration
         {
-            return slot >= 0 && slot < BuildPresetCount && Profile.buildPresets != null &&
-                slot < Profile.buildPresets.Length && Profile.buildPresets[slot] != null && Profile.buildPresets[slot].populated;
+            public int version = 1;
+            public bool populated;
+            public HeroClass heroClass;
+            public int[] skillRanks;
+            public int[] masteryRanks;
+            public int masteryCore = -1;
+            public ElementalistSpecialization specialization;
+            public SummonerRoute summonerRoute;
+            public int[] equippedSkills;
+            public int[] hotbarKeys;
+            public int hotbarPage;
+            public string weaponId, armorId, relicId;
+            // -1 means no unlocked equipment variant.
+            public int[] equipmentVariants;
+            public EquipmentMechanic[] equipmentMechanics;
+            // A zero enum entry is not evidence: each slot explicitly records whether its mechanism is known.
+            public int equipmentMechanicKnownMask;
+            public EquipmentMechanic[] mountedAttachments;
+            public int[] attachmentVariants;
         }
 
-        private BuildPreset CaptureBuild()
+        private BuildConfiguration CaptureBuild()
         {
-            var preset=new BuildPreset
+            var configuration=new BuildConfiguration
             {
                 version = 1, populated = true, heroClass = Profile.heroClass,
                 skillRanks = (int[])Profile.skillRanks.Clone(), masteryRanks = (int[])Profile.masteryRanks.Clone(),
@@ -1361,7 +1374,7 @@ namespace Emberfall
                 equipmentMechanicKnownMask = 7,
                 equipmentMechanics = new[] { Equipped(ItemSlot.Weapon)?.mechanic??EquipmentMechanic.None, Equipped(ItemSlot.Armor)?.mechanic??EquipmentMechanic.None, Equipped(ItemSlot.Relic)?.mechanic??EquipmentMechanic.None }
             };
-            CaptureAttachmentPreset(Profile,preset);return preset;
+            CaptureAttachmentConfiguration(Profile,configuration);return configuration;
         }
 
         private int CapturedVariant(string id)
@@ -1383,62 +1396,38 @@ namespace Emberfall
             return text;
         }
 
-        public string BuildPresetSummary(int slot)
-        { return HasBuildPreset(slot) ? DescribeBuild(Profile.buildPresets[slot]) : "空方案 · 可保存当前技能、精通、专精、快捷栏与穿戴装备"; }
-
-        private string DescribeBuild(BuildPreset preset)
+        private string DescribeBuild(BuildConfiguration configuration)
         {
-            if (preset.version != 1 || preset.skillRanks == null || preset.skillRanks.Length != GameBalance.SkillCount ||
-                preset.masteryRanks == null || preset.masteryRanks.Length != 4 || !Enum.IsDefined(typeof(HeroClass), preset.heroClass))
-                return "方案数据无效或版本不兼容；可用当前配装覆盖。";
+            if (configuration.version != 1 || configuration.skillRanks == null || configuration.skillRanks.Length != GameBalance.SkillCount ||
+                configuration.masteryRanks == null || configuration.masteryRanks.Length != 4 || !Enum.IsDefined(typeof(HeroClass), configuration.heroClass))
+                return "配点数据无效。";
             int skills = 0, mastery = 0;
             var learned = new List<string>(); var tracks = new List<string>();
-            for (int i = 0; i < preset.skillRanks.Length; i++)
+            for (int i = 0; i < configuration.skillRanks.Length; i++)
             {
-                int rank = Clamp(preset.skillRanks[i], 0, 3); skills += rank;
-                if (rank > 0) learned.Add(GameBalance.SkillName(preset.heroClass, i) + " " + rank + "阶");
+                int rank = Clamp(configuration.skillRanks[i], 0, 3); skills += rank;
+                if (rank > 0) learned.Add(GameBalance.SkillName(configuration.heroClass, i) + " " + rank + "阶");
             }
-            for (int i = 0; i < preset.masteryRanks.Length; i++)
+            for (int i = 0; i < configuration.masteryRanks.Length; i++)
             {
-                int rank = Clamp(preset.masteryRanks[i], 0, MaximumMasteryRank); mastery += rank;
+                int rank = Clamp(configuration.masteryRanks[i], 0, MaximumMasteryRank); mastery += rank;
                 if (rank > 0) tracks.Add(BuildCatalog.MasteryName((MasteryType)i) + " " + rank + "点");
             }
-            string core = preset.masteryCore >= 0 && preset.masteryCore < 4 ? BuildCatalog.MasteryName((MasteryType)preset.masteryCore) : "无核心";
-            string classChoice = preset.heroClass == HeroClass.Arcanist ? " · " + BuildCatalog.SpecializationName(preset.specialization) :
-                preset.heroClass == HeroClass.Summoner ? (preset.summonerRoute == SummonerRoute.Bonded ? " · 双契" : " · 群契") : "";
+            string core = configuration.masteryCore >= 0 && configuration.masteryCore < 4 ? BuildCatalog.MasteryName((MasteryType)configuration.masteryCore) : "无核心";
+            string classChoice = configuration.heroClass == HeroClass.Arcanist ? " · " + BuildCatalog.SpecializationName(configuration.specialization) :
+                configuration.heroClass == HeroClass.Summoner ? (configuration.summonerRoute == SummonerRoute.Bonded ? " · 双契" : " · 群契") : "";
             var equipment = new List<string>();
-            foreach (string id in new[] { preset.weaponId, preset.armorId, preset.relicId })
+            foreach (string id in new[] { configuration.weaponId, configuration.armorId, configuration.relicId })
             {
                 ItemData item = Profile.inventory.Find(value => value != null && value.id == id);
                 int slot=equipment.Count;
-                string variant=preset.equipmentVariants!=null&&preset.equipmentVariants.Length==3&&preset.equipmentVariants[slot]>=0?" · 变体 "+(preset.equipmentVariants[slot]==0?"A":"B"):"";
+                string variant=configuration.equipmentVariants!=null&&configuration.equipmentVariants.Length==3&&configuration.equipmentVariants[slot]>=0?" · 变体 "+(configuration.equipmentVariants[slot]==0?"A":"B"):"";
                 equipment.Add(item == null ? "装备缺失" : item.name+variant);
             }
-            return GameBalance.ClassName(preset.heroClass) + classChoice + " · 技能 " + skills + " 点 · 精通 " + mastery + " 点 · " + core +
+            return GameBalance.ClassName(configuration.heroClass) + classChoice + " · 技能 " + skills + " 点 · 精通 " + mastery + " 点 · " + core +
                 "\n技能：" + (learned.Count == 0 ? "尚未学习" : string.Join("、", learned.ToArray())) +
                 "\n精通：" + (tracks.Count == 0 ? "尚未投入" : string.Join("、", tracks.ToArray())) +
                 "\n装备：" + string.Join(" / ", equipment.ToArray());
-        }
-
-        public string BuildPresetLockReason(int slot, bool inCamp)
-        {
-            if (!inCamp) return "只能在营地应用配装方案。";
-            if (slot < 0 || slot >= BuildPresetCount) return "无效的配装方案位置。";
-            if (!HasBuildPreset(slot)) return "这个位置还没有保存配装方案。";
-            return ValidateBuildPreset(Profile.buildPresets[slot]);
-        }
-
-        public bool SaveBuildPreset(int slot, bool inCamp)
-        {
-            if (!inCamp) return Fail("只能在营地保存配装方案。");
-            if (slot < 0 || slot >= BuildPresetCount) return Fail("无效的配装方案位置。");
-            BuildPreset preset = CaptureBuild();
-            string reason = ValidateBuildPreset(preset);
-            if (!string.IsNullOrEmpty(reason)) return Fail(reason);
-            GameProfile candidate = Snapshot();
-            EnsureBuildPresetSlots(candidate);
-            candidate.buildPresets[slot] = preset;
-            return CommitCandidate(candidate);
         }
 
         public string BuildStateFingerprint(){return BuildFingerprint(Profile);}
@@ -1449,188 +1438,82 @@ namespace Emberfall
             copy.skillStockCounts=null;copy.skillStockRemaining=null;copy.skillStockPeriods=null;
             return JsonUtility.ToJson(copy,true);
         }
-        public sealed class PresetEquipmentQuote
+        private string ValidateBuildConfiguration(BuildConfiguration configuration)
         {
-            internal readonly ProgressionService Owner;internal readonly GameProfile Source;internal readonly string State;internal readonly int Plan,Slot,Variant;internal readonly string ItemId;
-            public readonly string Summary,Error;
-            internal PresetEquipmentQuote(ProgressionService owner,int plan,int slot,string id,int variant,string summary,string error)
-            {Owner=owner;Source=owner.Profile;State=owner.BuildStateFingerprint();Plan=plan;Slot=slot;ItemId=id;Variant=variant;Summary=summary;Error=error;}
-        }
-        private static string PresetItemId(BuildPreset p,int slot){return slot==0?p.weaponId:slot==1?p.armorId:p.relicId;}
-        private EquipmentMechanic? PresetMechanic(BuildPreset p,int slot)
-        {
-            var item=FindItem(PresetItemId(p,slot));
-            if(item!=null&&item.slot==(ItemSlot)slot)return item.mechanic;
-            if((p.equipmentMechanicKnownMask&(1<<slot))!=0&&p.equipmentMechanics!=null&&p.equipmentMechanics.Length==3&&Enum.IsDefined(typeof(EquipmentMechanic),p.equipmentMechanics[slot]))return p.equipmentMechanics[slot];
-            return null;
-        }
-        public List<ItemData> PresetReplacementCandidates(int plan,ItemSlot slot)
-        {
-            var items=new List<ItemData>();if(!HasBuildPreset(plan)||!Enum.IsDefined(typeof(ItemSlot),slot))return items;
-            var preset=Profile.buildPresets[plan];var mechanic=PresetMechanic(preset,(int)slot);
-            int desired=preset.equipmentVariants!=null&&preset.equipmentVariants.Length==3?preset.equipmentVariants[(int)slot]:-1;
-            foreach(var item in Profile.inventory)if(item!=null&&item.slot==slot)items.Add(item);
-            items.Sort((a,b)=>{int n=(mechanic.HasValue&&b.mechanic==mechanic.Value).CompareTo(mechanic.HasValue&&a.mechanic==mechanic.Value);if(n!=0)return n;n=(desired!=1||HasVariant(b)).CompareTo(desired!=1||HasVariant(a));if(n!=0)return n;n=(b.level<=Profile.level).CompareTo(a.level<=Profile.level);if(n!=0)return n;n=b.level.CompareTo(a.level);return n!=0?n:string.CompareOrdinal(a.id,b.id);});return items;
-        }
-        public PresetEquipmentQuote QuotePresetReplacement(int plan,ItemSlot slot,string itemId,int variant=-2)
-        {
-            if(!HasBuildPreset(plan)||!Enum.IsDefined(typeof(ItemSlot),slot))return null;
-            var preset=Profile.buildPresets[plan];if(preset.equipmentVariants!=null&&preset.equipmentVariants.Length!=3||preset.equipmentMechanics!=null&&preset.equipmentMechanics.Length!=3)return null;var item=FindItem(itemId);var old=FindItem(PresetItemId(preset,(int)slot));
-            if(variant==-2)variant=preset.equipmentVariants!=null&&preset.equipmentVariants.Length==3?preset.equipmentVariants[(int)slot]:-1;
-            if(variant==-1&&item!=null&&HasVariant(item))variant=item.mechanicVariant;
-            string error=preset.heroClass!=Profile.heroClass?"方案职业不符。":item==null?"候选装备已不在背包。":item.slot!=slot?"候选部位不符。":item.mechanic!=EquipmentMechanic.None&&BuildCatalog.MechanicClass(item.mechanic)!=Profile.heroClass?"候选机制不适合当前职业。":item.level>Profile.level?"候选装备超过角色等级。":variant < -1||variant>1?"变体数据无效。":variant==1&&!HasVariant(item)?"候选机制尚未学习变体 B，请先学习或明确选择 A。":null;
-            if(item!=null&&!HasVariant(item)&&variant==0)variant=-1;
-            var before=PreviewEquippedItem(old);var after=PreviewEquippedItem(item);
-            var previousMechanic=PresetMechanic(preset,(int)slot);
-            string summary="方案 "+(plan==0?"A":"B")+" · "+GameBalance.SlotName(slot)+"："+(old==null?"原引用缺失":old.name)+" → "+(item==null?"候选缺失":item.name)+"\n机制："+(!previousMechanic.HasValue?"未知（旧方案未记录）":BuildCatalog.MechanicName(previousMechanic.Value))+" → "+BuildCatalog.MechanicName(item==null?EquipmentMechanic.None:item.mechanic)+" · 选择 "+(variant==1?"B":variant==0?"A":"无变体")+"\n等级："+(old==null?"未知":old.level.ToString())+" → "+(item==null?"未知":item.level.ToString())+"（角色 "+Profile.level+"）";
-            if(after!=null)summary+="\n穿戴属性（继承部位强化）：攻 "+(before==null?"未知":before.attack.ToString())+" → "+after.attack+" / 防 "+(before==null?"未知":before.defense.ToString())+" → "+after.defense+" / 生命 "+(before==null?"未知":before.health.ToString())+" → "+after.health;
-            summary+="\n仅更新该方案的此部位引用与选择；不穿戴、不改配点/快捷栏、不改另一方案。";
-            return new PresetEquipmentQuote(this,plan,(int)slot,itemId,variant,summary,error);
-        }
-        public bool ReplacePresetEquipment(PresetEquipmentQuote quote,bool inCamp)
-        {
-            if(!inCamp||IsPracticeOnly)return Fail("只能在营地修改真实角色方案。");
-            if(quote==null||quote.Owner!=this||quote.Source!=Profile||quote.State!=BuildStateFingerprint())return Fail("装备或角色已变化，请重新核对替换预览。");
-            if(!string.IsNullOrEmpty(quote.Error))return Fail(quote.Error);
-            var fresh=QuotePresetReplacement(quote.Plan,(ItemSlot)quote.Slot,quote.ItemId,quote.Variant);if(fresh==null||!string.IsNullOrEmpty(fresh.Error))return Fail("候选已失效，请重新选择。");
-            var candidate=Snapshot();var preset=candidate.buildPresets[quote.Plan];
-            if(quote.Slot==0)preset.weaponId=quote.ItemId;else if(quote.Slot==1)preset.armorId=quote.ItemId;else preset.relicId=quote.ItemId;
-            if(preset.equipmentVariants==null)preset.equipmentVariants=new[]{-1,-1,-1};
-            var capturedMechanics=new EquipmentMechanic[3];int knownMask=0;
-            for(int slot=0;slot<3;slot++)
-            {var known=PresetMechanic(preset,slot);if(known.HasValue){capturedMechanics[slot]=known.Value;knownMask|=1<<slot;}}
-            preset.equipmentMechanics=capturedMechanics;preset.equipmentMechanicKnownMask=knownMask|(1<<quote.Slot);
-            preset.equipmentVariants[quote.Slot]=quote.Variant;preset.equipmentMechanics[quote.Slot]=FindItem(quote.ItemId).mechanic;
-            return CommitCandidate(candidate);
-        }
-        public string PresetReferences(string id) { return string.Empty; }
-        public string BulkSalePresetImpact()
-        {
-            var names=new List<string>();foreach(var item in Profile.inventory)if(item!=null&&!IsEquipped(Profile,item.id)&&!IsProtectedLoot(item)&&item.rarity<=Rarity.Rare){string refs=PresetReferences(item.id);if(refs.Length>0)names.Add(item.name+"（"+refs+"）");}
-            return string.Join("、",names.ToArray());
-        }
-
-        public bool ApplyBuildPreset(int slot, bool inCamp)
-        {
-            string reason = BuildPresetLockReason(slot, inCamp);
-            if (!string.IsNullOrEmpty(reason)) return Fail(reason);
-            GameProfile candidate = Snapshot();
-            BuildPreset preset = candidate.buildPresets[slot];
-            // A preset saved before a new first-rank unlock cannot unlearn it or
-            // return its point. The combined current cost was checked above.
-            for (int i = 0; i < GameBalance.SkillCount; i++)
-                candidate.skillRanks[i] = Math.Max(candidate.skillRanks[i] > 0 ? 1 : 0, preset.skillRanks[i]);
-            candidate.masteryRanks = (int[])preset.masteryRanks.Clone(); candidate.masteryCore = preset.masteryCore;
-            candidate.specialization = preset.specialization; candidate.summonerRoute = preset.summonerRoute;
-            candidate.equippedSkills = (int[])preset.equippedSkills.Clone(); candidate.hotbarKeys = (int[])preset.hotbarKeys.Clone();
-            candidate.hotbarPage = preset.hotbarPage;
-            candidate.weaponId = preset.weaponId; candidate.armorId = preset.armorId; candidate.relicId = preset.relicId;
-            if(preset.equipmentVariants!=null)
-            {
-                string[] ids={preset.weaponId,preset.armorId,preset.relicId};
-                for(int i=0;i<3;i++)if(preset.equipmentVariants[i]>=0)
-                    {var selected=candidate.inventory.Find(item=>item.id==ids[i]);selected.mechanicVariant=preset.equipmentVariants[i];selected.mechanicVariantUnlocked=true;}
-            }
-            ApplyAttachmentPreset(candidate,preset);
-            return CommitCandidate(candidate);
-        }
-
-        private string ValidateBuildPreset(BuildPreset preset)
-        {
-            if (preset == null || !preset.populated || preset.version != 1 || preset.heroClass != Profile.heroClass)
-                return "配装方案无效、职业不符或版本不兼容；未改变当前配装。";
-            if (preset.skillRanks == null || preset.skillRanks.Length != GameBalance.SkillCount ||
-                preset.masteryRanks == null || preset.masteryRanks.Length != 4)
-                return "配装方案的技能或精通数据无效。";
+            if (configuration == null || !configuration.populated || configuration.version != 1 || configuration.heroClass != Profile.heroClass)
+                return "配装配点无效、职业不符或版本不兼容；未改变当前配装。";
+            if (configuration.skillRanks == null || configuration.skillRanks.Length != GameBalance.SkillCount ||
+                configuration.masteryRanks == null || configuration.masteryRanks.Length != 4)
+                return "配装配点的技能或精通数据无效。";
             int spent = 0;
             for (int i = 0; i < GameBalance.SkillCount; i++)
             {
-                int rank = preset.skillRanks[i];
+                int rank = configuration.skillRanks[i];
                 if (rank < 0 || rank > 3 || (rank > 0 && Profile.level < GameBalance.SkillRankRequiredLevel(i, rank)))
-                    return "当前等级不足以应用方案中的技能进阶，或技能阶数无效。";
+                    return "当前等级不足以应用配点中的技能进阶，或技能阶数无效。";
                 // Only restore investment in this character's existing unlocks.
                 // Grandfathered first ranks in imported saves remain grandfathered.
-                if (rank > 0 && Profile.skillRanks[i] < 1) return "方案引用了当前角色尚未学习的技能；请先学习其前置与1阶。";
+                if (rank > 0 && Profile.skillRanks[i] < 1) return "配点引用了当前角色尚未学习的技能；请先学习其前置与1阶。";
                 spent += Math.Max(Profile.skillRanks[i] > 0 ? 1 : 0, rank);
             }
-            foreach (int rank in preset.masteryRanks)
+            foreach (int rank in configuration.masteryRanks)
             {
-                if (rank < 0 || rank > MasteryCap(Profile.level)) return "当前等级不足以应用方案中的精通投入，或精通点数无效。";
+                if (rank < 0 || rank > MasteryCap(Profile.level)) return "当前等级不足以应用配点中的精通投入，或精通点数无效。";
                 spent += rank;
             }
-            if (spent > GameBalance.SkillPointBudget(Profile.level)) return "当前技能点不足；方案还会保留保存后新学的1阶技能，未退点或改变配装。";
-            if (preset.masteryCore < -1 || preset.masteryCore >= 4 ||
-                (preset.masteryCore >= 0 && preset.masteryRanks[preset.masteryCore] < MasteryCoreRules.InitialInvestment))
-                return "方案核心无效或该方向未投入10点。";
-            if (!Enum.IsDefined(typeof(ElementalistSpecialization), preset.specialization) ||
-                (Profile.heroClass != HeroClass.Arcanist && preset.specialization != ElementalistSpecialization.None) ||
-                !Enum.IsDefined(typeof(SummonerRoute), preset.summonerRoute)) return "方案专精或契约路线无效。";
-            if (preset.equippedSkills == null || preset.equippedSkills.Length != GameBalance.HotbarSize * GameBalance.HotbarPages ||
-                preset.hotbarKeys == null || preset.hotbarKeys.Length != GameBalance.HotbarSize || preset.hotbarPage < 0 || preset.hotbarPage >= GameBalance.HotbarPages)
-                return "方案快捷栏数据无效。";
+            if (spent > GameBalance.SkillPointBudget(Profile.level)) return "当前技能点不足；已学1阶技能会保留，未退点或改变配装。";
+            if (configuration.masteryCore < -1 || configuration.masteryCore >= 4 ||
+                (configuration.masteryCore >= 0 && configuration.masteryRanks[configuration.masteryCore] < MasteryCoreRules.InitialInvestment))
+                return "配点核心无效或该方向未投入10点。";
+            if (!Enum.IsDefined(typeof(ElementalistSpecialization), configuration.specialization) ||
+                (Profile.heroClass != HeroClass.Arcanist && configuration.specialization != ElementalistSpecialization.None) ||
+                !Enum.IsDefined(typeof(SummonerRoute), configuration.summonerRoute)) return "配点专精或契约路线无效。";
+            if (configuration.equippedSkills == null || configuration.equippedSkills.Length != GameBalance.HotbarSize * GameBalance.HotbarPages ||
+                configuration.hotbarKeys == null || configuration.hotbarKeys.Length != GameBalance.HotbarSize || configuration.hotbarPage < 0 || configuration.hotbarPage >= GameBalance.HotbarPages)
+                return "配点快捷栏数据无效。";
             for (int page = 0; page < GameBalance.HotbarPages; page++)
             {
                 var used = new HashSet<int>();
                 for (int slot = 0; slot < GameBalance.HotbarSize; slot++)
                 {
-                    int entry = preset.equippedSkills[page * GameBalance.HotbarSize + slot];
+                    int entry = configuration.equippedSkills[page * GameBalance.HotbarSize + slot];
                     // Locked default placeholders remain mapped; they never grant
                     // an unlock or permit casting an unlearned skill.
                     if (entry == -1) continue;
                     if ((entry != GameBalance.HotbarPotion && (entry < 0 || entry >= GameBalance.SkillCount || GameBalance.IsPassive(entry))) || !used.Add(entry))
-                        return "方案快捷栏包含无效、重复或被动技能。";
+                        return "配点快捷栏包含无效、重复或被动技能。";
                 }
             }
             var keys = new HashSet<int>();
-            foreach (int key in preset.hotbarKeys)
-                if (!GameBalance.IsBindableKey(key) || !keys.Add(key)) return "方案快捷键无效或重复。";
-            if(preset.mountedAttachments!=null)
+            foreach (int key in configuration.hotbarKeys)
+                if (!GameBalance.IsBindableKey(key) || !keys.Add(key)) return "配点快捷键无效或重复。";
+            if(configuration.mountedAttachments!=null)
             {
-                if(preset.mountedAttachments.Length>MaximumMountedGemsPerSlot*3||preset.attachmentVariants==null||preset.attachmentVariants.Length!=preset.mountedAttachments.Length)return "方案宝石数据无效。";
+                if(configuration.mountedAttachments.Length>MaximumMountedGemsPerSlot*3||configuration.attachmentVariants==null||configuration.attachmentVariants.Length!=configuration.mountedAttachments.Length)return "配点宝石数据无效。";
                 var mounted=new HashSet<EquipmentMechanic>();var slotCounts=new int[3];
-                for(int i=0;i<preset.mountedAttachments.Length;i++)
+                for(int i=0;i<configuration.mountedAttachments.Length;i++)
                 {
-                    var mechanic=preset.mountedAttachments[i];var attachment=Attachment(mechanic);int variant=preset.attachmentVariants[i];
-                    if(!mounted.Add(mechanic)||!BuildCatalog.GemCompatible(mechanic,Profile.heroClass)||attachment==null||variant<0||variant>1||variant==1&&!attachment.variantUnlocked)return "方案宝石缺失、重复或变体尚未解锁。";
-                    if(++slotCounts[(int)BuildCatalog.MechanicSlot(mechanic)]>MaximumMountedGemsPerSlot)return "方案中每个部位最多镶嵌3颗宝石。";
+                    var mechanic=configuration.mountedAttachments[i];var attachment=Attachment(mechanic);int variant=configuration.attachmentVariants[i];
+                    if(!mounted.Add(mechanic)||!BuildCatalog.GemCompatible(mechanic,Profile.heroClass)||attachment==null||variant<0||variant>1||variant==1&&!attachment.variantUnlocked)return "配点宝石缺失、重复或变体尚未解锁。";
+                    if(++slotCounts[(int)BuildCatalog.MechanicSlot(mechanic)]>MaximumMountedGemsPerSlot)return "配点中每个部位最多镶嵌3颗宝石。";
                 }
             }
-            if(preset.equipmentVariants!=null && preset.equipmentVariants.Length!=3)return "方案变体数据无效。";
-            string[] ids = { preset.weaponId, preset.armorId, preset.relicId };
+            if(configuration.equipmentVariants!=null && configuration.equipmentVariants.Length!=3)return "配点变体数据无效。";
+            string[] ids = { configuration.weaponId, configuration.armorId, configuration.relicId };
             for (int slot = 0; slot < ids.Length; slot++)
             {
-                if (string.IsNullOrEmpty(ids[slot]) || ids[slot].Length > 80) return "方案装备编号无效。";
+                if (string.IsNullOrEmpty(ids[slot]) || ids[slot].Length > 80) return "配点装备编号无效。";
                 ItemData item = Profile.inventory.Find(value => value != null && value.id == ids[slot]);
                 if (item == null || item.slot != (ItemSlot)slot || item.level > Profile.level)
-                    return "方案装备已不在背包、部位不符或等级不足；请找回装备或重新保存方案。";
-                if(preset.equipmentVariants!=null)
+                    return "配点装备已不在背包、部位不符或等级不足；请重新打开草稿。";
+                if(configuration.equipmentVariants!=null)
                 {
-                    int variant=preset.equipmentVariants[slot];
+                    int variant=configuration.equipmentVariants[slot];
                     if(variant < -1 || variant>1 || variant>=0 && !HasVariant(item))
-                        return "方案引用了未解锁或无效的装备变体；不会消耗材料或自动解锁。";
+                        return "配点引用了未解锁或无效的装备变体；不会消耗材料或自动解锁。";
                 }
             }
             return string.Empty;
-        }
-
-        private static void EnsureBuildPresetSlots(GameProfile profile)
-        {
-            // Added fields in older saves start empty. Reject excess populated
-            // slots rather than silently discarding a hand-edited/imported build.
-            if (profile.buildPresets != null && profile.buildPresets.Length > BuildPresetCount)
-                for (int i = BuildPresetCount; i < profile.buildPresets.Length; i++)
-                    if (profile.buildPresets[i] != null && profile.buildPresets[i].populated)
-                        throw new ArgumentException("配装方案超过2份安全容量；保留原存档，请从备份恢复。");
-            if (profile.buildPresets == null || profile.buildPresets.Length != BuildPresetCount)
-            {
-                var slots = new BuildPreset[BuildPresetCount];
-                if (profile.buildPresets != null) Array.Copy(profile.buildPresets, slots, Math.Min(BuildPresetCount, profile.buildPresets.Length));
-                profile.buildPresets = slots;
-            }
-            // Explicit empty objects keep inline Unity serialization independent
-            // of its null-element behavior. The populated bit owns slot identity.
-            for (int i = 0; i < BuildPresetCount; i++)
-                if (profile.buildPresets[i] == null) profile.buildPresets[i] = new BuildPreset();
         }
 
         // Active profile fields are authoritative for the current class. Archives are
@@ -1642,7 +1525,7 @@ namespace Emberfall
             {
                 initialized=true,heroClass=p.heroClass,skillRanks=p.skillRanks,masteryRanks=p.masteryRanks,
                 masteryCore=p.masteryCore,specialization=p.specialization,summonerRoute=p.summonerRoute,
-                equippedSkills=p.equippedSkills,hotbarKeys=p.hotbarKeys,hotbarPage=p.hotbarPage,buildPresets=p.buildPresets,
+                equippedSkills=p.equippedSkills,hotbarKeys=p.hotbarKeys,hotbarPage=p.hotbarPage,
                 tutorialMask=p.tutorialMask,classTutorialCompleted=p.classTutorialCompleted,growthRevision=1,automaticGrowth=p.automaticGrowth,
                 progressionGoal=p.progressionGoal,progressionGoalItemId=p.progressionGoalItemId,
                 progressionGoalTier=p.progressionGoalTier,progressionGoalMechanic=p.progressionGoalMechanic,
@@ -1654,7 +1537,7 @@ namespace Emberfall
         {
             p.skillRanks=state.skillRanks;p.masteryRanks=state.masteryRanks;p.masteryCore=state.masteryCore;
             p.specialization=state.specialization;p.summonerRoute=state.summonerRoute;
-            p.equippedSkills=state.equippedSkills;p.hotbarKeys=state.hotbarKeys;p.hotbarPage=state.hotbarPage;p.buildPresets=state.buildPresets;
+            p.equippedSkills=state.equippedSkills;p.hotbarKeys=state.hotbarKeys;p.hotbarPage=state.hotbarPage;
             p.tutorialMask=state.tutorialMask;p.classTutorialCompleted=state.classTutorialCompleted;
             p.automaticGrowth=state.automaticGrowth;
             p.progressionGoal=state.progressionGoal;p.progressionGoalItemId=state.progressionGoalItemId;
@@ -1688,7 +1571,6 @@ namespace Emberfall
                 }
                 foreach(int rank in state.masteryRanks){if(rank<0||rank>MasteryCap(profile.level))throw new ArgumentException("其他职业精通投入无效；原文件已保留。");spent+=rank;}
                 if(spent>GameBalance.SkillPointBudget(profile.level))throw new ArgumentException("其他职业配点超出共享等级预算；原文件已保留。");
-                if(state.buildPresets!=null&&state.buildPresets.Length>BuildPresetCount)throw new ArgumentException("其他职业方案超过安全容量；原文件已保留。");
             }
             profile.classStates[(int)profile.heroClass]=new ClassBuildState{initialized=true,heroClass=profile.heroClass};
         }
@@ -1713,7 +1595,7 @@ namespace Emberfall
                 // Equipment, economy, world progress, receipts and pending draws stay shared.
                 state=CaptureClassState(candidate);state.heroClass=target;
                 state.specialization=ElementalistSpecialization.None;state.summonerRoute=SummonerRoute.Bonded;
-                state.tutorialMask=0;state.classTutorialCompleted=false;state.buildPresets=new[]{new BuildPreset(),new BuildPreset()};
+                state.tutorialMask=0;state.classTutorialCompleted=false;
                 state.progressionGoal=ProgressionGoalKind.None;state.progressionGoalItemId=null;state.progressionGoalMechanic=EquipmentMechanic.None;
                 state.automaticGrowth=true;state.growthRevision=1;
                 state.progressionGoalTier=1;state.progressionGoalLevel=0;state.progressionGoalMinimumRarity=Rarity.Common;
@@ -1844,7 +1726,7 @@ namespace Emberfall
             get {if(Profile.pendingChestRulesRevision>=3)return "开启获得一件物品或一组材料；传说装备4%，第30箱保底。";if(!Profile.pendingAdventureChest)return DungeonChestRules(Profile.pendingChestTier,LastChestReward);
                 int mode=Profile.pendingChestMode,tier=Profile.pendingChestTier;
                 return AdventureRewardRules.EquipmentSummary(mode,tier)+"\n装备 × "+AdventureRewardRules.EquipmentCount(mode,tier)+" · 等级匹配角色\n星烬碎片 × "+AdventureRewardRules.MaterialsMinimum(mode,tier)+"～"+AdventureRewardRules.MaterialsMaximum(mode,tier)+"\n"+
-                (mode==-1?"时装：史诗保底 · 史诗 "+AdventureRewardRules.UpgradeChance(-1,tier)+"% · 传说 "+AdventureRewardRules.LegendaryChance(tier)+"%\n":"")+"金币随阶数增长 · 开箱保存后入背包";
+                (mode==-1?"时装：史诗保底 · 史诗 "+AdventureRewardRules.UpgradeChance(-1,tier)+"% · 传说 "+AdventureRewardRules.LegendaryChance(tier)+"%\n":"")+"金币随阶数增长 · 开箱调整后入背包";
             }
         }
         public const int SingleChestRulesRevision=3,ThreadMaterialCost=6;
@@ -1885,7 +1767,7 @@ namespace Emberfall
             if(qualityRoll<0||qualityRoll>=100)throw new ArgumentOutOfRangeException("qualityRoll");
             var r=new ChestReward{rulesRevision=3,rewardKind=ChestRewardKind.SingleChest,id=id,choice=-1,materialKind=RewardMaterialKind.StarAshFragment,primaryCount=1};
             bool legendary=qualityRoll<4||profile.legendaryEquipmentMisses>=AdventureRewardRules.LegendaryPityChests-1;
-            r.primaryKind=legendary||qualityRoll<40?1:profile.pendingChestGemSource?(qualityRoll<75?4:3):qualityRoll<70?3:qualityRoll<85?2:5;
+            r.primaryKind=legendary||qualityRoll<40?1:qualityRoll>=95?7:profile.pendingChestGemSource?(qualityRoll<75?4:3):qualityRoll<70?3:qualityRoll<85?2:5;
             r.primaryRarity=legendary?Rarity.Legendary:Rarity.Epic;
             if(r.primaryKind==1)r.primarySlot=(int)AdventureRewardRules.EquipmentSlot(profile.pendingChestMode,profile.pendingChestMode==3?slotRoll:0);
             else if(r.primaryKind==2)
@@ -1901,12 +1783,14 @@ namespace Emberfall
                 var gems=BuildCatalog.GemsFor(profile.heroClass);r.gemMechanic=gems[(int)(seed%(uint)gems.Length)];
                 r.gemRarity=seed/(uint)gems.Length%100<20?Rarity.Legendary:Rarity.Epic;
             }
+            else if(r.primaryKind==7){r.primaryCount=1;r.primaryRarity=Rarity.Legendary;}
             else r.primaryCount=ChestStackMinimum(r.primaryKind==5,profile.pendingChestTier)+quantityRoll%(ChestStackMaximum(r.primaryKind==5,profile.pendingChestTier)-ChestStackMinimum(r.primaryKind==5,profile.pendingChestTier)+1);
             return r;
         }
         private static bool ValidOneItemChest(ChestReward r)
         {
-            if(r==null||r.rulesRevision!=3||string.IsNullOrEmpty(r.id)||r.id.Length>80||r.rewardKind!=ChestRewardKind.SingleChest||r.choice!=-1||r.gold!=0||r.primaryKind<1||r.primaryKind>6||r.primaryCount<1||r.primaryCount>100)return false;
+            if(r==null||r.rulesRevision!=3||string.IsNullOrEmpty(r.id)||r.id.Length>80||r.rewardKind!=ChestRewardKind.SingleChest||r.choice!=-1||r.gold!=0||r.primaryKind<1||r.primaryKind>7||r.primaryCount<1||r.primaryCount>100)return false;
+            if(r.primaryKind==7)return r.primaryCount==1&&r.primaryRarity==Rarity.Legendary;
             if(r.primaryKind==1)return r.primaryCount==1&&r.primarySlot>=0&&r.primarySlot<=2&&(r.primaryRarity==Rarity.Epic||r.primaryRarity==Rarity.Legendary);
             if(r.primaryKind==2)return r.primaryCount==1&&r.rarityIndex==(int)Rarity.Legendary&&r.slotIndex>=0&&r.slotIndex<=1;
             if(r.primaryKind==4)return r.primaryCount==1&&r.gemMechanic!=EquipmentMechanic.None&&Enum.IsDefined(typeof(EquipmentMechanic),r.gemMechanic)&&(r.gemRarity==Rarity.Epic||r.gemRarity==Rarity.Legendary);
@@ -1939,6 +1823,11 @@ namespace Emberfall
                     if(!candidate.discoveredMechanics.Contains(receipt.gemMechanic))candidate.discoveredMechanics.Add(receipt.gemMechanic);
                     receipt.name=BuildCatalog.GemName(receipt.gemMechanic);
                 }
+            }
+            if(receipt.primaryKind==7)
+            {
+                if(candidate.affixReforgeStones>=999999){Fail("重铸石已满，请使用后继续开启");return null;}
+                candidate.affixReforgeStones++;receipt.affixReforgeStonesDelta=1;receipt.name="词条重铸石";
             }
             if(receipt.primaryKind==3||receipt.primaryKind==5||receipt.primaryKind==6)
             {
@@ -2192,122 +2081,10 @@ namespace Emberfall
         }
         public bool UnlockMechanicVariant(string id,bool inCamp)
         {var item=FindItem(id);var a=item==null?null:Attachment(item.mechanic);return a!=null&&a.variantUnlocked?true:item==null?Fail("请选择宝石"):AscendAttachment(item.mechanic,inCamp);}
-        public bool SelectCoreGoal(EquipmentMechanic mechanic,Rarity minimumRarity=Rarity.Common)
-        {
-            if(mechanic==EquipmentMechanic.None||!Enum.IsDefined(typeof(EquipmentMechanic),mechanic)||!BuildCatalog.GemCompatible(mechanic,Profile.heroClass)||
-                (minimumRarity!=Rarity.Common&&minimumRarity!=Rarity.Epic))return Fail("请选择本职业的具体核心目标。");
-            if(Profile.progressionGoal==ProgressionGoalKind.Core&&Profile.progressionGoalMechanic==mechanic&&Profile.progressionGoalMinimumRarity==minimumRarity)
-            {LastError=string.Empty;return true;}
-            GameProfile candidate=Snapshot();candidate.automaticGrowth=false;candidate.progressionGoal=ProgressionGoalKind.Core;candidate.progressionGoalMechanic=mechanic;
-            candidate.progressionGoalMinimumRarity=minimumRarity;candidate.progressionGoalItemId=null;candidate.progressionGoalLevel=0;candidate.progressionGoalTier=1;
-            return CommitCandidate(candidate);
-        }
-        public bool SelectProgressionGoal(ProgressionGoalKind goal,string itemId=null,int tier=0,int targetLevel=0)
-        {
-            if(!Enum.IsDefined(typeof(ProgressionGoalKind),goal))return Fail("无效目标。");
-            bool itemGoal=goal==ProgressionGoalKind.Variant||goal==ProgressionGoalKind.Ascension||goal==ProgressionGoalKind.Reforge;
-            if(itemGoal){string reason=MechanicGoalEligibility(itemId,goal);if(reason.Length>0)return Fail(reason);}
-            if(goal==ProgressionGoalKind.Tier&&(tier<1||tier>10))return Fail("副本等级无效。");
-            int level=goal==ProgressionGoalKind.Reforge?EquipmentGenerationLevel(targetLevel==0?Profile.level:targetLevel):0;
-            if(goal==ProgressionGoalKind.Reforge&&QuoteReforge(itemId,level)==null)return Fail("重铸目标等级无效。");
-            if(Profile.progressionGoal==goal&&(goal!=ProgressionGoalKind.Core||Profile.progressionGoalMechanic==EquipmentMechanic.None)&&Profile.progressionGoalItemId==(itemGoal?itemId:null)&&
-                (goal!=ProgressionGoalKind.Tier||Profile.progressionGoalTier==tier)&&Profile.progressionGoalLevel==level)
-            {LastError=string.Empty;return true;}
-            GameProfile candidate=Snapshot();candidate.automaticGrowth=false;candidate.progressionGoal=goal;candidate.progressionGoalItemId=itemGoal?itemId:null;
-            candidate.progressionGoalTier=goal==ProgressionGoalKind.Tier?tier:1;candidate.progressionGoalLevel=level;
-            candidate.progressionGoalMechanic=itemGoal?FindItem(itemId).mechanic:EquipmentMechanic.None;candidate.progressionGoalMinimumRarity=Rarity.Common;
-            return CommitCandidate(candidate);
-        }
-        private ItemData GoalCoreItem(List<ItemData> items)
-        {
-            if(items==null)return null;
-            foreach(ItemData item in items)if(item!=null&&item.mechanic==Profile.progressionGoalMechanic&&item.rarity>=Profile.progressionGoalMinimumRarity&&
-                item.slot==BuildCatalog.MechanicSlot(item.mechanic))return item;
-            return null;
-        }
         public ProgressionGoalState SelectedProgressionGoal(bool inCamp=false)
-        {
-            if(Profile.automaticGrowth)return AutomaticGoal(Profile,inCamp);
-            var migrated=MigratedAttachmentGoal(inCamp);if(migrated!=null)return migrated;
-            var goal=new ProgressionGoalState{Identity=Profile.progressionGoal.ToString(),Title="选择一个成长目标",Step="在营地选择目标"};
-            ItemData item=FindItem(Profile.progressionGoalItemId);
-            switch(Profile.progressionGoal)
-            {
-                case ProgressionGoalKind.Core:
-                    if(Profile.progressionGoalMechanic==EquipmentMechanic.None)
-                    {goal.Identity+="/legacy";goal.Title="首件机制装备（旧目标）";goal.Done=Profile.firstClearRewardClaimed||Profile.discoveredMechanics.Count>0;goal.Step="请选择要追踪的具体核心；旧目标未指定机制";break;}
-                    goal.Identity+="/"+(int)Profile.progressionGoalMechanic+"/"+(int)Profile.progressionGoalMinimumRarity;
-                    goal.Title="获取"+(Profile.progressionGoalMinimumRarity==Rarity.Epic?"史诗·":"")+BuildCatalog.MechanicName(Profile.progressionGoalMechanic);
-                    item=GoalCoreItem(Profile.inventory);
-                    if(item!=null)
-                    {
-                        goal.Done=true;goal.ItemId=item.id;bool equipped=IsEquipped(Profile,item.id);
-                        goal.Step=equipped?"目标核心已穿戴":item.level>Profile.level?"角色达到 "+item.level+" 级后可穿戴":"目标核心已入手，可穿戴检查路线";
-                        if(!equipped){goal.Action=ProgressionGoalAction.Equip;goal.CanAct=inCamp&&item.level<=Profile.level;}
-                        break;
-                    }
-                    item=GoalCoreItem(Profile.pendingLoot);bool recovery=false;
-                    if(item==null){item=GoalCoreItem(Profile.recoveryLoot);recovery=item!=null;}
-                    if(item!=null)
-                    {goal.ItemId=item.id;goal.Action=recovery?ProgressionGoalAction.ClaimRecovery:ProgressionGoalAction.ClaimPending;goal.CanAct=inCamp&&Profile.inventory.Count<InventoryCapacity;goal.Step=Profile.inventory.Count<InventoryCapacity?"在营地领取指定装备入背包":"先腾出背包位置，再领取目标装备";break;}
-                    bool first=Profile.pendingFirstClearReward&&!Profile.firstClearRewardClaimed;
-                    goal.MaterialCost=first?0:MechanicExchangeCost;goal.Action=first?ProgressionGoalAction.ClaimCore:ProgressionGoalAction.ExchangeCore;
-                    goal.CanAct=inCamp&&(first||Profile.mechanicMaterials>=MechanicExchangeCost);
-                    goal.Step=first?"首通自选可领取这件宝石":"在营地定向兑换这件史诗宝石";break;
-                case ProgressionGoalKind.Variant:case ProgressionGoalKind.Ascension:case ProgressionGoalKind.Reforge:
-                    goal.Identity+="/"+Profile.progressionGoalItemId+(Profile.progressionGoal==ProgressionGoalKind.Reforge?"/"+Profile.progressionGoalLevel:"");
-                    goal.ItemId=Profile.progressionGoalItemId;
-                    goal.Title=(Profile.progressionGoal==ProgressionGoalKind.Variant?"解锁变体":Profile.progressionGoal==ProgressionGoalKind.Ascension?"传说升华":"重铸至 "+Profile.progressionGoalLevel+" 级")+" · "+(item==null?"原目标装备":item.name);
-                    if(item==null){goal.Step="原目标装备不在背包；同名装备不会替代它";break;}
-                    goal.Done=Profile.progressionGoal==ProgressionGoalKind.Variant?HasVariant(item):Profile.progressionGoal==ProgressionGoalKind.Ascension?item.rarity==Rarity.Legendary:item.level>=Profile.progressionGoalLevel;
-                    if(goal.Done){goal.Step="保留当前目标，可自行选择下一目标";break;}
-                    goal.MaterialCost=Profile.progressionGoal==ProgressionGoalKind.Variant?VariantCost:Profile.progressionGoal==ProgressionGoalKind.Ascension?AscensionCost:0;
-                    goal.Action=Profile.progressionGoal==ProgressionGoalKind.Variant?ProgressionGoalAction.UnlockVariant:Profile.progressionGoal==ProgressionGoalKind.Ascension?ProgressionGoalAction.Ascend:ProgressionGoalAction.Reforge;
-                    if(Profile.progressionGoal==ProgressionGoalKind.Reforge){goal.ReforgeQuote=QuoteReforge(item.id,Profile.progressionGoalLevel);goal.GoldCost=goal.ReforgeQuote==null?0:goal.ReforgeQuote.GoldCost;}
-                    string reason=Profile.progressionGoal==ProgressionGoalKind.Variant?VariantLockReason(item.id,inCamp):Profile.progressionGoal==ProgressionGoalKind.Ascension?AscensionLockReason(item.id,inCamp):ReforgeLockReason(goal.ReforgeQuote,inCamp);
-                    goal.CanAct=reason.Length==0;goal.Step=goal.CanAct?"营地可执行这件装备的操作":reason;
-                    if(Profile.progressionGoal==ProgressionGoalKind.Ascension)goal.RequiredAdventureTier=AscensionMilestone;
-                    break;
-                case ProgressionGoalKind.SecondPreset:
-                    goal.Title="保存第二套配装";goal.Done=HasBuildPreset(0)&&HasBuildPreset(1);goal.Step=goal.Done?"两份方案已保存":"在营地保存方案 A 与 B";goal.Action=ProgressionGoalAction.OpenPresets;goal.CanAct=inCamp;break;
-                case ProgressionGoalKind.Tier:
-                    goal.Identity+="/"+Profile.progressionGoalTier;goal.Title="通关 Lv"+AdventureRewardRules.DungeonLevel(Profile.progressionGoalTier)+" 副本";goal.Done=HighestAdventureTier>=Profile.progressionGoalTier;goal.RequiredAdventureTier=Profile.progressionGoalTier;goal.Step=HighestAdventureTier==0?"尚未通关副本":"最高已通关 Lv"+AdventureRewardRules.DungeonLevel(HighestAdventureTier);break;
-                case ProgressionGoalKind.CombatTrial:
-                    goal.Identity+="/"+(int)Profile.heroClass;goal.Title="实战试炼";goal.Step="右上目标查看四项指引 · "+CombatTrialProgress(Profile)+"/4 已完成";goal.Done=CombatTrialProgress(Profile)==4;break;
-                case ProgressionGoalKind.ClassTutorial:
-                    goal.Identity+="/"+(int)Profile.heroClass;goal.Title="职业练习";goal.Step=ClassTutorialText;goal.Done=Profile.classTutorialCompleted;break;
-            }
-            goal.Requirements=goal.ResourceRequirements(Profile,HighestAdventureTier);
-            if(!goal.Done&&goal.Action!=ProgressionGoalAction.None){goal.Requirements+=(goal.Requirements.Length>0?" · ":"")+(inCamp?"营地已到达":"需返回营地");goal.Step+=(goal.Requirements.Length>0?" · "+goal.Requirements:"");}
-            return goal;
-        }
+        {return AutomaticGoal(Profile,inCamp);}
         public bool ExecuteProgressionGoal(string expectedActionIdentity,bool inCamp)
-        {
-            if(Profile.automaticGrowth)return ExecuteAutomaticGoal(expectedActionIdentity,inCamp);
-            ProgressionGoalState goal=SelectedProgressionGoal(inCamp);
-            if(goal.ActionIdentity!=expectedActionIdentity)return Fail("目标或下一步已变化，请检查当前操作。");
-            if(goal.Done&&goal.Action==ProgressionGoalAction.None){LastError=string.Empty;return true;}
-            if(!goal.CanAct)return Fail(goal.Step);
-            var attachment=Profile.attachments.Find(a=>a.id==goal.ItemId);
-            if(attachment!=null)
-            {
-                if(goal.Action==ProgressionGoalAction.UpgradeAttachment)return UpgradeAttachment(attachment.mechanic,inCamp);
-                if(goal.Action==ProgressionGoalAction.UnlockVariant)return ToggleAttachmentVariant(attachment.mechanic,inCamp);
-                if(goal.Action==ProgressionGoalAction.Ascend)return AscendAttachment(attachment.mechanic,inCamp);
-            }
-            switch(goal.Action)
-            {
-                case ProgressionGoalAction.ClaimCore:return ClaimFirstClearReward(Profile.progressionGoalMechanic);
-                case ProgressionGoalAction.ExchangeCore:return ExchangeMechanic(Profile.progressionGoalMechanic);
-                case ProgressionGoalAction.ClaimPending:return ClaimPendingLoot(goal.ItemId);
-                case ProgressionGoalAction.ClaimRecovery:return ClaimRecoveryLoot(goal.ItemId);
-                case ProgressionGoalAction.Equip:return Equip(goal.ItemId);
-                case ProgressionGoalAction.UnlockVariant:return UnlockMechanicVariant(goal.ItemId,inCamp);
-                case ProgressionGoalAction.Ascend:return AscendMechanic(goal.ItemId,inCamp);
-                case ProgressionGoalAction.Reforge:return ReforgeMechanic(goal.ReforgeQuote,inCamp);
-                default:return Fail("请打开对应营地入口继续。");
-            }
-        }
+        {return Fail("请前往主线目标对应的副本或章节。");}
         public string ProgressionGoalStatus(int runMaterials=0,bool inCamp=false)
         {
             ProgressionGoalState goal=SelectedProgressionGoal(inCamp);
@@ -2363,7 +2140,6 @@ namespace Emberfall
             candidate.pendingFirstClearReward = !candidate.firstClearRewardClaimed;
             candidate.lastDungeonRewardId = rewardId;
             // Equipment is granted atomically when the completion chest is opened.
-            candidate.refinementStones=Math.Min(999999,candidate.refinementStones+DungeonRefinementStones(tier));
             candidate.lastDungeonRewardDetails=CaptureRewardPresentation(rewardId,Profile,candidate);
             if (!CommitCandidate(candidate,completeDungeon:true)) return false;
             for (int level = oldLevel + 1; level <= candidate.level; level++) RaiseLeveledUp(level);
@@ -2389,7 +2165,6 @@ namespace Emberfall
                 candidate.pendingFirstClearReward=!candidate.firstClearRewardClaimed;
             }
             if(adventureMode>=-1){if(Profile.pendingFashionChest||Profile.pendingChestReveal)return Fail("请先收下已有宝箱。");NewChestQualification(candidate,completedTier,receipt);candidate.pendingChestMode=adventureMode;}
-            if(adventureMode>=-1)candidate.refinementStones=Math.Min(999999,candidate.refinementStones+DungeonRefinementStones(completedTier));
             candidate.lastModeRewardDetails=CaptureRewardPresentation(receipt,Profile,candidate);
             if(!CommitCandidate(candidate,completeDungeon:true))return false;
             for(int level=oldLevel+1;level<=candidate.level;level++)RaiseLeveledUp(level);
@@ -2401,7 +2176,8 @@ namespace Emberfall
         /// complete earned reward once. A failed save keeps the reward live: retry
         /// Save(), never this grant. Enemy identity admission belongs to the session.
         /// </summary>
-        public void GrantEnemyKillReward(int gold, int experience, bool ground=false, int potions=0)
+        public bool EnemyRewardWithoutBuildChange {get;private set;}
+        public void GrantEnemyKillReward(int gold, int experience, bool ground=false, int potions=0, bool deferSave=false)
         {
             if (gold < 0 || experience < 0) { Fail("击败敌人奖励无效。"); return; }
             Profile.kills = (int)Math.Min(int.MaxValue, (long)Profile.kills + 1);
@@ -2421,7 +2197,11 @@ namespace Emberfall
             }
             // Capture the earned range before callbacks can mutate the profile.
             int earnedLevel = Profile.level;
-            Commit();
+            SynchronizeAutomaticSkills(Profile);
+            bool previousRewardFlag=EnemyRewardWithoutBuildChange;
+            EnemyRewardWithoutBuildChange=oldLevel==earnedLevel;
+            try { if (deferSave) RaiseChanged(); else Commit(); }
+            finally { EnemyRewardWithoutBuildChange=previousRewardFlag; }
             // As with GrantExperience, failure keeps live progress and LastError;
             // Changed runs once before level notifications, all seeing final stats.
             for (int level = oldLevel + 1; level <= earnedLevel; level++)
@@ -2523,8 +2303,13 @@ namespace Emberfall
                 item.attack=RolledEquipmentStat(2+level,minimum[quality],maximum[quality],roll);
                 item.health=RolledEquipmentStat(6+level*3,minimum[quality],maximum[quality],roll);
             }
+            RollRandomEquipmentAffixes(item,quality,roll);
+            item.statRollRevision=1;
+        }
+        private static void RollRandomEquipmentAffixes(ItemData item,int quality,System.Random roll)
+        {
             item.criticalChance=item.criticalDamageBonus=item.attackPercent=0;
-            int chance=new[]{0,25,55,80}[quality];
+            int chance=new[]{0,25,55,100}[quality];
             if(roll.Next(100)<chance)
             {
                 int first=roll.Next(3);RollEquipmentAffix(item,quality,first,roll);
@@ -2535,7 +2320,6 @@ namespace Emberfall
                     if(quality==3&&roll.Next(100)<25)RollEquipmentAffix(item,quality,3-first-second,roll);
                 }
             }
-            item.statRollRevision=1;
         }
         private static void RollEquipmentAffix(ItemData item,int quality,int affix,System.Random roll)
         {
@@ -2649,9 +2433,8 @@ namespace Emberfall
             return item == null || !Enum.IsDefined(typeof(ItemSlot), item.slot) ? null : PreviewUpgrade(item, SlotUpgradeRank(item.slot));
         }
 
-        public bool Sell(string id,bool confirmPresetReferences=false)
+        public bool Sell(string id)
         {
-            if(!confirmPresetReferences&&PresetReferences(id).Length>0)return Fail("出售会使 "+PresetReferences(id)+" 缺失此装备；请确认后再出售。");
             ItemData item = FindItem(id);
             if (item == null) return Fail("找不到这件装备。");
             if (IsEquipped(Profile, item.id)) return Fail("请先替换身上的装备，再出售。");
@@ -3260,7 +3043,6 @@ namespace Emberfall
             MigrateAchievementReceipts(profile);
             var achievementIds=new HashSet<string>();
             profile.achievementReceipts.RemoveAll(id=>string.IsNullOrEmpty(id)||Array.Find(Achievements,a=>a.Id==id)==null||!achievementIds.Add(id));
-            EnsureBuildPresetSlots(profile);
             if (!Enum.IsDefined(typeof(HeroClass), profile.heroClass)) profile.heroClass = HeroClass.Vanguard;
             profile.version = 1;
             ChapterProgression.Normalize(profile);
@@ -3302,6 +3084,7 @@ namespace Emberfall
             if (profile.heroClass != HeroClass.Arcanist || !Enum.IsDefined(typeof(ElementalistSpecialization), profile.specialization))
                 profile.specialization = ElementalistSpecialization.None;
             profile.mechanicMaterials = Clamp(profile.mechanicMaterials, 0, 999999);
+            profile.affixReforgeStones=Clamp(profile.affixReforgeStones,0,999999);profile.affixReforgeCount=Math.Max(0,profile.affixReforgeCount);
             profile.refinementStones=Clamp(profile.refinementStones,0,999999);profile.refinementCount=Math.Max(0,profile.refinementCount);profile.refinementMaxCount=Math.Max(0,profile.refinementMaxCount);
             profile.materialRewardedClears = Clamp(profile.materialRewardedClears, 0, profile.clearedRuns);
             profile.pendingFirstClearReward = (profile.clearedRuns > 0 || (profile.chapterCompletedMask&(1<<(int)ChapterNode.StarPlatform))!=0 || profile.chapterPriorAdventureTier>0 || profile.highestAdventureTier>profile.chapterHighestAdventureTier) && !profile.firstClearRewardClaimed;

@@ -326,7 +326,7 @@ namespace Emberfall
             return clicked;
         }
         private int mobilePausePage;
-        private readonly Vector2[] mobilePauseScroll = new Vector2[4];
+        private readonly Vector2[] mobilePauseScroll = new Vector2[3];
         private void DrawMobilePause()
         {
             if(mobileBindingEditor){DrawMobileBindingEditor();return;}
@@ -339,11 +339,13 @@ namespace Emberfall
             Rect close=TouchRect(x+panelWidth-44,y,44,44);
 
             if(PopupCloseButton(close)){session.SetPaused(false);BlockUITransition();return;}
-            string[] tabs = { "冒险", "声音与画面", "按键设置", "存档" };
-            int[] tabOrder={0,3,1,2};
+            string[] tabs = { "存档", "声音与画面", "按键设置" };
+            int[] tabOrder={0,1,2};
             float sidebarWidth=120,bodyY=y+headerHeight+8;
             float bodyHeight=Mathf.Max(48,Mathf.Min(layout.Height,height/TouchRatio)-bodyY-72);
-            if(PrimaryButton(TouchRect(x+136,Mathf.Min(layout.Height,height/TouchRatio)-60,panelWidth-136,48),"保存并退出",gold))RequestExit(true);
+            float footerY=Mathf.Min(layout.Height,height/TouchRatio)-60,exitButtonWidth=(panelWidth-136-12)*.5f;
+            if(PrimaryButton(TouchRect(x+136,footerY,exitButtonWidth,48),"保存并返回主菜单",jade))RequestExit(true);
+            if(PrimaryButton(TouchRect(x+148+exitButtonWidth,footerY,exitButtonWidth,48),"保存并退出",gold))RequestExit(false);
             Fill(TouchRect(x,bodyY,sidebarWidth,bodyHeight),new Color(.025f,.05f,.065f,.65f));
             for (int i=0;i<tabs.Length;i++)
                 if (PauseSidebarTab(TouchRect(x,bodyY+i*52,sidebarWidth,48),tabs[tabOrder[i]],mobilePausePage==tabOrder[i],TouchRatio) && mobilePausePage!=tabOrder[i])
@@ -351,7 +353,7 @@ namespace Emberfall
             float contentX=x+sidebarWidth+16,bodyWidth=panelWidth-sidebarWidth-16,contentWidth=bodyWidth-18;
             string notice=string.IsNullOrEmpty(session.Notification)?"":PlatformText(session.Notification);
             float noticeHeight=string.IsNullOrEmpty(notice)?0:Mathf.Max(32,Style(TouchFont(11),false,true).CalcHeight(new GUIContent(notice),contentWidth*TouchRatio)/TouchRatio+8);
-            float contentHeight=mobilePausePage==0?174+noticeHeight:mobilePausePage==3?174+noticeHeight:mobilePausePage==2?174:116;
+            float contentHeight=mobilePausePage==0?174+noticeHeight:mobilePausePage==2?174:116;
             mobilePauseScroll[mobilePausePage]=BeginTouchScroll("mobile-pause-"+mobilePausePage,TouchRect(contentX,bodyY,bodyWidth,bodyHeight),mobilePauseScroll[mobilePausePage],new Rect(0,0,contentWidth*TouchRatio,Mathf.Max(bodyHeight,contentHeight)*TouchRatio));
             try { DrawMobilePauseBody(contentWidth,notice,noticeHeight); }
             finally { EndTouchScroll(); }
@@ -359,7 +361,7 @@ namespace Emberfall
         private void DrawMobilePauseBody(float contentWidth,string notice,float noticeHeight)
         {
             if(mobilePausePage==2){DrawMobileControlPreferences(0,0,contentWidth);if(NavigationButton(TouchRect(0,116,contentWidth,48),"操作指南",jade))OpenControls();return;}
-            if(mobilePausePage==3)
+            if(mobilePausePage==0)
             {
                 if(PrimaryButton(TouchRect(0,0,contentWidth,48),"保存",gold))RequestManualSave();
                 if(NavigationButton(TouchRect(0,58,contentWidth,48),"读取存档",jade))OpenSaveSelection();
@@ -384,9 +386,6 @@ namespace Emberfall
                     }
                 return;
             }
-            if(NavigationButton(TouchRect(0,0,contentWidth,48),"营地 / 撤离",jade))LeaveMobilePauseForCamp();
-            if (!string.IsNullOrEmpty(notice))
-                Text(TouchRect(0,174,contentWidth,noticeHeight),notice,TouchFont(11),gold,false,true,TextAnchor.MiddleCenter);
         }
     }
 }

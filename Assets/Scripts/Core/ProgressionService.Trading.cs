@@ -16,7 +16,7 @@ namespace Emberfall
             long value=0;
             foreach(var item in Profile.inventory)
             {
-                if(item==null||item.locked||IsEquipped(Profile,item.id)||PresetReferences(item.id).Length>0)continue;
+                if(item==null||item.locked||IsEquipped(Profile,item.id))continue;
                 var current=Equipped(item.slot);
                 if(current==null||EquipmentScore(PreviewEquippedItem(item))>=EquipmentScore(current))continue;
                 quote.Ids.Add(item.id);value+=SellValue(item);
@@ -41,10 +41,6 @@ namespace Emberfall
             var gem=Attachment(mechanic);
             if(!atMerchant||IsPracticeOnly||gem==null)return "无法出售";
             if(gem.mounted)return "请先卸下";
-            var plans=new System.Collections.Generic.List<BuildPreset>();
-            if(Profile.buildPresets!=null)plans.AddRange(Profile.buildPresets);
-            if(Profile.classStates!=null)foreach(var state in Profile.classStates)if(state!=null&&state.buildPresets!=null)plans.AddRange(state.buildPresets);
-            foreach(var plan in plans)if(plan!=null&&plan.populated&&plan.mountedAttachments!=null&&System.Array.IndexOf(plan.mountedAttachments,mechanic)>=0)return "方案使用中";
             if(Profile.mechanicMaterials>999999-GemSellValue(mechanic))return "碎片已满";
             return "";
         }
@@ -66,9 +62,15 @@ namespace Emberfall
             internal int Gold,Materials,Potions;
             internal bool First;
             internal int Stones;
+            public int AffixReforgeStoneCount {get;internal set;}
             public int RefinementStoneCount {get;internal set;}
             public EquipmentMechanic Mechanic {get;internal set;}
             public Rarity Rarity {get;internal set;}
+        }
+        public MerchantPurchaseQuote PrepareAffixReforgePurchase(bool atMerchant)
+        {
+            if(!atMerchant||IsPracticeOnly||Profile.affixReforgeStones>=999999||Profile.gold<AffixReforgeStonePrice)return null;
+            return new MerchantPurchaseQuote{Owner=this,Gold=Profile.gold,Stones=Profile.affixReforgeStones,AffixReforgeStoneCount=1};
         }
         public MerchantPurchaseQuote PrepareRefinementPurchase(bool atMerchant,int count=1)
         {
@@ -94,6 +96,12 @@ namespace Emberfall
         public bool BuyAtMerchant(MerchantPurchaseQuote quote,bool atMerchant)
         {
             if(!atMerchant||quote==null||quote.Owner!=this)return Fail("请在商人处核对并交易。");
+            if(quote.AffixReforgeStoneCount>0)
+            {
+                if(quote.Gold!=Profile.gold||quote.Stones!=Profile.affixReforgeStones||PrepareAffixReforgePurchase(atMerchant)==null)return Fail("余额已变化，请重新购买");
+                var purchase=Snapshot();purchase.gold-=AffixReforgeStonePrice;purchase.affixReforgeStones++;
+                return CommitCandidate(purchase,true);
+            }
             if(quote.RefinementStoneCount>0)
             {
                 if(quote.Gold!=Profile.gold||quote.Stones!=Profile.refinementStones||PrepareRefinementPurchase(atMerchant,quote.RefinementStoneCount)==null)

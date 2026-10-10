@@ -16,7 +16,7 @@ namespace Emberfall
             DraftButton(ref y,width,unit,practiceChoicesOpen?"收起营地试招":"展开营地试招 · 准备 / 结果",true,draw,()=>
             {practiceChoicesOpen=!practiceChoicesOpen;CancelMobileScroll();BlockUITransition();});
             if(!practiceChoicesOpen)return;
-            BuildPlanParagraph(ref y,width,unit,"试招的基准 A / 本轮 B 是结果对比，不是配装方案槽位。折叠不会清除结果或固定基准。",muted,draw);
+            BuildPlanParagraph(ref y,width,unit,"试招的基准 A / 本轮 B 是结果对比。折叠不会清除结果或固定基准。",muted,draw);
             BuildPlanParagraph(ref y,width,unit,"营地试招 · 临时角色，无奖励。准备后开始计时；旧三场为百万生命持续训练靶；新增受压场景使用当前等级真实生命并实际攻击。所有场景保留护甲与控制规则。",muted,draw);
             DraftButton(ref y,width,unit,"计时上限："+practiceSeconds+"秒 · 点击切换10/60秒",enabled,draw,()=>practiceSeconds=practiceSeconds==10?60:10);
             for(int i=0;i<5;i++){int index=i;DraftButton(ref y,width,unit,"准备 · "+CampPracticeRecord.ScenarioLabel((CampPracticeScenario)i),enabled,draw,()=>session.BeginPractice((CampPracticeScenario)index,practiceSeconds,draft));}

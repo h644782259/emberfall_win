@@ -376,6 +376,10 @@ def main():
         for name, script in [("unified-ui-integration", "UnifiedUiIntegrationTests.py"), ("mandatory-chest-service", "MandatoryChestServiceTests.py"), ("mandatory-chest-ui", "MandatoryChestUIProductionTests.py"), ("equipment-visual-identity-production", "EquipmentVisualIdentityProductionTests.py")]:
             passed = run_check(name, [[sys.executable, str(ROOT / "Tests" / script), dotnet]], dict(env, DOTNET=dotnet), output, report)
             failed = failed or not passed
+        passed = run_check("fashion-refinement-supply", [[sys.executable, str(ROOT/"Tests/FashionRefinementSupplyProductionTests.py"), dotnet]], dict(env, DOTNET=dotnet), output, report)
+        failed = failed or not passed
+        passed = run_check("affix-reforge", [[sys.executable, str(ROOT/"Tests/AffixReforgeProductionTests.py"), dotnet]], dict(env, DOTNET=dotnet), output, report)
+        failed = failed or not passed
         passed = run_check("fashion-stat-comparison", [[sys.executable, str(ROOT/"Tests/FashionStatComparisonProductionTests.py"), dotnet]], dict(env, DOTNET=dotnet), output, report)
         failed = failed or not passed
         for name, sources, program in checks:
@@ -401,7 +405,8 @@ def main():
             failed = failed or not passed
         passed = run_check("room-free-seal-host", [[sys.executable,str(ROOT/"Tests/RoomFreeSealHostTests.py"),dotnet]], dict(env,DOTNET=dotnet), output, report)
         failed = failed or not passed
-        for name, script in [("camp-build-draft-production", "CampBuildDraftProductionTests.py"),
+        for name, script in [("progression-followup-production", "ProgressionFollowupProductionTests.py"),
+                             ("camp-build-draft-production", "CampBuildDraftProductionTests.py"),
                              ("scenery-presentation-production", "SceneryPresentationProductionTests.py"),
                              ("companion-path-allocation", "CompanionPathAllocationTests.py"),
                              ("combat-review-impact-production", "CombatReviewImpactProductionTests.py"),

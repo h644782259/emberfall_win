@@ -89,16 +89,17 @@ namespace Emberfall
             long[] amounts={coins,xp,shards,stones,settlementChest==null||settlementChest.rulesRevision>=3?0:settlementChest.threadsDelta};
             string[] labels={"金币","经验","碎片","洗练石","星纹"},icons={"coin","upgrade","shard","gem","core"};
             int resourceCount=settlementChest==null||settlementChest.rulesRevision>=3?5:2;
-            float rw=contentWidth/resourceCount,resourceHeight=(spacious?68:40)*u;
+            float resourceHeight=Mathf.Min(58*u,(contentWidth-8*u*(resourceCount-1))/resourceCount);
+            string[] resourceKeys={"gold","experience","shard","refinement","thread"};
             for(int i=0;i<resourceCount;i++)
             {
-                Rect r=new Rect(frame.x+16*u+i*rw,top,rw-4*u,resourceHeight);
-                Fill(r,new Color(.055f,.095f,.12f));
-                float iconSize=(spacious?32:20)*u;
-                DrawIcon(new Rect(r.x+5*u,r.center.y-iconSize*.5f,iconSize,iconSize),UIIconAtlas.Utility(icons[i]),i==0?gold:i==1?jade:GameBalance.RarityColor(i==3?Rarity.Epic:Rarity.Rare));
-                float textX=r.x+iconSize+10*u,textWidth=r.xMax-textX-4*u;
-                Text(new Rect(textX,r.y+3*u,textWidth,resourceHeight*.42f),labels[i],Mathf.RoundToInt((spacious?12:9)*u),muted,false,false,TextAnchor.MiddleLeft);
-                Text(new Rect(textX,r.y+resourceHeight*.43f,textWidth,resourceHeight*.52f),"+"+amounts[i],Mathf.RoundToInt((spacious?19:12)*u),pale,true,false,TextAnchor.MiddleLeft);
+                Rect r=new Rect(frame.x+16*u+i*(resourceHeight+8*u),top,resourceHeight,resourceHeight);
+                var detail=ResourceItemPreview(resourceKeys[i],(int)System.Math.Min(int.MaxValue,amounts[i]));
+                if(i==1){detail.Name="经验";detail.Icon=UIIconAtlas.Utility("upgrade");detail.Description="经验\n数量  "+amounts[i];}
+                Fill(r,card);Border(r,detail.QualityColor);
+                DrawIcon(new Rect(r.x+5*u,r.y+3*u,r.width-10*u,r.height-17*u),detail.Icon,detail.QualityColor);
+                Text(new Rect(r.x+2*u,r.yMax-16*u,r.width-4*u,16*u),amounts[i].ToString(),Mathf.RoundToInt(11*u),pale,true,false,TextAnchor.MiddleRight);
+                InspectRewardItem(r,detail);
             }
             top+=resourceHeight+10*u;
             Rect stage=new Rect(frame.x+16*u,top,contentWidth,Mathf.Max(80*u,frame.yMax-top-12*u));
@@ -147,15 +148,16 @@ namespace Emberfall
             Fill(new Rect(badge.xMax+6*u,stage.y+stage.height*.15f,u,stage.height*.7f),new Color(gold.r,gold.g,gold.b,.25f));
             var icons=new System.Collections.Generic.List<EntryRewardPreview>();
             if(reward.equipmentIds!=null)foreach(string id in reward.equipmentIds)
-            {var item=session.Progression.Profile.inventory.Find(v=>v!=null&&v.id==id);if(item!=null)icons.Add(ActualEquipmentPreview(item));}
+            {var item=session.Progression.Profile.inventory.Find(v=>v!=null&&v.id==id);if(item!=null){var preview=ActualEquipmentPreview(item);preview.UnenhancedReward=true;icons.Add(preview);}}
             if(reward.Rarity.HasValue&&reward.Slot.HasValue&&!reward.Duplicate)
-                icons.Add(new EntryRewardPreview{Key="fashion:"+reward.Id,AppearanceSlot=reward.Slot.Value,Name=reward.Name,Rarity=reward.Rarity.Value,Tint=GameBalance.RarityColor(reward.Rarity.Value),Icon=UIIconAtlas.FashionCardIcon(reward.Slot.Value,(int)reward.Rarity.Value,session.Progression.Profile.heroClass),Description=ProgressionService.FashionBonus(reward.Slot.Value,reward.Rarity.Value)});
+                icons.Add(new EntryRewardPreview{Key="fashion:"+reward.Id,UnenhancedReward=true,AppearanceSlot=reward.Slot.Value,Name=reward.Name,Rarity=reward.Rarity.Value,Tint=GameBalance.RarityColor(reward.Rarity.Value),Icon=UIIconAtlas.FashionCardIcon(reward.Slot.Value,(int)reward.Rarity.Value,session.Progression.Profile.heroClass),Description=ProgressionService.FashionBonus(reward.Slot.Value,reward.Rarity.Value)});
             if(reward.gemMechanic!=EquipmentMechanic.None&&!reward.duplicateGem)
                 icons.Add(new EntryRewardPreview{Key="gem:"+reward.Id,Name=BuildCatalog.GemName(reward.gemMechanic),Rarity=reward.gemRarity,Tint=GameBalance.RarityColor(reward.gemRarity),Icon=UIIconAtlas.Utility("gem"),Description=GemRewardDescription(reward.gemMechanic,reward.gemRarity)});
             var snapshot=session.LastRunRecap;
             int[] counts={reward.materialsDelta+(reward.rulesRevision>=3||snapshot==null?0:snapshot.RewardMaterials),reward.rulesRevision>=3?reward.refinementStonesDelta:snapshot==null?0:snapshot.RewardRefinementStones,reward.threadsDelta};
             string[] keys={"shard","refinement","thread"},names={"星烬碎片","装备洗练石","星纹"};
             for(int n=0;n<counts.Length;n++)if(counts[n]>0)icons.Add(new EntryRewardPreview{Key=keys[n],Name=names[n],Quantity=counts[n],Description=names[n]+"\n数量  "+counts[n],Icon=n==1?UIIconAtlas.Utility("gem"):UIIconAtlas.Reward(n==0?1:2),Rarity=n==1?Rarity.Epic:Rarity.Rare,Tint=n==1?GameBalance.RarityColor(Rarity.Epic):jade});
+            if(reward.affixReforgeStonesDelta>0)icons.Add(ResourceItemPreview("affix-reforge",reward.affixReforgeStonesDelta));
             if(icons.Count==0)return;
             float gap=12*u,caption=0,cell=0;int cols=1,rows=icons.Count;
             for(int candidate=1;candidate<=icons.Count;candidate++)

@@ -40,7 +40,6 @@ namespace Emberfall
             {NavigateMerchantExchange();return;}
             if(goal.Action==ProgressionGoalAction.UnlockVariant||goal.Action==ProgressionGoalAction.Ascend||goal.Action==ProgressionGoalAction.UpgradeAttachment)
             {NavigateSmithAttachment(goal);return;}
-            if(goal.Action==ProgressionGoalAction.OpenPresets){progressionGoalsOpen=false;panel=Panel.Skills;skillSection=1;OpenBuildPlans();buildPlanDetails=1;return;}
             Feedback(session.Progression.ExecuteProgressionGoal(goal.ActionIdentity,session.IsInCamp),"目标操作已保存");
         }
     }

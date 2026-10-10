@@ -3,6 +3,7 @@ namespace Emberfall
 {
     public sealed class TacticalCaptureVisual:MonoBehaviour
     {
+        private LineRenderer completedRing;
         private enum OwnerMode { Generic, ChapterSeal, RoomSeal }
         private OwnerMode ownerMode;
         private PlayerController roomOwner;private RoomChainState roomRun;private object roomIdentity;
@@ -21,6 +22,9 @@ namespace Emberfall
                 for(int j=0;j<3;j++){float a=(i+(j*.4f+.1f))*Mathf.PI/6;line.SetPosition(j,new Vector3(Mathf.Sin(a)*2.6f,.1f,Mathf.Cos(a)*2.6f));}
                 visual.segments[i]=line;
             }
+            visual.completedRing=visual.Line("Completed capture halo",64,.13f);visual.completedRing.loop=true;
+            for(int i=0;i<64;i++){float a=i*Mathf.PI*2/64;visual.completedRing.SetPosition(i,new Vector3(Mathf.Sin(a)*2.6f,.12f,Mathf.Cos(a)*2.6f));}
+            visual.completedRing.startColor=visual.completedRing.endColor=new Color(.3f,1,.65f,1);visual.completedRing.enabled=false;
             visual.contestedFlag=visual.Line("Capture contested flag",4,.12f);
             Vector3[] flag={new Vector3(-.28f,.12f,-2.85f),new Vector3(0,.12f,-3.15f),new Vector3(.28f,.12f,-2.85f),new Vector3(0,.12f,-3.15f)};
             for(int i=0;i<4;i++)visual.contestedFlag.SetPosition(i,flag[i]);
@@ -45,11 +49,13 @@ namespace Emberfall
             bool valid=session!=null&&session.Player!=null&&session.Player.CombatEpoch==epoch;
             if(ownerMode==OwnerMode.RoomSeal)valid=valid&&roomIdentity!=null&&object.ReferenceEquals(session.Player,roomOwner)&&object.ReferenceEquals(session.RoomChainRun,roomRun)&&object.ReferenceEquals(session.RoomChainRun.Room,roomIdentity);
             bool active=valid&&(ownerMode==OwnerMode.RoomSeal?session.TryGetRoomSeal(sealIndex,out fraction,out contested,out complete):ownerMode==OwnerMode.ChapterSeal?session.TryGetChapterSeal(sealIndex,out fraction,out contested,out complete):session.TryGetTacticalCapture(out fraction,out contested));
+            if(valid&&ownerMode==OwnerMode.Generic&&(session.RoomChainRun!=null&&session.RoomChainRun.DoorUnlocked||session.ChapterActive&&session.ChapterRun.DoorUnlocked)){active=true;complete=true;}
             if(!active){Hide();return;}
             if(identity!=null)identity.enabled=true;
+            completedRing.enabled=complete;
             for(int i=0;i<segments.Length;i++)
             {
-                segments[i].enabled=true;
+                segments[i].enabled=!complete;
                 Color tint=complete?new Color(.16f,.25f,.23f):fraction*12>=i+1?(contested?new Color(1,.45f,.18f):new Color(.3f,1,.65f)):new Color(.22f,.28f,.32f);
                 segments[i].startColor=segments[i].endColor=tint;
             }
@@ -65,7 +71,7 @@ namespace Emberfall
                 direction.startColor=direction.endColor=new Color(.35f,.7f,.75f);
             }
         }
-        private void Hide(){if(identity!=null)identity.enabled=false;if(segments!=null)foreach(var line in segments)if(line!=null)line.enabled=false;if(contestedFlag!=null)contestedFlag.enabled=false;if(direction!=null)direction.enabled=false;}
+        private void Hide(){if(completedRing!=null)completedRing.enabled=false;if(identity!=null)identity.enabled=false;if(segments!=null)foreach(var line in segments)if(line!=null)line.enabled=false;if(contestedFlag!=null)contestedFlag.enabled=false;if(direction!=null)direction.enabled=false;}
         private void OnDisable(){Hide();}
         private void OnDestroy(){if(material!=null)Destroy(material);}
     }

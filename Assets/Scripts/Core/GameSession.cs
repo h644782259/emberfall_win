@@ -530,7 +530,7 @@ namespace Emberfall
                 runPickupGold=(int)System.Math.Min(int.MaxValue,(long)runPickupGold+gold);
                 RunPickupPotions=(int)System.Math.Min(int.MaxValue,(long)RunPickupPotions+potions);
             }
-            else Progression.GrantEnemyKillReward(gold,experience);
+            else {pendingWildernessSave=Progression;Progression.GrantEnemyKillReward(gold,experience,deferSave:true);}
             if(!InDungeon)LogSystem("+"+gold+" 金币 · +"+experience+" 经验");
             if (Random.Range(0,100)<AdventureRewardRules.EnemyEquipmentChance(boss,enemy.Tier!=EnemyController.ThreatTier.Normal))
             {
@@ -541,7 +541,6 @@ namespace Emberfall
             transientObjects.RemoveAll(go => go == null);
             transientObjects.Add(enemy.gameObject);
             // Capture real callback mutations; unchanged rewards do not rotate backups.
-            if(!InDungeon)Progression.Save();
             if(ChapterActive)FinalizeChapterBoss();
             if(RoomChainRun!=null)FinalizeRoomChain();
             if(ModeRun!=null)FinalizeArenaResult();
@@ -552,9 +551,17 @@ namespace Emberfall
             }
         }
 
+        private ProgressionService pendingWildernessSave;
         private int checkpointRoom=-1;
         private void LateUpdate()
         {
+            // Coalesce all kills admitted this frame after combat producers finish.
+            // Normal pause, exit and scene-transition saves still flush the live profile.
+            if(pendingWildernessSave!=null&&!CombatImpactBatch.InAction)
+            {
+                var owner=pendingWildernessSave;pendingWildernessSave=null;
+                if(object.ReferenceEquals(owner,Progression))owner.Save();
+            }
             if(!InDungeon||BackgroundPaused||Progression==null||!Progression.DungeonStageActive)return;
             int completed=ChapterActive&&ChapterRun.DoorUnlocked?ChapterRoomIndex:RoomChainRun!=null&&RoomChainRun.DoorUnlocked?RoomChainRun.Room.Index:-1;
             if(completed<0||completed==checkpointRoom)return;
@@ -675,6 +682,7 @@ namespace Emberfall
 
         private void OnProgressChanged()
         {
+            if(Progression.EnemyRewardWithoutBuildChange)return;
             if (Player != null && HasStarted)
             {
                 Player.RefreshStats(false);

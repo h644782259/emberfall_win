@@ -51,7 +51,6 @@ namespace Emberfall
             candidate.chapterRevision=1;candidate.chapterCompletedMask|=bit;candidate.chapterFirstRewardMask|=bit;
             candidate.chapterHighestDifficulties[index]=Math.Max(candidate.chapterHighestDifficulties[index],(int)receipt.Difficulty+1);
             candidate.mechanicMaterials=(int)Math.Min(999999L,(long)candidate.mechanicMaterials+receipt.Materials);
-            candidate.refinementStones=Math.Min(999999,candidate.refinementStones+RollChapterRefinementStones(receipt.Node,receipt.Tier,receipt.Id));
             candidate.chapterBestTiers[index]=Math.Max(candidate.chapterBestTiers[index],receipt.Tier);
             candidate.chapterBestLevels[index]=Math.Max(candidate.chapterBestLevels[index],AdventureRewardRules.DungeonLevel(receipt.Tier));
             if(candidate.pendingFashionChest||candidate.pendingChestReveal)return Fail("请先收下已有宝箱。");

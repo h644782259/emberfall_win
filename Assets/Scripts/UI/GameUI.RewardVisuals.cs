@@ -77,7 +77,7 @@ namespace Emberfall
                     if(draw)
                     {
                         Rect icon=new Rect(4*u,y*u,56*u,56*u);
-                        DrawInventoryIcon(icon,item,u);InspectRewardItem(icon,ActualEquipmentPreview(item));
+                        DrawInventoryIcon(icon,item,u);var preview=ActualEquipmentPreview(item);preview.UnenhancedReward=true;InspectRewardItem(icon,preview);
                         Text(new Rect(72*u,y*u,(width-80)*u,rowHeight*u),description,Mathf.RoundToInt(14*u),pale,false,true);
                     }
                     y+=rowHeight+12;

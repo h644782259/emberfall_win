@@ -113,7 +113,7 @@ namespace Emberfall.Editor
                 ValidateHotbarDrag();
                 ValidateConsumableHotbar();
                 ValidateMultipleSaveSlots();
-                ValidateBuildPresets();
+                ValidateRetiredPresetCompatibility();
                 report.status = "PASS";
                 Debug.Log("Emberfall Unity validation PASS: " + report.assertions + " assertions. Report: " + Path.Combine(output, "validation-report.json"));
             }
@@ -174,6 +174,7 @@ namespace Emberfall.Editor
                 gold = restored.Profile.gold;
                 int threads = restored.Profile.fashionThreads, materials = restored.Profile.mechanicMaterials;
                 int stones = restored.Profile.refinementStones;
+                int reforgeStones=restored.Profile.affixReforgeStones;
                 bool adventureChest = restored.Profile.pendingAdventureChest;
                 int chestMode = restored.Profile.pendingChestMode, chestTier = restored.Profile.pendingChestTier;
                 Check(!string.IsNullOrEmpty(restored.OpenDungeonChest()) && string.IsNullOrEmpty(restored.LastError),
@@ -184,17 +185,19 @@ namespace Emberfall.Editor
                 if (restored.LastChestReward.duplicateGem) expectedChestMaterials += AdventureRewardRules.DuplicateGemMaterials;
                 var chestReceipt = restored.LastChestReward;
                 bool validReward = chestReceipt.rulesRevision >= 3
-                    ? chestReceipt.primaryKind >= 1 && chestReceipt.primaryKind <= 6 &&
+                    ? chestReceipt.primaryKind >= 1 && chestReceipt.primaryKind <= 7 &&
                         restored.Profile.gold == gold + chestReceipt.goldDelta &&
                         restored.Profile.fashionThreads == threads + chestReceipt.threadsDelta &&
                         restored.Profile.mechanicMaterials == materials + chestReceipt.materialsDelta &&
                         restored.Profile.refinementStones == stones + chestReceipt.refinementStonesDelta &&
+                        restored.Profile.affixReforgeStones == reforgeStones + chestReceipt.affixReforgeStonesDelta &&
                         (chestReceipt.primaryKind == 1 && chestReceipt.equipmentIds != null && chestReceipt.equipmentIds.Length == 1 ||
                          chestReceipt.primaryKind == 2 && restored.Profile.fashions.Exists(f => f.name == chestReceipt.name) ||
                          chestReceipt.primaryKind == 4 && restored.Profile.attachments.Exists(a => a.mechanic == chestReceipt.gemMechanic) ||
                          chestReceipt.primaryKind == 3 && chestReceipt.materialsDelta > 0 ||
                          chestReceipt.primaryKind == 5 && chestReceipt.refinementStonesDelta > 0 ||
-                         chestReceipt.primaryKind == 6 && chestReceipt.threadsDelta > 0)
+                         chestReceipt.primaryKind == 6 && chestReceipt.threadsDelta > 0 ||
+                         chestReceipt.primaryKind == 7 && chestReceipt.affixReforgeStonesDelta == 1)
                     : restored.Profile.gold > gold && restored.Profile.fashionThreads > threads &&
                         restored.Profile.mechanicMaterials == materials + expectedChestMaterials;
                 Check(validReward && restored.Profile.pendingChestReveal,
@@ -493,49 +496,18 @@ namespace Emberfall.Editor
             report.passedStages.Add("consumable hotbar: assignment, mixed swaps, zero supply, page isolation, snapshot, JSON persistence and repair");
         }
 
-        private static void ValidateBuildPresets()
+        private static void ValidateRetiredPresetCompatibility()
         {
-            foreach (HeroClass hero in Enum.GetValues(typeof(HeroClass)))
+            foreach(HeroClass hero in Enum.GetValues(typeof(HeroClass)))
             {
-                string name = "build-presets-" + hero;
-                ProgressionService service = Fresh(name, hero);
-                Check(service.Profile.buildPresets.Length == 2 && !service.HasBuildPreset(0) && !service.HasBuildPreset(1),
-                    name + ": empty preset slots survive real JsonUtility defaults");
-                service.Profile.level = 100;
-                for (int skill = 0; skill < GameBalance.SkillCount; skill++) service.Profile.skillRanks[skill] = 3;
-                service.Profile.masteryRanks = new[] { 20, 0, 0, 10 }; service.Profile.masteryCore = 0;
-                service.Profile.specialization = hero == HeroClass.Arcanist ? ElementalistSpecialization.Burn : ElementalistSpecialization.None;
-                service.Save();
-                Check(service.SaveBuildPreset(0, true), name + ": first preset durably recorded");
-                string preset = JsonUtility.ToJson(service.Profile.buildPresets[0]);
-                Check(service.ResetBuild(true) && service.Profile.skillPoints == 89 && service.Profile.masteryCore == -1,
-                    name + ": joint reset refunds skills and mastery while retaining ten first ranks");
-                service.Profile.masteryRanks[1] = 10; service.Profile.masteryCore = 1; service.Save();
-                Check(service.SaveBuildPreset(1, true) && service.Load(), name + ": distinct second preset and both real JSON slots reload");
-                Check(service.HasBuildPreset(0) && service.HasBuildPreset(1) && JsonUtility.ToJson(service.Profile.buildPresets[0]) == preset,
-                    name + ": nested arrays and saved item references remain exact after JSON roundtrip");
-                Check(service.ApplyBuildPreset(0, true) && service.Profile.skillPoints == 39 && service.Profile.masteryCore == 0,
-                    name + ": first build reapplies its original shared-point budget");
-                for (int skill = 0; skill < GameBalance.SkillCount; skill++)
-                    Check(service.Profile.skillRanks[skill] == 3, name + ": restored rank remains exact for skill " + skill);
-                Check(service.ApplyBuildPreset(1, true) && service.Profile.skillPoints == 79 && service.Profile.masteryCore == 1,
-                    name + ": second build remains independent");
-                GameProfile before = service.Profile;
-                string state = JsonUtility.ToJson(before), primary = File.ReadAllText(service.SaveFilePath), backup = File.ReadAllText(service.SaveFilePath + ".bak");
-                string temporary = service.SaveFilePath + ".tmp";
-                Directory.CreateDirectory(temporary);
-                try
-                {
-                    Check(!service.ApplyBuildPreset(0, true) && ReferenceEquals(before, service.Profile) && JsonUtility.ToJson(service.Profile) == state,
-                        name + ": failed real-JSON apply retains complete live identity and state");
-                    Check(File.ReadAllText(service.SaveFilePath) == primary && File.ReadAllText(service.SaveFilePath + ".bak") == backup,
-                        name + ": failed apply preserves both real JSON documents");
-                }
-                finally { Directory.Delete(temporary); }
-                Check(service.ApplyBuildPreset(0, true) && service.Load() && service.Profile.skillPoints == 39,
-                    name + ": failed apply retries and reloads exactly once");
+                string name="retired-preset-"+hero;var service=Fresh(name,hero);
+                service.Profile.buildPresets=new[]{new BuildPreset{populated=true,heroClass=hero,weaponId="missing"}};
+                service.Profile.progressionGoal=ProgressionGoalKind.SecondPreset;service.Profile.automaticGrowth=false;
+                service.Save();Check(service.LastError.Length==0&&service.Load(),name+": old preset data remains readable");
+                var goal=service.SelectedProgressionGoal(true);
+                Check(goal.Identity.StartsWith("main/")&&goal.ItemId==null&&goal.MaterialCost==0,name+": old preset goal cannot block the mainline");
             }
-            report.passedStages.Add("two build presets: four-class real JSON nested-array roundtrip, joint respec, independent application and failed-write retry");
+            report.passedStages.Add("retired presets: four-class legacy JSON compatibility and mainline goal independence");
         }
 
         private static ProgressionService Fresh(string name, HeroClass hero = HeroClass.Vanguard)

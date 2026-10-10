@@ -4,6 +4,24 @@ namespace Emberfall
     public partial class ProgressionService
     {
 
+        public const int AffixReforgeStonePrice=5000;
+        public string AffixReforgeLockReason(string id,bool inCamp)
+        {
+            if(IsPracticeOnly||!inCamp)return "请在铁匠处重铸";
+            var item=FindItem(id);if(item==null)return "请选择装备";
+            if(EquipmentAffixLimit(item.rarity)==0)return "普通装备无随机词条";
+            if(Profile.affixReforgeCount==int.MaxValue)return "重铸次数已达上限";
+            return Profile.affixReforgeStones<1?"重铸石不足":string.Empty;
+        }
+        public bool ReforgeAffixes(string id,bool inCamp)
+        {
+            string reason=AffixReforgeLockReason(id,inCamp);if(reason.Length>0)return Fail(reason);
+            var candidate=Snapshot();var item=candidate.inventory.Find(x=>x.id==id);
+            int seed=candidate.affixReforgeCount;unchecked{foreach(char c in id)seed=seed*31+c;}
+            RollRandomEquipmentAffixes(item,(int)item.rarity,new Random(seed));
+            candidate.affixReforgeStones--;candidate.affixReforgeCount++;
+            return CommitCandidate(candidate,true);
+        }
         public const int RefinementStonePrice=50;
         public static int DungeonRefinementStones(int tier)
         {return 2+TierRewardBand.Of(tier);}

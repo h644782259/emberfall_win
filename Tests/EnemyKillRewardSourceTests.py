@@ -4,8 +4,9 @@ r=Path(__file__).resolve().parents[1]/'Assets/Scripts'
 s=(r/'Core/GameSession.cs').read_text();p=(r/'Core/ProgressionService.cs').read_text()
 kill=s[s.index('public void OnEnemyKilled('):s.index('private int checkpointRoom')]
 assert kill.index('!Enemies.Remove(enemy)')<kill.index('Progression.RecordDungeonKill(')
-assert 'else Progression.GrantEnemyKillReward(gold,experience);' in kill
-assert 'if(!InDungeon)Progression.Save();' in kill or 'if(!InDungeon)CombatImpactBatch.AfterCurrentAction(Progression.Save);' in kill
+assert 'Progression.GrantEnemyKillReward(gold,experience,deferSave:true);' in kill
+assert 'pendingWildernessSave=Progression;' in kill
+assert 'AfterCurrentAction(Progression.Save)' not in kill and 'if(!InDungeon)Progression.Save();' not in kill
 assert 'SpawnGroundSupplies(' not in kill and 'beforeKillLevel' not in kill
 assert 'if(!InDungeon)LogSystem(' in kill
 assert 'runEnemyExperience+' in kill and 'runPickupGold+' in kill

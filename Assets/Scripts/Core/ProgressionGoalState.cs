@@ -1,6 +1,6 @@
 namespace Emberfall
 {
-    public enum ProgressionGoalAction { None, ClaimCore, ExchangeCore, ClaimPending, ClaimRecovery, Equip, UnlockVariant, Ascend, Reforge, OpenPresets, UpgradeAttachment }
+    public enum ProgressionGoalAction { None, ClaimCore, ExchangeCore, ClaimPending, ClaimRecovery, Equip, UnlockVariant, Ascend, Reforge, UpgradeAttachment = 10 }
     // One selected identity and one next action, shared by camp, entry and results.
     public sealed class ProgressionGoalState
     {
@@ -33,7 +33,6 @@ namespace Emberfall
                     case ProgressionGoalAction.Ascend:return "升华目标装备";
                     case ProgressionGoalAction.Reforge:return "重铸目标装备";
                     case ProgressionGoalAction.UpgradeAttachment:return "升级目标宝石";
-                    case ProgressionGoalAction.OpenPresets:return "查看职业精通";
                     default:return "继续当前目标";
                 }
             }

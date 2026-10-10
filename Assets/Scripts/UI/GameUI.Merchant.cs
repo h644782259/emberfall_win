@@ -45,7 +45,7 @@ namespace Emberfall
             if(merchantMode==2)foreach(var gear in p.Profile.inventory)if(gear!=null&&!gear.locked&&!IsEquipped(gear))saleItems.Add(gear);
             var saleGems=new List<MechanicAttachment>();
             if(merchantMode==2)foreach(var gem in p.Profile.attachments)if(gem!=null)saleGems.Add(gem);
-            int count=merchantMode==0?3:merchantMode==1?mechanics.Length:saleItems.Count+saleGems.Count;
+            int count=merchantMode==0?4:merchantMode==1?mechanics.Length:saleItems.Count+saleGems.Count;
             if(merchantMode==2)merchantSelection=-1;
             else merchantSelection=Mathf.Clamp(merchantSelection,0,Mathf.Max(0,count-1));
             float contentHeight=l.GridHeight(count,true)+(merchantMode==1?((count+l.Columns-1)/l.Columns)*54:0);
@@ -57,6 +57,16 @@ namespace Emberfall
                 bool selected=false;
                 Fill(tile,selected?new Color(.12f,.22f,.24f):card);Border(tile,selected?gold:muted*.4f);
                 if(selected){Border(new Rect(tile.x+2*u,tile.y+2*u,tile.width-4*u,tile.height-4*u),gold);DrawIcon(new Rect(tile.xMax-25*u,tile.y+4*u,20*u,20*u),UIIconAtlas.Utility("confirm"),gold);}
+                if(merchantMode==0&&index==3)
+                {
+                    var purchase=p.PrepareAffixReforgePurchase(MerchantServiceActive);var preview=ResourceItemPreview("affix-reforge",1);
+                    DrawIcon(new Rect(tile.center.x-23*u,tile.y+6*u,46*u,46*u),preview.Icon,preview.QualityColor);
+                    Text(new Rect(tile.x+6*u,tile.y+52*u,tile.width-12*u,30*u),"词条重铸石",Mathf.RoundToInt(11*u),gold,false,true,TextAnchor.MiddleCenter);
+                    DrawPriceTint(new Rect(tile.x+8*u,tile.y+77*u,tile.width-16*u,20*u),ProgressionService.AffixReforgeStonePrice,false,u,purchase!=null?gold:muted);
+                    InspectRewardItem(new Rect(tile.x,tile.y,tile.width,96*u),preview,true);
+                    if(PrimaryButton(new Rect(tile.x+6*u,tile.y+100*u,tile.width-12*u,44*u),p.Profile.affixReforgeStones>=999999?"数量已满":purchase==null?"金币不足":"购买",gold,purchase!=null&&Time.unscaledTime>=merchantActionUntil)&&StartMerchantAction())Feedback(p.BuyAtMerchant(purchase,MerchantServiceActive),"购买成功");
+                    continue;
+                }
                 if(merchantMode==0&&index>0)
                 {
                     int quantity=index==1?1:5;
@@ -151,7 +161,7 @@ namespace Emberfall
             Fill(r,new Color(.14f,.115f,.055f,.55f));
             Border(r,new Color(tint.r,tint.g,tint.b,.25f));
             DrawIcon(new Rect(r.x+4*unit,r.center.y-9*unit,18*unit,18*unit),UIIconAtlas.Utility(material?"shard":"coin"),material?GameBalance.RarityColor(Rarity.Rare):gold);
-            Text(new Rect(r.x+27*unit,r.y,r.width-31*unit,r.height),amount.ToString(),Mathf.RoundToInt(13*unit),tint,true,false,TextAnchor.MiddleLeft);
+            Text(new Rect(r.x+27*unit,r.y,r.width-31*unit,r.height),(amount>=10000?(amount/10000d).ToString("0.#")+"万":amount.ToString()),Mathf.RoundToInt(13*unit),tint,true,false,TextAnchor.MiddleLeft);
         }
     }
 }

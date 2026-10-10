@@ -13,7 +13,7 @@ namespace Emberfall
         private bool inventoryComparisonOpen;
         private Vector2 inventoryComparisonScroll;
         private bool InventoryAction(Rect rect,string caption,bool enabled,string reason=null)
-        {bool pressed=Button(rect,caption,jade,enabled,reason);if(!pressed||Time.unscaledTime<inventoryActionUntil)return false;inventoryActionUntil=Time.unscaledTime+.25f;return true;}
+        {bool pressed=Button(rect,caption,jade,enabled,reason);if(!pressed||Time.unscaledTime<inventoryActionUntil)return false;inventoryActionUntil=Time.unscaledTime+.08f;return true;}
 
         // Compact visuals keep their full hit rectangle; no nested button frame.
         private bool QuietAction(Rect hit,string caption,bool enabled=true,string hint=null,bool selected=false)
@@ -29,7 +29,7 @@ namespace Emberfall
             return clicked;
         }
         private bool QuietInventoryAction(Rect hit,string caption,bool enabled,string reason=null)
-        {bool pressed=QuietAction(hit,caption,enabled,reason);if(!pressed||Time.unscaledTime<inventoryActionUntil)return false;inventoryActionUntil=Time.unscaledTime+.25f;return true;}
+        {bool pressed=QuietAction(hit,caption,enabled,reason);if(!pressed||Time.unscaledTime<inventoryActionUntil)return false;inventoryActionUntil=Time.unscaledTime+.08f;return true;}
 
         private bool InventoryPictogramAction(Rect hit,string caption,Texture2D icon,bool enabled=true,bool selected=false,bool throttle=false)
         {
@@ -45,7 +45,7 @@ namespace Emberfall
             Text(new Rect(left+iconSize+gap,hit.y,Mathf.Max(0,total-iconSize-gap),hit.height),caption,Mathf.RoundToInt(14*u),ink,true,false,TextAnchor.MiddleLeft);
             GUI.enabled=enabled;bool clicked=GUI.Button(hit,GUIContent.none,invisibleButton);GUI.enabled=prior;
             if(!clicked||throttle&&Time.unscaledTime<inventoryActionUntil)return false;
-            if(throttle)inventoryActionUntil=Time.unscaledTime+.25f;
+            if(throttle)inventoryActionUntil=Time.unscaledTime+.08f;
             GameAudio.Play(SoundCue.UI);return true;
         }
 
@@ -61,8 +61,8 @@ namespace Emberfall
         private bool DrawInventoryLock(Rect hit,bool locked)
         {
             bool click=GUI.Button(hit,GUIContent.none,invisibleButton)&&Time.unscaledTime>=inventoryActionUntil;
-            if(click)inventoryActionUntil=Time.unscaledTime+.25f;
-            float size=Mathf.Min(18* (MobileControls.Active?TouchRatio:1),hit.width*.45f);
+            if(click)inventoryActionUntil=Time.unscaledTime+.08f;
+            float size=Mathf.Min(14* (MobileControls.Active?TouchRatio:1),hit.width-4);
             DrawIcon(new Rect(hit.center.x-size*.5f,hit.center.y-size*.5f,size,size),UIIconAtlas.EquipmentLock(locked),Color.white);
             return click;
         }
@@ -138,14 +138,13 @@ namespace Emberfall
         }
         private void DrawWornIconBadge(Rect icon,float u,string caption)
         {
-            float size=Mathf.Min(20*u,icon.width*.34f);
+            float size=Mathf.Min(13*u,icon.width*.22f);
             Rect badge=new Rect(icon.x+2*u,icon.yMax-size-2*u,size,size);
-            Fill(badge,new Color(.035f,.2f,.1f,.95f));
             DrawIcon(badge,UIIconAtlas.Utility("confirm"),new Color(.3f,1f,.5f));
         }
         private void DrawItemLockAction(Rect tile,ItemData item,float u)
         {
-            Rect hit=new Rect(tile.xMax-26*u,tile.y,26*u,26*u);
+            Rect hit=new Rect(tile.xMax-20*u,tile.y-2*u,22*u,22*u);
             if(DrawInventoryLock(hit,item.locked))
             {
                 bool saved=session.Progression.SetItemLocked(item.id,!item.locked);

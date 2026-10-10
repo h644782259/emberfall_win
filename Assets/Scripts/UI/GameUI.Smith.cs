@@ -6,6 +6,7 @@ namespace Emberfall
         private int smithCategory,smithSelectedSlot;
         private readonly System.Collections.Generic.Dictionary<string,Vector2> smithVariantScroll=new System.Collections.Generic.Dictionary<string,Vector2>();
         private bool smithSocketPicker;
+        private EquipmentMechanic smithSocketPrevious;
         private Vector2 smithSocketScroll;
         private Vector2 smithDetailScroll,smithPreviewScroll;
         private EquipmentMechanic smithPreviewMechanic;
@@ -107,9 +108,16 @@ namespace Emberfall
                     float y=DrawSmithDetail(item,cardWidth-16,u,true);
                     if(smithCategory==2)
                     {
+                        string rerollReason=p.AffixReforgeLockReason(item.id,SmithServiceActive);
+                        Rect reroll=new Rect(8*u,tile.height-90*u,(cardWidth-48)*u,40*u);
+                        if(Button(reroll,rerollReason.Length==0?"词条重铸":rerollReason,gold,rerollReason.Length==0))Feedback(p.ReforgeAffixes(item.id,SmithServiceActive),"词条已重铸");
+                        Rect cost=new Rect(8*u,tile.height-46*u,24*u,24*u);
+                        DrawIcon(cost,UIIconAtlas.Utility("gem"),GameBalance.RarityColor(Rarity.Legendary));
+                        InspectRewardItem(cost,ResourceItemPreview("affix-reforge",p.Profile.affixReforgeStones));
+                        Text(new Rect(34*u,cost.y,(cardWidth-64)*u,24*u),"×1 / "+p.Profile.affixReforgeStones+"  ·  词条可能降低",Mathf.RoundToInt(10*u),muted,false,false,TextAnchor.MiddleLeft);
                         string reason=p.RefinementLockReason(item.id,SmithServiceActive);
                         float aw=Mathf.Min(180,cardWidth-32);
-                        Rect action=new Rect((cardWidth-16-aw)*.5f*u,tile.height-68*u,aw*u,44*u);
+                        Rect action=new Rect((cardWidth-16-aw)*.5f*u,tile.height-142*u,aw*u,44*u);
                         if(reason=="数值已满")DrawSmithMaxBadge(action,"数值已满",u);
                         else
                         {
@@ -186,7 +194,7 @@ namespace Emberfall
                 Fill(socket,card);Border(socket,gem==null?jade:GameBalance.RarityColor(gem.rarity),2);
                 if(gem==null)Text(socket,"+",Mathf.RoundToInt(24*u),jade,false,false,TextAnchor.MiddleCenter);
                 else {DrawIcon(socket,UIIconAtlas.Utility("gem"),GameBalance.RarityColor(gem.rarity));DrawWornIconBadge(socket,u,"已镶嵌");}
-                if(QuietAction(socket,"",SmithServiceActive)){smithSocketPicker=true;smithSocketScroll=Vector2.zero;}
+                if(QuietAction(socket,"",SmithServiceActive)){smithSocketPrevious=gem==null?EquipmentMechanic.None:gem.mechanic;smithSocketPicker=true;smithSocketScroll=Vector2.zero;}
                 if(gem==null)
                 {
                     Text(new Rect((size+14)*u,(top+4)*u,(left-size-18)*u,36*u),"宝石槽 "+(index+1),Mathf.RoundToInt(11*u),muted,false,true);
@@ -303,9 +311,9 @@ namespace Emberfall
                 if(a.mounted)DrawWornIconBadge(gemIcon,u,"已镶嵌");
                 Text(new Rect(tile.x+6*u,tile.y+65*u,tile.width-12*u,28*u),BuildCatalog.GemName(a.mechanic),Mathf.RoundToInt(13*u),pale,true,false,TextAnchor.MiddleCenter);
                 Text(new Rect(tile.x,tile.y+94*u,tile.width,30*u),BuildCatalog.IsAttributeGem(a.mechanic)?BuildCatalog.GemAttributeSummary(a.mechanic,a.rarity,a.upgradeRank):a.mounted?"已镶嵌":"阶数 "+a.upgradeRank,Mathf.RoundToInt(10*u),a.mounted?jade:muted,false,true,TextAnchor.MiddleCenter);
-                string mountReason=p.AttachmentMountLock(a.mechanic,SmithServiceActive);
-                if(Button(new Rect(tile.x+8*u,tile.y+124*u,tile.width-16*u,36*u),a.mounted?"卸下":mountReason.Length>0?"槽位已满":"镶嵌",jade,SmithServiceActive&&mountReason.Length==0,mountReason))
-                {if(p.SetAttachmentMounted(a.mechanic,!a.mounted,SmithServiceActive)){Feedback(true,"宝石已更新");smithSocketPicker=false;}else Feedback(false,p.LastError);}
+                string mountReason=p.AttachmentReplacementLock(a.mechanic,smithSocketPrevious,SmithServiceActive);
+                if(Button(new Rect(tile.x+8*u,tile.y+124*u,tile.width-16*u,36*u),a.mechanic==smithSocketPrevious?"卸下":a.mounted?"已镶嵌":smithSocketPrevious!=EquipmentMechanic.None?"替换":"镶嵌",jade,SmithServiceActive&&mountReason.Length==0,mountReason))
+                {if(a.mechanic==smithSocketPrevious?p.SetAttachmentMounted(a.mechanic,false,SmithServiceActive):p.ReplaceAttachment(a.mechanic,smithSocketPrevious,SmithServiceActive)){Feedback(true,"宝石已更新");smithSocketPicker=false;}else Feedback(false,p.LastError);}
             }
             EndTouchScroll();
         }
@@ -355,7 +363,7 @@ namespace Emberfall
                     }y+=52;
                 }
 
-                y+=54;
+                y+=128;
             }
             else if(smithCategory==0)
             {
@@ -394,7 +402,7 @@ namespace Emberfall
                     Fill(socket,card);Border(socket,mounted==null?jade:GameBalance.RarityColor(mounted.rarity),2);
                     if(mounted==null)Text(socket,"+",Mathf.RoundToInt(32*u),jade,false,false,TextAnchor.MiddleCenter);
                     else {Rect gemIcon=new Rect(socket.x+8*u,socket.y+8*u,48*u,48*u);DrawIcon(gemIcon,UIIconAtlas.Utility("gem"),GameBalance.RarityColor(mounted.rarity));DrawWornIconBadge(gemIcon,u,"已镶嵌");}
-                    if(QuietAction(socket,"",SmithServiceActive)){smithSelectedSlot=(int)item.slot;smithSocketPicker=true;smithSocketScroll=Vector2.zero;}
+                    if(QuietAction(socket,"",SmithServiceActive)){smithSelectedSlot=(int)item.slot;smithSocketPrevious=mounted==null?EquipmentMechanic.None:mounted.mechanic;smithSocketPicker=true;smithSocketScroll=Vector2.zero;}
                     if(mounted!=null)
                     {
                         Text(new Rect(socket.xMax+8*u,socket.y,Mathf.Max(64*u,(width*u-socket.xMax-12*u)),64*u),mounted.upgradeRank+"阶\n升华 "+mounted.ascensionRank,Mathf.RoundToInt(12*u),gold,true,false,TextAnchor.MiddleLeft);

@@ -13,13 +13,8 @@ namespace Emberfall
         {return "宝箱随机获得一件装备、时装或一组材料 · 装备史诗起步 · 传说装备4%";}
         public static string GoalFit(GameProfile profile,ProgressionGoalState goal,int mode,int tier)
         {
-            if(profile==null||goal==null||profile.progressionGoal==ProgressionGoalKind.None&&!profile.automaticGrowth)return "收集装备、时装与整备材料";
-            if(goal.Done)return goal.Step;
-            if(goal.MaterialCost>0)return "保底"+Materials(mode,tier)+"碎片 · "+(string.IsNullOrEmpty(goal.Requirements)?goal.ResourceRequirements(profile,0):goal.Requirements);
-            if(goal.GoldCost>0)return string.IsNullOrEmpty(goal.Requirements)?goal.ResourceRequirements(profile,0):goal.Requirements;
-            if(profile.progressionGoal==ProgressionGoalKind.Tier)return "目标第"+profile.progressionGoalTier+"阶 · "+(tier>=profile.progressionGoalTier?"本次通关可达成":"本次用于逐阶推进");
-            if(profile.progressionGoal==ProgressionGoalKind.SecondPreset)return "收集配装后回营地保存两套方案";
-            if(profile.progressionGoal==ProgressionGoalKind.ClassTutorial)return "实战练习职业循环；通关不自动完成";
+            if(profile==null||goal==null)return "收集装备、时装与整备材料";
+            if(goal.RequiredAdventureTier>0)return "主线推进 · "+(tier>=goal.RequiredAdventureTier?"挑战当前目标副本":"通关后继续向更高等级副本推进");
             return goal.Step;
         }
         public static string EncounterLine(int mode)

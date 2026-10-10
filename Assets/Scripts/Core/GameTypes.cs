@@ -266,7 +266,7 @@ namespace Emberfall
     [Serializable]
     public class ChestReward
     {
-        public int primaryKind,primaryCount,primarySlot,refinementStonesDelta;
+        public int primaryKind,primaryCount,primarySlot,refinementStonesDelta,affixReforgeStonesDelta;
         public Rarity primaryRarity;
         public string[] equipmentIds;
         public EquipmentMechanic gemMechanic;
@@ -352,8 +352,7 @@ namespace Emberfall
         public int upgradeAnchorHealth;
     }
 
-    /// <summary>Two bounded, character-local build descriptions. Item IDs are references
-    /// to owned equipment, never copies of inventory or currency.</summary>
+    /// <summary>Legacy save data only; preset editing and switching have been retired.</summary>
     [Serializable]
     public class BuildPreset
     {
@@ -494,13 +493,14 @@ namespace Emberfall
         public int masteryCore = -1;
         public int masteryRevision;
         public SummonerRoute summonerRoute;
-        public BuildPreset[] buildPresets = { new BuildPreset(), new BuildPreset() };
+        public BuildPreset[] buildPresets;
         public int fashionThreads;
         // Slot training is the sole enhancement authority. Item upgradeLevel is
         // only the current equipped-stat cache; legacy anchors preserve item bases.
         public int[] slotUpgradeRanks = new int[3];
         public bool slotUpgradesInitialized;
         public int mechanicMaterials;
+        public int affixReforgeStones,affixReforgeCount;
         public int refinementStones,refinementCount,refinementMaxCount;
         public bool pendingChestGemSource;
         public int variantKnowledgeRevision;

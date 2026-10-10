@@ -161,71 +161,22 @@ namespace Emberfall
         }
         private static ProgressionGoalState AutomaticGoal(GameProfile p,bool inCamp)
         {
-            string prefix="growth/"+(int)p.heroClass+"/";
-            var g=new ProgressionGoalState();
-            if(!p.classTutorialCompleted&&!p.growthRewardReceipts.Contains(prefix+"practice"))
-            {g.Identity=prefix+"practice";g.Title="实战试炼 · 职业能力";g.Step="右上目标查看实战指引 · 职业能力："+CombatTrialProgress(p)+"/4";g.Done=p.classTutorialCompleted;return g;}
-            foreach(var mechanic in BuildCatalog.MechanicsFor(p.heroClass))
+            for(int i=0;i<3;i++)
             {
-                var a=p.attachments.Find(x=>x.mechanic==mechanic);
-                string id=prefix+"core/"+(int)mechanic;
-                if(a==null&&!p.growthRewardReceipts.Contains(id))
-                {
-                    g.Identity=id;g.Title="获得宝石 · "+BuildCatalog.GemName(mechanic);g.Done=a!=null;g.ItemId=a==null?null:a.id;
-                    bool first=p.pendingFirstClearReward&&!p.firstClearRewardClaimed;
-                    g.Action=first?ProgressionGoalAction.ClaimCore:ProgressionGoalAction.ExchangeCore;g.MaterialCost=first?0:MechanicExchangeCost;
-                    g.CanAct=inCamp&&(first||p.mechanicMaterials>=MechanicExchangeCost);g.Step=first?"首通自选可领取":"挑战副本收集碎片，再到营地兑换";return g;
-                }
+                if((p.chapterCompletedMask&(1<<i))!=0)continue;
+                var node=(ChapterNode)i;int required=ChapterProgression.UnlockLevel(node);
+                if(p.level<required)
+                    return new ProgressionGoalState{Identity="main/level/"+required,Title="升至 "+required+" 级 · 解锁"+ChapterDefinition.Get(node).Name,Step="挑战副本或原野敌人积累经验 · 当前 "+p.level+" 级",RequiredAdventureTier=Math.Max(1,Math.Min(10,p.level/10))};
+                return new ProgressionGoalState{Identity="main/chapter/"+i,Title="通关章节 · "+ChapterDefinition.Get(node).Name,Step=ChapterDefinition.Get(node).StoryIntro+" · 点击前往章节入口"};
             }
-            foreach(int tier in new[]{1,5})
-            {
-                string id=prefix+"tier/"+tier;if(p.growthRewardReceipts.Contains(id)||HighestCompletedAdventureTier(p)>=tier)continue;
-                g.Identity=id;g.Title="通关 Lv"+AdventureRewardRules.DungeonLevel(tier)+" 副本";g.RequiredAdventureTier=tier;g.Done=HighestCompletedAdventureTier(p)>=tier;g.Step="点击选择副本 · 逐级通关解锁";return g;
-            }
-            foreach(var mechanic in BuildCatalog.MechanicsFor(p.heroClass))
-            {
-                var a=p.attachments.Find(x=>x.mechanic==mechanic);
-                string id;
-                id=prefix+"upgrade/"+(int)mechanic;
-                if((a==null||a.upgradeRank<=0)&&!p.growthRewardReceipts.Contains(id))
-                {g.Identity=id;g.ItemId=a==null?null:a.id;g.Title="升级宝石 · "+BuildCatalog.GemName(mechanic);g.Done=a!=null&&a.upgradeRank>0;g.Action=ProgressionGoalAction.UpgradeAttachment;g.MaterialCost=AttachmentUpgradeCost;g.CanAct=inCamp&&a!=null&&p.level>=6&&p.mechanicMaterials>=AttachmentUpgradeCost;g.Step="角色6级 · 消耗6碎片升阶，提升基础属性";return g;}
-                id=prefix+"variant/"+(int)mechanic;
-                if((a==null||a.ascensionRank<=0)&&BuildCatalog.HasMechanicVariant(mechanic)&&!p.growthRewardReceipts.Contains(id))
-                {g.Identity=id;g.ItemId=a==null?null:a.id;g.Title="升华解锁机制形态";g.Done=a!=null&&a.ascensionRank>0;g.Action=ProgressionGoalAction.Ascend;g.MaterialCost=AscensionCost;g.CanAct=inCamp&&a!=null&&a.upgradeRank>=3&&p.mechanicMaterials>=AscensionCost;g.Step="宝石升至3阶，消耗24碎片首次升华；形态免费切换";return g;}
-            }
-            foreach(int tier in new[]{10})
-            {
-                string id=prefix+"tier/"+tier;if(p.growthRewardReceipts.Contains(id)||HighestCompletedAdventureTier(p)>=tier)continue;
-                g.Identity=id;g.Title="通关 Lv"+AdventureRewardRules.DungeonLevel(tier)+" 副本";g.RequiredAdventureTier=tier;g.Done=HighestCompletedAdventureTier(p)>=tier;g.Step="点击选择副本 · 逐级通关解锁";return g;
-            }
-            foreach(var a in p.attachments)
-            {
-                if(!BuildCatalog.GemCompatible(a.mechanic,p.heroClass)||a.ascensionRank>0)continue;
-                string id=prefix+"ascend/"+(int)a.mechanic;if(p.growthRewardReceipts.Contains(id))continue;
-                g.Identity=id;g.ItemId=a.id;g.Title="升华宝石 · "+BuildCatalog.GemName(a.mechanic);g.Done=a.ascensionRank>0;g.Action=ProgressionGoalAction.Ascend;g.MaterialCost=AscensionCost;g.RequiredAdventureTier=0;g.CanAct=inCamp&&a.upgradeRank>=3&&p.mechanicMaterials>=AscensionCost;g.Step="营地消耗24碎片，保留变体与升阶";return g;
-            }
-            g.Identity=prefix+"complete";g.Title="成长目标已完成";g.Step="自由探索、收藏与尝试更多配装";return g;
+            int best=HighestCompletedAdventureTier(p);
+            if(best<10)
+                return new ProgressionGoalState{Identity="main/tier/"+(best+1),Title="通关 Lv"+AdventureRewardRules.DungeonLevel(best+1)+" 副本",RequiredAdventureTier=best+1,Step="逐级通关，推进至 Lv100 副本 · 点击前往"};
+            return new ProgressionGoalState{Identity="main/complete",Title="主线目标已完成",Step="重访星路章节，挑战更高难度与收藏成就",Done=true};
         }
         // Legacy callers no longer grant automatic rewards; achievements are claimed explicitly.
         public bool AdvanceAutomaticGrowth(){return true;}
         public bool ResumeAutomaticGrowth()
         {var candidate=Snapshot();candidate.automaticGrowth=true;return CommitCandidate(candidate,true);}
-        private bool ExecuteAutomaticGoal(string identity,bool inCamp)
-        {
-            var goal=AutomaticGoal(Profile,inCamp);if(goal.ActionIdentity!=identity||!goal.CanAct)return Fail("成长目标已变化或条件尚未满足。");
-            EquipmentMechanic mechanic=EquipmentMechanic.None;
-            foreach(var m in BuildCatalog.MechanicsFor(Profile.heroClass))
-                if(goal.Identity.EndsWith("/"+(int)m)&&goal.Identity.Contains("/core/"))mechanic=m;
-            if(goal.ItemId!=null){var a=Profile.attachments.Find(x=>x.id==goal.ItemId);if(a!=null)mechanic=a.mechanic;}
-            switch(goal.Action)
-            {
-                case ProgressionGoalAction.ClaimCore:return ClaimFirstClearReward(mechanic);
-                case ProgressionGoalAction.ExchangeCore:return ExchangeMechanic(mechanic);
-                case ProgressionGoalAction.UpgradeAttachment:return UpgradeAttachment(mechanic,inCamp);
-                case ProgressionGoalAction.UnlockVariant:return ToggleAttachmentVariant(mechanic,inCamp);
-                case ProgressionGoalAction.Ascend:return AscendAttachment(mechanic,inCamp);
-                default:return Fail("点击目标卡定位对应地点。");
-            }
-        }
     }
 }

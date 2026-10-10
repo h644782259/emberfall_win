@@ -14,9 +14,10 @@ namespace Emberfall
         }
         private bool DrawFashionServiceAction(Rect rect,bool dismantle,int amount,bool enabled,string reason,float u)
         {
-            bool clicked=Button(rect,"",dismantle?jade:gold,enabled);
+            bool clicked=Button(rect,"",dismantle?new Color(.92f,.38f,.22f):gold,enabled);
+            if(dismantle){Text(new Rect(rect.x+4*u,rect.y,rect.width*.48f,rect.height),"分解",Mathf.RoundToInt(13*u),enabled?new Color(1,.64f,.4f):muted,true,false,TextAnchor.MiddleCenter);}
             float center=rect.center.x;
-            DrawIcon(new Rect(center-30*u,rect.center.y-12*u,20*u,20*u),dismantle?UIIconAtlas.Utility("smith"):UIIconAtlas.EquipmentUpgradeArrow(),enabled?(dismantle?jade:gold):muted);
+            if(!dismantle)DrawIcon(new Rect(center-30*u,rect.center.y-12*u,20*u,20*u),dismantle?UIIconAtlas.Utility("smith"):UIIconAtlas.EquipmentUpgradeArrow(),enabled?(dismantle?jade:gold):muted);
             DrawIcon(new Rect(center-6*u,rect.center.y-9*u,16*u,16*u),UIIconAtlas.Reward(2),GameBalance.RarityColor(Rarity.Rare));
             Text(new Rect(center+14*u,rect.y,rect.xMax-center-6*u,rect.height),(dismantle?"+":"")+amount,Mathf.RoundToInt(14*u),enabled?pale:muted,true,false,TextAnchor.MiddleLeft);
             if(rect.Contains(Event.current.mousePosition)&&!string.IsNullOrEmpty(reason))GUI.Label(rect,new GUIContent("",reason));

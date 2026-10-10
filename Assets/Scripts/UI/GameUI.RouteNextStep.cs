@@ -19,7 +19,7 @@ namespace Emberfall
                 case CampRouteAction.SummonerRoute:Feedback(p.SetSummonerRoute((SummonerRoute)index,true),"契约已切换");break;
                 case CampRouteAction.Inventory:panel=Panel.Inventory;break;
                 case CampRouteAction.TrackCore:
-                    if(p.SelectCoreGoal(route.Mechanic))OpenProgressionGoals();else Feedback(false,p.LastError);break;
+                    NavigateMerchantExchange();break;
             }
             CancelMobileScroll();BlockUITransition();
         }

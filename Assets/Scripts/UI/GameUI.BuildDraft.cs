@@ -17,13 +17,13 @@ namespace Emberfall
             if(allocationDraft!=null)allocationDraft.Cancel();allocationDraft=null;
             buildPlanScroll=Vector2.zero;
         }
-        private void ApplyAllocationDraft(int slot=-1)
+        private void ApplyAllocationDraft()
         {
             if(allocationDraft==null)return;
-            if(allocationDraft.Apply(session.IsInCamp,slot))
+            if(allocationDraft.Apply(session.IsInCamp))
             {
                 allocationDraft=null;buildPlanScroll=Vector2.zero;
-                session.Notify(slot<0?"配点草稿已应用":"配点已应用并保存到方案 "+(slot==0?"A":"B"));
+                session.Notify("配点草稿已应用");
             }
             CancelMobileScroll();BlockUITransition();
         }
@@ -68,7 +68,7 @@ namespace Emberfall
             BuildPlanParagraph(ref y,width,unit,draft.Error,gold,draw,true);
             if(!fresh)BuildPlanParagraph(ref y,width,unit,"角色资料已变化，请取消并重新打开草稿。",gold,draw,true);
             BuildPlanParagraph(ref y,width,unit,"共享剩余 "+draft.Points+" / "+GameBalance.SkillPointBudget(draft.Level)+"点 · 已学1阶不退还",gold,draw,true);
-            BuildPlanParagraph(ref y,width,unit,"所有 +/- 仅修改临时草稿；取消不会改变角色、存档或方案。应用不会回复生命、能量或刷新冷却。",muted,draw);
+            BuildPlanParagraph(ref y,width,unit,"所有 +/- 仅修改临时草稿；取消不会改变角色或存档。应用不会回复生命、能量或刷新冷却。",muted,draw);
             var before=session.Progression.GetStats();var after=draft.Stats;
             BuildPlanParagraph(ref y,width,unit,"属性预览（当前 → 草稿）\n伤害 "+before.Damage.ToString("0.0")+" → "+after.Damage.ToString("0.0")+" · 生命上限 "+before.MaxHealth.ToString("0")+" → "+after.MaxHealth.ToString("0")+"\n护甲 "+before.Armor.ToString("0.0")+" → "+after.Armor.ToString("0.0")+" · 暴击 "+before.CritChance.ToString("P0")+" → "+after.CritChance.ToString("P0")+" · 移速 "+before.MoveSpeed.ToString("0.0")+" → "+after.MoveSpeed.ToString("0.0"),pale,draw);
             DrawPracticeChoices(ref y,width,unit,draw,fresh,draft);
@@ -93,12 +93,7 @@ namespace Emberfall
                 DraftAdjustment(ref y,width,unit,draw,fresh?draft.MasteryChangeReason(i,-1):"草稿已过期",fresh?draft.MasteryChangeReason(i,1):"草稿已过期",()=>draft.ChangeMastery(index,-1),()=>draft.ChangeMastery(index,1));
                 DraftButton(ref y,width,unit,draft.Core==i?"关闭此核心":"选择此核心",fresh&&draft.MasteryRank(i)>=MasteryCoreRules.InitialInvestment,draw,()=>draft.SelectCore(draft.Core==index?-1:index));
             }
-            BuildPlanParagraph(ref y,width,unit,"退点使当前核心低于门槛时会在草稿中关闭它；撤销会还原核心。以下操作会同时应用草稿并覆盖所选方案，保存失败则两者均不改变。",muted,draw);
-            for(int i=0;i<ProgressionService.BuildPresetCount;i++)
-            {
-                int slot=i;
-                DraftButton(ref y,width,unit,"应用并"+(session.Progression.HasBuildPreset(i)?"覆盖":"保存")+"方案 "+(i==0?"A":"B"),fresh&&session.IsInCamp,draw,()=>ApplyAllocationDraft(slot));
-            }
+            BuildPlanParagraph(ref y,width,unit,"退点使当前核心低于门槛时会在草稿中关闭它；撤销会还原核心。",muted,draw);
             return y;
         }
         private void DraftAdjustment(ref float y,float width,float unit,bool draw,string minusReason,string plusReason,System.Action minus,System.Action plus)

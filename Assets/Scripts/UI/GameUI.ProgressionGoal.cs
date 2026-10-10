@@ -92,24 +92,6 @@ namespace Emberfall
         }
         private static string GoalItemTitle(ItemData item)
         {return item.name+" · Lv"+item.level+" · "+GameBalance.RarityName(item.rarity);}
-        private void GoalCoreOption(ref float y,float w,float u,EquipmentMechanic mechanic,Rarity rarity,bool draw)
-        {
-            var p=session.Progression;bool selected=p.Profile.progressionGoal==ProgressionGoalKind.Core&&p.Profile.progressionGoalMechanic==mechanic&&p.Profile.progressionGoalMinimumRarity==rarity;
-            string text=(rarity==Rarity.Epic?"升华前置 · 获取史诗":"获取核心 · ")+BuildCatalog.MechanicName(mechanic);
-            if(draw&&TabButton(new Rect(8*u,y*u,(w-16)*u,48*u), text+(selected?" ✓":""), selected))
-            {Feedback(p.SelectCoreGoal(mechanic,rarity),"具体核心目标已保存");progressionGoalHeaderScroll=Vector2.zero;CancelMobileScroll();BlockUITransition();}
-            y+=56;
-            GoalParagraph(ref y,w,u,BuildCatalog.MechanicDescription(mechanic),13,muted,false,draw);
-        }
-        private void GoalOption(ref float y,float w,float u,string text,ProgressionGoalKind kind,string id,int tier,bool draw)
-        {
-            bool selected=session.Progression.Profile.progressionGoal==kind && (id==null||session.Progression.Profile.progressionGoalItemId==id) &&
-                (kind!=ProgressionGoalKind.Tier||session.Progression.Profile.progressionGoalTier==tier) &&
-                (kind!=ProgressionGoalKind.Reforge||session.Progression.Profile.progressionGoalLevel==session.Progression.Profile.level);
-            if(draw&&TabButton(new Rect(8*u,y*u,(w-16)*u,48*u), text+(selected?" ✓":""), selected))
-            {Feedback(session.Progression.SelectProgressionGoal(kind,id,tier,kind==ProgressionGoalKind.Reforge?session.Progression.Profile.level:0),"成长目标已保存");progressionGoalHeaderScroll=Vector2.zero;CancelMobileScroll();BlockUITransition();}
-            y+=56;
-        }
         private void GoalUnavailable(ref float y,float w,float u,string text,bool draw)
         {if(draw)Text(new Rect(8*u,y*u,(w-16)*u,40*u),text,Mathf.RoundToInt(13*u),muted,false,true);y+=48;}
     }

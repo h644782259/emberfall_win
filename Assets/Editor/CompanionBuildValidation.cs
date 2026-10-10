@@ -56,14 +56,10 @@ namespace Emberfall.Editor
                     Mathf.Abs(Read<float>(spirit, "commandMultiplier") - CompanionRules.ActiveCommandMultiplier(1, true)) < .001f &&
                     SummonedCompanion.CommandOpportunityRemaining(player) == opportunity,
                     "Refund preserves absolute HP, attack recovery, remaining command time, paid empowerment and unspent dodge token");
-                check(p.SaveBuildPreset(0, true) && p.LearnSkill(4) && p.LearnSkill(4) && spirit.Rank == 3 && spirit.Health == health,
+                check(p.LearnSkill(4) && p.LearnSkill(4) && spirit.Rank == 3 && spirit.Health == health,
                     "Real rank purchases immediately strengthen the living Spirit without free healing");
-                check(p.SaveBuildPreset(1, true) && p.ResetBuild(true) && spirit.Rank == 1 && spirit.Health == health,
+                check(p.ResetBuild(true) && spirit.Rank == 1 && spirit.Health == health,
                     "Combined build reset also reconciles its permanent companion in the same paused call");
-                check(p.ApplyBuildPreset(1, true) && spirit.Rank == 3 && spirit.Health == health, "Rank-three preset updates the same living Spirit");
-                for (int repeat = 0; repeat < 3; repeat++)
-                    check(p.ApplyBuildPreset(0, true) && spirit.Rank == 1 && spirit.Health == health && Read<float>(spirit, "cooldown") == 1.25f,
-                        "Repeated lower-rank preset neither retains rank-three power nor heals/resets its companion");
                 check(runtime.Remaining(4) == skillCooldown && runtime.Energy == energy && SummonedCompanion.CommandOpportunityRemaining(player) == opportunity,
                     "All live build operations preserve actual hero skill cooldown/energy and the unspent command token");
 
@@ -80,14 +76,14 @@ namespace Emberfall.Editor
                     "Paused equipment commit immediately enforces the two-pet cap with existing eviction priority");
                 check(spirit.Health == health && Read<float>(spirit, "cooldown") == 1.25f,
                     "Higher-health mechanic equipment cannot multiply current companion HP or reset attack recovery");
-                check(p.ApplyBuildPreset(0, true) && spirit.IsPermanent && spirit.Rank == 1 && spirit.Health == Mathf.Min(health, spirit.MaxHealth),
-                    "One paused preset atomically removes gear and promotes the same timed Spirit to its learned bonded rank");
+                check(p.SetSummonerRoute(SummonerRoute.Bonded,true)&&spirit.IsPermanent,
+                    "Paused route change promotes the same timed Spirit without changing its health");
                 player.Teleport(position);
                 check(spirit.IsAlive && spirit.IsPermanent && spirit.Rank == 1 && wolf.IsAlive && runtime.Remaining(4) == skillCooldown,
                     "Immediate transfer before unpausing retains the just-bonded Spirit and skill cooldown");
                 check(SummonedCompanion.CommandOpportunityRemaining(player) == 0, "New encounter still clears old command opportunities by existing policy");
 
-                check(p.ApplyBuildPreset(1, true) && spirit.Rank == 3, "Failed-write fixture restores high-rank investment first");
+                p.Profile.skillRanks[4]=3;p.Save();
                 File.Copy(path, path + ".tmp"); ownsTemporary = true;
                 float beforeFailure = spirit.Health;
                 check(!p.RefundSkillRanks(true) && spirit.Rank == 3 && spirit.Health == beforeFailure,

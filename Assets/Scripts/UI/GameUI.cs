@@ -325,7 +325,6 @@ namespace Emberfall
                 else if (session.RoomBranchChoiceOpen) DrawRoomBranchChoice();
                 else if (session.RunChoices.AwaitingChoice) DrawBlessingChoice();
                 else if((session.ModeFinished||session.DungeonCleared)&&!session.FinishedResultDismissed){if(session.FinishedResultReady){if(DrawStructuredRunRecap(false))CloseSettlement();}else DrawVictoryTransition();}
-                else if (DrawPresetSaleConfirmation()) {}
                 else if (panel == Panel.Inventory) DrawInventory();
                 else if (panel == Panel.Skills) DrawSkills();
                 else if (panel == Panel.Bindings) DrawBindings();
@@ -1337,7 +1336,7 @@ namespace Emberfall
             DrawCurrentWear(new Rect(left,w.y+100,232,232),1);
             StatBlock stats = progression.GetStats();
             Rule(left, w.y + 337, 232, jade);
-            Text(new Rect(left, w.y + 346, 232, 22), "角色属性 · Lv." + p.level, 15, jade, true);
+            Text(new Rect(left, w.y + 346, 232, 22), "角色属性", 15, jade, true);
             DrawCharacterStats(new Rect(left,w.y+374,232,230),1);
 
             float middle = w.x + 272;
@@ -1423,16 +1422,15 @@ namespace Emberfall
             return replacement;
         }
 
-        private void SellInventoryItem(string id,bool confirmed=false)
+        private void SellInventoryItem(string id)
         {
             if(!MerchantServiceActive){Feedback(false,"请在商人处出售装备。");return;}
-            if(!confirmed&&session.Progression.PresetReferences(id).Length>0){RequestPresetSale(id);return;}
             int row = bagItems.FindIndex(item => item.id == id);
             ItemData item = session.Progression.Profile.inventory.Find(entry=>entry!=null&&entry.id==id);
             if(item==null)return;
             if (IsEquipped(item)) return;
             int before = session.Progression.Profile.gold;
-            bool sold = session.Progression.Sell(id,confirmed);
+            bool sold = session.Progression.Sell(id);
             int gained = session.Progression.Profile.gold - before;
             Feedback(sold, "已出售 " + item.name + " · +" + gained + " 金币");
             if (!sold) return;
@@ -1626,23 +1624,20 @@ namespace Emberfall
             if (DrawSaveFlowConfirmation()) return;
             if (panel == Panel.SaveSelection) { DrawSaveSelection(); return; }
             if (MobileControls.Active) { DrawMobilePause(); return; }
-            Rect w = Modal(780, 620, "设置", desktopPauseTab==3?"手动保存需确认覆盖":"");
+            Rect w = Modal(780, 620, "设置", desktopPauseTab==0?"手动保存需确认覆盖":"");
             Rect close=new Rect(w.xMax-60,w.y+20,44,44);
 
             if(PopupCloseButton(close)){session.SetPaused(false);BlockUITransition();return;}
-            string[] tabs = { "冒险", "声音与画面", "键盘与操作", "存档" };
-            int[] tabOrder={0,3,1,2};
+            string[] tabs = { "存档", "声音与画面", "键盘与操作" };
+            int[] tabOrder={0,1,2};
             Fill(new Rect(w.x+24,w.y+110,152,470),new Color(.025f,.05f,.065f,.65f));
             for (int i = 0; i < tabs.Length; i++)
                 if (PauseSidebarTab(new Rect(w.x+24,w.y+110+i*54,152,48), tabs[tabOrder[i]], desktopPauseTab == tabOrder[i],1) && desktopPauseTab != tabOrder[i])
                 { desktopPauseTab = tabOrder[i]; }
-            if(PrimaryButton(new Rect(w.x+212,w.yMax-70,536,48),"保存并退出",gold))RequestExit(MobileControls.Active);
-            if (desktopPauseTab == 0)
-            {
-                if(NavigationButton(new Rect(w.x+212,w.y+210,536,48),"营地 / 撤离",jade))LeaveMobilePauseForCamp();
-                if(DangerButton(new Rect(w.x+212,w.y+272,536,44),"返回主菜单",muted))RequestExit(true);
-            }
-            else if(desktopPauseTab==3)
+            float exitButtonWidth=(536-12)*.5f;
+            if(PrimaryButton(new Rect(w.x+212,w.yMax-70,exitButtonWidth,48),"保存并返回主菜单",jade))RequestExit(true);
+            if(PrimaryButton(new Rect(w.x+224+exitButtonWidth,w.yMax-70,exitButtonWidth,48),"保存并退出",gold))RequestExit(false);
+            if(desktopPauseTab==0)
             {
                 if(PrimaryButton(new Rect(w.x+212,w.y+210,536,48),"保存",gold))RequestManualSave();
                 if(NavigationButton(new Rect(w.x+212,w.y+272,536,48),"读取存档",jade))OpenSaveSelection();
@@ -1834,7 +1829,6 @@ namespace Emberfall
             if(smithFashionQuote!=null){ReleaseFashionSmithPreview();return;}
             if(CloseTopPopup())return;
             if(SmithServiceActive&&smithPreviewMechanic!=EquipmentMechanic.None){smithPreviewMechanic=EquipmentMechanic.None;return;}
-            if(presetSaleOpen){CancelPresetSale();return;}
             if(MerchantServiceActive||SmithServiceActive){inventoryHubNpc=HubNpcKind.None;merchantExchangeOpen=false;panel=Panel.None;session.SetUIBlocking(false);BlockUITransition();return;}
             if(CloseChapterSelection())return;
             if(CloseRouteSkill())return;

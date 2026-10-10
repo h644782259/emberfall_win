@@ -21,12 +21,12 @@ namespace Emberfall
         {reforgeOwner=null;reforgeCharacter=reforgeItem=reforgeNotice=null;reforgeChoices=null;reforgeSelected=null;reforgeScroll=Vector2.zero;}
         private bool CloseReforgeSurface()
         {if(reforgeOwner==null)return false;ClearReforgeSurface();CancelMobileScroll();BlockUITransition();return true;}
-        private bool ExecuteReforgeSelection(bool track)
+        private bool ExecuteReforgeSelection()
         {
             ReconcileReforgeSurface();if(reforgeOwner==null||reforgeSelected==null)return false;
-            bool saved=track?reforgeOwner.SelectProgressionGoal(ProgressionGoalKind.Reforge,reforgeItem,0,reforgeSelected.TargetLevel):reforgeOwner.ReforgeMechanic(reforgeSelected,session.IsInCamp);
-            reforgeNotice=saved?(track?"已追踪固定目标等级":"重铸已保存"):reforgeOwner.LastError;
-            if(saved&&!track)CloseReforgeSurface();BlockUITransition();return saved;
+            bool saved=reforgeOwner.ReforgeMechanic(reforgeSelected,session.IsInCamp);
+            reforgeNotice=saved?"重铸已保存":reforgeOwner.LastError;
+            if(saved)CloseReforgeSurface();BlockUITransition();return saved;
         }
         private bool DrawReforgeSurface()
         {
@@ -38,12 +38,11 @@ namespace Emberfall
             reforgeScroll=BeginTouchScroll("reforge-options",BuildPlanRect(l.Body,u),reforgeScroll,new Rect(0,0,bodyWidth*u,Mathf.Max(l.Body.Height,h)*u));
             DrawReforgeOptions(bodyWidth,u,true);EndTouchScroll();
             var preview=reforgeOwner.PreviewReforge(reforgeSelected);string reason=reforgeOwner.ReforgeLockReason(reforgeSelected,session.IsInCamp);
-            if(Button(BuildPlanRect(l.FooterButton(0,3),u),"追踪此目标",jade,preview!=null))ExecuteReforgeSelection(true);
-            Rect reforgeAction=BuildPlanRect(l.FooterButton(1,3),u);
-            if(Button(reforgeAction,"",gold,reason.Length==0,reason))ExecuteReforgeSelection(false);
+            Rect reforgeAction=BuildPlanRect(l.FooterButton(1,2),u);
+            if(Button(reforgeAction,"",gold,reason.Length==0,reason))ExecuteReforgeSelection();
             Text(new Rect(reforgeAction.x+8*u,reforgeAction.y,reforgeAction.width-92*u,reforgeAction.height),"重铸",Mathf.RoundToInt(13*u),gold,true);
             DrawPrice(new Rect(reforgeAction.xMax-84*u,reforgeAction.y+4*u,76*u,reforgeAction.height-8*u),reforgeSelected==null?0:reforgeSelected.GoldCost,false,u);
-            if(NavigationButton(BuildPlanRect(l.FooterButton(2,3),u), "返回工坊", jade))CloseReforgeSurface();return true;
+            if(NavigationButton(BuildPlanRect(l.FooterButton(0,2),u), "返回工坊", jade))CloseReforgeSurface();return true;
         }
         private float DrawReforgeOptions(float w,float u,bool draw)
         {

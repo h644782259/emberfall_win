@@ -25,7 +25,6 @@ namespace Emberfall
             {dismissedInventoryAnchor=inventoryPopupAnchor;suppressInventoryHover=true;inventoryComparisonOpen=false;inventoryPopupDismissed=Time.frameCount;CancelMobileScroll();BlockUITransition();return true;}
             if(masteryResetConfirm){masteryResetConfirm=false;BlockUITransition();return true;}
             if(merchantGemSaleConfirmation!=EquipmentMechanic.None){merchantGemSaleConfirmation=EquipmentMechanic.None;BlockUITransition();return true;}
-            if(presetSaleOpen){CancelPresetSale();BlockUITransition();return true;}
             if(panel==Panel.Chests&&chestDetails){chestDetails=false;BlockUITransition();return true;}
             return false;
         }
@@ -38,7 +37,7 @@ namespace Emberfall
             inventoryComparisonOpen=false;inventoryFashionOpen=false;mobileInventoryDetail=false;
             ReleaseFashionSmithPreview();
             smithPreviewMechanic=EquipmentMechanic.None;smithSocketPicker=false;masteryResetConfirm=false;
-            merchantGemSaleConfirmation=EquipmentMechanic.None;if(presetSaleOpen)CancelPresetSale();
+            merchantGemSaleConfirmation=EquipmentMechanic.None;
             merchantExchangeOpen=false;inventoryHubNpc=HubNpcKind.None;
             progressionGoalsOpen=false;classSwitchOpen=false;ResetMobileSkillNavigation();
             controlsReturnPause=saveReturnPause=bindingReturnPause=travelReturnPause=false;saveSelectionFromPause=false;
@@ -46,7 +45,7 @@ namespace Emberfall
         }
         private bool HandleFunctionShortcut()
         {
-            if(!CanSwitchFunction||UITransitionBlocked||rebindingSlot>=0)return false;
+            if(!CanSwitchFunction||MobileControls.Active&&UITransitionBlocked||rebindingSlot>=0)return false;
             if(Input.GetKeyDown(KeyCode.I)){TogglePanel(Panel.Inventory);return true;}
             if(Input.GetKeyDown(KeyCode.K)){TogglePanel(Panel.Skills);return true;}
             if(Input.GetKeyDown(KeyCode.M)){if(panel==Panel.TravelMap)CloseTravelMap();else OpenTravelMap();return true;}

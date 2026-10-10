@@ -36,11 +36,12 @@ namespace Emberfall
             Texture current=wearModel.RenderSafe(p.Profile.heroClass,p.Equipped(ItemSlot.Weapon),p.Equipped(ItemSlot.Armor),p.Equipped(ItemSlot.Relic),p.EquippedFashion(FashionSlot.Wings),p.EquippedFashion(FashionSlot.Weapon));
             if(current!=null)GUI.DrawTexture(viewport,current,ScaleMode.ScaleToFit,false);
             else Text(viewport,wearModel.LastError==null?"角色预览正在恢复":"预览暂不可用，其他操作可继续",Mathf.RoundToInt(11*u),muted,false,true);
+            Text(new Rect(viewport.x+6*u,viewport.y+4*u,90*u,24*u),"Lv."+p.Profile.level,Mathf.RoundToInt(15*u),gold,true);
             if(fashion){DrawFashionWearSlots(area,u);return;}
             for(int slot=0;slot<3;slot++)
             {
                 var item=p.Equipped((ItemSlot)slot);Rect r=new Rect(area.center.x-(equipmentSize*3+8)*u*.5f+slot*(equipmentSize+4)*u,area.yMax-equipmentSize*u,equipmentSize*u,equipmentSize*u);
-                if(item!=null){DrawInventoryIcon(r,item,u,false);DrawItemLockAction(r,item,u);}
+                if(item!=null){Fill(r,new Color(.035f,.095f,.11f));Border(r,GameBalance.RarityColor(item.rarity),2*u);DrawIcon(new Rect(r.x+4*u,r.y+2*u,r.width-8*u,r.height-16*u),UIIconAtlas.EquipmentCardIcon(item.slot,item.level,item.rarity,p.Profile.heroClass),GameBalance.RarityColor(item.rarity));Text(new Rect(r.x,r.yMax-15*u,r.width,14*u),GameBalance.SlotName(item.slot),Mathf.RoundToInt(10*u),pale,true,false,TextAnchor.MiddleCenter);}
                 else
                 {
                     Fill(r,card);Border(r,new Color(jade.r,jade.g,jade.b,.35f));
@@ -104,12 +105,22 @@ namespace Emberfall
             if(chosen!=null)OpenInventoryPopup(chosen,anchor);DrawInventoryPopup(bounds,u);
         }
 
+        private string ResourceDescription(string key)
+        {
+            if(key.Contains("affix-reforge"))return "重新生成装备随机词条的种类、数量和数值。";
+            if(key.Contains("refinement"))return "用于铁匠处洗练装备属性。";
+            if(key=="shard")return "用于兑换宝石，以及宝石升阶与升华。";
+            if(key=="thread")return "用于时装升阶，可通过分解时装获取。";
+            if(key=="experience")return "积累经验提升角色等级。";
+            if(key.Contains("potion"))return "使用后恢复50%生命。";
+            return "用于购买物品和强化装备。";
+        }
         private EntryRewardPreview ResourceItemPreview(string key,int count)
         {
-            string name=key=="thread"?"星纹":key=="shard"?"星烬碎片":key=="refinement"?"装备洗练石":"金币";
-            Rarity rarity=key=="refinement"?Rarity.Epic:key=="gold"?Rarity.Common:Rarity.Rare;
+            string name=key=="affix-reforge"?"词条重铸石":key=="thread"?"星纹":key=="shard"?"星烬碎片":key=="refinement"?"装备洗练石":"金币";
+            Rarity rarity=key=="affix-reforge"?Rarity.Legendary:key=="refinement"?Rarity.Epic:key=="gold"?Rarity.Common:Rarity.Rare;
             return new EntryRewardPreview{Key=key,Name=name,Quantity=count,Rarity=rarity,
-                Icon=key=="thread"?UIIconAtlas.Reward(2):UIIconAtlas.Utility(key=="refinement"?"gem":key=="gold"?"coin":"shard"),
+                Icon=key=="thread"?UIIconAtlas.Reward(2):UIIconAtlas.Utility(key=="refinement"||key=="affix-reforge"?"gem":key=="gold"?"coin":"shard"),
                 Description=name+"\n数量  "+count};
         }
         private void DrawBagSupplies(MobilePanelLayout.Area area)
@@ -123,8 +134,8 @@ namespace Emberfall
             DesktopInventoryGesture(tile,tile,"@potion");
             if(GUI.Button(tile,GUIContent.none,invisibleButton)){if(MobileControls.Active)OpenInventoryPopup("@potion",tile);else DesktopInventoryClick("@potion");}
             var grid=new InventoryGridGeometry(bounds.width/u,cellSize);
-            string[] keys={"refinement","shard","thread"};
-            int[] quantities={session.Progression.Profile.refinementStones,session.Progression.Profile.mechanicMaterials,session.Progression.Profile.fashionThreads};
+            string[] keys={"refinement","shard","thread","affix-reforge"};
+            int[] quantities={session.Progression.Profile.refinementStones,session.Progression.Profile.mechanicMaterials,session.Progression.Profile.fashionThreads,session.Progression.Profile.affixReforgeStones};
             for(int i=0;i<keys.Length;i++)
             {
                 var cell=grid.Tile(i+1);
