@@ -105,7 +105,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dotnet", default=os.environ.get("DOTNET", "dotnet"),
                         help=".NET 8 SDK executable (or set DOTNET)")
-    parser.add_argument("--only", help="comma-separated check names for focused reruns")
+    parser.add_argument("--only", action="append", help="check names for focused reruns; repeat or comma-separate")
     parser.add_argument("--output", type=Path, help="isolated report directory")
     parser.add_argument("--jobs", type=int, default=1, help="independent check processes (1-4)")
     parser.add_argument("--compile", action="store_true", help="also compile all runtime sources against Unity references")
@@ -115,7 +115,7 @@ def main():
     parser.add_argument("--unity-editor", type=Path, help="also compile Windows/iOS/Android runtime, Editor, and visual-validation source using installed Unity 6000.6 DLLs (does not launch Unity)")
     args = parser.parse_args()
     global CHECK_FILTER
-    CHECK_FILTER = set(args.only.split(",")) if args.only else None
+    CHECK_FILTER = {name.strip() for group in args.only for name in group.split(",") if name.strip()} if args.only else None
     global EXECUTOR
     EXECUTOR = ThreadPoolExecutor(max_workers=max(1,min(4,args.jobs))) if args.jobs>1 else None
     dotnet = shutil.which(args.dotnet)
@@ -541,6 +541,13 @@ def main():
     if changed:
         print("Source changed during validation; rerun after edits finish: " + ", ".join(changed))
         failed = True
+    if CHECK_FILTER:
+        report["requestedChecks"] = sorted(CHECK_FILTER)
+        missing = CHECK_FILTER - {check["name"] for check in report["checks"]}
+        if missing:
+            failed = True
+            report["unmatchedChecks"] = sorted(missing)
+            print("Requested checks did not run: " + ", ".join(sorted(missing)))
     report["completedUtc"] = datetime.now(timezone.utc).isoformat()
     report["passed"] = not failed
     (output / "report.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")

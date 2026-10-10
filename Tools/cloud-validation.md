@@ -49,3 +49,7 @@ Unity validation and platform builds separately before release.
 0.4.0 adds isolated save/delete/load/exit, mobile layout and gesture, progression reminders, town economy, trial/room/large-boss rules, destructible navigation, recap and procedural/filled-volume geometry checks. The report lists each executed check and rejects source changes during a run. Optional compilation configurations cover legacy API references, an explicit Android branch, and installed Unity runtime/editor branches. Python source contracts remain separate from these managed tests. Fixed `Cloud-Latest` logs replace only the previous generated latest report; historical reports are preserved.
 
 `--compile-android` adds a separately named `android-runtime-compile` check with `UNITY_ANDROID`. It verifies conditional C# code only. It cannot validate a manifest, player import, Android SDK/NDK/JDK compatibility, signing, APK installation, Back gestures or device lifecycle. Use the Android preflight/build/device instructions for those distinct stages.
+
+Focused reward regression: pass `--only legendary-equipment-pity`. This executes the current single-item chest pool, 4% legendary probability, persistent pity, and failed-save/reload checks. `--only` accepts repeated options or comma-separated names; a requested check that did not execute fails the report.
+
+When changing gameplay or reward rules, update the corresponding `Assets/Editor/*Validation.cs` build checks and `Tests/` assertions in the same change. Runtime compilation alone does not execute either set of assertions.
