@@ -10,10 +10,10 @@ namespace Emberfall
             return AdventureRewardRules.MaterialsMinimum(mode,tier);
         }
         public static string RewardLine(int mode,int tier)
-        {return AdventureRewardRules.EquipmentSummary(mode,tier)+" · "+Materials(mode,tier)+"～"+AdventureRewardRules.MaterialsMaximum(mode,tier)+"碎片 · "+(mode==-1?"外观宝箱":"无外观宝箱");}
+        {return "宝箱随机获得一件装备、时装或一组材料 · 装备史诗起步 · 传说装备4%";}
         public static string GoalFit(GameProfile profile,ProgressionGoalState goal,int mode,int tier)
         {
-            if(profile==null||goal==null||profile.progressionGoal==ProgressionGoalKind.None&&!profile.automaticGrowth)return mode==-1?"外观收集可选遗迹；碎片用于营地整备":"碎片整备；本模式不产外观宝箱";
+            if(profile==null||goal==null||profile.progressionGoal==ProgressionGoalKind.None&&!profile.automaticGrowth)return "收集装备、时装与整备材料";
             if(goal.Done)return goal.Step;
             if(goal.MaterialCost>0)return "保底"+Materials(mode,tier)+"碎片 · "+(string.IsNullOrEmpty(goal.Requirements)?goal.ResourceRequirements(profile,0):goal.Requirements);
             if(goal.GoldCost>0)return string.IsNullOrEmpty(goal.Requirements)?goal.ResourceRequirements(profile,0):goal.Requirements;

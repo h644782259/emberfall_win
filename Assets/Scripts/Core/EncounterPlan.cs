@@ -15,6 +15,7 @@ namespace Emberfall
     public static class EncounterPlan
     {
         public const int MaximumSimultaneous = 14;
+        public const int MaximumWavePopulation = 24;
         public const int FinalWave = 3;
         public const float MinimumSpacing = 1.8f;
         public const float EntranceExclusion = 7f;
@@ -52,8 +53,8 @@ namespace Emberfall
             bool narrow = (layout & 1) != 0;
             bool final = wave == FinalWave;
             int tierBonus = Math.Min(5, (tier - 1) / 2);
-            int ordinary = final ? 3 + random.Next(3)
-                : Math.Max(6, Math.Min(MaximumSimultaneous, 6 + random.Next(4) + tierBonus + (wave > 1 ? 1 : 0) - (narrow ? 1 : 0)));
+            int ordinary = final ? 8 + random.Next(3)
+                : Math.Max(16, Math.Min(MaximumWavePopulation, 16 + random.Next(4) + tierBonus + (wave > 1 ? 1 : 0) - (narrow ? 1 : 0)));
             var result = new List<EncounterSpawn>(ordinary + (final ? 1 : 0));
             if (final)
             {

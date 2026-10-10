@@ -78,6 +78,9 @@ namespace Emberfall
         {return (rank+1)*(gem==EquipmentMechanic.CinderTrail?.02f:gem==EquipmentMechanic.VenomSpread?.005f:.03f);}
         public static string GemFormName(EquipmentMechanic gem,int variant)
         {
+            if(gem==EquipmentMechanic.RelicPower)return variant==0?"灵能接续":"终章回响";
+            if(gem==EquipmentMechanic.RelicPrecision)return variant==0?"连携轮转":"终章回转";
+            if(gem==EquipmentMechanic.RelicRuin)return variant==0?"闪身追击":"踏影回击";
             if(IsAttributeGem(gem))return MechanicSlot(gem)==ItemSlot.Weapon?(variant==0?"锐势":"背水"):MechanicSlot(gem)==ItemSlot.Armor?(variant==0?"坚韧":"守御"):(variant==0?"回流":"蓄能");
             if(gem==EquipmentMechanic.TwinSummonResonance)return variant==0?"双契强袭":"双契守护";
             if(gem==EquipmentMechanic.CinderTrail)return variant==0?"燎原余烬":"凝焰火核";
@@ -88,6 +91,9 @@ namespace Emberfall
         public static string GemFormDescription(EquipmentMechanic gem,int variant,int ascension)
         {
             int rank=Math.Max(1,Math.Min(3,ascension));
+            if(gem==EquipmentMechanic.RelicPower)return variant==0?"6秒内释放两种不同技能，回复"+(8+4*rank)+"点能量；间隔8秒。":"大招后8秒内，接下来的3次其他技能各返还"+(6+2*rank)+"点能量。";
+            if(gem==EquipmentMechanic.RelicPrecision)return variant==0?"6秒内衔接三种不同技能，所有技能冷却减少"+(.5f+.5f*rank).ToString("0.#")+"秒；间隔8秒。":"释放大招后，其他技能冷却减少"+(1+rank)+"秒，包含充能技能。";
+            if(gem==EquipmentMechanic.RelicRuin)return variant==0?"完美闪避后4秒内，下次技能在目标处追加"+((.4f+.3f*rank)*100).ToString("0")+"%攻击的范围追击；间隔6秒。":"6秒内释放两种不同技能，刷新闪避；4秒内完美闪避触发"+((.6f+.4f*rank)*100).ToString("0")+"%攻击的周身冲击；间隔8秒。";
             if(IsAttributeGem(gem))
             {
                 string value=(GemAscensionValue(gem,rank)*100).ToString("0");
@@ -99,6 +105,13 @@ namespace Emberfall
             string description=MechanicDescription(gem);int split=description.IndexOf("变体B：",StringComparison.Ordinal);
             if(split>=0)description=variant==0?description.Substring(0,split):description.Substring(split);
             return description.Replace("变体A：","").Replace("变体B：","").Trim();
+        }
+        public static string RelicFormStrength(EquipmentMechanic gem,int variant,int rank)
+        {
+            if(rank<=0)return "未解锁";
+            if(gem==EquipmentMechanic.RelicPower)return "返能 "+(variant==0?8+4*rank:6+2*rank);
+            if(gem==EquipmentMechanic.RelicPrecision)return "回转 "+(variant==0?.5f+.5f*rank:1+rank).ToString("0.#")+"秒";
+            return "追击 "+((variant==0?.4f+.3f*rank:.6f+.4f*rank)*100).ToString("0")+"%";
         }
         public static string GemAscensionLabel(EquipmentMechanic gem)
         {return MechanicSlot(gem)==ItemSlot.Weapon?"生命≥80%时伤害":MechanicSlot(gem)==ItemSlot.Armor?"生命≤50%时减伤":"能量<50%时回复";}
@@ -253,6 +266,8 @@ namespace Emberfall
     [Serializable]
     public class ChestReward
     {
+        public int primaryKind,primaryCount,primarySlot,refinementStonesDelta;
+        public Rarity primaryRarity;
         public string[] equipmentIds;
         public EquipmentMechanic gemMechanic;
         public bool duplicateGem;

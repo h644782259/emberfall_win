@@ -113,8 +113,69 @@ namespace Emberfall
             AdvanceStock(seconds);
         }
 
+        public void ReduceNonUltimateCooldowns(float seconds)
+        {
+            if(seconds<=0||float.IsNaN(seconds)||float.IsInfinity(seconds))return;
+            for(int i=0;i<cooldowns.Length;i++)if(i!=9)cooldowns[i]=Math.Max(0,cooldowns[i]-seconds);
+            AdvanceStock(seconds);
+        }
+
         public void ResetCooldowns() { Array.Clear(cooldowns, 0, cooldowns.Length);stock=2;stockRemaining=stockActionLock=0;if(StockChanged!=null)StockChanged(stock,0,stockPeriod); }
 
         public void FillEnergy() { Energy = MaximumEnergy; }
+    }
+}
+
+namespace Emberfall
+{
+    internal struct RelicGemProc
+    {
+        internal float Energy,Cooldown,OtherCooldown,Burst;
+        internal bool ResetDodge;
+    }
+    // Only successful player actions advance these chains; proc damage never feeds them.
+    internal sealed class RelicGemRuntime
+    {
+        private readonly int[] ranks=new int[3],variants=new int[3],masks=new int[3];
+        private readonly float[] windows=new float[3],gates=new float[3];
+        private float echoWindow,dodgeWindow;private int echoes;
+        internal void Configure(int index,int rank,int variant)
+        {
+            rank=System.Math.Max(0,System.Math.Min(3,rank));variant=variant==1?1:0;
+            if(ranks[index]==rank&&variants[index]==variant)return;
+            ranks[index]=rank;variants[index]=variant;masks[index]=0;windows[index]=gates[index]=0;
+            if(index==0){echoes=0;echoWindow=0;}if(index==2)dodgeWindow=0;
+        }
+        internal void Reset(){for(int i=0;i<3;i++){masks[i]=0;windows[i]=gates[i]=0;}echoes=0;echoWindow=dodgeWindow=0;}
+        internal void Advance(float dt)
+        {
+            if(dt<=0||float.IsNaN(dt)||float.IsInfinity(dt))return;
+            for(int i=0;i<3;i++){gates[i]=System.Math.Max(0,gates[i]-dt);windows[i]=System.Math.Max(0,windows[i]-dt);if(windows[i]==0)masks[i]=0;}
+            echoWindow=System.Math.Max(0,echoWindow-dt);dodgeWindow=System.Math.Max(0,dodgeWindow-dt);if(echoWindow==0)echoes=0;
+        }
+        private bool Chain(int index,int slot,int required)
+        {
+            if(gates[index]>0)return false;
+            if(windows[index]<=0)windows[index]=6;
+            masks[index]|=1<<slot;int bits=masks[index],count=0;while(bits!=0){count+=bits&1;bits>>=1;}
+            if(count<required)return false;masks[index]=0;windows[index]=0;gates[index]=8;return true;
+        }
+        internal RelicGemProc SkillCast(int slot)
+        {
+            var p=new RelicGemProc();if(slot<0||slot>=GameBalance.SkillCount||GameBalance.IsPassive(slot))return p;
+            if(ranks[0]>0){if(variants[0]==0){if(Chain(0,slot,2))p.Energy=8+4*ranks[0];}
+                else if(slot==9){echoes=3;echoWindow=8;}else if(echoes>0&&echoWindow>0){echoes--;p.Energy=6+2*ranks[0];}}
+            if(ranks[1]>0){if(variants[1]==0){if(Chain(1,slot,3))p.Cooldown=.5f+.5f*ranks[1];}else if(slot==9)p.OtherCooldown=1+ranks[1];}
+            if(ranks[2]>0){if(variants[2]==0&&dodgeWindow>0&&gates[2]<=0){p.Burst=.4f+.3f*ranks[2];dodgeWindow=0;gates[2]=6;}
+                else if(variants[2]==1&&Chain(2,slot,2)){p.ResetDodge=true;dodgeWindow=4;}}
+            return p;
+        }
+        internal RelicGemProc PerfectDodge()
+        {
+            var p=new RelicGemProc();if(ranks[2]<=0)return p;
+            if(variants[2]==0&&gates[2]<=0)dodgeWindow=4;
+            else if(variants[2]==1&&dodgeWindow>0){p.Burst=.6f+.4f*ranks[2];dodgeWindow=0;}
+            return p;
+        }
     }
 }

@@ -134,7 +134,8 @@ namespace Emberfall
         public static bool TrySpawn(ChapterRoomPlan plan,int index,List<Vector3> occupied,float radius,out Vector3 point)
         {
             point=Vector3.zero;
-            if(plan==null||index<0||index>=MaximumEnemies)return false;
+            if(plan==null||index<0||index>=10)return false;
+            if(index>=MaximumEnemies){float angle=index*2.39996f+((plan.Layout-100)%2)*.5f;return TrySpawnAt(plan,new Vector3(Mathf.Sin(angle)*10,0,Mathf.Cos(angle)*9+2),occupied,radius,out point);}
             return TrySpawnAt(plan,plan.SpawnCandidates[index],occupied,radius,out point);
         }
         // Formation hosts can request a role position while retaining the exact shared

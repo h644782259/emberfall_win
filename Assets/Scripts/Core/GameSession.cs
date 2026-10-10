@@ -291,7 +291,7 @@ namespace Emberfall
                 if (Input.GetKeyDown(KeyCode.T)) { if(NearChapterExit)EnterNextChapterRoom();else if(NearRoomExit)EnterNextRoom();else if (InDungeon) { if (NearDungeonReturn) ui.OpenDungeonExit(); else Notify(DungeonReturnAvailable?"靠近返营传送点后交互。":"先完成本轮挑战。"); } else EnterDungeon(); }
                 if (Input.GetKeyDown(KeyCode.H)) {if(InDungeon&&DungeonReturnAvailable){if(NearDungeonReturn)ui.OpenDungeonExit();else Notify("靠近传送点后交互。");}else ReturnToOrigin();}
             }
-            if(InDungeon && reinforcementQueue.Count>0 && Enemies.Count<=6)TrySpawnReinforcements();
+            if(InDungeon && reinforcementQueue.Count>0 && Enemies.Count<=9)TrySpawnReinforcements();
             if (!InDungeon && CurrentHub==0)
             {
                 respawnTimer -= Time.deltaTime;
@@ -456,10 +456,11 @@ namespace Emberfall
             int initial=0;
             foreach(EncounterSpawn spawn in plan)
             {
-                if(DungeonTier>=4 && initial>=8 && !spawn.Boss) { reinforcementQueue.Enqueue(spawn); continue; }
+                if(initial>=10 && !spawn.Boss) { reinforcementQueue.Enqueue(spawn); continue; }
                 Vector3 preferred=new Vector3(spawn.X,0,spawn.Z);
                 Vector3 position;
                 if(TrySafeSpawn(preferred,spawn.Boss?.95f:spawn.Kind==EnemyKind.Guardian?.65f:.5f,5.5f,out position)) { SpawnEnemy(spawn.Kind,level,position,spawn.Boss); initial++; }
+                else reinforcementQueue.Enqueue(spawn);
             }
             // A wave can never auto-clear into a dead end because all sampled tiles failed.
             if(Enemies.Count==0) SpawnEnemy(EnemyKind.Guardian,level,WorldTraversal.NearestWalkable(new Vector3(0,0,8),1),DungeonWave==TotalWaves);
@@ -701,20 +702,7 @@ namespace Emberfall
 
         private void DeliverEnemyLoot(ItemData loot, Vector3 position)
         {
-            if (loot == null) return;
-            if (InDungeon) { SpawnGroundLoot(loot, position); return; }
-            if (!Progression.CollectLoot(loot))
-            {
-                // Keep this exact rolled identity if storage or protected-space
-                // acquisition fails. The visible pickup and exit preflight retry it.
-                SpawnGroundLoot(loot, position);
-                Notify("装备仍在地上，整理背包或恢复保存后可重试：" + Progression.LastError);
-                return;
-            }
-            collectedGroundLoot.Add(loot.id);
-            GameAudio.Play(SoundCue.Loot);
-            LogSystem("获得 " + GameBalance.RarityName(loot.rarity) + "装备：「" + loot.name + "」 · 按 I 查看" + (string.IsNullOrEmpty(Progression.LastError) ? "" : " · " + Progression.LastError));
-            SpawnLootBeacon(position, GameBalance.RarityColor(loot.rarity));
+            if(loot!=null)SpawnGroundLoot(loot,position);
         }
 
         public GroundLootPickup SpawnGroundLoot(ItemData item, Vector3 position)

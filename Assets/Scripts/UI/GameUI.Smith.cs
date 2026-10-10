@@ -106,10 +106,15 @@ namespace Emberfall
                         int cost=p.UpgradeCost(item);bool capped=p.SlotUpgradeRank(slot)>=p.CurrentUpgradeLimit;
                         float actionWidth=Mathf.Min(148,cardWidth-32);
                         Rect action=new Rect((cardWidth-16-actionWidth)*.5f*u,y*u,actionWidth*u,44*u);
-                        Color accent=quote!=null?gold:muted;
+                        Color accent=capped||quote!=null?gold:muted;
                         Fill(action,new Color(accent.r,accent.g,accent.b,.13f));Border(action,new Color(accent.r,accent.g,accent.b,.55f));
-                        if(QuietAction(action,"",quote!=null)&&!p.UpgradeAtSmith(quote,SmithServiceActive))Feedback(false,p.LastError);
-                        if(capped)Text(action,"已满级",Mathf.RoundToInt(14*u),gold,true,false,TextAnchor.MiddleCenter);
+                        if(!capped&&QuietAction(action,"",quote!=null)&&!p.UpgradeAtSmith(quote,SmithServiceActive))Feedback(false,p.LastError);
+                        if(capped){
+                            Fill(action,new Color(.24f,.14f,.035f));Border(action,gold,2*u);
+                            Fill(new Rect(action.x+4*u,action.y+4*u,action.width-8*u,2*u),new Color(1,.86f,.42f,.65f));
+                            DrawIcon(new Rect(action.x+10*u,action.y+10*u,24*u,24*u),UIIconAtlas.Utility("upgrade"),new Color(1,.85f,.35f));
+                            Text(new Rect(action.x+34*u,action.y,action.width-40*u,action.height),"已满级",Mathf.RoundToInt(15*u),new Color(1,.9f,.55f),true,false,TextAnchor.MiddleCenter);
+                        }
                         else DrawIcon(new Rect(action.x+10*u,action.y+11*u,22*u,22*u),UIIconAtlas.Utility("upgrade"),accent);
                         if(!capped)
                         {
@@ -220,6 +225,7 @@ namespace Emberfall
                 before=new[]{gem.upgradeRank+" / 9",ascension+" / 3",(BuildCatalog.GemAttributeValue(gem.mechanic,gem.rarity,gem.upgradeRank)*100).ToString("0.#")+"%",ascension>0?"已解锁":"未解锁",(BuildCatalog.GemAscensionValue(gem.mechanic,ascension)*(BuildCatalog.MechanicSlot(gem.mechanic)==ItemSlot.Weapon&&gem.variant==1?150:100)).ToString("0.#")+"%"};
                 after=new[]{nextRank+" / 9",nextAscension+" / 3",(BuildCatalog.GemAttributeValue(gem.mechanic,nextRarity,nextRank)*100).ToString("0.#")+"%",nextAscension>0?"已解锁":"未解锁",(BuildCatalog.GemAscensionValue(gem.mechanic,nextAscension)*(BuildCatalog.MechanicSlot(gem.mechanic)==ItemSlot.Weapon&&gem.variant==1?150:100)).ToString("0.#")+"%"};
             }
+            if(BuildCatalog.IsAttributeGem(gem.mechanic)&&BuildCatalog.MechanicSlot(gem.mechanic)==ItemSlot.Relic){labels[4]="连携效果";before[4]=BuildCatalog.RelicFormStrength(gem.mechanic,gem.variant,ascension);after[4]=BuildCatalog.RelicFormStrength(gem.mechanic,gem.variant,nextAscension);}
             if(!BuildCatalog.IsAttributeGem(gem.mechanic)&&!BuildCatalog.HasMechanicVariant(gem.mechanic)){labels[5]="共鸣强化";before[5]=ascension+"次";after[5]=nextAscension+"次";}
             GoalParagraph(ref y,width,u,(ascend?"升华":"升阶")+(capped?" · 已达上限":!gem.mounted?" · 镶嵌后生效":""),15,gold,true,draw);
             if(draw)
@@ -307,17 +313,30 @@ namespace Emberfall
             y+=34;
             if(smithCategory==2)
             {
-                GoalParagraph(ref y,width,u,"提高装备属性数值，不会降低。",11,muted,false,draw);
                 var cap=p.PreviewRefinementLimit(item.id);string reason=p.RefinementLockReason(item.id,SmithServiceActive);
                 if(cap==null)return y;
 
                 string[] labels={"攻击","防御","生命","暴击率","暴击伤害","攻击加成"};
                 string[] current={item.attack.ToString(),item.defense.ToString(),item.health.ToString(),(item.criticalChance*100).ToString("0.##")+"%",(item.criticalDamageBonus*100).ToString("0.##")+"%",(item.attackPercent*100).ToString("0.##")+"%"};
                 string[] limits={cap.attack.ToString(),cap.defense.ToString(),cap.health.ToString(),(cap.criticalChance*100).ToString("0.##")+"%",(cap.criticalDamageBonus*100).ToString("0.##")+"%",(cap.attackPercent*100).ToString("0.##")+"%"};
+                var basis=p.PreviewUpgrade(item,0);var upper=p.PreviewUpgrade(cap,0);
+                float[] values={basis.attack,basis.defense,basis.health,item.criticalChance,item.criticalDamageBonus,item.attackPercent};
+                float[] maxima={upper.attack,upper.defense,upper.health,cap.criticalChance,cap.criticalDamageBonus,cap.attackPercent};
                 for(int stat=0;stat<6;stat++)
                 {
                     bool present=stat==0?item.attack>0:stat==1?item.defense>0:stat==2?item.health>0:stat==3?item.criticalChance>0:stat==4?item.criticalDamageBonus>0:item.attackPercent>0;if(!present)continue;
-                    if(draw){Rect row=new Rect(8*u,y*u,(width-16)*u,34*u);Fill(row,card);Text(new Rect(row.x+6*u,row.y,row.width*.32f,row.height),labels[stat],Mathf.RoundToInt(12*u),muted);Text(new Rect(row.x+row.width*.34f,row.y,row.width*.66f,row.height),current[stat]+" / "+limits[stat],Mathf.RoundToInt(13*u),jade,true,false,TextAnchor.MiddleCenter);}y+=38;
+                    if(draw){
+                        float progress=maxima[stat]>0?Mathf.Clamp01(values[stat]/maxima[stat]):1;
+                        bool full=values[stat]>=maxima[stat]-.000001f;
+                        Color tint=Color.Lerp(new Color(.24f,.62f,.82f),new Color(.35f,.88f,.64f),Mathf.Clamp01(progress/.8f));
+                        if(progress>.8f)tint=Color.Lerp(tint,gold,(progress-.8f)/.2f);
+                        Rect row=new Rect(8*u,y*u,(width-16)*u,48*u);Fill(row,card);
+                        Text(new Rect(row.x+6*u,row.y,row.width*.28f,28*u),labels[stat],Mathf.RoundToInt(12*u),muted);
+                        Text(new Rect(row.x+row.width*.28f,row.y,row.width*.7f,28*u),current[stat]+" / "+limits[stat]+(full?"  满":""),Mathf.RoundToInt(12*u),tint,true,false,TextAnchor.MiddleRight);
+                        Rect track=new Rect(row.x+6*u,row.y+33*u,row.width-12*u,7*u);Fill(track,new Color(.025f,.045f,.06f));
+                        Fill(new Rect(track.x,track.y,track.width*progress,track.height),tint);
+                        if(full)Border(track,new Color(1,.9f,.55f),u);
+                    }y+=52;
                 }
 
                 y+=54;

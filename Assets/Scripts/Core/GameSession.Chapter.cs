@@ -192,6 +192,7 @@ namespace Emberfall
         }
         private bool TryChapterSpawn(int index,bool crossfire,List<Vector3> occupied,float radius,out Vector3 point)
         {
+            if(index>=6)return ChapterRoomGeometry.TrySpawn(chapterPlan,index,occupied,radius,out point);
             if(ForestMobileLineup)return ChapterRoomGeometry.TrySpawnAt(chapterPlan,ChapterRoomGeometry.ForestMobileSpawn(ChapterSeed,index),occupied,radius,out point);
             if(!crossfire)return ChapterRoomGeometry.TrySpawn(chapterPlan,index,occupied,radius,out point);
             // The hunt target remains receipt index zero. Two existing casters occupy

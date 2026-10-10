@@ -8,6 +8,7 @@ namespace Emberfall
         public int chapterDifficultyRewardRevision,chapterDifficultyRewardMask,mechanicMaterials;
         public int chapterMasteryMask;public int[] chapterMasteryTiers;
         public int[] chapterHighestDifficulties;
+        public int level=1;public int[] chapterBestTiers=new int[3],chapterBestLevels=new int[3];
         public long chapterRewardSequence;
         public string lastChapterRewardId;
     }

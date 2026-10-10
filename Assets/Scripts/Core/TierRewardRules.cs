@@ -47,10 +47,10 @@ namespace Emberfall
         private static void Validate(int mode){if(mode < -1 || mode > 3)throw new ArgumentOutOfRangeException(nameof(mode));}
         public static ItemSlot EquipmentSlot(int mode,int index)
         {Validate(mode);if(index<0||index>=8)throw new ArgumentOutOfRangeException(nameof(index));return mode==0?ItemSlot.Armor:mode==1?ItemSlot.Relic:mode==3?(index%2==0?ItemSlot.Armor:ItemSlot.Relic):ItemSlot.Weapon;}
-        public static Rarity MinimumRarity(int mode){Validate(mode);return Rarity.Rare;}
-        public static int UpgradeChance(int mode,int tier){Validate(mode);return mode==2?10+2*TierRewardBand.Of(tier):6+2*TierRewardBand.Of(tier);}
+        public static Rarity MinimumRarity(int mode){Validate(mode);return Rarity.Epic;}
+        public static int UpgradeChance(int mode,int tier){Validate(mode);return 100-LegendaryChance(tier);}
         public static Rarity EquipmentRarity(int mode,int tier,int roll)
-        {return roll<LegendaryChance(tier)?Rarity.Legendary:roll<LegendaryChance(tier)+UpgradeChance(mode,tier)?Rarity.Epic:MinimumRarity(mode);}
+        {Validate(mode);return roll<LegendaryChance(tier)?Rarity.Legendary:MinimumRarity(mode);}
         public static int MaterialsMinimum(int mode,int tier){return Math.Max(1,Materials(mode,tier)-2);}
         public static int MaterialsMaximum(int mode,int tier){return Materials(mode,tier)+2;}
         public static int ChestMaterials(int mode,int tier,string id)
@@ -64,7 +64,7 @@ namespace Emberfall
         public static int Experience(int mode,int tier)
         {Validate(mode);tier=TierRewardBand.Clamp(tier);return mode==-1?100+tier*20:mode==0?90+tier*20:mode==1?100+tier*20:mode==2?140+tier*30:160+tier*25;}
         public static string EquipmentSummary(int mode,int tier)
-        {Validate(mode);string slot=mode==0?"护甲":mode==1?"饰品":mode==3?"护甲 + 饰品":"武器";return "保底 稀有 "+slot+" · "+LegendaryChance(tier)+"% 传说 · "+UpgradeChance(mode,tier)+"% 史诗";}
+        {Validate(mode);string slot=mode==0?"护甲":mode==1?"饰品":mode==3?"护甲 + 饰品":"武器";return "保底 史诗 "+slot+" · "+LegendaryChance(tier)+"% 传说 · "+UpgradeChance(mode,tier)+"% 史诗";}
 
     }
 }

@@ -127,12 +127,29 @@ namespace Emberfall
         public float SkillRechargeRemaining(int skill){return skillRuntime==null?0:skillRuntime.RechargeRemaining(skill);}
         public float SkillRechargePeriod(int skill){return skillRuntime==null?0:skillRuntime.RechargePeriod(skill);}
 
+        private readonly RelicGemRuntime relicGems=new RelicGemRuntime();
+        private void ConfigureRelicGems()
+        {
+            for(int i=0;i<3;i++){
+                var gem=session.Progression.Attachment((EquipmentMechanic)((int)EquipmentMechanic.RelicPower+i));
+                relicGems.Configure(i,gem!=null&&gem.mounted?gem.ascensionRank:0,gem==null?0:gem.variant);
+            }
+        }
+        private void ApplyRelicProc(RelicGemProc proc,Vector3 target)
+        {
+            if(IsDead||session==null||session.CombatEnded||session.InputBlocked)return;
+            skillRuntime.RestoreEnergy(proc.Energy);skillRuntime.ReduceCooldowns(proc.Cooldown);skillRuntime.ReduceNonUltimateCooldowns(proc.OtherCooldown);
+            if(proc.ResetDodge)dodgeCooldown=0;
+            if(proc.Burst>0){int cast=NewCastId();HitArea(target,3.2f,CombatAttack*proc.Burst,.4f,.15f,cast);AdvancedSkillVfx.Rune(this,target,3.2f,new Color(.48f,.85f,1f),.45f,2);}
+        }
+
         public void RefreshStats(bool heal)
         {
             if (session == null) return;
             float previousMaximum = MaxHealth;
             bool wasDead = previousMaximum > 0 && Health <= 0;
             stats = session.Progression.GetStats();
+            ConfigureRelicGems();
             int selectedCore=session.Progression.Profile.masteryCore;
             int oldCore=masteryCore.Core,oldTier=masteryCore.Tier;
             masteryCore.Configure(selectedCore,selectedCore>=0&&selectedCore<4?session.Progression.Profile.masteryRanks[selectedCore]:0);
@@ -183,11 +200,11 @@ namespace Emberfall
         public void Teleport(Vector3 position)
         {
             SummonedCompanion.RefreshBuild(this);
-            CombatEpoch++;
+            CombatEpoch++;relicGems.Reset();
             ClearMobilePinnedTarget();
             perfectDodgeCounterTime = 0;
             CancelCombatPose();
-            masteryCore.Reset();coreWardTime=0;
+            masteryCore.Reset();relicGems.Reset();coreWardTime=0;
             if (targeting != null) targeting.Cancel();
             if (charge != null) charge.Cancel();
             AimTarget = null;
@@ -219,7 +236,7 @@ namespace Emberfall
         internal void RetireCombatForWorldTransition()
         {
             SummonedCompanion.RefreshBuild(this);
-            CombatEpoch++;
+            CombatEpoch++;relicGems.Reset();
             ClearMobilePinnedTarget();
             perfectDodgeCounterTime = 0;
             CancelCombatPose();
@@ -231,11 +248,11 @@ namespace Emberfall
         // Opening/cancelling a portal and advancing waves never call this method.
         public void ResetCooldownsForDungeonEntry()
         {
-            CombatEpoch++;
+            CombatEpoch++;relicGems.Reset();
             ClearMobilePinnedTarget();
             perfectDodgeCounterTime = 0;
             CancelCombatPose();
-            masteryCore.Reset();coreWardTime=0; // Retire prior-zone delayed impacts as well as stale aim.
+            masteryCore.Reset();relicGems.Reset();coreWardTime=0; // Retire prior-zone delayed impacts as well as stale aim.
             if (targeting != null) targeting.Cancel();
             if (charge != null) charge.Cancel();
             if (skillRuntime != null) skillRuntime.ResetCooldowns();
@@ -292,11 +309,11 @@ namespace Emberfall
             if (Health <= 0)
             {
                 if (CombatReviewEvents.Enabled) CombatReviewEvents.Emit("death",CombatReviewObjectId.Get(this));
-                CombatEpoch++;
+                CombatEpoch++;relicGems.Reset();
             ClearMobilePinnedTarget();
                 perfectDodgeCounterTime = 0;
                 CancelCombatPose();
-            masteryCore.Reset();coreWardTime=0;
+            masteryCore.Reset();relicGems.Reset();coreWardTime=0;
                 if (targeting != null) targeting.Cancel();
                 if (charge != null) charge.Cancel();
                 if (jumping) transform.position = WorldTraversal.NearestWalkable(transform.position, .45f);
@@ -365,7 +382,7 @@ namespace Emberfall
             returningBladeProc.Advance(dt); venomSpreadProc.Advance(dt); openingFrostProc.Advance(dt);
             if (FocusTarget == null) { focusedEnemy = null; focusTime = 0; }
             if (IsDead) return;
-            skillRuntime.Advance(dt);
+            skillRuntime.Advance(dt);relicGems.Advance(dt);
             skillRuntime.RestoreEnergy(dt*SkillRuntime.EnergyPerSecond*(stats.EnergyRecovery+(Energy<MaxEnergy*.5f?stats.GemLowEnergyRecovery:stats.GemHighEnergyRecovery)));
             if (ActiveRunBonuses != null) skillRuntime.RestoreEnergy(dt * ActiveRunBonuses.ExtraEnergyPerSecond);
             slowTime = Mathf.Max(0, slowTime - dt);
@@ -1003,6 +1020,7 @@ namespace Emberfall
         {
             if (IsDead || session == null || !session.HasStarted || perfectDodgeAwarded || perfectDodgeWindow <= 0) return;
             perfectDodgeAwarded = true;
+            ApplyRelicProc(relicGems.PerfectDodge(),transform.position);
             float previousEnergy = Energy;
             skillRuntime.RestoreEnergy(PlayerUpgradeRules.PerfectDodgeEnergy);
             if (HeroClass == HeroClass.Vanguard) counterWindowDuration = counterTime = perfectDodgeCounterTime = ReturningCounterVariant ? 3f : PlayerUpgradeRules.CounterWindow;
@@ -1385,6 +1403,8 @@ namespace Emberfall
             float range = GameBalance.SkillRangeMultiplier(rank);
             Color color = GameBalance.ClassColor(HeroClass);
             Vector3 target = ResolveSkillGroundTarget(executingChargedSkill ? charge.TargetPoint : aimPoint,range,executingChargedSkill);
+            ApplyRelicProc(relicGems.SkillCast(slot),target);
+            if(IsDead||session.CombatEnded)return;
             if (HeroClass == HeroClass.Summoner)
             {
                 {

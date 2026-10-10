@@ -84,12 +84,13 @@ namespace Emberfall
             top+=metricHeight+6*u;
             long coins=(snapshot==null?0:snapshot.RewardGold)+(settlementChest==null?0:settlementChest.hasCurrencyDeltas?settlementChest.goldDelta:settlementChest.Gold);
             long xp=snapshot==null?0:snapshot.RewardExperience;
-            long shards=(snapshot==null?0:snapshot.RewardMaterials)+(settlementChest!=null&&settlementChest.materialKind==RewardMaterialKind.StarAshFragment?settlementChest.materialsDelta:0);
+            long shards=(snapshot==null?0:snapshot.RewardMaterials)+(settlementChest!=null&&settlementChest.rulesRevision<3&&settlementChest.materialKind==RewardMaterialKind.StarAshFragment?settlementChest.materialsDelta:0);
             long stones=snapshot==null?0:snapshot.RewardRefinementStones;
-            long[] amounts={coins,xp,shards,stones,settlementChest==null?0:settlementChest.threadsDelta};
+            long[] amounts={coins,xp,shards,stones,settlementChest==null||settlementChest.rulesRevision>=3?0:settlementChest.threadsDelta};
             string[] labels={"金币","经验","碎片","洗练石","星纹"},icons={"coin","upgrade","shard","gem","core"};
-            float rw=contentWidth/5,resourceHeight=(spacious?68:40)*u;
-            for(int i=0;i<5;i++)
+            int resourceCount=settlementChest==null||settlementChest.rulesRevision>=3?5:2;
+            float rw=contentWidth/resourceCount,resourceHeight=(spacious?68:40)*u;
+            for(int i=0;i<resourceCount;i++)
             {
                 Rect r=new Rect(frame.x+16*u+i*rw,top,rw-4*u,resourceHeight);
                 Fill(r,new Color(.055f,.095f,.12f));
@@ -147,16 +148,20 @@ namespace Emberfall
             var icons=new System.Collections.Generic.List<EntryRewardPreview>();
             if(reward.equipmentIds!=null)foreach(string id in reward.equipmentIds)
             {var item=session.Progression.Profile.inventory.Find(v=>v!=null&&v.id==id);if(item!=null)icons.Add(ActualEquipmentPreview(item));}
-            if(reward.Rarity.HasValue&&reward.Slot.HasValue)
+            if(reward.Rarity.HasValue&&reward.Slot.HasValue&&!reward.Duplicate)
                 icons.Add(new EntryRewardPreview{Key="fashion:"+reward.Id,AppearanceSlot=reward.Slot.Value,Name=reward.Name,Rarity=reward.Rarity.Value,Tint=GameBalance.RarityColor(reward.Rarity.Value),Icon=UIIconAtlas.FashionCardIcon(reward.Slot.Value,(int)reward.Rarity.Value,session.Progression.Profile.heroClass),Description=ProgressionService.FashionBonus(reward.Slot.Value,reward.Rarity.Value)});
-            if(reward.gemMechanic!=EquipmentMechanic.None)
+            if(reward.gemMechanic!=EquipmentMechanic.None&&!reward.duplicateGem)
                 icons.Add(new EntryRewardPreview{Key="gem:"+reward.Id,Name=BuildCatalog.GemName(reward.gemMechanic),Rarity=reward.gemRarity,Tint=GameBalance.RarityColor(reward.gemRarity),Icon=UIIconAtlas.Utility("gem"),Description=GemRewardDescription(reward.gemMechanic,reward.gemRarity)});
-            if(icons.Count==0){DrawChestResourceVisuals(rewardsArea,reward);return;}
-            float gap=12*u,caption=rewardsArea.height>=180*u?30*u:0,cell=0;int cols=1,rows=icons.Count;
+            var snapshot=session.LastRunRecap;
+            int[] counts={reward.materialsDelta+(reward.rulesRevision>=3||snapshot==null?0:snapshot.RewardMaterials),reward.rulesRevision>=3?reward.refinementStonesDelta:snapshot==null?0:snapshot.RewardRefinementStones,reward.threadsDelta};
+            string[] keys={"shard","refinement","thread"},names={"星烬碎片","装备洗练石","星纹"};
+            for(int n=0;n<counts.Length;n++)if(counts[n]>0)icons.Add(new EntryRewardPreview{Key=keys[n],Name=names[n],Quantity=counts[n],Description=names[n]+"\n数量  "+counts[n],Icon=n==1?UIIconAtlas.Utility("gem"):UIIconAtlas.Reward(n==0?1:2),Rarity=n==1?Rarity.Epic:Rarity.Rare,Tint=n==1?GameBalance.RarityColor(Rarity.Epic):jade});
+            if(icons.Count==0)return;
+            float gap=12*u,caption=0,cell=0;int cols=1,rows=icons.Count;
             for(int candidate=1;candidate<=icons.Count;candidate++)
             {
                 int candidateRows=(icons.Count+candidate-1)/candidate;
-                float size=Mathf.Min(180*u,Mathf.Min((rewardsArea.width-gap*(candidate-1))/candidate,(rewardsArea.height-gap*(candidateRows-1))/candidateRows-caption));
+                float size=Mathf.Min(60*u,Mathf.Min((rewardsArea.width-gap*(candidate-1))/candidate,(rewardsArea.height-gap*(candidateRows-1))/candidateRows-caption));
                 if(size>cell){cell=size;cols=candidate;rows=candidateRows;}
             }
             cell=Mathf.Max(1,cell);
@@ -169,7 +174,9 @@ namespace Emberfall
                 float rowLeft=rewardsArea.center.x-(rowCount*cell+(rowCount-1)*gap)*.5f;
                 Rect icon=new Rect(rowLeft+(i%cols)*(cell+gap),top+(i/cols)*(cell+caption+gap),cell,cell);
                 Color before=GUI.color;GUI.color=new Color(before.r,before.g,before.b,before.a*reveal);
-                DrawEntryRewardIcon(icon,icons[i],u);
+                Fill(icon,card);Border(icon,icons[i].Tint,2*u);
+                DrawIcon(new Rect(icon.x+5*u,icon.y+5*u,icon.width-10*u,icon.height-10*u),icons[i].Icon,icons[i].Tint);
+                if(icons[i].Quantity>1)Text(new Rect(icon.x+2*u,icon.yMax-18*u,icon.width-5*u,16*u),icons[i].Quantity.ToString(),Mathf.RoundToInt(11*u),pale,true,false,TextAnchor.MiddleRight);
                 if(caption>0)Text(new Rect(icon.x,icon.yMax+4*u,icon.width,caption-4*u),icons[i].Name,Mathf.RoundToInt(12*u),icons[i].Tint,true,true,TextAnchor.MiddleCenter);
                 GUI.color=before;
                 InspectRewardItem(icon,icons[i]);

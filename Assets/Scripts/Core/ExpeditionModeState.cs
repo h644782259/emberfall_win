@@ -236,17 +236,17 @@ namespace Emberfall
         private ExpeditionPhasePlan CreatePlan(int phase)
         {
             int phaseSeed=unchecked((int)Mix((uint)Seed^(uint)(phase+1)*0x9e3779b9u^(uint)Tier*0x85ebca6bu));
-            int pressure=Math.Min(3,(Tier-1)/30);
+            int pressure=Math.Min(3,(Tier-1)/3);
             if(Mode==ExpeditionModeKind.BossGauntlet)
             {
-                int adds=phase+(Tier>=40?1:0);
+                int adds=3+phase+(Tier>=7?1:0);
                 var roles=new ExpeditionEnemyRole[1+adds];roles[0]=ExpeditionEnemyRole.Boss;
                 for(int i=1;i<roles.Length;i++)roles[i]=i%2==1?ExpeditionEnemyRole.Ranged:ExpeditionEnemyRole.Guardian;
-                return new ExpeditionPhasePlan(phase,phaseSeed,roles,Math.Min(4,roles.Length),0,(ExpeditionBossPattern)(phase+1));
+                return new ExpeditionPhasePlan(phase,phaseSeed,roles,Math.Min(7,roles.Length),0,(ExpeditionBossPattern)(phase+1));
             }
-            int count=Math.Min(14,(Mode==ExpeditionModeKind.HoldPoint?6:7)+phase*2+pressure);
+            int count=Math.Min(24,(Mode==ExpeditionModeKind.HoldPoint?14:16)+phase*3+pressure);
             var enemies=new ExpeditionEnemyRole[count];
-            int ranged=Math.Max(1,count/3),elites=phase+(Tier>=30?1:0);
+            int ranged=Math.Max(1,count/3),elites=2+phase+(Tier>=4?1:0);
             for(int i=0;i<count;i++)enemies[i]=i<elites?ExpeditionEnemyRole.Guardian:i<elites+ranged?ExpeditionEnemyRole.Ranged:ExpeditionEnemyRole.Melee;
             uint random=unchecked((uint)phaseSeed);
             for(int i=count-1;i>0;i--)
@@ -254,7 +254,7 @@ namespace Emberfall
                 random=Mix(unchecked(random+0x9e3779b9u));int swap=(int)(random%(uint)(i+1));
                 var old=enemies[i];enemies[i]=enemies[swap];enemies[swap]=old;
             }
-            return new ExpeditionPhasePlan(phase,phaseSeed,enemies,Math.Min(8,count),Mode==ExpeditionModeKind.HoldPoint?5+phase:0,ExpeditionBossPattern.None);
+            return new ExpeditionPhasePlan(phase,phaseSeed,enemies,Math.Min(10,count),Mode==ExpeditionModeKind.HoldPoint?5+phase:0,ExpeditionBossPattern.None);
         }
         private static uint Mix(uint value)
         {

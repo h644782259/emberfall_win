@@ -23,7 +23,7 @@ public static class ExpeditionModeStateTests
         {
             var plan=Begin(state);
             Check(plan.PhaseIndex==phase && plan.Token==phase+1,"monotonic local phase identity");
-            Check(plan.EnemyCount>0&&plan.EnemyCount<=14&&plan.MaxSimultaneous<=8,"bounded phase population");
+            Check(plan.EnemyCount>0&&plan.EnemyCount<=24&&plan.MaxSimultaneous<=10,"bounded phase population");
             Check(!state.RecordDefeat(plan,0),"unspawned enemy cannot count");
             if(state.Mode==ExpeditionModeKind.HoldPoint)
             {
@@ -131,7 +131,7 @@ public static class ExpeditionModeStateTests
                 Check(pa.Seed==pb.Seed&&pa.EnemyCount==pb.EnemyCount,"seeded reproducible phase");
                 for(int i=0;i<pa.EnemyCount;i++)Check(pa.Enemies[i]==pb.Enemies[i],"seeded role order");
                 if(mode==ExpeditionModeKind.BossGauntlet)
-                { Check(pa.BossCount==1&&pa.Enemies[0]==ExpeditionEnemyRole.Boss&&pa.EnemyCount<=4,"one boss at known index with bounded adds");Check(pa.BossPattern==(ExpeditionBossPattern)(phase+1),"distinct boss pattern per round"); }
+                { Check(pa.BossCount==1&&pa.Enemies[0]==ExpeditionEnemyRole.Boss&&pa.EnemyCount<=7,"one boss at known index with bounded adds");Check(pa.BossPattern==(ExpeditionBossPattern)(phase+1),"distinct boss pattern per round"); }
                 if(mode==ExpeditionModeKind.HoldPoint){a.Advance(pa.HoldSeconds,true,true,0);b.Advance(pb.HoldSeconds,true,true,0);}
                 Clear(a,pa);Clear(b,pb);
             }

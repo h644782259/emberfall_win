@@ -66,7 +66,7 @@ namespace Emberfall
             { Destroy(gameObject); return; }
             if (session.InputBlocked || Time.deltaTime <= 0) return;
             age += Time.deltaTime;
-            if (heroClass == HeroClass.Arcanist && skill == 7) Pull(target,5.2f*range,rank==3?6f:4f);
+            if (heroClass == HeroClass.Arcanist && skill == 7) Pull(target,5.2f*range,rank==3?9f:7f);
             // Limit catch-up to three events per frame after a frame-time spike.
             int catchup = 0;
             while (step < steps && age >= nextEvent && catchup++ < 3)
@@ -150,6 +150,14 @@ namespace Emberfall
                     if(step<steps-1)
                     {
                         float a=step*.95f;
+                        // Bounded inward ribbons share the existing pooled effect renderer.
+                        for(int arm=0;arm<2;arm++)for(int segment=0;segment<2;segment++)
+                        {
+                            float angle=a+arm*Mathf.PI+segment*.65f;
+                            Vector3 outer=target+Circle(angle,(4.5f-segment*1.6f)*range)+Vector3.up*.35f;
+                            Vector3 inner=target+Circle(angle+.65f,(2.9f-segment*1.6f)*range)+Vector3.up*.25f;
+                            AdvancedSkillVfx.Beam(owner,outer,inner,new Color(.58f,.36f,1f),.3f,.12f);
+                        }
                         AdvancedSkillVfx.Beam(owner,target+Circle(a,4.3f*range)+Vector3.up*2,target+Vector3.up*.4f,new Color(.74f,.42f,1f),.45f,.17f);
                         owner.HitArea(target,4.8f*range,damage*SkillDamageBudgets.AdvancedImpact(heroClass,skill,rank,step),0,.12f,castId:castId);
                     }
@@ -286,7 +294,14 @@ namespace Emberfall
                 if(enemy==null || enemy.IsDead) continue;
                 Vector3 delta=CombatFx.Flat(at-enemy.transform.position);
                 if(delta.magnitude<radius && delta.magnitude>.6f && CombatSight.Area(at,enemy.transform.position))
-                    enemy.ApplyPull(delta.normalized * Mathf.Min(delta.magnitude - .6f, strength * Time.deltaTime));
+                {
+                    float distance=delta.magnitude;
+                    Vector3 inward=delta/distance;
+                    Vector3 tangent=new Vector3(-inward.z,0,inward.x);
+                    float surge=.85f+.15f*Mathf.Sin(age*12f);
+                    float spiral=Mathf.Clamp01((distance-.6f)/1.5f)*.42f;
+                    enemy.ApplyPull((inward+tangent*spiral).normalized*Mathf.Min(distance-.6f,strength*surge*Time.deltaTime),true);
+                }
             }
         }
 

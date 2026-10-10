@@ -82,6 +82,7 @@ namespace Emberfall
             float[] moveSpeed = { 2.05f, 3.1f, 2.5f, 2.1f };
             int challengeTier = game.InDungeon&&game.ChapterActive ? game.DungeonTier : 1;
             MaxHealth = CombatBalance.EnemyHealth(level, challengeTier, boss, kind);
+            if(game.InDungeon)MaxHealth*=boss?1.6f:kind==EnemyKind.Guardian?1.35f:1.15f;
             damage = CombatBalance.EnemyDamage(level, challengeTier, boss);
             if(game.ChapterActive)
             {MaxHealth*=ChapterDefinition.HealthMultiplier(game.ActiveChapterDifficulty);damage*=ChapterDefinition.DamageMultiplier(game.ActiveChapterDifficulty);}
@@ -123,7 +124,8 @@ namespace Emberfall
             CancelAttack(); attackNumber++; aggro = true; knockVelocity = Vector3.zero;
         }
 
-        internal void ApplyPull(Vector3 displacement)
+        private float vortexDragUntil;
+        internal void ApplyPull(Vector3 displacement,bool vortex=false)
         {
             if (session == null || !session.HasStarted || session.InputBlocked || IsDead || chargeTime > 0 || largeBoss != null && largeBoss.State.OwnsAttacks ||
                 controlPolicy == null || !FinitePoint(displacement) || Time.deltaTime <= 0) return;
@@ -133,6 +135,7 @@ namespace Emberfall
             float distance = Mathf.Min(controlPolicy.PullDistance(flat.magnitude, Time.deltaTime), Mathf.Max(0, budget - pullUsedThisFrame));
             if (distance <= 0 || flat.sqrMagnitude < .000001f) return;
             pullUsedThisFrame += distance;
+            if(vortex&&!IsBoss)vortexDragUntil=Time.time+.08f;
             transform.position = WorldTraversal.Move(transform.position, flat.normalized * distance, NavigationRadius);
         }
 
@@ -405,6 +408,7 @@ namespace Emberfall
 
         private Vector3 WalkForAnimation(Vector3 displacement)
         {
+            if(Time.time<vortexDragUntil)displacement*=.25f;
             Vector3 next = WorldTraversal.Move(transform.position,displacement,NavigationRadius);
             // Only this explicit three-member roster is tethered. Knockback still uses authoritative traversal directly.
             if(mobileSupplier!=null&&!mobileSupplier.IsDead&&mobileSupplier.isActiveAndEnabled&&

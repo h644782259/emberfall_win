@@ -15,7 +15,7 @@ namespace Emberfall
             Objective = Branch==RoomBranch.Seal?RoomObjective.Purify:Branch==RoomBranch.Supply?RoomObjective.Hunt:RoomTactics.Objective(seed,index);
             Layout = index < 4 ? 20 + RoomTactics.Terrain(seed,index)*2 + (RoomTactics.Mirror(seed)<0?1:0) : 10+index;
             if(Branch!=RoomBranch.None)Layout=20+(Branch==RoomBranch.Seal?0:4)+(RoomTactics.Mirror(seed)<0?1:0);
-            Interlude = false; Boss = index == 4; EnemyCount = Interlude ? 0 : Boss ? 3 : Branch==RoomBranch.Seal?4:6;
+            Interlude = false; Boss = index == 4; EnemyCount = Interlude ? 0 : Boss ? 7 : Branch==RoomBranch.Seal?8:10;
         }
     }
     public sealed class RoomChainState
@@ -53,7 +53,7 @@ namespace Emberfall
             if(Finished||!ReferenceEquals(plan,Room)||index<0||index>=spawned.Length||!spawned[index]||defeated[index])return false;
             defeated[index]=true;kills++;
             if(Room.Boss && kills==Room.EnemyCount && spawnedCount==Room.EnemyCount)Finished=true;
-            if(Room.Objective==RoomObjective.Hunt && defeated[0] && spawnedCount==Room.EnemyCount)DoorUnlocked=true;
+            if(Room.Objective==RoomObjective.Hunt && defeated[0] && kills>=(Room.EnemyCount*7+9)/10 && spawnedCount==Room.EnemyCount)DoorUnlocked=true;
             if(Room.Index<2&&Room.Branch==RoomBranch.None&&kills==Room.EnemyCount&&spawnedCount==Room.EnemyCount)DoorUnlocked=true;
             return true;
         }

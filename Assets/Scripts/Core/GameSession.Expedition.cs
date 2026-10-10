@@ -167,14 +167,14 @@ namespace Emberfall
 
         private void TrySpawnReinforcements()
         {
-            if(!InDungeon || IsDead || reinforcementQueue.Count==0 || Time.time<nextReinforcementAt || Enemies.Count>6)return;
-            nextReinforcementAt=Time.time+2f;
+            if(!InDungeon || IsDead || reinforcementQueue.Count==0 || Time.time<nextReinforcementAt || Enemies.Count>9)return;
+            nextReinforcementAt=Time.time+.8f;
             int spawned=0;
             while(reinforcementQueue.Count>0 && spawned<4 && Enemies.Count<EncounterPlan.MaximumSimultaneous)
             {
                 EncounterSpawn next=reinforcementQueue.Peek(); Vector3 position;
-                if(!TrySafeSpawn(new Vector3(next.X,0,next.Z),next.Kind==EnemyKind.Guardian?.65f:.5f,7f,out position))break;
-                reinforcementQueue.Dequeue(); SpawnEnemy(next.Kind,DungeonEntryLevel,position,false); spawned++;
+                if(!TrySafeSpawn(new Vector3(next.X,0,next.Z),next.Boss?1f:next.Kind==EnemyKind.Guardian?.65f:.5f,5.5f,out position))break;
+                reinforcementQueue.Dequeue(); SpawnEnemy(next.Kind,DungeonEntryLevel,position,next.Boss); spawned++;
             }
             if(spawned>0)Notify("遗迹援军接近 · "+spawned+" 名");
         }

@@ -94,12 +94,12 @@ namespace Emberfall
         {
             if(!ChapterProgression.Valid(node))throw new ArgumentOutOfRangeException(nameof(node));
             this.node=node;EntryLevel=Math.Max(1,Math.Min(100,level));
-            registered=new bool[node==ChapterNode.StarPlatform?3:12];claimed=new bool[registered.Length];
+            registered=new bool[node==ChapterNode.StarPlatform?7:20];claimed=new bool[registered.Length];
             for(int i=0;i<registered.Length;i++)TotalExperience+=Standard(node==ChapterNode.StarPlatform&&i==0);
         }
         private int Standard(bool boss){return boss?100+EntryLevel*12:22+EntryLevel*2;}
         private int Slot(int room,int index)
-        {return node==ChapterNode.StarPlatform?(room==0&&index>=0&&index<3?index:-1):(room>=0&&room<2&&index>=0&&index<6?room*6+index:-1);}
+        {return node==ChapterNode.StarPlatform?(room==0&&index>=0&&index<7?index:-1):(room>=0&&room<2&&index>=0&&index<10?room*10+index:-1);}
         public bool Register(int room,int index,bool boss)
         {
             int slot=Slot(room,index);if(slot<0||registered[slot]||boss!=(node==ChapterNode.StarPlatform&&slot==0))return false;

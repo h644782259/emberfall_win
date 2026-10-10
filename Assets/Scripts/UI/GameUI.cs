@@ -281,9 +281,6 @@ namespace Emberfall
             GUI.enabled = !session.BackgroundPaused && !LifecycleTouchBlocked && MerchantServiceLayout.StablePanelEvent(UITransitionBlocked,true,Event.current.type==EventType.Repaint||Event.current.type==EventType.Layout);
             blockedRects.Clear();
             tooltip = null;tooltipAnchorText=null;tooltipKey=null;
-            float functionFullHeight=height;
-            bool functionDock=CanSwitchFunction&&(panel!=Panel.None||session.Paused);
-            float functionReserve=functionDock?52*(MobileControls.Active?TouchRatio:1):0;
             bool rewardOverlayEnabled=GUI.enabled;
             bool rewardOverlayPointer=entryRewardPopupVisible&&entryRewardPopupRect.Contains(Mouse);
             BeginEntryRewardPopup();
@@ -313,7 +310,6 @@ namespace Emberfall
                 DrawHUD();
                 DrawDungeonExitButton();
                 GUI.enabled = priorEnabled;
-                height=functionFullHeight-functionReserve;
                 if (panel == Panel.None && !session.Paused && !session.IsDead) DrawTargetingHint();
                 if (session.Paused) DrawPause();
                 else if(PauseUtilityVisible)
@@ -353,8 +349,6 @@ namespace Emberfall
             DrawTooltip();
             GUI.enabled=rewardOverlayEnabled;
             DrawEntryRewardPopup();
-            height=functionFullHeight;
-            if(functionDock)DrawFunctionSwitcher(functionFullHeight,functionReserve);
             DrawExitConfirmation();
             GUI.matrix = oldMatrix;
             GUI.color = oldColor;

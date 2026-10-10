@@ -54,27 +54,5 @@ namespace Emberfall
             {bool merchant=Input.GetKeyDown(KeyCode.P);if(merchant?MerchantServiceActive:SmithServiceActive)ClosePanel();else OpenHubService(merchant?HubNpcKind.Merchant:HubNpcKind.Blacksmith);return true;}
             return false;
         }
-        private void DrawFunctionSwitcher(float fullHeight,float reserved)
-        {
-            bool prior=GUI.enabled;GUI.enabled=prior&&CanSwitchFunction&&!UITransitionBlocked;
-            float u=MobileControls.Active?TouchRatio:1,buttonWidth=Mathf.Min(88*u,(width-24*u)/7),total=buttonWidth*7;
-            Rect bar=new Rect((width-total)*.5f,fullHeight-reserved+4*u,total,reserved-8*u);blockedRects.Add(bar);Fill(bar,ink);Border(bar,jade*.4f);
-            string[] labels={"行囊","技能","成就","商人","铁匠","地图","设置"};
-            string[] keys={"I","K","J","P","O","M",""};
-            for(int i=0;i<labels.Length;i++)
-            {
-                Rect hit=new Rect(bar.x+i*buttonWidth+2*u,bar.y+2*u,buttonWidth-4*u,bar.height-4*u);
-                bool selected=i==0&&panel==Panel.Inventory&&!MerchantServiceActive&&!SmithServiceActive||i==1&&panel==Panel.Skills||i==2&&progressionGoalsOpen||i==3&&MerchantServiceActive||i==4&&SmithServiceActive||i==5&&panel==Panel.TravelMap||i==6&&session.Paused;
-                if(i==3||i==4)GUI.enabled=prior&&CanSwitchFunction&&HubServicesAvailable&&!UITransitionBlocked;
-                if(Button(hit,labels[i]+(!MobileControls.Active&&keys[i].Length>0?" ["+keys[i]+"]":""),selected?gold:jade))
-                {
-                    if(i==0)TogglePanel(Panel.Inventory);else if(i==1)TogglePanel(Panel.Skills);else if(i==2)OpenProgressionGoals();
-                    else if(i==3||i==4)OpenHubService(i==3?HubNpcKind.Merchant:HubNpcKind.Blacksmith);else if(i==5)OpenTravelMap();
-                    else{PrepareFunctionSwitch();mobilePausePage=0;session.SetPaused(true);BlockUITransition();}
-                }
-                GUI.enabled=prior&&CanSwitchFunction&&!UITransitionBlocked;
-            }
-            GUI.enabled=prior;
-        }
     }
 }

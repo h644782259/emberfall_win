@@ -20,21 +20,21 @@ namespace Emberfall
         public bool Failed {get;private set;}
         public bool RewardClaimed {get;private set;}
         public RoomObjective Objective {get{return ChapterDefinition.RoomKind(Node,RoomIndex);}}
-        public int EnemyCount {get{return Objective==RoomObjective.Rest?0:Objective==RoomObjective.Boss?3:6;}}
+        public int EnemyCount {get{return Objective==RoomObjective.Rest?0:Objective==RoomObjective.Boss?7:10;}}
         public int LivingRegisteredEnemies {get{return registered-kills;}}
         private int registered,kills;
-        private readonly bool[] spawned=new bool[6],defeated=new bool[6];
+        private readonly bool[] spawned=new bool[10],defeated=new bool[10];
         public ChapterCombatRun(ChapterNode node,ChapterDifficulty difficulty,int seed)
         {ChapterDefinition.Get(node);if((int)difficulty<0||(int)difficulty>2)throw new ArgumentOutOfRangeException(nameof(difficulty));Node=node;Difficulty=difficulty;Seed=seed;Epoch=-1;}
         public void BindRoom(int epoch)
-        {if(Finished)return;Epoch=epoch;registered=kills=Seals=0;progress=0;Array.Clear(sealProgress,0,2);DoorUnlocked=Objective==RoomObjective.Rest;Array.Clear(spawned,0,6);Array.Clear(defeated,0,6);}
+        {if(Finished)return;Epoch=epoch;registered=kills=Seals=0;progress=0;Array.Clear(sealProgress,0,2);DoorUnlocked=Objective==RoomObjective.Rest;Array.Clear(spawned,0,spawned.Length);Array.Clear(defeated,0,defeated.Length);}
         public bool Register(int room,int epoch,int index)
         {if(Finished||Epoch<0||room!=RoomIndex||epoch!=Epoch||index<0||index>=EnemyCount||spawned[index])return false;spawned[index]=true;registered++;return true;}
         public bool Defeat(int room,int epoch,int index)
         {
             if(Finished||Epoch<0||room!=RoomIndex||epoch!=Epoch||index<0||index>=EnemyCount||!spawned[index]||defeated[index])return false;
             defeated[index]=true;kills++;
-            if(registered==EnemyCount&&((Objective==RoomObjective.Hunt&&defeated[0])||(Objective==RoomObjective.Boss&&kills==EnemyCount)))DoorUnlocked=true;
+            if(registered==EnemyCount&&((Objective==RoomObjective.Hunt&&defeated[0]&&kills>=(EnemyCount*7+9)/10)||(Objective==RoomObjective.Boss&&kills==EnemyCount)))DoorUnlocked=true;
             return true;
         }
         private bool CanAdvance(float delta,bool active,bool inside,bool contested)

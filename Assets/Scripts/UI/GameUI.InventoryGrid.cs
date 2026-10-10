@@ -190,16 +190,17 @@ namespace Emberfall
             bool compactCompare=height/u<400;
             float sheetWidth=Mathf.Min(compactCompare?620:600,(width/u)-40),sheetHeight=Mathf.Min(480,(height/u)-32);
             Rect r=inventoryPopupRect=MobileControls.Active?new Rect((width-sheetWidth*u)*.5f,(height-sheetHeight*u)*.5f,sheetWidth*u,sheetHeight*u):DesktopInventorySheet(sheetWidth,sheetHeight);
-            Fill(r,new Color(.025f,.055f,.075f,.995f));Border(r,jade);
+
             bool prior=GUI.enabled;GUI.enabled=prior&&Time.frameCount!=inventoryPopupOpened;
-            if(PopupCloseButton(new Rect(r.xMax-44*u,r.y,44*u,44*u))){inventoryComparisonOpen=false;GUI.enabled=prior;return;}
-            float bodyY=r.y+44*u,rowHeight=(sheetHeight<360?22:28)*u;
+
+            float bodyY=r.y,rowHeight=(sheetHeight<360?22:28)*u;
             string[] labels={"评分","攻击","防御","生命","暴击率","暴击伤害","攻击加成"};
             float inner=r.width-24*u,statsWidth=compactCompare?(inner-12*u)*.52f:inner,labelWidth=96*u,valueWidth=(statsWidth-labelWidth)*.5f;
-            var detail=ActualEquipmentPreview(next);
+            var detail=ActualEquipmentPreview(next);detail.AllowActions=MobileControls.Active;
             inventoryDetailScroll=BeginTouchScroll("equipment-detail",new Rect(r.x+12*u,bodyY,inner,r.yMax-bodyY-12*u),inventoryDetailScroll,new Rect(0,0,inner-8*u,DrawRewardDetailRows(detail,inner/u-8,u,false)*u));
             DrawRewardDetailRows(detail,inner/u-8,u,true);
             EndTouchScroll();
+            if(MobileControls.Active&&PopupCloseButton(new Rect(r.xMax-22*u,r.y,22*u,22*u))){inventoryComparisonOpen=false;GUI.enabled=prior;return;}
             float mechanismY=compactCompare?r.y+66*u:bodyY+(inventoryPopupCompare?7:4)*rowHeight+8*u;
             float mechanismX=compactCompare?r.x+24*u+statsWidth:r.x+12*u,mechanismWidth=compactCompare?inner-statsWidth-12*u:inner;
             GUI.enabled=prior;
@@ -216,7 +217,7 @@ namespace Emberfall
             var area=InventoryGridGeometry.Popup(new MobilePanelLayout.Area(bounds.x/u,bounds.y/u,bounds.width/u,bounds.height/u),new MobilePanelLayout.Area(inventoryPopupAnchor.x/u,inventoryPopupAnchor.y/u,inventoryPopupAnchor.width/u,inventoryPopupAnchor.height/u),inventoryPopupCompare||item!=null);
             Rect r=inventoryPopupRect=new Rect(area.X*u,area.Y*u,area.Width*u,area.Height*u);
             if(fashion){float fw=Mathf.Min(420*u,width-24*u),fh=Mathf.Min(320*u,height-24*u);r=inventoryPopupRect=MobileControls.Active?new Rect((width-fw)*.5f,(height-fh)*.5f,fw,fh):DesktopInventorySheet(fw,fh);}
-            Fill(r,new Color(.025f,.055f,.075f,.99f));Border(r,jade);
+            if(!fashion){Fill(r,new Color(.025f,.055f,.075f,.99f));Border(r,jade);}
             bool prior=GUI.enabled;GUI.enabled=prior&&Time.frameCount!=inventoryPopupOpened;
             if(potion)
                 Text(new Rect(r.x+8*u,r.y+4*u,r.width-56*u,36*u),potion?"生命药剂 × "+session.Progression.Profile.potions:ProgressionService.FashionName(appearance.slot,appearance.AppearanceRarity,session.Progression.Profile.heroClass),Mathf.RoundToInt(14*u),pale,true,true);
@@ -237,16 +238,17 @@ namespace Emberfall
                 Text(new Rect(r.x+60*u,r.y+38*u,r.width-70*u,28*u),EquipmentPreviewScore(item).ToString("0.#"),Mathf.RoundToInt(18*u),gold,true,false,TextAnchor.MiddleRight);
             }
 
-            if(PopupCloseButton(new Rect(r.xMax-44*u,r.y,44*u,44*u))){inventoryComparisonOpen=false;BlockUITransition();}
+
             if(potion)Text(new Rect(r.x+8*u,r.y+42*u,r.width-16*u,22*u),potion?"恢复50%生命":"时装 · "+GameBalance.RarityName(appearance.rarity),Mathf.RoundToInt(12*u),muted);
             if(fashion)
             {
-                float statsTop=44;
-                var detail=new EntryRewardPreview{Key="fashion:"+appearance.id,Name=appearance.name,Rarity=appearance.rarity,AppearanceSlot=appearance.slot,Description=ProgressionService.FashionBonus(appearance.slot,appearance.rarity)};
+                float statsTop=0;
+                var detail=new EntryRewardPreview{AllowActions=MobileControls.Active,Key="fashion:"+appearance.id,Name=appearance.name,Rarity=appearance.rarity,AppearanceSlot=appearance.slot,Description=ProgressionService.FashionBonus(appearance.slot,appearance.rarity)};
                 inventoryDetailScroll=BeginTouchScroll("fashion-detail",new Rect(r.x+12*u,r.y+statsTop*u,r.width-24*u,r.height-(statsTop+8)*u),inventoryDetailScroll,new Rect(0,0,r.width-32*u,DrawRewardDetailRows(detail,r.width/u-32,u,false)*u));
                 DrawRewardDetailRows(detail,r.width/u-32,u,true);
                 EndTouchScroll();
             }
+            if(MobileControls.Active&&PopupCloseButton(new Rect(r.xMax-22*u,r.y,22*u,22*u))){inventoryComparisonOpen=false;BlockUITransition();}
             float actionWidth=(r.width-16*u)*.5f;
             if(potion)
             {

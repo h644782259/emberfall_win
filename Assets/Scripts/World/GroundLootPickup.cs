@@ -3,16 +3,26 @@ using UnityEngine.Rendering;
 
 namespace Emberfall
 {
+    internal sealed class GroundPickupFlight
+    {
+        internal const float LandingDelay=1.1f,FlightDuration=.65f;
+        private float age;
+        internal float Progress {get{return System.Math.Max(0,System.Math.Min(1,(age-LandingDelay)/FlightDuration));}}
+        internal bool Complete {get{return Progress>=1;}}
+        internal void Advance(float dt){if(dt>0&&!float.IsNaN(dt)&&!float.IsInfinity(dt))age+=System.Math.Min(dt,.1f);}
+    }
     /// <summary>Visible loot remains session-owned until collected or settled on exit.</summary>
     public sealed class GroundLootPickup : MonoBehaviour
     {
         public const float PickupRadius = 2f;
-        public const float LandingProtection = .6f;
+        public const float LandingProtection = GroundPickupFlight.LandingDelay;
         public const float RetryDelay = 1f;
         public string ItemId { get; private set; }
-        public bool ReadyToCollect { get { return age >= LandingProtection && !retired; } }
+        public bool ReadyToCollect { get { return flight.Complete && !retired; } }
         private GameSession session;
         private float age;
+        private readonly GroundPickupFlight flight=new GroundPickupFlight();
+        private Vector3 flightOrigin;private bool flying;
         private float retryTime;
         private bool retired;
         private Transform model;
@@ -142,7 +152,7 @@ namespace Emberfall
 
         private void Update()
         {
-            if (retired || session == null || session.InputBlocked || !session.IsCurrentGroundLoot(this)) return;
+            if (retired || session == null || session.InputBlocked || session.IsDead || session.Player==null || !session.IsCurrentGroundLoot(this)) return;
             age += Time.deltaTime;
             retryTime = Mathf.Max(0, retryTime - Time.deltaTime);
             if (model != null)
@@ -150,10 +160,13 @@ namespace Emberfall
                 model.localPosition = Vector3.up * (.4f + Mathf.Sin(age * 2.5f) * .055f);
                 model.localRotation = Quaternion.Euler(0, age * 35f, -15);
             }
-            if (!ReadyToCollect || retryTime > 0 || session.Player == null) return;
-            Vector3 offset = session.Player.transform.position - transform.position;
-            offset.y = 0;
-            if (offset.sqrMagnitude <= PickupRadius * PickupRadius && !session.TryCollectGroundLoot(this)) retryTime = RetryDelay;
+            flight.Advance(Time.deltaTime);
+            float progress=flight.Progress;if(progress<=0)return;
+            if(!flying){flying=true;flightOrigin=transform.position;if(label!=null)label.gameObject.SetActive(false);}
+            Vector3 destination=session.Player.transform.position+Vector3.up*.7f;
+            transform.position=Vector3.Lerp(flightOrigin,destination,progress*progress);
+            transform.localScale=Vector3.one*Mathf.Lerp(1,.35f,progress);
+            if (ReadyToCollect && retryTime <= 0 && !session.TryCollectGroundLoot(this)) retryTime = RetryDelay;
         }
 
         private void LateUpdate()

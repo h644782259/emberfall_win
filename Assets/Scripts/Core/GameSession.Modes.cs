@@ -83,7 +83,7 @@ namespace Emberfall
     ModeRun.Advance(Time.deltaTime,!InputBlocked,Player!=null&&ExpeditionModeState.InsideHoldPoint(CombatFx.Flat(Player.transform.position).sqrMagnitude),pressure,!IsDead);
     if(arenaHazards!=null&&!ModeRun.IsTerminal)arenaHazards.Advance(Time.deltaTime);
     arenaSpawnDelay-=Time.deltaTime;
-    if(arenaSpawnDelay<=0){arenaSpawnDelay=1.4f;SpawnArenaEnemies();}
+    if(arenaSpawnDelay<=0){arenaSpawnDelay=.8f;SpawnArenaEnemies();}
     if(ModeRun.PendingSpawnCount>0&&ModeRun.AliveEnemies==0){arenaSpawnBlocked+=Time.deltaTime;if(arenaSpawnBlocked>10)ModeRun.Fail(ExpeditionModeFailure.SpawnBlocked);}
    }
    if(ModeRun.Status==ExpeditionModeStatus.AwaitingSpawn&&!arenaAwaitingBlessing)

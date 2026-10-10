@@ -58,7 +58,8 @@ public static class ChapterRoomGeometryTests
                     foreach(var other in occupied)Check(Vector3.Distance(at,other)>=Mathf.Max(2.4f,radius*2),"split spawns retain actor clearance");
                     occupied.Add(at);
                 }
-                Vector3 seventh;Check(!ChapterRoomGeometry.TrySpawn(plan,6,occupied,radius,out seventh),"split roster cap remains six");
+                for(int i=6;i<10;i++){Vector3 extra;Check(ChapterRoomGeometry.TrySpawn(plan,i,occupied,radius,out extra),"expanded split roster resolves");occupied.Add(extra);}
+                Vector3 eleventh;Check(!ChapterRoomGeometry.TrySpawn(plan,10,occupied,radius,out eleventh),"split roster cap is ten");
                 // Existing Heroic heat line cannot seal the new passage plus both old side routes.
                 float half=ChapterHazardGeometry.HeatHalfWidth;
                 WorldTraversal.AddBox((plan.HazardStart+plan.HazardEnd)*.5f,new Vector2(Mathf.Abs(plan.HazardEnd.x-plan.HazardStart.x)+2*half,2*half));
@@ -120,16 +121,16 @@ public static class ChapterRoomGeometryTests
         foreach(ChapterNode node in Enum.GetValues(typeof(ChapterNode)))for(int room=0;room<2;room++)for(int seed=0;seed<64;seed++)
         {
             var p=ChapterRoomGeometry.Plan(node,room,seed);Register(p);var occupied=new List<Vector3>();
-            for(int i=0;i<6;i++)
+            for(int i=0;i<10;i++)
             {
                 float radius=node==ChapterNode.StarPlatform&&i==0?1.3f:.65f;
-                Vector3 first,second;Check(ChapterRoomGeometry.TrySpawn(p,i,occupied,radius,out first),"six bounded safe spawns "+node+" seed "+seed+" index "+i);
+                Vector3 first,second;Check(ChapterRoomGeometry.TrySpawn(p,i,occupied,radius,out first),"ten bounded safe spawns "+node+" seed "+seed+" index "+i);
                 Check(ChapterRoomGeometry.TrySpawn(p,i,occupied,radius,out second)&&Vector3.Distance(first,second)<.0001f,"same seed reproduces spawn");
                 Check(Vector3.Distance(first,p.Entrance)>=5.5f&&WorldTraversal.CanReach(p.Entrance,first,.45f),"safe arrival distance and every class can reach enemy");
                 bool stance=false;for(int j=0;j<8;j++){float a=j*Mathf.PI/4;var near=first+new Vector3(Mathf.Sin(a),0,Mathf.Cos(a))*1.4f;if(WorldTraversal.CanReach(p.Entrance,near,.7f)&&WorldTraversal.HasGroundPath(near,first,.12f)){stance=true;break;}}
                 Check(stance,"large melee companion has attack stance");foreach(var other in occupied)Check(Vector3.Distance(first,other)>=2.4f,"spawns separated");occupied.Add(first);
             }
-            Vector3 rejected;Check(!ChapterRoomGeometry.TrySpawn(p,6,occupied,.65f,out rejected),"seventh spawn rejected");
+            Vector3 rejected;Check(!ChapterRoomGeometry.TrySpawn(p,10,occupied,.65f,out rejected),"eleventh spawn rejected");
             Check(!ChapterRoomGeometry.TrySpawn(p,0,occupied,float.NaN,out rejected),"invalid radius rejected");
         }
         foreach(var node in new[]{ChapterNode.ForestCourt,ChapterNode.Redrock})

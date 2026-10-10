@@ -17,7 +17,7 @@ public static class AdventureClearRewardTests
   foreach(int mode in new[]{-1,0,1,2,3})foreach(int tier in new[]{1,5,10,20,40,100})
   {
    int upgraded=0;for(int roll=0;roll<100;roll++){var rarity=AdventureRewardRules.EquipmentRarity(mode,tier,roll);C(rarity>=AdventureRewardRules.MinimumRarity(mode),"never below promised rarity");if(rarity>AdventureRewardRules.MinimumRarity(mode))upgraded++;}
-   C(upgraded==AdventureRewardRules.UpgradeChance(mode,tier)+AdventureRewardRules.LegendaryChance(tier),"every probability bucket matches advertised percent");
+   C(upgraded==AdventureRewardRules.LegendaryChance(tier),"every probability bucket matches advertised percent");
    var p=Fresh(dir);string receipt=Guid.NewGuid().ToString("N");int before=p.Profile.inventory.Count,gold=p.Profile.gold,materials=p.Profile.mechanicMaterials;
    C(Grant(p,receipt,mode,tier),"typed clear settles atomically");var items=p.Profile.inventory.Where(i=>i.id.StartsWith(receipt+"-clear-")).ToArray();
    C(items.Length==AdventureRewardRules.EquipmentCount(mode,tier)&&p.Profile.inventory.Count==before+items.Length,"all guaranteed gear directly owned");

@@ -4,6 +4,14 @@ namespace Emberfall
 {
     public sealed partial class GameUI
     {
+        private bool MerchantRarityTab(Rect r,Rarity rarity,float u)
+        {
+            bool selected=merchantGemRarity==rarity;Color tint=GameBalance.RarityColor(rarity);
+            Fill(r,selected?new Color(.10f,.18f,.22f):new Color(.04f,.075f,.10f));
+            if(selected)Fill(new Rect(r.x+8*u,r.yMax-2*u,r.width-16*u,2*u),tint);
+            Text(r,GameBalance.RarityName(rarity),Mathf.RoundToInt(12*u),selected?tint:muted,true,false,TextAnchor.MiddleCenter);
+            return GUI.Button(r,GUIContent.none,invisibleButton);
+        }
         private int merchantMode,merchantSelection=-1;
         private EquipmentMechanic merchantGemSaleConfirmation;
         private float merchantActionUntil=-1;
@@ -54,7 +62,7 @@ namespace Emberfall
                     var gem=saleGems[index-saleItems.Count];Color tint=GameBalance.RarityColor(gem.rarity);
                     DrawIcon(new Rect(tile.center.x-23*u,tile.y+6*u,46*u,46*u),UIIconAtlas.Utility("gem"),tint);
                     Text(new Rect(tile.x+6*u,tile.y+54*u,tile.width-12*u,28*u),BuildCatalog.GemName(gem.mechanic),Mathf.RoundToInt(11*u),pale,false,true,TextAnchor.MiddleCenter);
-                    DrawPrice(new Rect(tile.x+8*u,tile.y+80*u,tile.width-16*u,20*u),p.GemSellValue(gem.mechanic),false,u);
+                    DrawPrice(new Rect(tile.x+8*u,tile.y+80*u,tile.width-16*u,20*u),p.GemSellValue(gem.mechanic),true,u);
                     InspectRewardItem(new Rect(tile.x,tile.y,tile.width,100*u),new EntryRewardPreview{Key="merchant:gem:sale:"+gem.mechanic,Name=BuildCatalog.GemName(gem.mechanic),Rarity=gem.rarity,Tint=tint,Icon=UIIconAtlas.Utility("gem"),Description=GemRewardDescription(gem.mechanic,gem.rarity,gem.upgradeRank)},true);
                     string reason=p.GemSaleLock(gem.mechanic,MerchantServiceActive);
                     bool confirming=merchantGemSaleConfirmation==gem.mechanic;
@@ -79,7 +87,7 @@ namespace Emberfall
                 }
                 DrawPriceTint(new Rect(tile.x+8*u,tile.y+(merchantMode==1?131:77)*u,tile.width-16*u,20*u),price,merchantMode==1,u,item!=null||quote!=null?gold:new Color(.98f,.28f,.24f));
                 EntryRewardPreview detail;
-                if(item!=null){detail=ActualEquipmentPreview(item);detail.Key="merchant:equipment:"+item.id;}
+                if(item!=null){detail=ActualEquipmentPreview(item);detail.AllowActions=true;detail.Key="merchant:equipment:"+item.id;}
                 else if(mechanic!=EquipmentMechanic.None)detail=new EntryRewardPreview{Key="merchant:gem:buy:"+mechanic+":"+merchantGemRarity,Name=caption,Rarity=merchantGemRarity,Tint=GameBalance.RarityColor(merchantGemRarity),Icon=UIIconAtlas.Utility("gem"),Description=GemRewardDescription(mechanic,merchantGemRarity)};
                 else detail=new EntryRewardPreview{Key="merchant:potion",Name="生命药剂",Rarity=Rarity.Common,Tint=jade,Icon=UIIconAtlas.Utility("potion"),Description="生命药剂\n恢复50%生命"};
                 InspectRewardItem(new Rect(tile.x,tile.y,tile.width,(merchantMode==1?150:96)*u),detail,true);
@@ -101,7 +109,7 @@ namespace Emberfall
             EndTouchScroll();
             Rect info=BuildPlanRect(l.Info,u);
             if(merchantMode==1)
-            {for(int tier=0;tier<4;tier++){Rect tab=new Rect(info.x+tier*(info.width/4),info.y,info.width/4-4*u,info.height);if(TabButton(tab,GameBalance.RarityName((Rarity)tier),merchantGemRarity==(Rarity)tier)){merchantGemRarity=(Rarity)tier;}}}
+            {for(int tier=0;tier<4;tier++){Rect tab=new Rect(info.x+tier*(info.width/4),info.y,info.width/4-4*u,info.height);if(MerchantRarityTab(tab,(Rarity)tier,u)){merchantGemRarity=(Rarity)tier;}}}
             if(merchantMode==2&&count==0)Text(BuildPlanRect(l.Body,u),"没有可出售物品。",Mathf.RoundToInt(16*u),jade);
         }
 

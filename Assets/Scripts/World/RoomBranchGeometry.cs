@@ -8,7 +8,8 @@ namespace Emberfall{public static class RoomBranchGeometry{
             Vector3[] slots=plan.Branch==RoomBranch.Seal?
                 new[]{new Vector3(-8,0,-4),new Vector3(-10,0,-6),new Vector3(8,0,7),new Vector3(10,0,9)}:
                 new[]{new Vector3(8,0,9),new Vector3(7,0,2),new Vector3(10,0,2),new Vector3(12.3f,0,3.6f),new Vector3(5,0,9),new Vector3(11,0,10)};
-            position=Vector3.zero;if(index<0||index>=slots.Length)return false;
+            position=Vector3.zero;if(index<0)return false;
+            if(index>=slots.Length)return TacticalRoomGeometry.TrySpawn(plan.Seed,plan.Index,index,occupied,out position);
             var candidate=slots[index];candidate.x*=mirror;
             if(!WorldTraversal.IsWalkable(candidate,.65f)||!WorldTraversal.CanReach(TacticalRoomGeometry.Entrance,candidate,.65f))return false;
             foreach(var other in occupied)if(Vector3.Distance(other,candidate)<2.4f)return false;

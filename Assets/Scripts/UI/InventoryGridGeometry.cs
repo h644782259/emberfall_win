@@ -4,6 +4,7 @@ namespace Emberfall
     public sealed class InventoryGridGeometry
     {
         public const float RowHeight=48;
+        public const float ItemPopupWidth=250,ItemPopupHeight=120;
         public const float FilterRailWidth=60;
         public static MobilePanelLayout.Area FilterButton(MobilePanelLayout.Area viewport,int index)
         {
@@ -20,7 +21,7 @@ namespace Emberfall
         public int FullyVisible(float height){return Columns*Math.Max(0,(int)Math.Floor((height+4)/Stride));}
         public static MobilePanelLayout.Area Popup(MobilePanelLayout.Area bounds,MobilePanelLayout.Area anchor,bool comparison)
         {
-            float w=Math.Min(250,Math.Max(160,bounds.Width-54)),h=Math.Min(comparison?230:120,bounds.Height);
+            float w=Math.Min(ItemPopupWidth,Math.Max(160,bounds.Width-54)),h=Math.Min(comparison?230:ItemPopupHeight,bounds.Height);
             float x=anchor.XMax+6;if(x+w>bounds.XMax)x=anchor.X-w-6;
             x=Math.Max(bounds.X,Math.Min(bounds.XMax-w,x));
             float y=Math.Max(bounds.Y,Math.Min(bounds.YMax-h,anchor.Y));

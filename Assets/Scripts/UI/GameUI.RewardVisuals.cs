@@ -38,6 +38,7 @@ namespace Emberfall
                 y+=h+12;
             }
             if(reward==null)return y;
+            if(reward.rulesRevision>=3){if(draw)DrawSettlementChestStage(new Rect(0,y*u,width*u,120*u),reward,u);return y+128;}
             int coins=reward.hasCurrencyDeltas?reward.goldDelta:reward.Gold;
             int shards=reward.hasCurrencyDeltas&&reward.materialKind==RewardMaterialKind.StarAshFragment?reward.materialsDelta:0;
             int threads=reward.hasCurrencyDeltas?reward.threadsDelta:0;

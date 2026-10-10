@@ -35,7 +35,7 @@ namespace Emberfall
             candidate.gold+=quote.Gold;return CommitCandidate(candidate);
         }
         public int GemSellValue(EquipmentMechanic mechanic)
-        {var gem=Attachment(mechanic);return gem==null?0:40+((int)gem.rarity+1)*60+gem.upgradeRank*25+gem.ascensionRank*60;}
+        {var gem=Attachment(mechanic);return gem==null?0:System.Math.Max(0,gem.upgradeRank)*AttachmentUpgradeCost+System.Math.Max(0,gem.ascensionRank)*AscensionCost;}
         public string GemSaleLock(EquipmentMechanic mechanic,bool atMerchant)
         {
             var gem=Attachment(mechanic);
@@ -45,7 +45,7 @@ namespace Emberfall
             if(Profile.buildPresets!=null)plans.AddRange(Profile.buildPresets);
             if(Profile.classStates!=null)foreach(var state in Profile.classStates)if(state!=null&&state.buildPresets!=null)plans.AddRange(state.buildPresets);
             foreach(var plan in plans)if(plan!=null&&plan.populated&&plan.mountedAttachments!=null&&System.Array.IndexOf(plan.mountedAttachments,mechanic)>=0)return "方案使用中";
-            if(Profile.gold>MaximumGold-GemSellValue(mechanic))return "金币已满";
+            if(Profile.mechanicMaterials>999999-GemSellValue(mechanic))return "碎片已满";
             return "";
         }
         public bool SellGem(EquipmentMechanic mechanic,bool atMerchant)
@@ -58,7 +58,7 @@ namespace Emberfall
             var items=new System.Collections.Generic.List<ItemData>(candidate.inventory);
             items.AddRange(candidate.pendingLoot);items.AddRange(candidate.recoveryLoot);
             foreach(var item in items)if(item!=null&&item.mechanic==mechanic){item.mechanic=EquipmentMechanic.None;item.mechanicVariant=0;item.mechanicVariantUnlocked=false;}
-            candidate.gold+=value;return CommitCandidate(candidate,true);
+            candidate.mechanicMaterials+=value;return CommitCandidate(candidate,true);
         }
         public sealed class MerchantPurchaseQuote
         {

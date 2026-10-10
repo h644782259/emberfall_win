@@ -14,6 +14,7 @@ namespace Emberfall
         }
         public static bool TrySpawn(int seed,int index,List<Vector3> occupied,out Vector3 point)
         {
+            if(index>=6)return TacticalRoomGeometry.TrySpawn(seed,1,index,occupied,out point);
             Vector3 desired=Desired(seed,index);
             for(int attempt=0;attempt<40;attempt++)
             {

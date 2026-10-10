@@ -27,7 +27,8 @@ public static class ChapterFormationGeometryTests
             }
             Vector3 first,second;
             check(ChapterRoomGeometry.TrySpawn(p,0,new List<Vector3>(),.65f,out first)&&ChapterRoomGeometry.TrySpawnAt(p,p.SpawnCandidates[0],new List<Vector3>(),.65f,out second)&&Vector3.Distance(first,second)<.0001f,"indexed API delegates without changing old placement");
-            check(!ChapterRoomGeometry.TrySpawn(p,6,occupied,.65f,out first),"indexed roster still capped at six");
+            for(int i=6;i<10;i++){check(ChapterRoomGeometry.TrySpawn(p,i,occupied,.65f,out first),"additional roster positions resolve");foreach(var other in occupied)check(Vector3.Distance(first,other)>=2.4f,"additional actors preserve spacing");occupied.Add(first);}
+            check(!ChapterRoomGeometry.TrySpawn(p,10,occupied,.65f,out first),"indexed roster capped at ten");
             check(!ChapterRoomGeometry.TrySpawnAt(p,new Vector3(float.NaN,0,0),occupied,.65f,out first),"invalid requested point rejected");
         }
         return "PASS: "+n+" chapter formation production navigation assertions (managed shims, not combat AI playback)";
