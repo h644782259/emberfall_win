@@ -120,7 +120,7 @@ namespace Emberfall
                     string stats=BuildCatalog.IsAttributeGem(mechanic)?BuildCatalog.GemAttributeSummary(mechanic,merchantGemRarity,p.Attachment(mechanic)?.upgradeRank??0):BuildCatalog.AttributeLabel(BuildCatalog.MechanicAttribute(mechanic))+" +"+(BuildCatalog.MechanicAttributeValue(mechanic,p.Attachment(mechanic)?.upgradeRank??0)*100).ToString("0.#")+"%";
                     DrawDetailTag(new Rect(tile.x+4*u,tile.y+4*u,38*u,18*u),GameBalance.SlotName(BuildCatalog.MechanicSlot(mechanic)),jade,u);
                     DrawDetailTag(new Rect(tile.xMax-42*u,tile.y+4*u,38*u,18*u),GameBalance.RarityName(merchantGemRarity),GameBalance.RarityColor(merchantGemRarity),u);
-                    Text(new Rect(tile.x+6*u,tile.y+100*u,tile.width-12*u,30*u),stats,Mathf.RoundToInt(11*u),jade,true,true,TextAnchor.MiddleCenter);
+                    DrawGemEffectText(new Rect(tile.x+6*u,tile.y+100*u,tile.width-12*u,30*u),stats,Mathf.RoundToInt(11*u),jade,true,TextAnchor.MiddleCenter);
                 }
                 DrawPriceTint(new Rect(tile.x+8*u,tile.y+(merchantMode==1?131:77)*u,tile.width-16*u,20*u),price,merchantMode==1,u,item!=null||quote!=null?gold:new Color(.98f,.28f,.24f));
                 EntryRewardPreview detail;
@@ -140,7 +140,10 @@ namespace Emberfall
                     string captionAction=first?(owned?"领取 · +3碎片":"领取首通宝石"):owned?"已拥有":quote!=null?merchantMode==0?"购买":p.Attachment(mechanic)!=null?"兑换 · 提升品质":"兑换":merchantMode==0?p.Profile.potions>=99?"药剂已满":"金币不足":"碎片不足";
                     Rect action=new Rect(tile.x+6*u,tile.y+(merchantMode==1?154:100)*u,tile.width-12*u,44*u);
                     if(PrimaryButton(action,captionAction,gold,quote!=null&&Time.unscaledTime>=merchantActionUntil)&&StartMerchantAction())
-                    {OpenMerchantQuantity(mechanic==EquipmentMechanic.None?0:3,mechanic,merchantGemRarity,caption);}
+                    {
+                        if(mechanic==EquipmentMechanic.None)OpenMerchantQuantity(0,mechanic,merchantGemRarity,caption);
+                        else Feedback(p.BuyAtMerchant(p.PrepareMerchantPurchase(mechanic,MerchantServiceActive,merchantGemRarity),MerchantServiceActive),first?"首通宝石已领取":"宝石已兑换");
+                    }
 
                 }
             }

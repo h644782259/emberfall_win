@@ -5,10 +5,9 @@ namespace Emberfall
     public sealed partial class GameSession
     {
         public ChapterNode SelectedChapterNode {get;set;}
-        private ChapterDifficulty selectedChapterDifficulty;
         private readonly int[] selectedChapterTiers=new int[9];
         public ChapterDifficulty SelectedChapterDifficulty
-        {get{return (ChapterDifficulty)Mathf.Clamp((int)selectedChapterDifficulty,0,(int)ChapterProgression.AvailableDifficulty(Progression.Profile,SelectedChapterNode));}set{selectedChapterDifficulty=value;}}
+        {get{return ChapterDifficulty.Heroic;}set{}}
         public int SelectedChapterTier
         {get{int index=(int)SelectedChapterNode*3+(int)SelectedChapterDifficulty;int maximum=ChapterProgression.AvailableTier(Progression.Profile,SelectedChapterNode,SelectedChapterDifficulty);return selectedChapterTiers[index]==0?maximum:Mathf.Clamp(selectedChapterTiers[index],1,maximum);}set{selectedChapterTiers[(int)SelectedChapterNode*3+(int)SelectedChapterDifficulty]=value;}}
         public bool SelectedChapterLimitedHealing {get{return false;}set{}}

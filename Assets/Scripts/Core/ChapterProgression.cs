@@ -12,7 +12,7 @@ namespace Emberfall
         static readonly ChapterDefinition[] Nodes={
             new ChapterDefinition("林庭复明",1,"净化林庭残火，沿旧径撤离。","先净化，再寻找出口","林庭封印重归稳定，撤离的通路已经打开。","循残余火迹前往赤岩，寻找封锁线的供能者。"),
             new ChapterDefinition("赤岩断供",1,"截断赤岩守军，穿越封锁线。","先猎杀，再突破封锁","赤岩供能被切断，星台的外缘防线出现缺口。","穿过封锁线，在入口确认整备后直面守望者。"),
-            new ChapterDefinition("星台封印",2,"在入口确认整备，直入星台迎战守望者。","直入首领场，击败守望者与护卫","守望者退去，第一章的星路重新连通。","可以重访三处节点，挑战已解锁的更高难度。")};
+            new ChapterDefinition("星台封印",2,"在入口确认整备，直入星台迎战守望者。","直入首领场，击败守望者与护卫","守望者退去，第一章的星路重新连通。","可以重访三处节点，挑战已解锁的更高阶数。")};
         public static ChapterDefinition Get(ChapterNode node){if(!ChapterProgression.Valid(node))throw new ArgumentOutOfRangeException(nameof(node));return Nodes[(int)node];}
         public static int RoomCount(ChapterNode node){Get(node);return node==ChapterNode.StarPlatform?1:2;}
         public static RoomObjective RoomKind(ChapterNode node,int index)
@@ -36,7 +36,7 @@ namespace Emberfall
         public static bool Valid(ChapterNode node){return (int)node>=0&&(int)node<3;}
         public static int UnlockLevel(ChapterNode node){return Valid(node)?30+(int)node*10:101;}
         public static int LevelTier(int level){return Math.Max(1,Math.Min(10,level/10));}
-        public static int AvailableTier(GameProfile profile,ChapterNode node,ChapterDifficulty difficulty=ChapterDifficulty.Normal)
+        public static int AvailableTier(GameProfile profile,ChapterNode node,ChapterDifficulty difficulty=ChapterDifficulty.Heroic)
         {
             if(difficulty!=ChapterDifficulty.Heroic)return 1;
             int best=CompletedTier(profile,node,difficulty);return best==int.MaxValue?int.MaxValue:best+1;
@@ -45,7 +45,10 @@ namespace Emberfall
         {
             if(profile==null||!Valid(node)||(int)difficulty<0||(int)difficulty>2)return 0;
             int index=(int)node*3+(int)difficulty;
-            return profile.chapterDifficultyBestTiers!=null&&profile.chapterDifficultyBestTiers.Length>index?Math.Max(0,profile.chapterDifficultyBestTiers[index]):0;
+            int best=profile.chapterDifficultyBestTiers!=null&&profile.chapterDifficultyBestTiers.Length>index?Math.Max(0,profile.chapterDifficultyBestTiers[index]):0;
+            if(difficulty==ChapterDifficulty.Heroic&&profile.chapterDifficultyBestTiers!=null)
+                for(int d=0;d<3;d++){int legacy=(int)node*3+d;if(legacy<profile.chapterDifficultyBestTiers.Length)best=Math.Max(best,profile.chapterDifficultyBestTiers[legacy]);}
+            return best;
         }
         public static ChapterDifficulty AvailableDifficulty(GameProfile profile,ChapterNode node)
         {return LevelDifficulty(node,profile==null?0:profile.level);}
@@ -56,12 +59,12 @@ namespace Emberfall
         public static float TierDamageMultiplier(int tier)
         {double step=Math.Max(1,tier)-1d;return (float)(1d+.014d*step+.00008d*step*step);}
         public static ChapterDifficulty LevelDifficulty(ChapterNode node,int level)
-        {return (ChapterDifficulty)Math.Max(0,Math.Min(2,(level-UnlockLevel(node))/10));}
+        {return ChapterDifficulty.Heroic;}
         public static bool IsUnlocked(GameProfile profile,ChapterNode node){return profile!=null&&Valid(node)&&profile.level>=UnlockLevel(node);}
         public static int HighestCompletedDifficulty(GameProfile profile,ChapterNode node)
         {return profile==null||!Valid(node)||profile.chapterHighestDifficulties==null||profile.chapterHighestDifficulties.Length<3?-1:Math.Max(-1,Math.Min(2,profile.chapterHighestDifficulties[(int)node]-1));}
         public static bool CanEnter(GameProfile profile,ChapterNode node,ChapterDifficulty difficulty)
-        {return IsUnlocked(profile,node)&&(int)difficulty>=0&&(int)difficulty<=2&&(int)difficulty<=(int)AvailableDifficulty(profile,node);}
+        {return IsUnlocked(profile,node)&&difficulty==ChapterDifficulty.Heroic;}
         public static int MaterialReward(ChapterNode node,int tier){return TierRewardBand.Materials(ChapterDefinition.Get(node).BaseMaterials,tier);}
         public static int CompletionMaterials(GameProfile profile,ChapterNode node,int tier)
         {return MaterialReward(node,tier)+((profile.chapterFirstRewardMask&(1<<(int)node))==0?1:0);}

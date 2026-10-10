@@ -187,7 +187,7 @@ namespace Emberfall
                 // Floating transparent glyph: the entire identity carries availability.
                 Color skillColor=UIIconAtlas.SkillColor(p.heroClass,skill);
                 Color tint=ready?(pressed?Color.Lerp(skillColor,Color.white,.25f):skillColor):new Color(.38f,.42f,.46f,.58f);
-                DrawIcon(icon,UIIconAtlas.SkillGlyph(p.heroClass,skill,48),tint);
+                DrawRecoveringSkill(icon,UIIconAtlas.SkillGlyph(p.heroClass,skill,48),ready?Color.Lerp(tint,Color.white,.25f):skillColor,skill,ready);
                 if(skill==9)Text(new Rect(r.x,r.yMax-13*TouchRatio,r.width,12*TouchRatio),"终极",TouchFont(9),ready?new Color(.3f,1f,.72f):muted,true,false,TextAnchor.MiddleCenter);
                 DrawMobileSkillAvailability(r,skill);
             }
@@ -214,7 +214,7 @@ namespace Emberfall
         {
             float hp=session.Player==null?0:session.Player.Health,max=session.Player==null?1:session.Player.MaxHealth;
             blockedRects.Add(TouchRect(layout.PlayerStatus));
-            Bar(TouchRect(layout.PlayerHealth),hp/Mathf.Max(1,max),new Color(.86f,.16f,.19f));
+            Bar(TouchRect(layout.PlayerHealth),hp/Mathf.Max(1,max),new Color(.20f,.95f,.30f));
             Text(TouchRect(layout.PlayerHealth),Mathf.CeilToInt(hp)+" / "+Mathf.CeilToInt(max),TouchFont(MobileControls.IsIPad?11:9),pale,true,false,TextAnchor.MiddleCenter);
             DrawHudVital(TouchRect(layout.PlayerEnergy),session.Player==null?0:session.Player.Energy/Mathf.Max(1,session.Player.MaxEnergy),new Color(.35f,.63f,1),session.Player==null?"0 / 100":Mathf.FloorToInt(session.Player.Energy)+" / "+Mathf.RoundToInt(session.Player.MaxEnergy));
         }
@@ -343,9 +343,8 @@ namespace Emberfall
             int[] tabOrder={0,1,2};
             float sidebarWidth=120,bodyY=y+headerHeight+8;
             float bodyHeight=Mathf.Max(48,Mathf.Min(layout.Height,height/TouchRatio)-bodyY-72);
-            float footerY=Mathf.Min(layout.Height,height/TouchRatio)-60,exitButtonWidth=(panelWidth-136-12)*.5f;
+            float footerY=Mathf.Min(layout.Height,height/TouchRatio)-60,exitButtonWidth=panelWidth-136;
             if(PrimaryButton(TouchRect(x+136,footerY,exitButtonWidth,48),"保存并返回主菜单",jade))RequestExit(true);
-            if(PrimaryButton(TouchRect(x+148+exitButtonWidth,footerY,exitButtonWidth,48),"保存并退出",gold))RequestExit(false);
             Fill(TouchRect(x,bodyY,sidebarWidth,bodyHeight),new Color(.025f,.05f,.065f,.65f));
             for (int i=0;i<tabs.Length;i++)
                 if (PauseSidebarTab(TouchRect(x,bodyY+i*52,sidebarWidth,48),tabs[tabOrder[i]],mobilePausePage==tabOrder[i],TouchRatio) && mobilePausePage!=tabOrder[i])

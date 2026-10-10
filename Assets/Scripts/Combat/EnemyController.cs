@@ -84,6 +84,7 @@ namespace Emberfall
             MaxHealth = CombatBalance.EnemyHealth(level, challengeTier, boss, kind);
             if(game.InDungeon)MaxHealth*=boss?1.6f:kind==EnemyKind.Guardian?1.35f:1.15f;
             damage = CombatBalance.EnemyDamage(level, challengeTier, boss);
+            if(game.InDungeon){MaxHealth*=CombatBalance.DungeonHealthMultiplier(level);damage*=CombatBalance.DungeonDamageMultiplier(level);}
             if(game.ChapterActive)
             {MaxHealth*=ChapterDefinition.HealthMultiplier(game.ActiveChapterDifficulty)*ChapterProgression.TierHealthMultiplier(challengeTier)/CombatBalance.TierHealthMultiplier(challengeTier);damage*=ChapterDefinition.DamageMultiplier(game.ActiveChapterDifficulty)*ChapterProgression.TierDamageMultiplier(challengeTier)/CombatBalance.TierDamageMultiplier(challengeTier);}
             Health = MaxHealth;
@@ -149,7 +150,7 @@ namespace Emberfall
             healthBackgroundMaterial = new Material(Shader.Find("Unlit/Color"));
             healthBackgroundMaterial.color = new Color(.12f,.12f,.19f);
             healthFillMaterial = new Material(Shader.Find("Unlit/Color"));
-            healthFillMaterial.color = ThreatColor();
+            healthFillMaterial.color = new Color(.94f,.16f,.20f);
             Transform background = HealthQuad("Background",healthBackgroundMaterial);
             background.localScale = new Vector3(width+.06f,.14f,1);
             healthFill = HealthQuad("Health",healthFillMaterial);
@@ -316,7 +317,7 @@ namespace Emberfall
             // explicitly provokes retaliation; only elites and bosses acquire on sight.
             if (Tier != ThreatTier.Normal && (session.InDungeon || distance < (IsBoss?15f:9f))) aggro = true;
             if (!session.InDungeon && distance > 17f) aggro = false;
-            healthFillMaterial.color = ThreatColor();
+            healthFillMaterial.color = new Color(.94f,.16f,.20f);
             if (stunTime > 0 || Time.time < flinchUntil)
             {
                 AnimateModel(0,attackAnimation,hurtTime>0);

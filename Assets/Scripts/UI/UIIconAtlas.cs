@@ -172,7 +172,7 @@ namespace Emberfall
             if (name == "inventory") name = "bag";
             if (name == "camp") name = "home";
             if (name == "blink") name = "dodge";
-            string[] names = { "bag", "skills", "home", "portal", "attack", "dodge", "potion", "pause", "help", "confirm", "cancel", "jump", "codex", "coin", "shard", "compare", "save", "apply", "reset", "upgrade", "core", "lock", "settings", "shop", "smith", "gem" };
+            string[] names = { "bag", "skills", "home", "portal", "attack", "dodge", "potion", "pause", "help", "confirm", "cancel", "jump", "codex", "coin", "shard", "compare", "save", "apply", "reset", "upgrade", "core", "lock", "settings", "shop", "smith", "gem", "critical" };
             int id = System.Array.IndexOf(names, name);
             if (id < 0) id = 1;
             int key = 100 + id;
@@ -190,6 +190,14 @@ namespace Emberfall
             else if (id == 8) { ink.Arc(32, 23, 13, 190, 470, 5); ink.Line(32, 36, 32, 42, 5); ink.Disc(32, 52, 3); }
             else if (id == 9) { ink.Line(10, 32, 26, 48, 6); ink.Line(26, 48, 54, 16, 6); }
             else if (id == 10) { ink.Line(16, 16, 48, 48, 6); ink.Line(16, 48, 48, 16, 6); }
+            else if(id==26)
+           {
+               var points=new Vector2[24];
+               for(int i=0;i<24;i++){float angle=i*Mathf.PI/12;float radius=i%2==0?29:15;points[i]=V(32+Mathf.Cos(angle)*radius,32+Mathf.Sin(angle)*radius);}
+               ink.color=new Color(1f,.30f,.08f);ink.Polygon(points);
+               for(int i=0;i<24;i++){float angle=i*Mathf.PI/12;float radius=i%2==0?20:9;points[i]=V(32+Mathf.Cos(angle)*radius,32+Mathf.Sin(angle)*radius);}
+               ink.color=new Color(1f,.88f,.28f);ink.Polygon(points);
+           }
             else if(id==12){ink.color=new Color(.58f,.83f,1f);ink.Polygon(new[]{V(8,13),V(28,17),V(32,22),V(36,17),V(56,13),V(56,49),V(36,53),V(32,57),V(28,53),V(8,49)});ink.color=new Color(1f,.78f,.28f);ink.Line(32,22,32,54,4);ink.Line(14,24,24,27,3);ink.Line(40,27,50,24,3);}
             else if(id==13){ink.color=new Color(1f,.78f,.22f);ink.Disc(32,32,24);ink.color=new Color(.62f,.38f,.08f);ink.Ring(32,32,17,3);ink.Line(32,20,32,44,4);}
             else if(id==16){ink.Polygon(new[]{V(10,9),V(49,9),V(55,16),V(55,55),V(10,55)});ink.color=new Color(.1f,.2f,.25f);ink.Line(22,12,22,28,5);ink.Line(22,28,43,28,5);ink.Line(21,43,44,43,5);}

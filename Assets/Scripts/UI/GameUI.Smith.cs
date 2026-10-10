@@ -141,7 +141,8 @@ namespace Emberfall
                         var quote=p.PrepareSmithUpgrade(slot,SmithServiceActive);
                         int cost=p.UpgradeCost(item);bool capped=p.SlotUpgradeRank(slot)>=p.CurrentUpgradeLimit;
                         float actionWidth=Mathf.Min(148,cardWidth-32);
-                        Rect action=new Rect((cardWidth-16-actionWidth)*.5f*u,y*u,actionWidth*u,(MobileControls.Active?36:44)*u);
+                        float actionHeight=MobileControls.Active?36:44;
+                        Rect action=new Rect((cardWidth-16-actionWidth)*.5f*u,tile.height-(28+actionHeight)*u,actionWidth*u,actionHeight*u);
                         Color accent=capped||quote!=null?gold:muted;
                         Fill(action,new Color(accent.r,accent.g,accent.b,.13f));Border(action,new Color(accent.r,accent.g,accent.b,.55f));
                         if(!capped&&QuietAction(action,"",quote!=null))
@@ -154,7 +155,7 @@ namespace Emberfall
                             smithUpgradeNoticeSuccess=success;smithUpgradeNoticeUntil=Time.unscaledTime+5;
                             Feedback(success,smithUpgradeNotice.Replace("\n"," · "));
                         }
-                        if(HasSmithUpgradeNotice(item,p))Text(new Rect(8*u,action.yMax+4*u,(cardWidth-32)*u,40*u),smithUpgradeNotice,Mathf.RoundToInt(12*u),smithUpgradeNoticeSuccess?jade:new Color(1,.48f,.4f),true,true,TextAnchor.MiddleCenter);
+                        if(HasSmithUpgradeNotice(item,p))Text(new Rect(8*u,action.y-44*u,(cardWidth-32)*u,40*u),smithUpgradeNotice,Mathf.RoundToInt(12*u),smithUpgradeNoticeSuccess?jade:new Color(1,.48f,.4f),true,true,TextAnchor.MiddleCenter);
                         if(capped)DrawSmithMaxBadge(action,"已满级",u);
                         else DrawIcon(new Rect(action.x+10*u,action.y+11*u,22*u,22*u),UIIconAtlas.Utility("upgrade"),accent);
                         if(!capped)
@@ -233,7 +234,7 @@ namespace Emberfall
                 if(rowHeight>=128)
                 {
                     string attribute=BuildCatalog.IsAttributeGem(gem.mechanic)?BuildCatalog.GemAttributeSummary(gem.mechanic,gem.rarity,gem.upgradeRank):BuildCatalog.AttributeLabel(BuildCatalog.MechanicAttribute(gem.mechanic))+" +"+(BuildCatalog.MechanicAttributeValue(gem.mechanic,gem.upgradeRank)*100).ToString("0.#")+"%";
-                    Text(new Rect(6*u,(actionY+50)*u,(left-12)*u,20*u),attribute,Mathf.RoundToInt(10*u),jade,true,false,TextAnchor.MiddleCenter);
+                    DrawGemEffectText(new Rect(6*u,(actionY+50)*u,(left-12)*u,20*u),attribute,Mathf.RoundToInt(10*u),jade,true,TextAnchor.MiddleCenter);
                 }
                 for(int variant=0;variant<2;variant++)
                 {
@@ -330,7 +331,7 @@ namespace Emberfall
                 DrawIcon(gemIcon,UIIconAtlas.Utility("gem"),GameBalance.RarityColor(a.rarity));
                 if(a.mounted)DrawWornIconBadge(gemIcon,u,"已镶嵌");
                 Text(new Rect(tile.x+6*u,tile.y+65*u,tile.width-12*u,28*u),BuildCatalog.GemName(a.mechanic),Mathf.RoundToInt(13*u),pale,true,false,TextAnchor.MiddleCenter);
-                Text(new Rect(tile.x,tile.y+94*u,tile.width,30*u),BuildCatalog.IsAttributeGem(a.mechanic)?BuildCatalog.GemAttributeSummary(a.mechanic,a.rarity,a.upgradeRank):a.mounted?"已镶嵌":"阶数 "+a.upgradeRank,Mathf.RoundToInt(10*u),a.mounted?jade:muted,false,true,TextAnchor.MiddleCenter);
+                DrawGemEffectText(new Rect(tile.x+6*u,tile.y+94*u,tile.width-12*u,30*u),BuildCatalog.IsAttributeGem(a.mechanic)?BuildCatalog.GemAttributeSummary(a.mechanic,a.rarity,a.upgradeRank):a.mounted?"已镶嵌":"阶数 "+a.upgradeRank,Mathf.RoundToInt(10*u),a.mounted?jade:muted,false,TextAnchor.MiddleCenter);
                 string mountReason=p.AttachmentReplacementLock(a.mechanic,smithSocketPrevious,SmithServiceActive);
                 if(Button(new Rect(tile.x+8*u,tile.y+124*u,tile.width-16*u,36*u),a.mechanic==smithSocketPrevious?"卸下":a.mounted?"已镶嵌":smithSocketPrevious!=EquipmentMechanic.None?"替换":"镶嵌",jade,SmithServiceActive&&mountReason.Length==0,mountReason))
                 {if(a.mechanic==smithSocketPrevious?p.SetAttachmentMounted(a.mechanic,false,SmithServiceActive):p.ReplaceAttachment(a.mechanic,smithSocketPrevious,SmithServiceActive)){Feedback(true,"宝石已更新");smithSocketPicker=false;}else Feedback(false,p.LastError);}
@@ -444,7 +445,12 @@ namespace Emberfall
                     }
                 }
                 y+=mounted==null?76:170;
-                if(mounted!=null)GoalParagraph(ref y,width,u,BuildCatalog.IsAttributeGem(mounted.mechanic)?BuildCatalog.GemAttributeSummary(mounted.mechanic,mounted.rarity,mounted.upgradeRank):BuildCatalog.AttributeLabel(BuildCatalog.MechanicAttribute(mounted.mechanic))+" +"+(BuildCatalog.MechanicAttributeValue(mounted.mechanic,mounted.upgradeRank)*100).ToString("0.#")+"%",12,jade,true,draw);
+                if(mounted!=null)
+                {
+                    string effect=BuildCatalog.IsAttributeGem(mounted.mechanic)?BuildCatalog.GemAttributeSummary(mounted.mechanic,mounted.rarity,mounted.upgradeRank):BuildCatalog.AttributeLabel(BuildCatalog.MechanicAttribute(mounted.mechanic))+" +"+(BuildCatalog.MechanicAttributeValue(mounted.mechanic,mounted.upgradeRank)*100).ToString("0.#")+"%";
+                    if(MobileControls.Active){if(draw)DrawGemEffectText(new Rect(8*u,y*u,(width-16)*u,26*u),effect,Mathf.RoundToInt(12*u),jade,true,TextAnchor.MiddleLeft);y+=26;}
+                    else GoalParagraph(ref y,width,u,effect,12,jade,true,draw);
+                }
                 if(mounted!=null)
                 {
                     if(BuildCatalog.HasMechanicVariant(mounted.mechanic))

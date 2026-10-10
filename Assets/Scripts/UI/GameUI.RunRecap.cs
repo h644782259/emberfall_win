@@ -100,6 +100,7 @@ namespace Emberfall
                 if(i==1){detail.Name="经验";detail.Icon=UIIconAtlas.Utility("upgrade");detail.Description="经验\n数量  "+amounts[i];}
                 Fill(r,card);Border(r,detail.QualityColor);
                 DrawIcon(new Rect(r.x+5*u,r.y+3*u,r.width-10*u,r.height-17*u),detail.Icon,detail.QualityColor);
+                if(i==1)DrawExperienceBadge(r,u);
                 Text(new Rect(r.x+2*u,r.yMax-16*u,r.width-4*u,16*u),amounts[i].ToString(),Mathf.RoundToInt(11*u),pale,true,false,TextAnchor.MiddleRight);
                 InspectRewardItem(r,detail);
             }
@@ -215,7 +216,7 @@ namespace Emberfall
             DrawIcon(new Rect(header.x,header.y+2*unit,iconSize*unit,iconSize*unit),UIIconAtlas.Utility(snapshot!=null&&snapshot.Won?"confirm":"skills"),accent);
             string title=snapshot==null?"战斗复盘":snapshot.Won?(snapshot.ModeName.Length>0?"挑战完成":"遗迹通关"):"本次止步";
             Text(new Rect(header.x+(iconSize+12)*unit,header.y,header.width-(iconSize+126)*unit,32*unit),title,Mathf.RoundToInt((mobile?23:28)*unit),pale,true);
-            string location=snapshot==null?"":snapshot.InDungeon?(snapshot.ModeName.Length>0?snapshot.ModeName+"  ·  ":"")+(session.ChapterActive?(session.ActiveChapterDifficulty==ChapterDifficulty.Heroic?"第 "+snapshot.Tier+" 阶":ChapterEntryPresentation.DifficultyName(session.ActiveChapterDifficulty)):"Lv"+AdventureRewardRules.DungeonLevel(snapshot.Tier))+"  ·  "+snapshot.Wave+" / "+snapshot.TotalWaves+(snapshot.ModeName.Length>0?" 阶段":" 波"):"原野探索";
+            string location=snapshot==null?"":snapshot.InDungeon?(snapshot.ModeName.Length>0?snapshot.ModeName+"  ·  ":"")+(session.ChapterActive?("第 "+snapshot.Tier+" 阶"):"Lv"+AdventureRewardRules.DungeonLevel(snapshot.Tier))+"  ·  "+snapshot.Wave+" / "+snapshot.TotalWaves+(snapshot.ModeName.Length>0?" 阶段":" 波"):"原野探索";
             Text(new Rect(header.x+(iconSize+12)*unit,header.y+34*unit,header.width-(iconSize+20)*unit,22*unit),location,Mathf.RoundToInt(13*unit),muted);
             Rule(frame.x+16*unit,frame.y+(mobile?61:78)*unit,frame.width-32*unit,accent*.5f);
             Rect viewport=RecapRect(layout.Viewport,unit);
@@ -324,6 +325,7 @@ namespace Emberfall
                 int columns=RecapRewardColumns(layout);float step=compact?52:76,cell=(w-(columns-1)*8)/columns;Rect tile=new Rect((visible%columns)*(cell+8)*unit,(y+(visible/columns)*step)*unit,cell*unit,(compact?44:68)*unit);
                 Fill(tile,card);
                 DrawIcon(new Rect(tile.x+8*unit,tile.y+(compact?10:15)*unit,(compact?24:32)*unit,(compact?24:32)*unit),i==5?UIIconAtlas.Utility("gem"):i==4?UIIconAtlas.Utility("potion"):i==1?UIIconAtlas.Utility("upgrade"):UIIconAtlas.Reward(i==0?0:i-1),i==0?gold:i==1?jade:GameBalance.RarityColor(i==5?Rarity.Epic:i==4?Rarity.Common:Rarity.Rare));
+                if(i==1)DrawExperienceBadge(new Rect(tile.x+8*unit,tile.y+8*unit,(compact?24:32)*unit,(compact?24:32)*unit),compact?.65f*unit:unit);
                 Text(new Rect(tile.x+(compact?38:52)*unit,tile.y+(compact?2:7)*unit,tile.width-(compact?42:60)*unit,20*unit),labels[i],Mathf.RoundToInt((compact?11:13)*unit),muted);
                 Text(new Rect(tile.x+(compact?38:52)*unit,tile.y+(compact?20:29)*unit,tile.width-(compact?42:60)*unit,(compact?22:30)*unit),"+"+amounts[i].ToString("N0"),Mathf.RoundToInt((compact?15:21)*unit),pale,true);
             }

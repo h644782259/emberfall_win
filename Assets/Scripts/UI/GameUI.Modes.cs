@@ -125,7 +125,7 @@ namespace Emberfall
     {
      if(draw){Rect row=new Rect(0,y*u,available*u,30*u);Fill(row,new Color(.07f,.12f,.16f));string name=stat.Groups[1].Value;
       DrawIcon(new Rect(5*u,(y+5)*u,20*u,20*u),UIIconAtlas.Utility(name=="攻击"?"attack":name=="防御"?"defense":name=="生命"?"health":name=="数量"?"shard":"core"),jade);
-      Text(new Rect(30*u,y*u,Mathf.Min(76,available*.45f)*u,30*u),name,Mathf.RoundToInt(11*u),muted,false,false,TextAnchor.MiddleLeft);
+      DrawGemEffectText(new Rect(30*u,y*u,Mathf.Min(76,available*.45f)*u,30*u),name,Mathf.RoundToInt(11*u),muted,false,TextAnchor.MiddleLeft);
       Text(new Rect((30+Mathf.Min(76,available*.45f))*u,y*u,Mathf.Max(36,available-36-Mathf.Min(76,available*.45f))*u,30*u),stat.Groups[2].Value,Mathf.RoundToInt(12*u),pale,true,false,TextAnchor.MiddleRight);}
      y+=34;continue;
     }
@@ -352,7 +352,7 @@ namespace Emberfall
   private Rect AdventureRect(MobilePanelLayout.Area a,float u){return new Rect(a.X*u,a.Y*u,a.Width*u,a.Height*u);}
   private void DrawArenaSelection()
   {
-   float u=MobileControls.Active?TouchRatio:1f,inset=MobileControls.Active?0:24;var l=new AdventureSelectionLayout(width/u,height/u,inset);
+   float u=MobileControls.Active?TouchRatio:1f,inset=MobileControls.Active?12:24;var l=new AdventureSelectionLayout(width/u,height/u,inset);
    blockedRects.Add(new Rect(0,0,width,height));
    Box(AdventureRect(l.Frame,u),jade,false);
    Text(new Rect((l.X+inset)*u,(l.Y+inset)*u,(l.Frame.Width-2*inset-48)*u,36*u),"选择冒险",Mathf.RoundToInt(20*u),pale,true);
@@ -372,9 +372,8 @@ namespace Emberfall
    if(adventureChapterSelected)
    {
     DrawInlineChapterEntry(AdventureRect(l.Details,u),u);
-    float chapterControlsWidth=session.SelectedChapterDifficulty==ChapterDifficulty.Heroic?340:164;
-    DrawChapterEntryControls(new Rect((l.X+inset)*u,l.FooterY*u,chapterControlsWidth*u,48*u),u);
-    if(PrimaryButton(new Rect((l.X+inset+chapterControlsWidth+8)*u,l.FooterY*u,(l.Frame.Width-2*inset-chapterControlsWidth-8)*u,48*u),"进入 "+ChapterDefinition.Get(session.SelectedChapterNode).Name,gold,ChapterProgression.IsUnlocked(session.Progression.Profile,session.SelectedChapterNode)))ConfirmSelectedChapter();
+    DrawChapterEntryControls(new Rect(l.List.X*u,l.FooterY*u,l.List.Width*u,48*u),u);
+   if(PrimaryButton(new Rect(l.Details.X*u,l.FooterY*u,l.Details.Width*u,48*u),"进入 "+ChapterDefinition.Get(session.SelectedChapterNode).Name,gold,ChapterProgression.IsUnlocked(session.Progression.Profile,session.SelectedChapterNode)))ConfirmSelectedChapter();
     return;
    }
    int mode=session.SelectedArenaMode,tier=session.SelectedDungeonTier;float contentWidth=l.Details.Width-18;
@@ -386,13 +385,13 @@ namespace Emberfall
    DrawDungeonEntryArtwork(new Rect(8*u,44*u,(contentWidth-16)*u,imageHeight*u),mode+1);
    if(!adventureChapterSelected){entryRewardViewport=AdventureRect(l.Details,u);entryRewardContentOrigin=new Vector2(entryRewardViewport.x-adventureDetailScroll.x,entryRewardViewport.y+rewardY*u-adventureDetailScroll.y);GUI.BeginGroup(new Rect(0,rewardY*u,contentWidth*u,rewardHeight*u));DrawEntryRewardPreviews(contentWidth,u,mode,tier,false,true);GUI.EndGroup();}
    EndTouchScroll();
-   float x=l.X+inset,y=l.FooterY;
+   float x=l.List.X,y=l.FooterY,selectorButton=Mathf.Min(44,l.List.Width*.24f),selectorLabel=l.List.Width-selectorButton*2;
 
    bool normal=!adventureChapterSelected;
-   if(Button(new Rect((x)*u,y*u,44*u,48*u),"−",jade,normal&&tier>1))session.SelectedDungeonTier--;
-   Text(new Rect((x+44)*u,y*u,80*u,48*u),"Lv"+AdventureRewardRules.DungeonLevel(tier),Mathf.RoundToInt(13*u),gold,true,false,TextAnchor.MiddleCenter);
-   if(Button(new Rect((x+124)*u,y*u,44*u,48*u),"+",jade,normal&&tier<session.MaximumDungeonTier))session.SelectedDungeonTier++;
-   if(PrimaryButton(new Rect((x+176)*u,y*u,(l.Frame.Width-2*inset-176)*u,48*u),"进入挑战",gold))
+   if(Button(new Rect(x*u,y*u,selectorButton*u,48*u),"−",jade,normal&&tier>1))session.SelectedDungeonTier--;
+   Text(new Rect((x+selectorButton)*u,y*u,selectorLabel*u,48*u),"Lv"+AdventureRewardRules.DungeonLevel(tier),Mathf.RoundToInt(13*u),gold,true,false,TextAnchor.MiddleCenter);
+   if(Button(new Rect((x+selectorButton+selectorLabel)*u,y*u,selectorButton*u,48*u),"+",jade,normal&&tier<session.MaximumDungeonTier))session.SelectedDungeonTier++;
+   if(PrimaryButton(new Rect(l.Details.X*u,y*u,l.Details.Width*u,48*u),"进入挑战",gold))
    {session.ConfirmDungeonSelection();}
   }
   private void DrawMobileModeStatus(Rect r)

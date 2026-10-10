@@ -17,6 +17,13 @@ namespace Emberfall
             return QuietAction(hit, "", enabled);
         }
 
+        private void DrawGemEffectText(Rect rect,string caption,int font,Color color,bool bold,TextAnchor alignment)
+        {
+            if(MobileControls.Active)
+                while(font>1&&Style(font,bold,false).CalcSize(new GUIContent(caption)).x>rect.width)font--;
+            Text(rect,caption,font,color,bold,false,alignment);
+        }
+
         private bool NavigationButton(Rect rect, string caption, Color accent, bool enabled = true, string hint = null, bool primary = false)
         { return DrawButton(rect, caption, ButtonRole.Navigation, enabled, hint); }
 

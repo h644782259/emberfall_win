@@ -15,14 +15,14 @@ namespace Emberfall
             if(UITransitionBlocked||!session.OpenChapterSelectionAllowed)return false;
             chapterSelectionOwner=session.Progression.Profile;chapterEntryError=null;chapterScroll=Vector2.zero;chapterStoryExpanded=false;chapterRulesExpanded=false;
             if(!ChapterProgression.IsUnlocked(chapterSelectionOwner,session.SelectedChapterNode))session.SelectedChapterNode=ChapterNode.ForestCourt;
-            if(!ChapterProgression.CanEnter(chapterSelectionOwner,session.SelectedChapterNode,session.SelectedChapterDifficulty))session.SelectedChapterDifficulty=ChapterDifficulty.Normal;
+            if(!ChapterProgression.CanEnter(chapterSelectionOwner,session.SelectedChapterNode,session.SelectedChapterDifficulty))session.SelectedChapterDifficulty=ChapterDifficulty.Heroic;
             session.SelectedChapterTier=Mathf.Clamp(session.SelectedChapterTier,1,session.Progression.UnlockedChapterTier(session.SelectedChapterNode,session.SelectedChapterDifficulty));
             CancelHotbarPointer();CancelMobileScroll();panel=Panel.Chapter;session.SetUIBlocking(true);BlockUITransition();return true;
         }
         private bool SelectChapterNode(ChapterNode node)
         {
             if(!ChapterSelectionIsCurrent()||!ChapterProgression.IsUnlocked(chapterSelectionOwner,node))return false;
-            session.SelectedChapterNode=node;session.SelectedChapterDifficulty=ChapterDifficulty.Normal;session.SelectedChapterTactic=-1;
+            session.SelectedChapterNode=node;session.SelectedChapterDifficulty=ChapterDifficulty.Heroic;session.SelectedChapterTactic=-1;
             chapterScroll=Vector2.zero;chapterStoryExpanded=false;chapterRulesExpanded=false;chapterEntryError=null;CancelMobileScroll();return true;
         }
         private bool SelectChapterDifficulty(ChapterDifficulty difficulty)
@@ -61,7 +61,7 @@ namespace Emberfall
             if(next>=3||!ChapterProgression.IsUnlocked(session.Progression.Profile,(ChapterNode)next))return false;
             session.ReturnToCamp();
             if(!session.OpenChapterSelectionAllowed){BlockUITransition();return false;}
-            session.SelectedChapterNode=(ChapterNode)next;session.SelectedChapterDifficulty=ChapterDifficulty.Normal;
+            session.SelectedChapterNode=(ChapterNode)next;session.SelectedChapterDifficulty=ChapterDifficulty.Heroic;
             return OpenChapterSelection();
         }
         private void DrawChapterSelection()
@@ -76,11 +76,11 @@ namespace Emberfall
             for(int i=0;i<3;i++)
             {
                 var choice=(ChapterNode)i;bool unlocked=ChapterProgression.IsUnlocked(profile,choice);
-                int highest=ChapterProgression.HighestCompletedDifficulty(profile,choice);
+                int highest=ChapterProgression.CompletedTier(profile,choice,ChapterDifficulty.Heroic);
                 Rect card=ChapterRect(new MobilePanelLayout.Area(layout.Body.X+i*(cardWidth+8),layout.Body.Y,cardWidth,48),u);
                 if(ChapterChoice(card,ChapterDefinition.Get(choice).Name,choice==node,unlocked,u)){SelectChapterNode(choice);return;}
                 DrawChapterSymbol(new Rect(card.x+8*u,card.yMax+8*u,12*u,12*u),choice,unlocked?jade:muted);
-                string status=!unlocked?ChapterEntryPresentation.UnlockHint(choice):highest<0?"尚未通关 · 从普通开始":"已通关 · "+ChapterEntryPresentation.DifficultyName((ChapterDifficulty)highest);
+                string status=!unlocked?ChapterEntryPresentation.UnlockHint(choice):highest<=0?"尚未通关":"最高通关 · 第 "+highest+" 阶";
                 Text(new Rect(card.x+26*u,card.yMax+4*u,card.width-30*u,32*u),status,Mathf.RoundToInt(11*u),muted,false,true);
             }
             Rect body=ChapterRect(new MobilePanelLayout.Area(layout.Body.X,layout.Body.Y+88,layout.Body.Width,layout.Body.Height-144),u);
@@ -132,20 +132,13 @@ namespace Emberfall
         }
         private void DrawChapterEntryControls(Rect area,float u)
         {
-            var node=session.SelectedChapterNode;var difficulty=session.SelectedChapterDifficulty;
-            for(int d=0;d<3;d++)
-            {
-                var choice=(ChapterDifficulty)d;bool selected=choice==difficulty;
-                Rect tab=new Rect(area.x+d*56*u,area.y,52*u,area.height);
-                if(DrawButton(tab,ChapterEntryPresentation.DifficultyName(choice),selected?ButtonRole.SelectedTab:ButtonRole.Tab,ChapterProgression.CanEnter(session.Progression.Profile,node,choice),null,Mathf.RoundToInt(13*u)))SelectChapterDifficulty(choice);
-                if(selected){Border(tab,gold,2*u);Fill(new Rect(tab.x+6*u,tab.yMax-5*u,tab.width-12*u,3*u),gold);}
-            }
-            if(session.SelectedChapterDifficulty!=ChapterDifficulty.Heroic)return;
-            int tier=session.SelectedChapterTier,maximum=session.Progression.UnlockedChapterTier(node,session.SelectedChapterDifficulty);
-            float x=area.x+172*u;
-            if(Button(new Rect(x,area.y,44*u,area.height),"−",jade,tier>1))ChangeChapterTier(-1);
-            Text(new Rect(x+44*u,area.y,80*u,area.height),"第 "+tier+" 阶",Mathf.RoundToInt(13*u),gold,true,false,TextAnchor.MiddleCenter);
-            if(Button(new Rect(x+124*u,area.y,44*u,area.height),"+",jade,tier<maximum))ChangeChapterTier(1);
+            var node=session.SelectedChapterNode;
+            int tier=session.SelectedChapterTier,maximum=session.Progression.UnlockedChapterTier(node,ChapterDifficulty.Heroic);
+            float button=Mathf.Min(44*u,area.width*.24f),label=Mathf.Max(0,area.width-button*2);
+            float x=area.x;
+            if(Button(new Rect(x,area.y,button,area.height),"−",jade,tier>1))ChangeChapterTier(-1);
+            Text(new Rect(x+button,area.y,label,area.height),"第 "+tier+" 阶",Mathf.RoundToInt(13*u),gold,true,false,TextAnchor.MiddleCenter);
+            if(Button(new Rect(x+button+label,area.y,button,area.height),"+",jade,tier<maximum))ChangeChapterTier(1);
         }
         private void DrawInlineChapterEntry(Rect area,float u)
         {
@@ -153,7 +146,7 @@ namespace Emberfall
             {
                 chapterSelectionOwner=session.Progression.Profile;chapterEntryError=null;chapterScroll=Vector2.zero;
                 if(!ChapterProgression.IsUnlocked(chapterSelectionOwner,session.SelectedChapterNode))session.SelectedChapterNode=ChapterNode.ForestCourt;
-                if(!ChapterProgression.CanEnter(chapterSelectionOwner,session.SelectedChapterNode,session.SelectedChapterDifficulty))session.SelectedChapterDifficulty=ChapterDifficulty.Normal;
+                if(!ChapterProgression.CanEnter(chapterSelectionOwner,session.SelectedChapterNode,session.SelectedChapterDifficulty))session.SelectedChapterDifficulty=ChapterDifficulty.Heroic;
                 session.SelectedChapterTier=Mathf.Clamp(session.SelectedChapterTier,1,session.Progression.UnlockedChapterTier(session.SelectedChapterNode,session.SelectedChapterDifficulty));
             }
             float cell=(area.width-16*u)/3;

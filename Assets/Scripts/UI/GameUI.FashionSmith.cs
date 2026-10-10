@@ -50,8 +50,11 @@ namespace Emberfall
             {
                 var fashion=p.Profile.fashions[i];Rect tile=new Rect(i%columns*(cw+12)*u,i/columns*rowHeight*u,cw*u,(rowHeight-12)*u);
                 Fill(tile,card);Border(tile,GameBalance.RarityColor(fashion.rarity));
-                DrawIcon(new Rect(tile.x+10*u,tile.y+10*u,48*u,48*u),UIIconAtlas.FashionCardIcon(fashion.slot,(int)fashion.VisualRarity,p.Profile.heroClass),GameBalance.RarityColor(fashion.rarity));
-                Text(new Rect(tile.x+66*u,tile.y+8*u,tile.width-74*u,44*u),fashion.name+"\n"+fashion.upgradeRank+"阶 / "+ProgressionService.MaximumFashionRank+"阶",Mathf.RoundToInt(12*u),pale,true,true);
+                Rect fashionIcon=new Rect(tile.x+10*u,tile.y+10*u,48*u,48*u);
+                DrawIcon(fashionIcon,UIIconAtlas.FashionCardIcon(fashion.slot,(int)fashion.VisualRarity,p.Profile.heroClass),GameBalance.RarityColor(fashion.rarity));
+                var equippedFashion=p.EquippedFashion(fashion.slot);bool worn=equippedFashion!=null&&equippedFashion.id==fashion.id;
+                if(worn)DrawWornIconBadge(fashionIcon,u,"已穿戴");
+                Text(new Rect(tile.x+66*u,tile.y+8*u,tile.width-74*u,44*u),fashion.name+"\n"+fashion.upgradeRank+"阶 / "+ProgressionService.MaximumFashionRank+"阶"+(worn?" · 当前穿戴":""),Mathf.RoundToInt(12*u),pale,true,true);
                 DrawFashionStatRows(new Rect(tile.x+10*u,tile.y+62*u,tile.width-20*u,132*u),fashion,null,u);
                 var upgrade=p.PrepareFashionService(fashion.id,false,SmithServiceActive);
                 var dismantle=p.PrepareFashionService(fashion.id,true,SmithServiceActive);
@@ -92,7 +95,7 @@ namespace Emberfall
                     model.SetViewport(visual.width*Mathf.Abs(GUI.matrix.m00),visual.height*Mathf.Abs(GUI.matrix.m11),MobileControls.Active);
                     var texture=model.RenderSafe(p.Profile.heroClass,p.Equipped(ItemSlot.Weapon),p.Equipped(ItemSlot.Armor),p.Equipped(ItemSlot.Relic),value.slot==FashionSlot.Wings?value:p.EquippedFashion(FashionSlot.Wings),value.slot==FashionSlot.Weapon?value:p.EquippedFashion(FashionSlot.Weapon));
                     if(texture!=null)GUI.DrawTexture(visual,texture,ScaleMode.ScaleToFit,false);
-                    Text(new Rect(visual.x,box.y+40*u,cw,22*u),(col==0?"当前":"升阶后")+" · "+value.upgradeRank+"阶",Mathf.RoundToInt(12*u),col==0?muted:jade,true);
+                    Text(new Rect(visual.x,box.y+40*u,cw,22*u),(col==0?(p.EquippedFashion(fashion.slot)?.id==fashion.id?"当前穿戴":"升阶前"):"升阶后")+" · "+value.upgradeRank+"阶",Mathf.RoundToInt(12*u),col==0?muted:jade,true);
                     DrawFashionStatRows(new Rect(visual.x,visual.yMax+8*u,cw,box.yMax-64*u-visual.yMax-8*u),value,col==0?null:fashion,u);
                 }
             }

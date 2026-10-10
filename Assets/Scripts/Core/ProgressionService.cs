@@ -2041,7 +2041,7 @@ namespace Emberfall
             candidate.gold=(int)Math.Min(MaximumGold,(long)candidate.gold+g);candidate.potions=Math.Min(99,candidate.potions+p);
             return CommitCandidate(candidate);
         }
-        public int UnlockedChapterTier(ChapterNode node,ChapterDifficulty difficulty=ChapterDifficulty.Normal){return ChapterProgression.CanEnter(Profile,node,difficulty)?ChapterProgression.AvailableTier(Profile,node,difficulty):0;}
+        public int UnlockedChapterTier(ChapterNode node,ChapterDifficulty difficulty=ChapterDifficulty.Heroic){return ChapterProgression.CanEnter(Profile,node,difficulty)?ChapterProgression.AvailableTier(Profile,node,difficulty):0;}
         public int UnlockedAdventureTier(int mode) { int i=Clamp(mode+1,0,4); return Math.Min(100,1+(Profile.adventureBestTiers!=null && Profile.adventureBestTiers.Length==5?Profile.adventureBestTiers[i]:0)); }
         public int HighestUnlockedAdventureTier {get{return Math.Min(AdventureRewardRules.MaximumDungeonIndex(Profile.level),HighestAdventureTier+1);}}
         public bool RecordTutorialEvidence(int bit)

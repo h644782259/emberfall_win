@@ -814,11 +814,12 @@ namespace Emberfall
             var p=session.Progression.Profile;float u=MobileControls.Active?TouchRatio:1;
             bool capped=p.level>=ProgressionService.MaximumLevel;
             // GUI coordinates start at the safe-area top; the XP rail ends at the physical screen bottom.
-            float railHeight=12*u,railY=(Screen.height-guiOffset.y)/scale-railHeight;
+            float railHeight=18*u,railY=(Screen.height-guiOffset.y)/scale-railHeight;
             Rect rail=new Rect(-guiOffset.x/scale,railY,Screen.width/scale,railHeight);
             Bar(rail,capped?1:p.xp/(float)GameBalance.XpToNext(p.level),gold);
-            var labelStyle=new GUIStyle(Style(Mathf.RoundToInt(9*u),true,false,TextAnchor.MiddleLeft));
+            var labelStyle=new GUIStyle(Style(Mathf.RoundToInt(11*u),true,false,TextAnchor.MiddleLeft));
             labelStyle.padding=new RectOffset(0,0,0,0);labelStyle.normal.textColor=Color.white;
+            Fill(new Rect(0,railY,width,railHeight),new Color(.012f,.025f,.04f,.62f));
             GUI.Label(new Rect(8*u,railY,width-16*u,railHeight),"Lv."+p.level+"   "+(capped?"满级":p.xp+" / "+GameBalance.XpToNext(p.level)),labelStyle);
 
         }
@@ -837,7 +838,7 @@ namespace Emberfall
             DrawPrice(new Rect(169,26,74,20),p.gold,false,1);
             float hp = session.Player == null ? 0 : session.Player.Health;
             float maxHp = session.Player == null ? 1 : session.Player.MaxHealth;
-            DrawHudVital(new Rect(28,48,216,23),hp/Mathf.Max(1,maxHp),new Color(.86f,.16f,.19f),Mathf.CeilToInt(hp)+" / "+Mathf.CeilToInt(maxHp));
+            DrawHudVital(new Rect(28,48,216,23),hp/Mathf.Max(1,maxHp),new Color(.20f,.95f,.30f),Mathf.CeilToInt(hp)+" / "+Mathf.CeilToInt(maxHp));
             float energy=session.Player==null?0:session.Player.Energy;
             float maxEnergy=session.Player==null?100:session.Player.MaxEnergy;
             DrawHudVital(new Rect(28,75,216,21),energy/Mathf.Max(1,maxEnergy),new Color(.28f,.57f,.91f),Mathf.FloorToInt(energy)+" / "+Mathf.RoundToInt(maxEnergy));
@@ -1046,14 +1047,13 @@ namespace Emberfall
                 {
                     // The slot owns its only frame; the glyph uses the whole interior.
                     Rect identity=new Rect(slot.x+1,slot.y+1,slot.width-2,slot.height-2);
-                    DrawIcon(identity,potion?HotbarIcon(p,skill):UIIconAtlas.Skill(p.heroClass,skill,48),
-                        !ready?new Color(.5f,.55f,.6f,.85f):Color.white);
+                    Color tint=!ready?new Color(.5f,.55f,.6f,.85f):Color.white;
+                    if(potion)DrawIcon(identity,HotbarIcon(p,skill),tint);
+                    else DrawRecoveringSkill(identity,UIIconAtlas.Skill(p.heroClass,skill,48),tint,skill,ready);
                 }
                 else Text(new Rect(slot.x, slot.y + 9, slot.width, 32), "+", 20, new Color(.34f, .44f, .53f), false, false, TextAnchor.MiddleCenter);
                 if (cooldown > .01f)
                 {
-                    float cover = slot.height * Mathf.Clamp01(cooldown / GameBalance.EffectiveCooldown(p.heroClass, skill, rank));
-                    Fill(new Rect(slot.x + 1, slot.yMax - cover, slot.width - 2, cover), new Color(0, .025f, .04f, .76f));
                     Text(new Rect(slot.x, slot.y + 12, slot.width, 29), cooldown.ToString(cooldown >= 10 ? "0" : "0.0"), 15, pale, true, false, TextAnchor.MiddleCenter);
                 }
                 DrawSkillStock(slot,skill,mobile?TouchRatio:1f);
@@ -1896,6 +1896,7 @@ namespace Emberfall
 
         private void Feedback(bool success, string message)
         {
+            if(success&&(message=="装备已穿戴"||message=="外观已穿戴"||message=="时装已穿戴"||message=="已穿戴"))GameAudio.Play(SoundCue.Loot);
             string issue = session.Progression.LastError;
             session.Notify(success ? message + (string.IsNullOrEmpty(issue) ? "" : " · " + issue) : (string.IsNullOrEmpty(issue) ? "当前无法执行此操作" : issue));
         }

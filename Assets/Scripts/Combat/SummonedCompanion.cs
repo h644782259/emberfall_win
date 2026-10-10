@@ -511,7 +511,7 @@ namespace Emberfall
             obj.transform.SetParent(transform, false);
             obj.transform.localPosition = Vector3.up * (Form == Kind.Treant ? 3.3f : 1.7f);
             healthBar = obj.transform;
-            healthMaterial = new Material(Shader.Find("Unlit/Color")) { color = new Color(.32f, 1f, .75f) };
+            healthMaterial = new Material(Shader.Find("Unlit/Color")) { color = new Color(.20f, .95f, .30f) };
             obj.GetComponent<Renderer>().sharedMaterial = healthMaterial;
         }
 

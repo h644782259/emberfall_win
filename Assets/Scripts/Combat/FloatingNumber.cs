@@ -65,7 +65,7 @@ namespace Emberfall
             string shown=value??"";
             // Combat captions are short; detailed explanations stay in the HUD/log.
             if(shown.Length>24)shown=shown.Substring(0,23)+"…";
-            return critical?shown.TrimEnd('!','！')+"  暴击":shown;
+            return critical?shown.TrimEnd('!','！'):shown;
         }
         private static void FontReady(string value,bool critical)
         {
@@ -82,7 +82,7 @@ namespace Emberfall
                 {min=Mathf.Min(min,advance+info.minX);max=Mathf.Max(max,advance+info.maxX);bottom=Mathf.Min(bottom,info.minY);top=Mathf.Max(top,info.maxY);advance+=info.advance;}
                 else {advance+=64;max=advance;bottom=Mathf.Min(bottom,0);top=Mathf.Max(top,64);}
             }
-            return Mathf.Max(1,max-min)/Mathf.Max(1,top-bottom);
+            return Mathf.Max(1,max-min)/Mathf.Max(1,top-bottom)+(critical?2:0);
         }
         private static Vector2 ScaledSize(float aspect,bool critical)
         {
@@ -154,7 +154,7 @@ namespace Emberfall
             if(replacement!=null)replacement.Retire();
             critical=isCritical;mechanism=isMechanism;originAtSpawn=transform.position;lane=selectedLane;display=value;bounds=box;metrics=measured;
             ActiveCount++;if(mechanism)MechanismCount++;counted=true;visible.Add(this);WatchFont();
-            color=critical?new Color(1f,.68f,.12f):tint;
+            color=critical?new Color(1f,.15f,.18f):tint;
             for(int i=0;i<outline.Length;i++)
             {
                 var edge=new GameObject("Combat text outline");edge.transform.SetParent(transform,false);
@@ -172,10 +172,22 @@ namespace Emberfall
             if(sharedFont!=null){mesh.font=sharedFont;obj.GetComponent<MeshRenderer>().sharedMaterial=sharedFont.material;}
             return mesh;
         }
+        private void OnGUI()
+        {
+            if(!critical||!counted||Event.current.type!=EventType.Repaint)return;
+            float size=bounds.Height*.65f,y=Screen.height-bounds.Y-bounds.Height*.5f-size*.5f;
+            Matrix4x4 priorMatrix=GUI.matrix;Color priorColor=GUI.color;int priorDepth=GUI.depth;
+            GUI.matrix=Matrix4x4.identity;GUI.depth=1;
+            GUI.color=new Color(1,1,1,Mathf.Clamp01((Duration-life)/.45f));
+            Texture2D icon=UIIconAtlas.Utility("critical");
+            GUI.DrawTexture(new Rect(bounds.X,y,size,size),icon);
+            GUI.DrawTexture(new Rect(bounds.X+bounds.Width-size,y,size,size),icon);
+            GUI.matrix=priorMatrix;GUI.color=priorColor;GUI.depth=priorDepth;
+        }
         private void Update()
         {
             life+=Time.deltaTime;float alpha=Mathf.Clamp01((Duration-life)/(display!=null&&display.StartsWith("等级提升")?1f:mechanism?.35f:.45f));
-            Color face=critical?Color.Lerp(new Color(1f,.96f,.65f),color,Mathf.Clamp01(life/.22f)):color;
+            Color face=color;
             if(textMesh!=null)textMesh.color=new Color(face.r,face.g,face.b,alpha);
             foreach(TextMesh edge in outline)if(edge!=null)edge.color=critical?new Color(.24f,.055f,.008f,alpha*.98f):new Color(.045f,.025f,.035f,alpha*.98f);
             if(life>Duration)Retire();
@@ -195,7 +207,7 @@ namespace Emberfall
                 if(number.textRenderer!=null)
                 {
                     Vector3 actual=number.textRenderer.localBounds.size;
-                    if(actual.y>.001f)aspect=Mathf.Max(aspect,actual.x/actual.y);
+                    if(actual.y>.001f)aspect=Mathf.Max(aspect,actual.x/actual.y+(number.critical?2:0));
                 }
                 Vector2 size=ScaledSize(aspect,number.critical)*(number.mechanism?1f:number.DamageFloatScale);
                 int slot;CombatTextLayout.Box box;

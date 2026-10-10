@@ -778,6 +778,6 @@ namespace Emberfall
         public static Color RarityColor(Rarity rarity) {
             return new[] { new Color(.76f,.8f,.84f), new Color(.35f,.65f,1f), new Color(.77f,.43f,1f), new Color(1f,.72f,.26f) }[(int)rarity];
         }
-        public static int XpToNext(int level) { return 60 + (level - 1) * 30; }
+        public static int XpToNext(int level) { return 120 + (Math.Max(1,Math.Min(100,level)) - 1) * 60; }
     }
 }
