@@ -566,10 +566,13 @@ namespace Emberfall
         // Called once for a mobile skill tap before the existing cast/charge path.
         // Selection only changes aim; it never spends energy or starts a cooldown.
         private readonly List<MobileSkillPolicy.Candidate> mobileAimCandidates=new List<MobileSkillPolicy.Candidate>();
+        internal bool IsMobileSelfCenteredSkill(int skill)
+        {return MobileControls.Active&&HeroClass==HeroClass.Arcanist&&skill==9;}
         internal void PrepareMobileSkillAim(int skill)
         {EnemyController enemy;Vector3 point;ResolveMobileSkillAim(skill,out enemy,out point);AimTarget=enemy;aimPoint=point;}
         internal void ResolveMobileSkillAim(int skill,out EnemyController enemy,out Vector3 point,bool observeOnly=false)
         {
+            if(IsMobileSelfCenteredSkill(skill)){enemy=null;point=transform.position;return;}
             var preview=SkillTargetingController.Describe(HeroClass,skill,session.Progression.Profile.skillRanks[skill]);
             if(preview.shape==SkillTargetingController.Shape.Self){enemy=null;point=transform.position;return;}
             if(HeroClass==HeroClass.Summoner&&(skill==2||skill==4||skill==9))
@@ -1090,7 +1093,7 @@ namespace Emberfall
                 if(rank==3) skillRuntime.RestoreEnergy(SkillDamageBudgets.BasicEnergyOnHit);
             }
             if(HeroClass==HeroClass.Vanguard)AdvancedSkillVfx.Protection(this,transform.position,radius,tint,passiveTime,rank,()=>passiveTime>0,passive:true);
-            else FilledSkillVfx.Impact(this,transform.position,radius,HeroClass==HeroClass.Arcanist?FilledVfxKind.Lightning:FilledVfxKind.Summon,tint,CombatVisualPriority.RealContact);
+            else FilledSkillVfx.Impact(this,transform.position,radius,HeroClass==HeroClass.Arcanist?FilledVfxKind.Lightning:FilledVfxKind.Summon,tint,CombatVisualPriority.RealContact,elementalist:HeroClass==HeroClass.Arcanist);
             session.SpawnMechanismText(transform.position+Vector3.up*2.7f,GameBalance.SkillName(HeroClass,8),tint);
         }
 
@@ -1303,7 +1306,7 @@ namespace Emberfall
             if(SkillTargetingController.RequiresConfirmation(HeroClass,skill) || !CanBeginSkillTargeting(skill) || !MobilePinnedActionAllowed(skill,true)) return false;
             // Mouse aim is resolved independently of movement. Re-read a selected
             // living target's position here so immediate directional casts face it.
-            FaceAim();
+            if(!IsMobileSelfCenteredSkill(skill))FaceAim();
             if (SkillChargeController.Duration(HeroClass, skill) > 0) return charge.Begin(skill);
             int before=nextCastId;CastSkill(skill);
             return nextCastId!=before;
@@ -1314,14 +1317,14 @@ namespace Emberfall
             if (CombatReviewEvents.Enabled) CombatReviewEvents.Emit("skillattempt",CombatReviewObjectId.Get(this),skill:skill);
             if(!SkillTargetingController.RequiresConfirmation(HeroClass,skill) || !CanBeginSkillTargeting(skill) || !MobilePinnedActionAllowed(skill,true)) return false;
             EnemyController selected=AimTarget;
-            aimPoint=CombatSight.GroundPoint(transform.position,worldPoint);
+            aimPoint=IsMobileSelfCenteredSkill(skill)?transform.position:CombatSight.GroundPoint(transform.position,worldPoint);
             // Ground spell placement normally owns a point. A selected summon
             // contract also owns that enemy until charge snapshots it; clearing
             // here would lose mobile autoaim before Begin can capture identity.
             AimTarget=HeroClass==HeroClass.Summoner&&skill==9&&ValidAimTarget(selected)&&
                 CombatSight.Direct(transform.position,selected.transform.position)&&
                 CombatFx.Flat(selected.transform.position-aimPoint).sqrMagnitude<=1f?selected:null;
-            FaceAim();
+            if(!IsMobileSelfCenteredSkill(skill))FaceAim();
             if (SkillChargeController.Duration(HeroClass, skill) > 0) return charge.Begin(skill);
             int before=nextCastId;CastSkill(skill);
             return nextCastId!=before;
@@ -1331,8 +1334,8 @@ namespace Emberfall
         {
             if (charge == null || !CanBeginSkillTargeting(skill)) return false;
             AimTarget = null;
-            aimPoint = charge.TargetPoint;
-            transform.rotation = Quaternion.LookRotation(charge.Direction);
+            aimPoint = IsMobileSelfCenteredSkill(skill)?transform.position:charge.TargetPoint;
+            if(!IsMobileSelfCenteredSkill(skill))transform.rotation = Quaternion.LookRotation(charge.Direction);
             executingChargedSkill = true;int before=nextCastId;
             try { CastSkill(skill); }
             finally { executingChargedSkill = false; }
@@ -1403,7 +1406,8 @@ namespace Emberfall
             float power = 1f + (rank-1)*.3f;
             float range = GameBalance.SkillRangeMultiplier(rank);
             Color color = GameBalance.ClassColor(HeroClass);
-            Vector3 target = ResolveSkillGroundTarget(executingChargedSkill ? charge.TargetPoint : aimPoint,range,executingChargedSkill);
+            // Mobile elementalist ultimate originates at the player on release, even after moving during charge.
+            Vector3 target = IsMobileSelfCenteredSkill(slot)?transform.position:ResolveSkillGroundTarget(executingChargedSkill ? charge.TargetPoint : aimPoint,range,executingChargedSkill);
             ApplyRelicProc(relicGems.SkillCast(slot),target);
             if(IsDead||session.CombatEnded)return;
             if (HeroClass == HeroClass.Summoner)
@@ -1436,7 +1440,7 @@ namespace Emberfall
                     guardTime=6f+(rank-1)*2f;guardRank=rank;guardCastId=castId;HoldCastReceipt(ref guardCastReceipt,castId);
                     guardReduction=0;guardRadius=2.8f*range;guardPulseTimer=0;burnStrideTime=guardTime;
                     if(Specialization==ElementalistSpecialization.Burn)FlameRide.Spawn(this,session,guardTime,CombatAttack,castId);
-                    else FilledSkillVfx.Impact(this,transform.position,guardRadius,FilledVfxKind.Ice,color);
+                    else FilledSkillVfx.Impact(this,transform.position,guardRadius,FilledVfxKind.Ice,color,elementalist:true);
 
                 }
                 else if(slot==6&&HeroClass==HeroClass.Arcanist)

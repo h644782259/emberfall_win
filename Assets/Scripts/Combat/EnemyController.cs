@@ -586,6 +586,7 @@ namespace Emberfall
                 // Own the whole swept attack, including its final damage frame.
                 // The short contact/recovery animation is not the charge lifetime.
                 activeChargePose = chargeTime > .001f;
+                if(activeChargePose)SkillImpactDetail.ChargeRelease(this,chargeTime);
                 if (chargeTime <= .001f) { dodgePending = false; FinishAttack(); }
                 return;
             }

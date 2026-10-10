@@ -6,7 +6,7 @@ namespace Emberfall
     /// <summary>Resolution-independent runtime interface; no scene or package dependencies.</summary>
     public sealed partial class GameUI : MonoBehaviour
     {
-        private enum Panel { None, DungeonExit, Inventory, Skills, Bindings, SaveLocation, Controls, SaveSelection, PotionAssignment, Fashion, Chests, Camp, Summary, TravelMap, Notice, Chapter, HubDialogue }
+        private enum Panel { None, DungeonExit, Inventory, Skills, Bindings, SaveLocation, Controls, SaveSelection, PotionAssignment, Fashion, Chests, HubUtility, Summary, TravelMap, Notice, Chapter, HubDialogue }
         private GameSession session;
         private Panel panel;
         private HeroClass selectedClass;
@@ -59,11 +59,11 @@ namespace Emberfall
         private Rect tooltipAnchor;
         private string tooltipAnchorText;
         private string tooltipKey;
-        private readonly Color ink = new Color(.035f, .065f, .10f, .97f);
-        private readonly Color card = new Color(.06f, .105f, .15f, .96f);
+        private readonly Color ink = new Color(.006f, .010f, .019f, 1f);
+        private readonly Color card = new Color(.016f, .027f, .045f, .99f);
         private readonly Color jade = new Color(.32f, .91f, .77f);
         private readonly Color gold = new Color(1f, .76f, .37f);
-        private readonly Color muted = new Color(.76f, .82f, .89f);
+        private readonly Color muted = new Color(.48f, .58f, .69f);
         private readonly Color pale = new Color(.97f, .985f, 1f);
 
         public bool IsPointerOverUI
@@ -249,6 +249,7 @@ namespace Emberfall
         }
         private void OnDestroy()
         {
+            ReleaseInterfaceSurfaces();
             ReleaseFashionSmithPreview();
             ReleaseLootNotices();
             if(session!=null&&session.Progression!=null)session.Progression.Changed-=InvalidateAttention;
@@ -269,6 +270,9 @@ namespace Emberfall
         {
             if (session == null || session.Progression == null || session.BackgroundPaused) return;
             RefreshLayout();
+#if UNITY_EDITOR
+            if(MobileControls.ValidationUsesSimulation)MobileControls.ValidationRenderedViewport=new Vector2(Screen.width,Screen.height);
+#endif
             if (!session.HasStarted) DrawTitleBackdrop();
             if (font == null) font = GameFont.Shared;
             if (invisibleButton == null) BuildStyles();
@@ -332,7 +336,7 @@ namespace Emberfall
                 else if (panel == Panel.Controls) DrawControls();
                 else if (panel == Panel.PotionAssignment) DrawPotionAssignment();
                 else if (panel == Panel.Fashion) DrawFashion();
-                else if (panel == Panel.Camp) DrawCampWorkshop();
+                else if (panel == Panel.HubUtility) DrawHubUtility();
                 else if (panel == Panel.Summary) DrawRunSummary();
                 else if (panel == Panel.TravelMap) DrawTravelMap();
                 else if (panel == Panel.Notice) DrawMobileNotice();
@@ -382,9 +386,12 @@ namespace Emberfall
             return texture;
         }
 
+        private float interfaceStyleScale=-1;
         private GUIStyle Style(int size, bool bold = false, bool wrap = false, TextAnchor align = TextAnchor.UpperLeft)
         {
-            if(!MobileControls.Active)size=Mathf.Max(8,Mathf.RoundToInt(size*EffectPreferences.CombatTextScale/1.25f));
+            float scale=EffectPreferences.InterfaceTextScale;
+            if(interfaceStyleScale!=scale){styles.Clear();interfaceStyleScale=scale;}
+            size=Mathf.Max(1,Mathf.RoundToInt(size*scale));
             int key = size + (bold ? 100 : 0) + (wrap ? 200 : 0) + (int)align * 1000;
             GUIStyle result;
             if (styles.TryGetValue(key, out result)) return result;
@@ -398,15 +405,6 @@ namespace Emberfall
         {
             Color previous = GUI.contentColor;
             GUIStyle style = Style(size, bold, wrap, align);
-            if(!wrap&&!MobileControls.Active)
-            {
-                int fitted=Mathf.Min(style.fontSize,Mathf.FloorToInt(rect.height/1.15f));
-                if(fitted<style.fontSize&&fitted>=8)
-                {
-                    int raw=Mathf.RoundToInt(fitted*1.25f/EffectPreferences.CombatTextScale);
-                    style=Style(raw,bold,false,align);
-                }
-            }
             Color previousTextColor = style.normal.textColor;
             // Keep the global tint neutral; the style owns the intended text color.
             GUI.contentColor = Color.white;
@@ -470,9 +468,12 @@ namespace Emberfall
 
         private void Box(Rect rect, Color accent, bool shadow = true)
         {
-            if (shadow) Fill(new Rect(rect.x + 5, rect.y + 6, rect.width, rect.height), new Color(0, 0, 0, .20f));
-            Fill(rect, ink);
-            Border(rect, new Color(accent.r, accent.g, accent.b, .28f));
+            if (shadow) Surface(new Rect(rect.x + 4, rect.y + 6, rect.width, rect.height), new Color(0, 0, 0, .38f));
+            Surface(rect, ink);
+            SurfaceFrame(rect, new Color(accent.r, accent.g, accent.b, .28f));
+            float cap=Mathf.Min(28,rect.width*.12f);
+            Fill(new Rect(rect.x+10,rect.y,cap,2),new Color(accent.r,accent.g,accent.b,.72f));
+            Fill(new Rect(rect.xMax-cap-10,rect.yMax-2,cap,2),new Color(accent.r,accent.g,accent.b,.45f));
         }
 
         private bool Button(Rect rect, string caption, Color accent, bool enabled = true, string hint = null, bool primary = false)
@@ -834,7 +835,7 @@ namespace Emberfall
             blockedRects.Add(playerRect);
             Box(playerRect, accent);
             Fill(new Rect(16, 16, 2, 88), accent);
-            Text(new Rect(28, 24, 139, 22), GameBalance.ClassName(p.heroClass) + " · Lv." + p.level, 16, pale, true);
+            Text(new Rect(28, 24, 139, 22), GameBalance.ClassName(p.heroClass), 16, pale, true);
             DrawPrice(new Rect(169,26,74,20),p.gold,false,1);
             float hp = session.Player == null ? 0 : session.Player.Health;
             float maxHp = session.Player == null ? 1 : session.Player.MaxHealth;
@@ -1199,8 +1200,10 @@ namespace Emberfall
         private static void DrawIcon(Rect r, Texture2D texture, Color tint)
         {
             if (texture == null) return;
+            texture = AuthoredIconArt.ForTint(texture, tint);
             texture=UIIconAtlas.ForDisplay(texture,Mathf.Max(r.width,r.height)*Mathf.Abs(GUI.matrix.lossyScale.x));
             Color previous = GUI.color;
+            tint = AuthoredIconArt.DisplayTint(texture, tint);
             tint.a*=controlOpacity;GUI.color = tint;
             GUI.DrawTexture(r, texture, ScaleMode.ScaleToFit, true);
             GUI.color = previous;
@@ -1392,7 +1395,8 @@ namespace Emberfall
             for (int i = inventory.Count - 1; i >= 0; i--)
                 if (inventory[i] != null)
                 {
-                    if(!IsEquipped(inventory[i]))unequippedCount++;
+                    if(IsEquipped(inventory[i]))continue;
+                    unequippedCount++;
                     if (inventoryFilter < 0 || (int)inventory[i].slot == inventoryFilter) bagItems.Add(inventory[i]);
                 }
             bagItems.Sort(CompareInventoryItems);
@@ -1515,7 +1519,7 @@ namespace Emberfall
             if (branchHeading.Contains(Mouse)) tooltip = "达到对应等级自动习得与进阶。";
             Rect viewport = new Rect(w.x + 24, w.y + 147, 506, 468);
             Fill(viewport, new Color(.025f, .05f, .075f));
-            Rect content = new Rect(0, 0, 490, 738);
+            Rect content = new Rect(0, 0, 490, 468);
             GUIStyle priorThumb = GUI.skin.verticalScrollbarThumb;
             GUI.skin.verticalScrollbarThumb = scrollThumb;
             skillScroll.y = Mathf.Clamp(skillScroll.y, 0, content.height - viewport.height);
@@ -1544,13 +1548,13 @@ namespace Emberfall
                 bool canLearn = string.IsNullOrEmpty(session.Progression.SkillLockReason(i));
                 Rect node = SkillNodeRect(i);
                 Color accent = rank > 0 ? jade : canLearn ? gold : muted;
-                Fill(node, selectedSkill == i ? new Color(.12f, .20f, .23f) : rank > 0 ? new Color(.06f, .145f, .15f) : card);
-                Border(node, selectedSkill == i ? gold : new Color(accent.r, accent.g, accent.b, rank > 0 || canLearn ? .7f : .25f), selectedSkill == i ? 2 : 1);
+                Surface(node, selectedSkill == i ? new Color(.12f, .20f, .23f) : rank > 0 ? new Color(.06f, .145f, .15f) : card);
+                SurfaceFrame(node, selectedSkill == i ? gold : new Color(accent.r, accent.g, accent.b, rank > 0 || canLearn ? .7f : .25f));
                 DrawSkillIdentity(new Rect(node.x+5,node.y+7,24,24),p.heroClass,i,rank,rank>0||canLearn,24);
                 Text(new Rect(node.x + 32, node.y + 7, 107, 24), GameBalance.SkillName(p.heroClass, i), 14, rank > 0 || canLearn ? pale : muted, true, false, TextAnchor.MiddleCenter);
-                Text(new Rect(node.x + 5, node.y + 35, 134, 18), "Lv." + required + " / " + (passive ? "被动" : "主动"), 11, passive ? new Color(.82f, .74f, .98f) : muted, false, false, TextAnchor.MiddleCenter);
+                Text(new Rect(node.x + 5, node.y + 35, 134, 18), "Lv." + required + " · " + (rank>0?GameBalance.SkillRankName(rank):"未解锁"), 11, passive ? new Color(.82f, .74f, .98f) : muted, false, false, TextAnchor.MiddleCenter);
                 string state = rank > 0 ? GameBalance.SkillRankName(rank) + (canLearn ? " · 可进阶" : " · 已学习") : canLearn ? "可学习" : p.level < required ? "等级未达" : "自动习得";
-                Text(new Rect(node.x + 5, node.y + 57, 134, 17), state, 11, accent, true, false, TextAnchor.MiddleCenter);
+                if(node.Contains(Mouse))tooltip=state;
                 Badge(node,Attention.LearnableSkills.Contains(i));
                 if (GUI.Button(node, GUIContent.none, invisibleButton)) selectedSkill = i;
             }
@@ -1561,7 +1565,7 @@ namespace Emberfall
 
         private static Rect SkillNodeRect(int skill)
         {
-            return new Rect(10 + GameBalance.SkillTreeColumn(skill) * 160, 18 + GameBalance.SkillTreeRow(skill) * 102, 144, 82);
+            return new Rect(10 + GameBalance.SkillTreeColumn(skill) * 160, 6 + GameBalance.SkillTreeRow(skill) * 66, 144, 54);
         }
 
         private void OpenBindings()

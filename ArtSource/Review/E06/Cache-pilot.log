@@ -1,9 +1,0 @@
-Traceback (most recent call last):
-  File "/workspace/emberfall_win/Tests/BlenderPilotAdapterProductionTests.py", line 45, in <module>
-    else:print(q.stdout,end='');assert q.returncode==0,q.stderr
-                                       ^^^^^^^^^^^^^^^
-AssertionError: Unhandled exception. System.Exception: normal base remains supported
-   at LayerFixture.C(Boolean b, String m) in /tmp/blender-adapter-878onza7/Layers.cs:line 14
-   at LayerFixture.Run() in /tmp/blender-adapter-878onza7/Layers.cs:line 90
-   at BlenderPilotAdapterProductionTests.Main() in /tmp/blender-adapter-878onza7/Fixture.cs:line 66
-

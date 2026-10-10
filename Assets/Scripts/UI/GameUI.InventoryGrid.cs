@@ -22,6 +22,8 @@ namespace Emberfall
             bool prior=GUI.enabled;enabled=enabled&&prior;
             Color ink=enabled?(selected?gold:jade):muted;
             Text(hit,caption,Mathf.RoundToInt(12*u),ink,selected,false,TextAnchor.MiddleCenter);
+            if(!string.IsNullOrEmpty(caption)&&(selected||enabled&&hit.Contains(Mouse)))
+                Surface(new Rect(hit.x+2*u,hit.y+5*u,hit.width-4*u,hit.height-10*u),new Color(ink.r,ink.g,ink.b,selected?.09f:.04f));
             if(selected)Fill(new Rect(hit.x+8*u,hit.yMax-3*u,Mathf.Max(0,hit.width-16*u),2*u),gold);
             if(hit.Contains(Mouse)&&!string.IsNullOrEmpty(hint))tooltip=hint;
             GUI.enabled=enabled;bool clicked=GUI.Button(hit,GUIContent.none,invisibleButton);GUI.enabled=prior;
@@ -36,8 +38,8 @@ namespace Emberfall
             float u=MobileControls.Active?TouchRatio:1f;
             bool prior=GUI.enabled;enabled=enabled&&prior;
             Color ink=enabled?(selected?gold:jade):muted;
-            Fill(new Rect(hit.x+2*u,hit.y+3*u,hit.width-4*u,hit.height-6*u),new Color(ink.r,ink.g,ink.b,selected?.28f:.14f));
-            Border(new Rect(hit.x+2*u,hit.y+3*u,hit.width-4*u,hit.height-6*u),new Color(ink.r,ink.g,ink.b,.65f));
+            Surface(new Rect(hit.x+2*u,hit.y+3*u,hit.width-4*u,hit.height-6*u),new Color(ink.r,ink.g,ink.b,selected?.16f:.07f));
+            SurfaceFrame(new Rect(hit.x+2*u,hit.y+3*u,hit.width-4*u,hit.height-6*u),new Color(ink.r,ink.g,ink.b,.45f));
             float labelWidth=Style(Mathf.RoundToInt(14*u)).CalcSize(new GUIContent(caption)).x;
             float iconSize=Mathf.Min(22*u,hit.width*.25f),gap=6*u;
             float total=Mathf.Min(hit.width-8*u,iconSize+gap+labelWidth),left=hit.center.x-total*.5f;

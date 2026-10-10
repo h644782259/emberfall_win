@@ -38,7 +38,8 @@ namespace Emberfall
                     else if(key=="Ochre")slots[i]=resources.Material(new Color(.64f,.43f,.22f),false,VisualSurface.Stone);
                     else if(key=="Stone")slots[i]=resources.Material(new Color(.35f,.4f,.43f),false,VisualSurface.Stone);
                     else if(key=="Bark")slots[i]=resources.Material(new Color(.27f,.20f,.14f),false,VisualSurface.Wood);
-                    else if(key=="Leaf")slots[i]=resources.Material(new Color(.18f,.36f,.26f),false,VisualSurface.Foliage);
+                    else if(key=="Leaf")
+                    {slots[i]=resources.Material(new Color(.18f,.36f,.26f),false,VisualSurface.Foliage);if(slots[i].HasProperty("_Wind"))slots[i].SetFloat("_Wind",1f);}
                     else return Reject(instance);
                     if(slots[i]==null||slots[i].shader==null||!slots[i].shader.isSupported)return Reject(instance);
                 }

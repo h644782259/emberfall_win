@@ -8,7 +8,7 @@ namespace Emberfall
             get
             {
                 return !session.Paused && (panel==Panel.Inventory || panel==Panel.Skills || panel==Panel.Fashion ||
-                    panel==Panel.Chests || panel==Panel.Camp || panel==Panel.SaveLocation ||
+                    panel==Panel.Chests || panel==Panel.HubUtility || panel==Panel.SaveLocation ||
                     panel==Panel.None && session.RunChoices.AwaitingChoice);
             }
         }
@@ -38,7 +38,9 @@ namespace Emberfall
 
             blockedRects.Add(new Rect(0,0,width,height));
             Box(TouchRect(8,4,layout.Width-16,layout.Height-8),jade,false);
-            Rect titleRect=TouchRect(layout.Header.X,layout.Header.Y,Mathf.Max(1,layout.Header.Width-headerRightReserve),30);
+            Fill(TouchRect(16,8,layout.Width-32,48),new Color(.018f,.032f,.050f,.98f));
+            Fill(TouchRect(16,12,3,28),gold);
+            Rect titleRect=TouchRect(layout.Header.X+10,layout.Header.Y,Mathf.Max(1,layout.Header.Width-headerRightReserve-10),30);
             int titleFont=TouchFont(22);
             while(titleFont>1&&(Style(titleFont,true).CalcSize(new GUIContent(title)).x>titleRect.width||Style(titleFont,true).CalcHeight(new GUIContent(title),titleRect.width)>titleRect.height))titleFont--;
             Text(titleRect,title,titleFont,pale,true,false,TextAnchor.MiddleLeft);

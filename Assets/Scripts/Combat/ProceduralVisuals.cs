@@ -93,6 +93,7 @@ namespace Emberfall
                 material.EnableKeyword("_EMISSION");
                 material.SetColor("_EmissionColor", material.color * .32f);
             }
+            SurfaceTextureLibrary.Apply(material, surface);
             material.enableInstancing = true;
         }
     }

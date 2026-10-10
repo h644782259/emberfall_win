@@ -42,3 +42,24 @@ Thumbs.db
 # Generated Python caches are never game assets.
 __pycache__/
 *.pyc
+
+# Local UI screenshot review tools and generated evidence.
+/Docs/Validation/UIPolish/
+/Assets/Editor/UISkinVisualReview.cs
+/Assets/Editor/UISkinVisualReview.cs.meta
+
+# Local Unity recovery and Package Manager UI state.
+/Assets/_Recovery/
+/Assets/_Recovery.meta
+/ProjectSettings/PackageManagerSettings.asset
+
+# Generated visual review evidence stays local.
+/Docs/Validation/IconArt/**/*.png
+/Docs/Validation/IconArt/**/*.log
+/Docs/Validation/IconArt/**/*.txt
+/Docs/Validation/IconArt/**/*.json
+/Docs/Validation/WorldArt/**/*.png
+/Docs/Validation/WorldArt/**/*.log
+/Docs/Validation/WorldArt/**/*.txt
+/Docs/Validation/WorldArt/**/*.json
+/ArtSource/Review/

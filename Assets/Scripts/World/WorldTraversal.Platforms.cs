@@ -24,7 +24,7 @@ namespace Emberfall
         }
         public static float SurfaceHeight(Vector3 point,float radius=.45f)
         {
-            float height=0;
+            float height=WorldTerrain.Height(point);
             foreach(var o in obstacles)if(ContainsTop(o,point,radius))height=Mathf.Max(height,o.Height);
             return height;
         }
@@ -58,11 +58,11 @@ namespace Emberfall
             if(!CanStand(from,radius)||direction.sqrMagnitude<.01f)return false;
             // Try the intended distance first; shorter safe points allow landing on
             // a narrow box without requiring pixel-perfect movement input.
-            for(int pass=0;pass<(from.y<=.05f?2:1);pass++)
+            for(int pass=0;pass<(from.y<=WorldTerrain.Height(from)+.05f?2:1);pass++)
             for(float d=distance;d>=.05f;d-=.05f)
             {
                 var to=CombatFx.Flat(from)+direction*d;to.y=SurfaceHeight(to,radius);
-                if(from.y<=.05f&&(pass==0?to.y<=0:to.y>0))continue;
+                if(from.y<=WorldTerrain.Height(from)+.05f&&(pass==0?to.y<=WorldTerrain.Height(to):to.y>WorldTerrain.Height(to)))continue;
                 if(!CanStand(to,radius))continue;
                 int samples=Mathf.Max(24,Mathf.CeilToInt(d/.08f));bool clear=true;
                 for(int i=0;i<=samples;i++)
@@ -73,7 +73,7 @@ namespace Emberfall
         }
         private static float StandingHeight(Vector3 point,float radius,float ceiling)
         {
-            float height=0;
+            float height=WorldTerrain.Height(point);
             foreach(var o in obstacles)
             {
                 if(o.Height<=0||o.Height>ceiling+.035f)continue;
@@ -90,7 +90,7 @@ namespace Emberfall
         public static Vector3 MovePlayer(Vector3 from,Vector3 delta,float deltaTime,ref float fallSpeed,float radius=.45f)
         {
             if(!Finite(deltaTime)||deltaTime<=0)return from;
-            if(from.y<=.001f){fallSpeed=0;return Move(from,delta,radius);}
+            if(from.y<=WorldTerrain.Height(from)+.035f){fallSpeed=0;return Move(from,delta,radius);}
             delta=CombatFx.Flat(delta);
             int steps=Mathf.Max(1,Mathf.Max(Mathf.CeilToInt(delta.magnitude/.08f),Mathf.CeilToInt(deltaTime/.02f)));
             float dt=deltaTime/steps;

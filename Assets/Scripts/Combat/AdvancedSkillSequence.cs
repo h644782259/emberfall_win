@@ -170,13 +170,13 @@ namespace Emberfall
                         Vector3 axis = Circle(step*.65f,6f*range);
                         AdvancedSkillVfx.Beam(owner,target-axis+Vector3.up,target+axis+Vector3.up,element,.65f,.34f);
                         AdvancedSkillVfx.Beam(owner,target+Vector3.up*10f,target,element,.65f,.24f);
-                        FilledSkillVfx.Impact(owner,target,GameBalance.ArcanistPulseRadius*range,SkillVisualRecipes.Filled(SkillVisualRecipes.Ultimate(owner.Specialization,step,false)),element,CombatVisualPriority.ActionBody);
+                        FilledSkillVfx.Impact(owner,target,GameBalance.ArcanistPulseRadius*range,SkillVisualRecipes.Filled(SkillVisualRecipes.Ultimate(owner.Specialization,step,false)),element,CombatVisualPriority.ActionBody,elementalist:true);
                         owner.ElementalAdvancedArea(target,GameBalance.ArcanistPulseRadius*range,damage*SkillDamageBudgets.AdvancedImpact(heroClass,skill,rank,step),castId,false);
                     }
                     else
                     {
                         AdvancedSkillVfx.Rune(owner,target,GameBalance.ArcanistFinaleRadius*range,new Color(.92f,.83f,1f),.8f,3);
-                        FilledSkillVfx.Impact(owner,target,GameBalance.ArcanistFinaleRadius*range,SkillVisualRecipes.Filled(SkillVisualRecipes.Ultimate(owner.Specialization,step,true)),owner.Specialization==ElementalistSpecialization.Burn?new Color(1f,.43f,.12f):new Color(.2f,.75f,1f),CombatVisualPriority.Finale,castId);
+                        FilledSkillVfx.Impact(owner,target,GameBalance.ArcanistFinaleRadius*range,SkillVisualRecipes.Filled(SkillVisualRecipes.Ultimate(owner.Specialization,step,true)),owner.Specialization==ElementalistSpecialization.Burn?new Color(1f,.43f,.12f):new Color(.2f,.75f,1f),CombatVisualPriority.Finale,castId,elementalist:true);
                         owner.ElementalAdvancedArea(target,GameBalance.ArcanistFinaleRadius*range,damage*SkillDamageBudgets.AdvancedImpact(heroClass,skill,rank,step),castId,true);
                         if(rank==3) SpawnTail(target,GameBalance.ArcanistPulseRadius*range,.3f,3f);
                     }
@@ -323,7 +323,7 @@ namespace Emberfall
         private void Burst(Vector3 at,float radius,CombatDamage amount,Color tint,int detail,SkillVisualRecipe visual)
         {
             if (visual == SkillVisualRecipe.Steel) FilledSkillVfx.Crescent(owner,at,forward,radius,tint,priority:CombatVisualPriority.Finale,castId:castId);
-            else if (visual != SkillVisualRecipe.Neutral) FilledSkillVfx.Impact(owner,at,radius,SkillVisualRecipes.Filled(visual),tint,CombatVisualPriority.Finale,castId);
+            else if (visual != SkillVisualRecipe.Neutral) FilledSkillVfx.Impact(owner,at,radius,SkillVisualRecipes.Filled(visual),tint,CombatVisualPriority.Finale,castId,elementalist:heroClass==HeroClass.Arcanist);
             CombatFx.Ring(at,radius,tint,.6f,.25f);
             owner.HitArea(at,radius,amount,1.1f,.7f,castId:castId);
         }

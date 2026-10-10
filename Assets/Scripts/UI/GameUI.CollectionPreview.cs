@@ -10,6 +10,7 @@ namespace Emberfall
         private float collectionPreviewYaw=20;
         private void ReconcileCollectionPreview()
         {
+            if(panel!=Panel.Inventory||inventoryStatsVisible||inventoryComparisonOpen)ResetWearRotationGesture();
             if(session!=null&&(session.BackgroundPaused||session.Paused&&panel!=Panel.Inventory)){ReleaseCollectionModel();return;}
             if(session==null || !session.HasStarted || session.IsDead || session.ModeFinished || session.DungeonSelectionOpen || session.RunChoices.AwaitingChoice || (panel!=Panel.Fashion&&panel!=Panel.Chests&&panel!=Panel.Inventory))ReleaseCollectionPreview();
             else if(collectionOwner!=session.Player){ReleaseCollectionPreview();collectionOwner=session.Player;}
@@ -17,7 +18,7 @@ namespace Emberfall
         private void OnDisable(){ReleaseFashionSmithPreview();ReleaseCollectionModel();ClearRewardMoment();}
         private void OnApplicationFocus(bool focused){if(!focused)ClearRewardMoment();if(focused){if(collectionModel!=null)collectionModel.Invalidate();if(wearModel!=null)wearModel.Invalidate();}}
         private void OnApplicationPause(bool paused){if(paused)ClearRewardMoment();if(!paused){if(collectionModel!=null)collectionModel.Invalidate();if(wearModel!=null)wearModel.Invalidate();}}
-        private void ReleaseCollectionModel(){if(wearModel!=null)wearModel.Dispose();wearModel=null;if(collectionModel!=null)collectionModel.Dispose();collectionModel=null;}
+        private void ReleaseCollectionModel(){ResetWearRotationGesture();if(wearModel!=null)wearModel.Dispose();wearModel=null;if(collectionModel!=null)collectionModel.Dispose();collectionModel=null;}
         private void ReleaseCollectionPreview()
         {ReleaseCollectionModel();collectionViewing.Reset();collectionOwner=null;collectionNotice=null;collectionReceiptKey=null;collectionPreviewYaw=20;}
         private void SetCollectionAngle(FashionSlot slot)

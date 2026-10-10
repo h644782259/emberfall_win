@@ -13,7 +13,8 @@ namespace Emberfall
         private GameObject anchorRoot, beamRoot;
         private WorldResources resources;
         private readonly LineRenderer[] beamLines = new LineRenderer[6];
-        private Material beamMaterial;
+        private Material beamMaterial,beamBodyMaterial;
+        private Transform beamBody;private Renderer beamBodyRenderer;private MaterialPropertyBlock beamBodyBlock;
         private Vector3 phaseCenter;
         private float startAngle;
         private bool chapterConfigured;
@@ -187,6 +188,9 @@ namespace Emberfall
             if(beamRoot!=null)return;
             beamRoot=new GameObject("Telegraphed rotating floor beam");beamRoot.transform.SetParent(transform,false);
             Shader shader=Resources.Load<Shader>("ThreatBoundary");beamMaterial=shader==null?CombatFx.NewGlow():new Material(shader);beamMaterial.renderQueue=3900;
+            var shaderBody=Resources.Load<Shader>("FilledSpell");beamBodyMaterial=new Material(shaderBody!=null?shaderBody:Shader.Find("Standard"));beamBodyMaterial.renderQueue=3050;
+            var solid=ProceduralVisuals.Create("Sculpted sweep energy column",PrimitiveType.Cube,beamBodyMaterial);solid.transform.SetParent(beamRoot.transform,false);
+            beamBody=solid.transform;beamBodyRenderer=solid.GetComponent<Renderer>();beamBodyRenderer.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;beamBodyRenderer.receiveShadows=false;beamBodyBlock=new MaterialPropertyBlock();
             for(int i=0;i<beamLines.Length;i++)
             {
                 var obj=new GameObject(i==3?"Sweep direction arrow":i==4?"Interrupt symbol":i==5?"Windup timing arc":"Beam footprint");obj.transform.SetParent(beamRoot.transform,false);
@@ -200,6 +204,17 @@ namespace Emberfall
             Vector3 right=Vector3.Cross(Vector3.up,direction);from.y=to.y=.18f;
             bool live=State.Phase==LargeBossPhase.Beam;
             Color tint=new Color(1,.24f,.12f,.85f);
+            if(beamBody!=null)
+            {
+                // The solid core fits well inside the existing certified danger capsule.
+                beamBody.gameObject.SetActive(live);
+                beamBody.position=(from+to)*.5f+Vector3.up*.55f;beamBody.rotation=Quaternion.LookRotation(direction);
+                Vector3 parentScale=beamBody.parent.lossyScale;
+                beamBody.localScale=new Vector3(.38f/Mathf.Max(.01f,parentScale.x),.65f/Mathf.Max(.01f,parentScale.y),Vector3.Distance(from,to)/Mathf.Max(.01f,parentScale.z));
+                beamBodyBlock.SetColor("_Color",new Color(.86f,.13f,.035f));beamBodyBlock.SetFloat("_Sculpted",1);beamBodyBlock.SetFloat("_Element",1);
+                beamBodyBlock.SetFloat("_Progress",Mathf.Repeat(State.BeamAngle/90f,1));beamBodyBlock.SetFloat("_Opacity",.82f);beamBodyRenderer.SetPropertyBlock(beamBodyBlock);
+            }
+
             for(int i=0;i<3;i++)
             {
                 float fill=live||i!=0?1:1-State.Remaining/LargeBossPhaseState.WindupSeconds;
@@ -253,6 +268,6 @@ namespace Emberfall
         // Runs even with timeScale zero: terminal menus must not retain live hazards.
         private void LateUpdate()
         {if(!stopped&&(game==null||!game.HasStarted||game.IsDead||game.ModeFinished||!ChapterOwnerValid||boss==null||boss.IsDead))StopEncounter();}
-        private void OnDestroy(){StopEncounter();if(beamMaterial!=null)Destroy(beamMaterial);}
+        private void OnDestroy(){StopEncounter();if(beamMaterial!=null)Destroy(beamMaterial);if(beamBodyMaterial!=null)Destroy(beamBodyMaterial);}
     }
 }

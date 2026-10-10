@@ -67,28 +67,44 @@ namespace Emberfall
             EnsureMobileBagItems();
             ItemData picked = ResolveSelectedItem();
             var layout = MobilePanelGeometry();
-            const float statusWidth=260;
+            const float statusWidth=284;
             if(DrawMobilePanelChrome(layout,HubInventoryTitle,"",canClose:!inventoryComparisonOpen,showNotice:false,headerRightReserve:statusWidth))return;
             {
                 float x=layout.Close.X-statusWidth-8,y=layout.Header.Y+4;
-                Text(TouchRect(x,y,46,28),"Lv."+profile.level,TouchFont(13),pale,true,false,TextAnchor.MiddleLeft);
-                DrawPrice(TouchRect(x+50,y,108,28),profile.gold,false,TouchRatio);
-                DrawIcon(TouchRect(x+164,y+4,20,20),UIIconAtlas.Utility("bag"),jade);
-                Text(TouchRect(x+190,y,70,28),profile.inventory.Count+"/"+ProgressionService.InventoryCapacity,TouchFont(13),pale,true,false,TextAnchor.MiddleLeft);
+                Text(TouchRect(x,y,66,28),"Lv."+profile.level,TouchFont(13),pale,true,false,TextAnchor.MiddleLeft);
+                DrawPrice(TouchRect(x+72,y,108,28),profile.gold,false,TouchRatio);
+                DrawIcon(TouchRect(x+186,y+4,20,20),UIIconAtlas.Utility("bag"),jade);
+                Text(TouchRect(x+212,y,72,28),profile.inventory.Count+"/"+ProgressionService.InventoryCapacity,TouchFont(13),pale,true,false,TextAnchor.MiddleLeft);
             }
             float leftWidth=Mathf.Clamp(layout.Body.Width*.30f,200,260);
             var wear=new MobilePanelLayout.Area(layout.Body.X,layout.Body.Y,leftWidth,layout.Height-layout.Body.Y-12);
             var bag=new MobilePanelLayout.Area(wear.XMax+12,layout.Body.Y,layout.Body.Width-leftWidth-12,wear.Height);
-            if(TabButton(TouchRect(wear.X,wear.Y,(wear.Width-6)*.5f,40),"角色",!inventoryStatsVisible))inventoryStatsVisible=false;
-            if(TabButton(TouchRect(wear.X+(wear.Width+6)*.5f,wear.Y,(wear.Width-6)*.5f,40),"属性",inventoryStatsVisible))inventoryStatsVisible=true;
-            var leftBody=TouchRect(wear.X,wear.Y+44,wear.Width,Mathf.Max(64,wear.Height-44));
-            if(inventoryStatsVisible)DrawCharacterStats(leftBody,TouchRatio);else DrawCurrentWear(leftBody,TouchRatio);
+            bool inlineStats=MobileControls.IsIPad&&wear.Height>=480;
+            if(inlineStats)
+            {
+                float previewHeight=Mathf.Min(wear.Width*1.4f+74,wear.Height-344);
+                DrawCurrentWear(TouchRect(wear.X,wear.Y,wear.Width,previewHeight),TouchRatio);
+                DrawCharacterStats(TouchRect(wear.X,wear.Y+previewHeight+12,wear.Width,wear.Height-previewHeight-12),TouchRatio);
+            }
+            else
+            {
+                if(TabButton(TouchRect(wear.X,wear.Y,(wear.Width-6)*.5f,40),"角色",!inventoryStatsVisible))inventoryStatsVisible=false;
+                if(TabButton(TouchRect(wear.X+(wear.Width+6)*.5f,wear.Y,(wear.Width-6)*.5f,40),"属性",inventoryStatsVisible))inventoryStatsVisible=true;
+                var leftBody=TouchRect(wear.X,wear.Y+44,wear.Width,Mathf.Max(64,wear.Height-44));
+                if(inventoryStatsVisible)DrawCharacterStats(leftBody,TouchRatio);else DrawCurrentWear(leftBody,TouchRatio);
+            }
             if(inventoryFashionOpen){mobileInventoryTab=3;inventoryFashionOpen=false;inventoryComparisonOpen=false;}
             Rect equipmentTab=MobilePanelRect(new MobilePanelLayout.Area(bag.X,bag.Y,52,44));
             Rect supplyTab=MobilePanelRect(new MobilePanelLayout.Area(bag.X+58,bag.Y,52,44));
             if(QuietAction(equipmentTab,"装备",!inventoryComparisonOpen,null,mobileInventoryTab==0))SelectInventoryTab(0);
             if(QuietAction(supplyTab,"道具",!inventoryComparisonOpen,null,mobileInventoryTab==2))SelectInventoryTab(2);
             if(QuietAction(MobilePanelRect(new MobilePanelLayout.Area(bag.X+116,bag.Y,52,44)),"时装",!inventoryComparisonOpen,null,mobileInventoryTab==3))SelectInventoryTab(3);
+            var stats=progression.GetStats();
+            float summaryWidth=bag.Width-188;
+            if(summaryWidth>=240&&!inlineStats)
+            {
+                Text(TouchRect(bag.X+188,bag.Y+4,summaryWidth,36),"攻击 "+Mathf.RoundToInt(stats.Damage)+"   防御 "+Mathf.RoundToInt(stats.Armor)+"   生命 "+Mathf.RoundToInt(stats.MaxHealth),TouchFont(12),muted,false,false,TextAnchor.MiddleRight);
+            }
             var content=new MobilePanelLayout.Area(bag.X,bag.Y+48,bag.Width,bag.Height-48);
             if(mobileInventoryTab==3){DrawBagFashion(content);return;}
             if(mobileInventoryTab==2)
@@ -96,8 +112,27 @@ namespace Emberfall
                 DrawBagSupplies(content);
                 return;
             }
-            if(DrawMobileEquipmentGrid(content,false))return;
+            var grid=new InventoryGridGeometry(content.Width-InventoryGridGeometry.FilterRailWidth-18,InventoryGridGeometry.MobileCellSize);
+            float filledRows=((bagItems.Count+grid.Columns-1)/grid.Columns)*grid.Stride+4;
+            float gridHeight=Mathf.Max(176,filledRows);
+            bool overview=picked!=null&&bagItems.Count>0&&content.Height-gridHeight>=174;
+            var gridArea=overview?new MobilePanelLayout.Area(content.X,content.Y,content.Width,gridHeight):content;
+            if(DrawMobileEquipmentGrid(gridArea,false))return;
+            if(overview&&!inventoryComparisonOpen)
+                DrawInventoryOverview(new MobilePanelLayout.Area(content.X,content.Y+gridHeight+8,content.Width-InventoryGridGeometry.FilterRailWidth,166),picked);
 
+        }
+
+        private void DrawInventoryOverview(MobilePanelLayout.Area area,ItemData item)
+        {
+            float u=TouchRatio;Rect r=MobilePanelRect(area);
+            Surface(r,new Color(.012f,.022f,.034f,1));SurfaceFrame(r,new Color(jade.r,jade.g,jade.b,.18f));
+            ItemData preview=MobileEquipmentPreview(item),current=session.Progression.Equipped(item.slot);
+            Text(TouchRect(area.X+12,area.Y+8,area.Width-164,28),ItemTitle(preview),TouchFont(16),GameBalance.RarityColor(item.rarity),true,false,TextAnchor.MiddleLeft);
+            if(NavigationButton(TouchRect(area.XMax-148,area.Y+4,136,44),"详情",jade))
+                OpenInventoryPopup(item.id,r);
+            DrawMobileEquipmentScores(area.X+12,area.Y+48,area.Width-24,current,preview);
+            Text(TouchRect(area.X+12,area.Y+138,area.Width-24,24),"攻击 "+preview.attack.ToString("0")+"   防御 "+preview.defense.ToString("0")+"   生命 "+preview.health.ToString("0"),TouchFont(13),pale,false,false,TextAnchor.MiddleLeft);
         }
 
         private string MobileInventoryFilterLabel { get { return inventoryFilter < 0 ? "全部" : GameBalance.SlotName((ItemSlot)inventoryFilter); } }
@@ -143,7 +178,6 @@ namespace Emberfall
                 y += MobileDetailParagraph(draw, 8, y, width - 16, status, 14,
                     mobileInventoryFailed || string.IsNullOrEmpty(mobileInventoryStatus) ? gold : jade, true) + 12;
             if (item == null) return y + MobileDetailParagraph(draw, 8, y, width - 16, "选择装备查看比较与操作", 16, muted) + 16;
-            y+=56;
             var progression = session.Progression;
             ItemData preview = MobileEquipmentPreview(item), current = progression.Equipped(item.slot);
             float available = width - 16;
@@ -156,7 +190,6 @@ namespace Emberfall
             y += MobileDetailParagraph(draw, 8, y, available, MobileAttributeLine("攻击", current == null ? 0 : current.attack, preview.attack), 16, pale, true) + 3;
             y += MobileDetailParagraph(draw, 8, y, available, MobileAttributeLine("防御", current == null ? 0 : current.defense, preview.defense), 16, pale, true) + 3;
             y += MobileDetailParagraph(draw, 8, y, available, MobileAttributeLine("生命", current == null ? 0 : current.health, preview.health), 16, pale, true) + 8;
-            y += MobileDetailParagraph(draw, 8, y, available, "换装继承部位强化", 14, muted) + 8;
             y += MobileDetailParagraph(draw, 8, y, available, EquipmentComparisonPresentation.Changes(current,item,progression), 15, gold, true) + 8;
             y += MobileDetailParagraph(draw,8,y,available,EquipmentComparisonPresentation.Description(item,progression),14,jade)+8;
 
@@ -180,7 +213,7 @@ namespace Emberfall
             for (int i = 0; i < 2; i++)
             {
                 var half = MobileCollectionLayout.ScoreCard(width, i);
-                Fill(TouchRect(x + half.X, y, half.Width, half.Height), i == 0 ? new Color(.035f, .075f, .1f) : new Color(.065f, .115f, .14f));
+                Surface(TouchRect(x + half.X, y, half.Width, half.Height), i == 0 ? new Color(.018f, .032f, .048f) : new Color(.02f, .065f, .066f));
                 Text(TouchRect(x + half.X + 8, y + 7, half.Width - 16, 21), i == 0 ? current == null ? "当前 · 空槽" : "当前评分" : "换装后评分", TouchFont(14), i == 0 ? muted : jade);
                 Text(TouchRect(x + half.X + 8, y + 29, half.Width - 16, 30), (i == 0 ? currentScore : nextScore).ToString("0.#"), TouchFont(22), pale, true);
                 if (i == 1) Text(TouchRect(x + half.X + 8, y + 59, half.Width - 16, 21), delta == 0 ? "±0" : (delta > 0 ? "+" : "") + delta.ToString("0.#"), TouchFont(14), delta < 0 ? new Color(1, .48f, .42f) : delta > 0 ? jade : muted, true);

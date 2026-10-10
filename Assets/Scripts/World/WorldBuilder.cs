@@ -9,6 +9,8 @@ namespace Emberfall
         public static GameObject Build(ZoneKind zone, int dungeonLayout = 0, int campProgress = 0, int hub = 0, int chapterSeed = 0)
         {
             WorldTraversal.Reset(zone);
+            WorldTerrain.Configure(zone,hub);
+            Shader.SetGlobalFloat("_EmberTerrainEnabled",WorldTerrain.Enabled?1:0);
             GameObject root = new GameObject(zone == ZoneKind.Wilderness ? "Windwhisper Fields" : "Fallen Star Sanctum");
             WorldResources resources = root.AddComponent<WorldResources>();
             bool dungeon = zone == ZoneKind.Dungeon;
@@ -40,13 +42,16 @@ namespace Emberfall
             ApplyEnvironmentLighting(dungeon,hub,light,rim);
             if (dungeon) { if(ChapterRoomGeometry.IsChapterLayout(dungeonLayout))BuildChapterRoom(root.transform,resources,ChapterRoomGeometry.FromLayout(dungeonLayout,chapterSeed));else if(dungeonLayout>=20)BuildTacticalRoom(root.transform,resources,dungeonLayout);else if(dungeonLayout>=10)BuildLinkedRoom(root.transform,resources,dungeonLayout-10);else if(dungeonLayout>=2)BuildChallengeArena(root.transform,resources,dungeonLayout-2);else BuildDungeon(root.transform, resources, dungeonLayout); } else { if(hub==0){BuildWilderness(root.transform, resources); BuildCampFacilities(root.transform, resources, campProgress);BuildHubNpcs(root.transform,resources);}else BuildTown(root.transform,resources,hub); }
             if(!dungeon){BuildHubLightPools(root.transform,hub);BuildClimbableProps(root.transform,resources);BuildTravelStation(root.transform,resources,hub);}
+            if(SurfaceTextureLibrary.Enabled&&!dungeon&&hub==0)BuildMeadowDetail(root.transform,resources);
+            foreach(var renderer in root.GetComponentsInChildren<MeshRenderer>())
+            {var bounds=renderer.localBounds;Vector3 scale=renderer.transform.lossyScale;bounds.Expand(new Vector3(3/Mathf.Max(.01f,Mathf.Abs(scale.x)),3/Mathf.Max(.01f,Mathf.Abs(scale.y)),3/Mathf.Max(.01f,Mathf.Abs(scale.z))));renderer.localBounds=bounds;}
             if(dungeon)BuildBreakablePockets(root.transform,dungeonLayout);
             return root;
         }
 
         private static void BuildWilderness(Transform parent, WorldResources r)
         {
-            Material grass = r.Material(new Color(.18f, .32f, .28f));
+            Material grass = r.Material(new Color(.18f, .32f, .28f),false,VisualSurface.Foliage);
             Material darkRock = r.Material(new Color(.14f, .2f, .25f));
             Material stone = r.Material(new Color(.37f, .45f, .43f));
             Material edge = r.Material(new Color(.22f, .29f, .3f));
@@ -68,8 +73,9 @@ namespace Emberfall
             Transform lowland = Region(parent, "Deep brook and timber crossing");
             Transform ruins = Region(parent, "Northeast overgrown courtyard");
             Transform camp = Region(parent, "Southern caravan approach");
-            Material forestFloor = r.Material(new Color(.12f, .235f, .22f));
-            Material sunGrass = r.Material(new Color(.30f, .39f, .265f));
+            Material forestFloor = r.Material(new Color(.12f, .235f, .22f),false,VisualSurface.Foliage);
+            Material sunGrass = r.Material(new Color(.30f, .39f, .265f),false,VisualSurface.Foliage);
+            ApplyMeadowTexture(grass);ApplyMeadowTexture(forestFloor);ApplyMeadowTexture(sunGrass);
             Material earth = r.Material(new Color(.40f, .355f, .255f));
             Material wornStone = r.Material(new Color(.39f, .43f, .39f));
             Surface(woodland, r, "Forest floor", new[] { new Vector2(-24,-10), new Vector2(-11,-15), new Vector2(-7,-8), new Vector2(-8,5), new Vector2(-13,16), new Vector2(-24,9) }, .009f, forestFloor);
@@ -357,10 +363,13 @@ namespace Emberfall
 
         private static GameObject Geometry(Transform parent, WorldResources r, string name, List<Vector3> vertices, List<int> triangles, Material material)
         {
+            if(WorldTerrain.Enabled&&(name=="Irregular meadow shoreline"||name=="Forest floor"||name=="Sunlit eastern clearing"))
+                SubdivideGround(ref vertices,ref triangles);
             Mesh mesh = new Mesh { name = name };
             mesh.SetVertices(vertices);
             mesh.SetTriangles(triangles, 0);
             mesh.RecalculateNormals();
+            if(name=="Breezy meadow grass tufts"){var normals=new Vector3[vertices.Count];for(int i=0;i<normals.Length;i++)normals[i]=Vector3.up;mesh.normals=normals;}
             mesh.RecalculateBounds();
             r.Own(mesh);
             GameObject go = new GameObject(name);
@@ -548,10 +557,16 @@ namespace Emberfall
             string key=ColorUtility.ToHtmlStringRGBA(color)+(emissive?"E":"S")+(int)surface;
             Material material;
             if(materials.TryGetValue(key,out material))return material;
-            Shader shader=Shader.Find("Standard");
+            Shader shader=SurfaceTextureLibrary.Enabled?Resources.Load<Shader>("WorldArt/WeatheredWorld"):null;
+            if(shader==null)shader=Shader.Find("Standard");
             if(shader==null) shader=Shader.Find("Sprites/Default");
             material=new Material(shader); material.color=color;
             ProceduralVisuals.ApplySurface(material,emissive?VisualSurface.Crystal:surface);
+            if(material.HasProperty("_GrainScale"))
+            {
+                material.SetFloat("_GrainScale",surface==VisualSurface.Stone?.42f:surface==VisualSurface.Wood?1.3f:3f);
+                material.SetFloat("_GrainStrength",emissive?0:surface==VisualSurface.Stone?.65f:.35f);
+            }
             if(emissive && material.HasProperty("_EmissionColor")) material.SetColor("_EmissionColor",color*.8f);
             materials.Add(key,material); return material;
         }

@@ -160,9 +160,9 @@ namespace Emberfall
                 var edge=new GameObject("Combat text outline");edge.transform.SetParent(transform,false);
                 float edgeWidth=critical?.026f:.018f;
                 edge.transform.localPosition=new Vector3(i%2==0?-edgeWidth:edgeWidth,i<2?-edgeWidth:edgeWidth,.012f);
-                outline[i]=Configure(edge,value,new Color(.045f,.025f,.035f,1));edge.GetComponent<MeshRenderer>().sortingOrder=100;
+                outline[i]=Configure(edge,value,new Color(.045f,.025f,.035f,1));edge.GetComponent<MeshRenderer>().sortingOrder=100;edge.GetComponent<MeshRenderer>().enabled=!critical;
             }
-            textMesh=Configure(gameObject,value,color);textRenderer=GetComponent<MeshRenderer>();textRenderer.sortingOrder=101;
+            textMesh=Configure(gameObject,value,color);textRenderer=GetComponent<MeshRenderer>();textRenderer.sortingOrder=101;textRenderer.enabled=!critical;
             ApplyBox(camera);
         }
         private TextMesh Configure(GameObject obj,string value,Color tint)
@@ -172,16 +172,24 @@ namespace Emberfall
             if(sharedFont!=null){mesh.font=sharedFont;obj.GetComponent<MeshRenderer>().sharedMaterial=sharedFont.material;}
             return mesh;
         }
+        private GUIStyle criticalNumberStyle;
         private void OnGUI()
         {
             if(!critical||!counted||Event.current.type!=EventType.Repaint)return;
-            float size=bounds.Height*.65f,y=Screen.height-bounds.Y-bounds.Height*.5f-size*.5f;
             Matrix4x4 priorMatrix=GUI.matrix;Color priorColor=GUI.color;int priorDepth=GUI.depth;
             GUI.matrix=Matrix4x4.identity;GUI.depth=1;
-            GUI.color=new Color(1,1,1,Mathf.Clamp01((Duration-life)/.45f));
-            Texture2D icon=UIIconAtlas.Utility("critical");
-            GUI.DrawTexture(new Rect(bounds.X,y,size,size),icon);
-            GUI.DrawTexture(new Rect(bounds.X+bounds.Width-size,y,size,size),icon);
+            float alpha=Mathf.Clamp01((Duration-life)/.45f);
+            GUI.color=new Color(1,1,1,alpha);
+            Rect burst=new Rect(bounds.X,Screen.height-bounds.Y-bounds.Height,bounds.Width,bounds.Height);
+            GUI.DrawTexture(burst,UIIconAtlas.Utility("critical",true));
+            if(criticalNumberStyle==null)criticalNumberStyle=new GUIStyle{alignment=TextAnchor.MiddleCenter,fontStyle=FontStyle.BoldAndItalic,wordWrap=false,padding=new RectOffset()};
+            criticalNumberStyle.font=sharedFont;
+            criticalNumberStyle.fontSize=Mathf.Max(1,Mathf.RoundToInt(burst.height*.55f));
+            Rect label=new Rect(burst.x+burst.width*.20f,burst.y+burst.height*.18f,burst.width*.60f,burst.height*.64f);
+            GUIContent caption=new GUIContent(display);
+            while(criticalNumberStyle.fontSize>1&&(criticalNumberStyle.CalcSize(caption).x>label.width||criticalNumberStyle.CalcSize(caption).y>label.height))criticalNumberStyle.fontSize--;
+            criticalNumberStyle.normal.textColor=new Color(.98f,.13f,.18f);
+            GUI.Label(label,caption,criticalNumberStyle);
             GUI.matrix=priorMatrix;GUI.color=priorColor;GUI.depth=priorDepth;
         }
         private void Update()

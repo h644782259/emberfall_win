@@ -260,7 +260,7 @@ namespace Emberfall
             bool groundSwing=(owner.HeroClass==HeroClass.Vanguard&&(skill==0||skill==1))||(owner.HeroClass==HeroClass.Summoner&&skill==0);
             if(respectCover)CombatSight.FillAreaBoundary(circle,center,radius,groundSwing?CombatSightKind.Melee:CombatSightKind.Area);
             else for(int i=0;i<circle.Length;i++)
-            {float a=i*Mathf.PI*2/circle.Length;circle[i]=center+new Vector3(Mathf.Cos(a)*radius,.12f,Mathf.Sin(a)*radius);}
+            {float a=i*Mathf.PI*2/circle.Length;circle[i]=WorldTerrain.Ground(center+new Vector3(Mathf.Cos(a)*radius,0,Mathf.Sin(a)*radius),.12f);}
             line.loop = true; line.positionCount = circle.Length; line.SetPositions(circle);
         }
 

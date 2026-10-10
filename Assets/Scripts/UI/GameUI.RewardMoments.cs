@@ -12,7 +12,7 @@ namespace Emberfall
         private CollectionModelPreview rewardMomentModel;
         private void ClearRewardMoment()
         {rewardMoment=null;if(rewardMomentModel!=null)rewardMomentModel.Dispose();rewardMomentModel=null;}
-        private bool RewardMomentSafe {get{return session.IsInCamp&&!session.Paused&&!session.IsDead&&(panel==Panel.Camp||panel==Panel.Fashion||panel==Panel.Inventory);}}
+        private bool RewardMomentSafe {get{return session.IsInCamp&&!session.Paused&&!session.IsDead&&(panel==Panel.HubUtility||panel==Panel.Fashion||panel==Panel.Inventory);}}
         private ItemData RewardUpgradeItem()
         {
             if(rewardMoment==null||rewardMoment.Item==null)return null;

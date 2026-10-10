@@ -57,13 +57,13 @@ namespace Emberfall
         }
         private bool CloseClassSwitchSurface()
         {
-            if(!classSwitchOpen||(panel!=Panel.Camp&&panel!=Panel.Skills))return false;
+            if(!classSwitchOpen||(panel!=Panel.HubUtility&&panel!=Panel.Skills))return false;
             classSwitchOpen=false;classSwitchPreview=null;classSwitchScroll=Vector2.zero;
             CancelMobileScroll();BlockUITransition();return true;
         }
         private void ReconcileClassSwitchSurface()
         {
-            if(classSwitchOpen&&((panel!=Panel.Camp&&panel!=Panel.Skills)||session.Progression!=classSwitchOwner||session.Player!=classSwitchHero))
+            if(classSwitchOpen&&((panel!=Panel.HubUtility&&panel!=Panel.Skills)||session.Progression!=classSwitchOwner||session.Player!=classSwitchHero))
             {classSwitchOpen=false;classSwitchPreview=null;classSwitchOwner=null;classSwitchHero=null;}
         }
         internal void OnClassSwitched()

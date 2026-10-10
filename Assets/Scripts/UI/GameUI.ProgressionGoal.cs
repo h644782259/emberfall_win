@@ -34,7 +34,7 @@ namespace Emberfall
                 Text(new Rect(tile.x+32*u,tile.y+70*u,68*u,22*u),"+"+a.Gold,Mathf.RoundToInt(12*u),gold,true);
                 DrawIcon(new Rect(tile.x+100*u,tile.y+72*u,18*u,18*u),UIIconAtlas.Utility("shard"),jade);
                 Text(new Rect(tile.x+122*u,tile.y+70*u,60*u,22*u),"+"+a.Shards,Mathf.RoundToInt(12*u),jade,true);
-                if(PrimaryButton(new Rect(tile.xMax-110*u,tile.y+42*u,100*u,44*u),claimed?"已领取":ready?"领取奖励":"未完成",gold,ready))
+                if(PrimaryButton(new Rect(tile.xMax-110*u,tile.y+42*u,100*u,44*u),claimed?"已领取":ready?"领取":"未完成",gold,ready))
                     Feedback(p.ClaimAchievement(a.Id),"成就奖励：+"+a.Gold+"金币 · +"+a.Shards+"碎片");
             }
             EndTouchScroll();
@@ -46,7 +46,7 @@ namespace Emberfall
         private void OpenProgressionGoals()
         {
             if(!CanSwitchFunction)return;PrepareFunctionSwitch();
-            panel=Panel.Camp;session.SetUIBlocking(true);
+            panel=Panel.HubUtility;session.SetUIBlocking(true);
             progressionGoalsOpen=true;progressionGoalOwner=session.Progression;
             progressionGoalCharacter=session.Progression.CurrentSlotId;progressionGoalScroll=progressionGoalHeaderScroll=Vector2.zero;
             CancelMobileScroll();BlockUITransition();
@@ -54,7 +54,7 @@ namespace Emberfall
         private void ReconcileProgressionGoalSurface()
         {
             ReconcileReforgeSurface();
-            if(progressionGoalsOpen&&(panel!=Panel.Camp||progressionGoalOwner!=session.Progression||progressionGoalCharacter!=session.Progression.CurrentSlotId))
+            if(progressionGoalsOpen&&(panel!=Panel.HubUtility||progressionGoalOwner!=session.Progression||progressionGoalCharacter!=session.Progression.CurrentSlotId))
                 progressionGoalsOpen=false;
         }
         private bool CloseProgressionGoalSurface()
@@ -74,7 +74,7 @@ namespace Emberfall
             Text(BuildPlanRect(l.Header,u),"成就",Mathf.RoundToInt(21*u),pale,true);
             int available=session.Progression.ClaimableAchievements;
             if(DrawButton(new Rect((l.Frame.X+l.Frame.Width-222)*u,(l.Frame.Y+12)*u,154*u,32*u),"一键领取"+(available>0?" · "+available:""),ButtonRole.Primary,available>0,fontSize:Mathf.RoundToInt(15*u)))Feedback(session.Progression.ClaimAllAchievements(),"成就奖励已领取");
-            DrawAchievements(BuildPlanRect(l.Body,u),u);
+            DrawAchievements(new Rect(l.Body.X*u,l.Body.Y*u,l.Body.Width*u,(l.Frame.YMax-l.Body.Y-16)*u),u);
             if(PopupCloseButton(new Rect((l.Frame.X+l.Frame.Width-52)*u,(l.Frame.Y+12)*u,40*u,32*u)))CloseProgressionGoalSurface();
             return true;
         }

@@ -6,6 +6,9 @@ namespace Emberfall
     internal sealed class FlameRide : MonoBehaviour
     {
         private const float BurnRadius=2.2f;
+        private static Mesh tongueMesh;
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetArt(){if(tongueMesh!=null)Destroy(tongueMesh);tongueMesh=null;}
         private PlayerController owner;
         private GameSession session;
         private int epoch,castId;
@@ -23,12 +26,14 @@ namespace Emberfall
             ride.flame=CombatFx.NewGlow();ride.flame.color=new Color(1f,.27f,.045f,.9f);
             ride.core=CombatFx.NewGlow();ride.core.color=new Color(1f,.85f,.24f,.95f);
             ride.mount=new GameObject("Flame surf mount").transform;ride.mount.SetParent(ride.transform,false);
+            if(tongueMesh==null)tongueMesh=AuthoredSpellBases.Load("Flame");
             for(int i=0;i<7;i++)
             {
                 var part=ProceduralVisuals.Create(i==0?"Riding flame core":"Trailing flame tongue",PrimitiveType.Sphere,i==0?ride.core:ride.flame).transform;
                 part.SetParent(ride.mount,false);
                 part.localPosition=i==0?new Vector3(0,.14f,0):new Vector3((i%3-1)*.3f,.12f,-.35f-(i/3)*.45f);
-                part.localScale=i==0?new Vector3(1.15f,.22f,1.8f):new Vector3(.3f,.3f,.9f);
+                part.localScale=i==0?new Vector3(1.15f,.22f,1.8f):new Vector3(.42f,.7f,.6f);
+                if(i>0&&tongueMesh!=null){part.GetComponent<MeshFilter>().sharedMesh=tongueMesh;part.localRotation=Quaternion.Euler(55,0,0);}
             }
         }
         private bool Current {get{return owner!=null&&!owner.IsDead&&session!=null&&session.Player==owner&&session.HasStarted&&!session.CombatEffectsEnded&&owner.CombatEpoch==epoch;}}

@@ -37,6 +37,7 @@ namespace Emberfall
         internal bool MobilePinAppliesToSkill(int skill)
         {
             if(skill<0)return true;
+            if(IsMobileSelfCenteredSkill(skill))return false;
             // Ordinary contracts still inherit the explicit team order. A tap never commands pets.
             if(HeroClass==HeroClass.Summoner&&(skill==2||skill==4||skill==9))return false;
             return SkillTargetingController.Describe(HeroClass,skill,session.Progression.Profile.skillRanks[skill]).shape!=SkillTargetingController.Shape.Self;

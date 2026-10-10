@@ -13,7 +13,7 @@ namespace Emberfall
             float minX=float.PositiveInfinity,minZ=float.PositiveInfinity,maxX=float.NegativeInfinity,maxZ=float.NegativeInfinity;
             for(int i=0;i<points.Length;i++)
             {
-                Vector3 world=root.TransformPoint(offset+rotation*Vector3.Scale(points[i],scale));points[i]=world;
+                Vector3 world=root.TransformPoint(offset+rotation*Vector3.Scale(points[i],scale));world.y+=WorldTerrain.Height(world)-Mathf.Min(WorldTerrain.Height(root.position),root.position.y);points[i]=world;
                 minX=Mathf.Min(minX,world.x);minZ=Mathf.Min(minZ,world.z);maxX=Mathf.Max(maxX,world.x);maxZ=Mathf.Max(maxZ,world.z);
             }
             // Two exact whole-face certificates cover the complete transformed bounds.

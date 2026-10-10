@@ -33,11 +33,12 @@ namespace Emberfall
             var obj=new GameObject("Authored trap mechanism");obj.transform.SetParent(parent,false);
             var visual=obj.AddComponent<AuthoredTrapVisual>();
             if(CombatVisualLease.Attach(obj,CombatVisualPriority.Decoration)==null)return null;
-            float size=Mathf.Min(.65f,radius*.2f);
+            float size=Mathf.Min(.9f,radius*.26f);
             visual.clipped=AnchoredImpactMesh.Create(source,parent,Vector3.up*.06f,Vector3.one*size,Quaternion.identity);
             // Keep this small optional ornament within its original per-instance cap after cover clipping.
             if(visual.clipped.triangles.Length>128*3){Object.Destroy(obj);return null;}
-            visual.surface=new Material(Shader.Find("Standard")){color=tint};
+            visual.surface=new Material(Shader.Find("Standard")){color=Color.Lerp(tint,new Color(.65f,.8f,.72f),.35f)};
+            visual.surface.EnableKeyword("_EMISSION");visual.surface.SetColor("_EmissionColor",tint*.32f);
             ProceduralVisuals.ApplySurface(visual.surface,VisualSurface.Metal);
             obj.AddComponent<MeshFilter>().sharedMesh=visual.clipped;
             obj.AddComponent<MeshRenderer>().sharedMaterial=visual.surface;

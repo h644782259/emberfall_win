@@ -7,7 +7,7 @@ namespace Emberfall
         {
             if(MobileControls.Active||!session.IsInCamp||session.CurrentHub==0)return;
             Rect r=new Rect(width-248,236,230,42);blockedRects.Add(r);
-            if(NavigationButton(r,session.CurrentHub==1?"赤岩锻造委托":"星望观测星图",gold)){TogglePanel(Panel.Camp);campTab=4;}
+            if(NavigationButton(r,session.CurrentHub==1?"赤岩锻造委托":"星望观测星图",gold)){TogglePanel(Panel.HubUtility);campTab=4;}
         }
         private void DrawTownActivitySurface()
         {

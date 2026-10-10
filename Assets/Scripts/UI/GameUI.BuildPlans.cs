@@ -6,7 +6,7 @@ namespace Emberfall
         private Vector2 buildPlanScroll;
         private void ResetBuildPlanSurface(){CancelAllocationDraft();practiceChoicesOpen=false;}
         private void ReconcileBuildPlanSurface()
-        {if(allocationDraft!=null&&(panel!=Panel.Camp&&panel!=Panel.Skills))ResetBuildPlanSurface();}
+        {if(allocationDraft!=null&&(panel!=Panel.HubUtility&&panel!=Panel.Skills))ResetBuildPlanSurface();}
         private bool CloseBuildPlanSurface()
         {if(allocationDraft==null)return false;CancelAllocationDraft();CancelMobileScroll();BlockUITransition();return true;}
         private bool DrawBuildPlanSurface()

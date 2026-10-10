@@ -26,7 +26,9 @@ namespace Emberfall
             string description=BuildCatalog.VenomSkillOverride(p,skill,rank);
             if(description.Length==0)description=GameBalance.SkillDescription(p.heroClass,skill);
             string prerequisite="人物等级达成后技能自动解锁";
+            if(description==GameBalance.SkillEvolution(p.heroClass,skill,1))description="";
             float descriptionHeight=DesktopParagraphHeight(description,530,13);
+            if(string.IsNullOrEmpty(description))descriptionHeight=0;
             float prerequisiteHeight=DesktopParagraphHeight(prerequisite,530,12);
             string[] evolutions=new string[3];
             float evolutionHeight=0;

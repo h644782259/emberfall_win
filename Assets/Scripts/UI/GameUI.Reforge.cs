@@ -10,13 +10,13 @@ namespace Emberfall
         private Vector2 reforgeScroll;
         private void OpenReforgeSurface(string itemId)
         {
-            var p=session.Progression;if(panel!=Panel.Camp||!session.IsInCamp)return;
+            var p=session.Progression;if(panel!=Panel.HubUtility||!session.IsInCamp)return;
             var choices=p.ReforgeChoices(itemId);if(choices.Length==0)return;
             reforgeOwner=p;reforgeCharacter=p.CurrentSlotId;reforgeItem=itemId;reforgeChoices=choices;reforgeSelected=choices[0].Quote;
             reforgeNotice=null;reforgeScroll=Vector2.zero;CancelMobileScroll();BlockUITransition();
         }
         private void ReconcileReforgeSurface()
-        {if(reforgeOwner!=null&&(panel!=Panel.Camp||!session.IsInCamp||reforgeOwner!=session.Progression||reforgeCharacter!=session.Progression.CurrentSlotId))ClearReforgeSurface();}
+        {if(reforgeOwner!=null&&(panel!=Panel.HubUtility||!session.IsInCamp||reforgeOwner!=session.Progression||reforgeCharacter!=session.Progression.CurrentSlotId))ClearReforgeSurface();}
         private void ClearReforgeSurface()
         {reforgeOwner=null;reforgeCharacter=reforgeItem=reforgeNotice=null;reforgeChoices=null;reforgeSelected=null;reforgeScroll=Vector2.zero;}
         private bool CloseReforgeSurface()
@@ -42,7 +42,7 @@ namespace Emberfall
             if(Button(reforgeAction,"",gold,reason.Length==0,reason))ExecuteReforgeSelection();
             Text(new Rect(reforgeAction.x+8*u,reforgeAction.y,reforgeAction.width-92*u,reforgeAction.height),"重铸",Mathf.RoundToInt(13*u),gold,true);
             DrawPrice(new Rect(reforgeAction.xMax-84*u,reforgeAction.y+4*u,76*u,reforgeAction.height-8*u),reforgeSelected==null?0:reforgeSelected.GoldCost,false,u);
-            if(NavigationButton(BuildPlanRect(l.FooterButton(0,2),u), "返回工坊", jade))CloseReforgeSurface();return true;
+            if(NavigationButton(BuildPlanRect(l.FooterButton(0,2),u), "返回", jade))CloseReforgeSurface();return true;
         }
         private float DrawReforgeOptions(float w,float u,bool draw)
         {

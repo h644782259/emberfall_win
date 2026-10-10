@@ -60,7 +60,7 @@ namespace Emberfall
             catch(Exception error)
             {
                 Debug.LogException(error);
-                if(transaction.Committed){Progression.PublishClassSwitch(transaction);ClassSwitchError="职业已保存；界面刷新异常，请重新打开工坊。";return true;}
+                if(transaction.Committed){Progression.PublishClassSwitch(transaction);ClassSwitchError="职业已保存；界面刷新异常，请重新打开技能页面。";return true;}
                 ClassSwitchError="职业切换未保存，请重试或检查日志。";return false;
             }
             finally

@@ -5,13 +5,23 @@ namespace Emberfall
     /// <summary>Local accessibility preferences, independent of character saves.</summary>
     public static class EffectPreferences
     {
+#if UNITY_EDITOR
+        public static float ValidationInterfaceTextScale { get; set; }
+#endif
+        private static float InterfaceTextPreset(float value)
+        {return float.IsNaN(value)||float.IsInfinity(value)?1f:value<1.15f?1f:1.2f;}
+        public static string InterfaceTextSizeName => InterfaceTextScale<1.15f?"标准":"大号";
         public static float InterfaceTextScale
         {
-            get { float value=PlayerPrefs.GetFloat("Emberfall.InterfaceTextScale",1f);return float.IsNaN(value)||float.IsInfinity(value)?1f:Mathf.Clamp(value,1f,1.2f); }
-            set { PlayerPrefs.SetFloat("Emberfall.InterfaceTextScale",float.IsNaN(value)||float.IsInfinity(value)?1f:Mathf.Clamp(value,1f,1.2f));PlayerPrefs.Save(); }
+            get {
+#if UNITY_EDITOR
+                if(ValidationInterfaceTextScale>0)return InterfaceTextPreset(ValidationInterfaceTextScale);
+#endif
+                return InterfaceTextPreset(PlayerPrefs.GetFloat("Emberfall.InterfaceTextScale",1f)); }
+            set { PlayerPrefs.SetFloat("Emberfall.InterfaceTextScale",InterfaceTextPreset(value));PlayerPrefs.Save(); }
         }
         public static void CycleInterfaceTextScale()
-        {InterfaceTextScale=InterfaceTextScale>=1.19f?1f:InterfaceTextScale>=1.09f?1.2f:1.1f;}
+        {InterfaceTextScale=InterfaceTextScale>=1.19f?1f:1.2f;}
         public static float CombatTextScale { get { return Mathf.Clamp(PlayerPrefs.GetFloat("Emberfall.CombatTextScale", 1.25f), 1f, 1.8f); } set { PlayerPrefs.SetFloat("Emberfall.CombatTextScale", Mathf.Clamp(value, 1f, 1.8f)); PlayerPrefs.Save(); } }
         public static float EffectsScale { get { return Mathf.Clamp(PlayerPrefs.GetFloat("Emberfall.EffectsScale", 1f), .25f, 1f); } set { PlayerPrefs.SetFloat("Emberfall.EffectsScale", Mathf.Clamp(value, .25f, 1f)); PlayerPrefs.Save(); } }
         public static bool CameraShake { get { return PlayerPrefs.GetInt("Emberfall.CameraShake", 1) != 0; } set { PlayerPrefs.SetInt("Emberfall.CameraShake", value ? 1 : 0); PlayerPrefs.Save(); } }

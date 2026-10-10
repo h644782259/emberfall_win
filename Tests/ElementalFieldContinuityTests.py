@@ -17,6 +17,13 @@ with tempfile.TemporaryDirectory(prefix='emberfall-field-continuity-') as direct
         'Assets/Scripts/Core/WeaponStructure.cs','Tests/FilledVfxAllocationTests.cs',
         'Tests/WeaponVisualLinkTests.cs','Tests/ElementalFieldPlacementTests.cs','Tests/ElementalFieldContinuityTests.cs']
     for path in files:(temp/Path(path).name).write_text((root/path).read_text())
+    # Reconcile shared managed substitutes without editing gameplay sources.
+    placement=temp/'ElementalFieldPlacementTests.cs'
+    placement.write_text(placement.read_text().replace('    public static class WorldTraversal{public static int Revision;}','').replace('public enum Element{Fire,Lightning,Poison}', 'public enum Element{Fire,Ice,Lightning,Poison}public static void Burst(PlayerController hero,UnityEngine.Vector3 at,float radius,Element element){}'))
+    fixture=temp/'FilledVfxAllocationTests.cs'
+    stub=fixture.read_text().replace('public static class Mathf\n    {','public static class Mathf\n    { public const float Deg2Rad=PI/180f;')
+    stub=stub.replace('public sealed class Mesh:Object{','public struct Bounds{public Vector3 extents;public Vector3 size=>extents*2;public Vector3 min=>extents*-1;}public sealed class Mesh:Object{public Bounds bounds;')
+    fixture.write_text(stub)
     (temp/'Program.cs').write_text('System.Console.WriteLine(ElementalFieldContinuityTests.Run());')
     project=temp/'Validation.csproj';project.write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net8.0</TargetFramework></PropertyGroup></Project>')
     config=temp/'NuGet.Config';config.write_text('<configuration><packageSources><clear /></packageSources></configuration>')

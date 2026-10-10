@@ -16,6 +16,9 @@ namespace Emberfall
         public static bool SimulationEnabled { get; set; }
 #if UNITY_EDITOR
         public static bool ValidationUsesSimulation { get; set; }
+        public static bool ValidationTablet { get; set; }
+        public static float ValidationDpi { get; set; }
+        public static Vector2 ValidationRenderedViewport { get; set; }
 #endif
         public static bool Active
         {
@@ -58,10 +61,18 @@ namespace Emberfall
         private static Vector3 cachedLayoutInputs;
         private static int cachedPosition;
         private static bool cachedIPad;
-        public static bool IsIPad { get { return Active && MobileTitleLayout.IsIPad(SystemInfo.deviceModel); } }
+        public static bool IsIPad { get {
+#if UNITY_EDITOR
+            if(ValidationUsesSimulation)return Active&&ValidationTablet;
+#endif
+            return Active && MobileTitleLayout.IsIPad(SystemInfo.deviceModel); } }
         public static MobileControlLayout Layout
         {
-            get { Rect safe=SafeArea;Vector3 input=new Vector3(safe.width,safe.height,Screen.dpi);
+            get { Rect safe=SafeArea;float dpi=Screen.dpi;
+#if UNITY_EDITOR
+                if(ValidationUsesSimulation&&ValidationDpi>0)dpi=ValidationDpi;
+#endif
+                Vector3 input=new Vector3(safe.width,safe.height,dpi);
                 if(cachedLayout==null||input!=cachedLayoutInputs||cachedPosition!=EffectPreferences.TouchPosition||cachedIPad!=IsIPad){cachedLayout=new MobileControlLayout(input.x,input.y,input.z,EffectPreferences.TouchPosition,IsIPad);cachedLayoutInputs=input;cachedPosition=EffectPreferences.TouchPosition;cachedIPad=IsIPad;}
                 return cachedLayout; }
         }
@@ -265,7 +276,7 @@ namespace Emberfall
             GUI.color=ready?new Color(.35f,1f,.76f,.85f*opacity):new Color(.8f,.88f,.94f,.48f*opacity);
             GUI.DrawTexture(rect,UIIconAtlas.ControlRing(),ScaleMode.ScaleToFit,true);
             GUI.color=ready?new Color(1,1,1,opacity):new Color(.38f,.42f,.46f,.58f*opacity);
-            float size=rect.width*.66f;GUI.DrawTexture(new Rect(rect.center.x-size*.5f,rect.center.y-size*.5f,size,size),UIIconAtlas.Utility(icon),ScaleMode.ScaleToFit,true);GUI.color=Color.white;
+            float size=rect.width*.66f;GUI.DrawTexture(new Rect(rect.center.x-size*.5f,rect.center.y-size*.5f,size,size),(icon=="attack"?AuthoredIconArt.BasicAttack(session.Progression.Profile.heroClass):UIIconAtlas.Utility(icon)),ScaleMode.ScaleToFit,true);GUI.color=Color.white;
         }
         private Rect PotionVisualRect()
         { return VisualRect(Potion); }

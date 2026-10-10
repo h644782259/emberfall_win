@@ -34,7 +34,7 @@ namespace Emberfall
             var vertices=new Vector3[segments.Count*2];var colors=new Color[vertices.Length];var triangles=new int[segments.Count*3];
             for(int i=0;i<segments.Count;i+=2)
             {
-                Vector3 a=CombatFx.Flat(segments[i])+Vector3.up*.16f,b=CombatFx.Flat(segments[i+1])+Vector3.up*.16f;
+                Vector3 a=WorldTerrain.Ground(segments[i],.16f),b=WorldTerrain.Ground(segments[i+1],.16f);
                 Vector3 side=Vector3.Cross(Vector3.up,(b-a).normalized)*.055f;int v=i*2,t=i*3;
                 vertices[v]=a-side;vertices[v+1]=a+side;vertices[v+2]=b-side;vertices[v+3]=b+side;
                 for(int n=0;n<4;n++)colors[v+n]=Danger;
@@ -100,7 +100,7 @@ namespace Emberfall
             for (int i = 0; i < points.Length; i++)
             {
                 Vector3 point = CombatFx.Flat(points[i]);
-                point.y = .16f;
+                point.y = WorldTraversal.SurfaceHeight(point,.04f)+.16f;
                 line.SetPosition(i, point);
             }
             line.widthMultiplier = Mathf.Max(.07f, width);
@@ -130,7 +130,7 @@ namespace Emberfall
             {
                 int count=Mathf.Max(2,Mathf.CeilToInt(progress*32)+1);clock.positionCount=count;
                 for(int i=0;i<count;i++)
-                {float a=2*Mathf.PI*progress*i/(count-1);timingPoints[i]=timingCenter+new Vector3(Mathf.Sin(a),0,Mathf.Cos(a))*.52f;clock.SetPosition(i,timingPoints[i]);}
+                {float a=2*Mathf.PI*progress*i/(count-1);timingPoints[i]=timingCenter+new Vector3(Mathf.Sin(a),0,Mathf.Cos(a))*.52f;clock.SetPosition(i,WorldTerrain.Ground(timingPoints[i],.16f));}
             }
             if(interruptMark!=null)interruptMark.enabled=interruptible;
         }

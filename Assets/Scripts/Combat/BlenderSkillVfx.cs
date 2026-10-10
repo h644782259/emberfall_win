@@ -9,7 +9,7 @@ namespace Emberfall
         private static Material material;
         private readonly System.Collections.Generic.List<Part> parts=new System.Collections.Generic.List<Part>();
         private MaterialPropertyBlock block;
-        private void Awake(){block=new MaterialPropertyBlock();}
+        private void Awake() { block = new MaterialPropertyBlock(); }
         private PlayerController owner; private GameSession session; private int epoch; private float age,range; private bool shock;
         private const float Life=1.15f;
         private static Mesh Load(string name)
@@ -31,7 +31,7 @@ namespace Emberfall
             if(!groundShock)
             {
                 // Blade silhouette and hot core precede optional motes on every quality tier.
-                for(int i=0;i<3;i++)fx.Add(crescent,new Vector3(0,.62f+i*.16f,0),Vector3.one,0,i*Mathf.PI*2/3,0,false);
+                for(int i=0;i<3;i++)fx.Add(crescent,new Vector3(0,.56f+i*.24f,0),Vector3.one,0,i*Mathf.PI*2/3,0,false);
                 for(int i=0;i<2&&fx.parts.Count<cap;i++)fx.Add(core,new Vector3(0,.63f+i*.16f,0),Vector3.one,0,i*Mathf.PI*2/3+.04f,0,true);
                 for(int i=0;fx.parts.Count<cap;i++)fx.Add(shard,Vector3.zero,new Vector3(.025f,.13f,.04f),2,i*2.399f,0,false);
             }
@@ -63,12 +63,13 @@ namespace Emberfall
             {
                 float t=age-p.Delay;p.Transform.gameObject.SetActive(t>=0);if(t<0)continue;
                 Vector3 at=p.At,scale=p.Scale;float yaw=0,opacity=Mathf.Clamp01((Life-age)/.38f);
-                if(p.Motion==0){float r=1.1f+Mathf.Min(1,age/.48f)*2.3f;scale=new Vector3(r,r,r);if(p.Core)scale*=.985f;yaw=(age*8+p.Phase)*Mathf.Rad2Deg;}
-                else if(p.Motion==1){scale.y=.08f+.75f*Mathf.Sin(Mathf.Min(1,t/.35f)*Mathf.PI);opacity*=Mathf.Max(0,1-t/.6f);}
+                if(p.Motion==0){float r=1.1f+Mathf.Min(1,age/.48f)*2.3f;scale=new Vector3(r,r*1.3f,r);if(p.Core)scale*=.92f;yaw=(age*9+p.Phase)*Mathf.Rad2Deg;}
+                else if(p.Motion==1){scale.y=.12f+1.25f*Mathf.Sin(Mathf.Min(1,t/.45f)*Mathf.PI);opacity*=Mathf.Max(0,1-t/.6f);}
                 else if(p.Motion==2){float a=p.Phase+age*2,r=shock?.45f+age*1.3f:Mathf.Min(3.25f,1.3f+age*2);at+=new Vector3(Mathf.Sin(a)*r,Mathf.Sin(age/Life*Mathf.PI)*(shock?.8f:.45f),Mathf.Cos(a)*r);}
                 else opacity*=Mathf.Max(0,1-t/.6f);
                 p.Transform.localPosition=at*range;p.Transform.localScale=scale*range;p.Transform.localRotation=Quaternion.Euler(0,yaw,0);
-                Color tint=p.Core?new Color(2.4f,1.7f,.72f):new Color(1.5f,.63f,.15f);tint.a=opacity*(p.Core?.9f:.72f)*Mathf.Lerp(.55f,1,EffectPreferences.EffectsScale);
+                Color tint=p.Core?new Color(1.35f,1.12f,.65f):new Color(.95f,.48f,.12f);tint.a=opacity*(p.Core?.9f:.72f)*Mathf.Lerp(.55f,1,EffectPreferences.EffectsScale);
+                block.SetFloat("_Sculpted",p.Core?0:1);block.SetFloat("_Element",0);block.SetFloat("_ImpactLight",Mathf.Clamp01(1-age/.14f)*.35f);
                 block.SetColor("_Color",tint);block.SetFloat("_Opacity",opacity);block.SetFloat("_Progress",age/Life);block.SetFloat("_Style",.35f);p.Renderer.SetPropertyBlock(block);
             }
         }

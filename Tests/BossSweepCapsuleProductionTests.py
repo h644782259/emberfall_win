@@ -12,6 +12,9 @@ assert 'BeamContains(game.Player.transform.position,from,to)' in s
 assert 'SetPosition(j,BeamBoundary(from,to,direction,side,j))' in s
 methods='\n'.join(member(s,k) for k in ['private static Vector3 ClipBeam(', 'private static bool BeamContains(', 'private static Vector3 BeamBoundary(']).replace('private static','public static')
 fixture=(r/'Tests/DestructibleTraversalTests.cs').read_text();fixture='using System;using UnityEngine;'+fixture[fixture.index('namespace Emberfall'):]
+if 'class WorldTerrain' not in (r/'Assets/Scripts/World/WorldTraversal.cs').read_text():
+ fixture+='namespace Emberfall{public static class WorldTerrain{public static void Configure(ZoneKind zone,int hub){}public static float Height(Vector3 point)=>0;}}'
+# Capsule cases run on the flat Dungeon datum; terrain rendering is outside this geometry fixture.
 test='''using System;using Emberfall;using UnityEngine;
 class Test{static int n;static void C(bool b,string s){n++;if(!b)throw new Exception(s);}static void Main(){
 var a=new Vector3(0,0,0);var b=new Vector3(0,0,9);var dir=new Vector3(0,0,1);
@@ -26,14 +29,13 @@ Console.WriteLine("PASS: "+n+" actual sweep clip/containment/contour/traversal g
 '''
 with tempfile.TemporaryDirectory(prefix='boss-capsule-') as tmp:
  p=Path(tmp);(p/'World.cs').write_text((r/'Assets/Scripts/World/WorldTraversal.cs').read_text());(p/'Fixture.cs').write_text(fixture);(p/'Test.cs').write_text(test)
- (p/'Platforms.cs').write_text((r/'Assets/Scripts/World/WorldTraversal.Platforms.cs').read_text())
  (p/'Phase.cs').write_text((r/'Assets/Scripts/Core/LargeBossPhaseState.cs').read_text())
  project=p/'Test.csproj';project.write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net8.0</TargetFramework><OutputType>Exe</OutputType></PropertyGroup></Project>');(p/'NuGet.Config').write_text('<configuration><packageSources><clear /></packageSources></configuration>')
  for old in [False,True]:
   body=methods
   if old:body=body.replace('HasClearSweepCapsule(from,to,BeamDangerRadius)','HasGroundPath(from,to,.12f)').replace('HasClearSweepCapsule(from,Vector3.Lerp(from,to,mid),BeamDangerRadius)','HasGroundPath(from,Vector3.Lerp(from,to,mid),.12f)')
   (p/'Boss.cs').write_text('using UnityEngine;namespace Emberfall{static class Boss{const float BeamDangerRadius=LargeBossPhaseState.BeamHalfWidth+.4f;'+body+'}}')
-  subprocess.run([dotnet,'build',str(project),'--configfile',str(p/'NuGet.Config'),'-v:q'],check=True,stdout=subprocess.DEVNULL)
+  subprocess.run([dotnet,'build',str(project),'--configfile',str(p/'NuGet.Config'),'-v:q'],check=True)
   q=subprocess.run([dotnet,str(p/'bin/Debug/net8.0/Test.dll')],capture_output=True,text=True)
   if old:assert q.returncode and ('clipped full capsule is clear' in q.stderr or 'full width pillar tangent clips before cover' in q.stderr),q.stdout+q.stderr;print('PASS: compiled old center-ray control fails exact capsule safety assertion')
   else:print(q.stdout,end='');assert q.returncode==0,q.stderr

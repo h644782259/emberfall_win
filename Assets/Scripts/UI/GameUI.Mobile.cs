@@ -16,7 +16,7 @@ namespace Emberfall
         {
             Rect r=TouchRect(area);blockedRects.Add(r);
             float size=28*TouchRatio;DrawIcon(new Rect(r.center.x-size*.5f,r.center.y-size*.5f,size,size),UIIconAtlas.Utility(icon),color);
-            Badge(r,icon=="inventory"?NewEquipmentAttention||Attention.LootPending:icon=="skills"?Attention.Skills:icon=="confirm"?session.Progression.ClaimableAchievements>0:false);
+            Badge(r,icon=="inventory"?NewEquipmentAttention||Attention.LootPending:icon=="skills"?Attention.Skills:icon=="achievement"?session.Progression.ClaimableAchievements>0:false);
             return GUI.Button(r,GUIContent.none,invisibleButton);
         }
 
@@ -67,7 +67,7 @@ namespace Emberfall
             }
         }
         public bool MobileInteractionVisible {get{return session!=null&&!session.PracticeActive&&(session.NearDungeonReturn||session.NearChapterExit||session.NearRoomExit||session.SideEventAvailable||MobileDungeonEntranceVisible);}}
-        private bool CanMobileInteract {get{return session!=null&&!session.PracticeActive&&!session.InputBlocked&&!session.DungeonSelectionOpen&&(session.NearDungeonReturn||session.NearChapterExit||session.NearRoomExit||session.SideEventAvailable||session.IsInCamp||session.InDungeon||session.IsNearDungeonEntrance);}}
+        private bool CanMobileInteract {get{return session!=null&&!session.PracticeActive&&!session.InputBlocked&&!session.DungeonSelectionOpen&&(session.NearDungeonReturn||session.NearChapterExit||session.NearRoomExit||session.SideEventAvailable||session.InDungeon||session.IsNearDungeonEntrance);}}
         public void ActivateMobileInteraction(int triggeringFinger=TouchReleaseLatch.AnyPointer)
         {
             if(!CanMobileInteract||UITransitionBlocked)return;
@@ -78,7 +78,6 @@ namespace Emberfall
                 else if(session.NearChapterExit)session.EnterNextChapterRoom();
                 else if(session.NearRoomExit)session.EnterNextRoom();
                 else if(session.SideEventAvailable)session.StartSideEvent();
-                else if(session.IsInCamp){panel=Panel.Camp;session.SetUIBlocking(true);}
                 else if(session.InDungeon)session.Notify("靠近返营传送点后交互。");
                 else session.EnterDungeon();
             }
@@ -114,7 +113,7 @@ namespace Emberfall
             if(MobileIcon(l.Inventory,"inventory",jade))TogglePanel(Panel.Inventory);
             if(MobileIcon(l.SkillsMenu,"skills",p.skillPoints>0?gold:jade))TogglePanel(Panel.Skills);
             if(MobileIcon(l.Menu,"settings",pale))session.SetPaused(true);
-            if(MobileIcon(l.Catalog,"confirm",gold))OpenProgressionGoals();
+            if(MobileIcon(l.Catalog,"achievement",gold))OpenProgressionGoals();
             if(HubServicesAvailable)
             {
                 if(MobileIcon(l.Shop,"shop",gold))OpenHubService(HubNpcKind.Merchant);
@@ -142,7 +141,7 @@ namespace Emberfall
             DrawMobileHotbar();
             DrawCompanionCommands();
 
-            string interaction=MobileDungeonEntranceVisible?"进入副本":session.NearDungeonReturn?"传送点":session.NearChapterExit?"沿星路前进":session.NearRoomExit?"进入下一间":session.SideEventAvailable?"开启晶核挑战":session.IsInCamp?"营地工坊":session.InDungeon?"返回营地":session.IsNearDungeonEntrance?"进入副本":"靠近入口";
+            string interaction=MobileDungeonEntranceVisible?"进入副本":session.NearDungeonReturn?"传送点":session.NearChapterExit?"沿星路前进":session.NearRoomExit?"进入下一间":session.SideEventAvailable?"开启晶核挑战":session.InDungeon?"返回营地":session.IsNearDungeonEntrance?"进入副本":"靠近入口";
             if(MobileInteractionVisible)
             {
             Rect interact=TouchRect(MobileInteractionArea);blockedRects.Add(interact);
@@ -181,14 +180,13 @@ namespace Emberfall
                 Rect hit=hotbarSlots[i];blockedRects.Add(hit);Rect r=MobileVisualRect(hit);
                 bool ready=session.Player!=null&&session.Player.IsSkillAvailable(skill);
                 bool pressed=mobileTap.Skill==skill&&mobileTap.Active;
-                DrawMobileControlSurface(r,ready,pressed);
-                float iconSize=Mathf.Min(r.width,r.height)*.76f;
+                Texture2D skillArt=UIIconAtlas.SkillGlyph(p.heroClass,skill,48);
+                float iconSize=Mathf.Min(r.width,r.height)*1f*(pressed?.95f:1f);
                 Rect icon=new Rect(r.center.x-iconSize*.5f,r.center.y-iconSize*.5f,iconSize,iconSize);
                 // Floating transparent glyph: the entire identity carries availability.
                 Color skillColor=UIIconAtlas.SkillColor(p.heroClass,skill);
                 Color tint=ready?(pressed?Color.Lerp(skillColor,Color.white,.25f):skillColor):new Color(.38f,.42f,.46f,.58f);
-                DrawRecoveringSkill(icon,UIIconAtlas.SkillGlyph(p.heroClass,skill,48),ready?Color.Lerp(tint,Color.white,.25f):skillColor,skill,ready);
-                if(skill==9)Text(new Rect(r.x,r.yMax-13*TouchRatio,r.width,12*TouchRatio),"终极",TouchFont(9),ready?new Color(.3f,1f,.72f):muted,true,false,TextAnchor.MiddleCenter);
+                DrawRecoveringSkill(icon,skillArt,ready?Color.Lerp(tint,Color.white,.25f):skillColor,skill,ready);
                 DrawMobileSkillAvailability(r,skill);
             }
             Rect pageHit=TouchRect(l.SkillPage);blockedRects.Add(pageHit);

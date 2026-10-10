@@ -51,7 +51,7 @@ namespace Emberfall
         {
             if(NavigationButton(TouchRect(x,y,width,48),"技能按键配置",jade))
             {mobileBindingEditor=true;bindingDragSource=-1;bindingDragFinger=-1000;CancelMobileScroll();BlockUITransition();}
-            if(Button(TouchRect(x,y+58,width,48),"界面字号："+Mathf.RoundToInt(EffectPreferences.InterfaceTextScale*100)+"%",jade))EffectPreferences.CycleInterfaceTextScale();
+            if(Button(TouchRect(x,y+58,width,48),"界面字号："+EffectPreferences.InterfaceTextSizeName,jade))EffectPreferences.CycleInterfaceTextScale();
         }
         private void FinishBindingDrag(Rect[] slots,Vector2 point,bool cancelled)
         {
@@ -93,10 +93,10 @@ namespace Emberfall
                     int index=page*4+button,skill=mobileBindings[index];
                     Rect hit=slots[index]=BindingPreviewRect(layout.Skills[button],minX,minY,originX,originY,previewScale);
                     bool target=bindingDragSource>=0&&hit.Contains(bindingDragPoint);
-                    DrawMobileControlSurface(hit,true,target);
                     if(skill>=0)
                     {
-                        float size=hit.width*.76f;
+                        float size=hit.width;
+                        DrawIcon(hit,UIIconAtlas.ControlRing(),UIIconAtlas.SkillColor(session.Progression.Profile.heroClass,skill));
                         DrawIcon(new Rect(hit.center.x-size*.5f,hit.center.y-size*.5f,size,size),UIIconAtlas.SkillGlyph(session.Progression.Profile.heroClass,skill,48),index==bindingDragSource?muted:UIIconAtlas.SkillColor(session.Progression.Profile.heroClass,skill));
                         if(hit.Contains(Mouse))tooltip=GameBalance.SkillName(session.Progression.Profile.heroClass,skill);
                     }
@@ -107,8 +107,10 @@ namespace Emberfall
                 for(int i=0;i<fixedAreas.Length;i++)
                 {
                     Rect hit=BindingPreviewRect(fixedAreas[i],minX,minY,originX,originY,previewScale);
-                    DrawMobileControlSurface(hit,false,false);float size=hit.width*.64f;
-                    DrawIcon(new Rect(hit.center.x-size*.5f,hit.center.y-size*.5f,size,size),i==0?UIIconAtlas.SkillGlyph(session.Progression.Profile.heroClass,9,48):UIIconAtlas.Utility(icons[i]),i==0?UIIconAtlas.SkillColor(session.Progression.Profile.heroClass,9):muted);
+                    if(i!=0)DrawMobileControlSurface(hit,false,false);
+                    else DrawIcon(hit,UIIconAtlas.ControlRing(),UIIconAtlas.SkillColor(session.Progression.Profile.heroClass,9));
+                    float size=hit.width*(i==0?1f:.64f);
+                    DrawIcon(new Rect(hit.center.x-size*.5f,hit.center.y-size*.5f,size,size),i==0?UIIconAtlas.SkillGlyph(session.Progression.Profile.heroClass,9,48):i==1?AuthoredIconArt.BasicAttack(session.Progression.Profile.heroClass):UIIconAtlas.Utility(icons[i]),i==0?UIIconAtlas.SkillColor(session.Progression.Profile.heroClass,9):muted);
                     if(hit.Contains(Mouse))tooltip=captions[i]+" · 固定按键";
                     DrawIcon(new Rect(hit.xMax-10*u,hit.y,10*u,10*u),UIIconAtlas.EquipmentLock(true),muted);
                 }

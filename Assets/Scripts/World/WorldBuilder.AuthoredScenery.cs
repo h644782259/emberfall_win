@@ -20,6 +20,7 @@ namespace Emberfall
             root.localScale=Vector3.one*size;root.localRotation=Quaternion.Euler(0,seed*31f,0);
             Material bark=r.Material(new Color(.27f,.20f,.14f),false,VisualSurface.Wood);
             Material leaf=r.Material(new Color(.15f+variant*.025f,.33f,.24f),false,VisualSurface.Foliage);
+            if(leaf.HasProperty("_Wind"))leaf.SetFloat("_Wind",1f);
             TreeLimb(root,"Tree bole",Vector3.zero,new Vector3(.08f,2.65f,0),.17f,bark);
             for(int i=0;i<5;i++)
             {

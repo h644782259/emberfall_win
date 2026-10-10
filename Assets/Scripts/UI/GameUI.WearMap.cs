@@ -4,6 +4,44 @@ namespace Emberfall
     public sealed partial class GameUI
     {
         private CollectionModelPreview wearModel;
+        private float wearPreviewYaw=20,wearDragX;
+        private int wearDragFinger=-1000,wearDragFrame=-1,wearMouseControl;
+        private void ResetWearRotationGesture()
+        {
+            if(wearMouseControl!=0&&GUIUtility.hotControl==wearMouseControl)GUIUtility.hotControl=0;
+            wearMouseControl=0;wearDragFinger=-1000;wearDragFrame=-1;
+        }
+        private void HandleWearRotation(Rect viewport)
+        {
+            if(!GUI.enabled||inventoryComparisonOpen){ResetWearRotationGesture();return;}
+            if(MobileControls.Active)
+            {
+                if(wearDragFrame==Time.frameCount)return;
+                wearDragFrame=Time.frameCount;bool found=false;
+                for(int i=0;i<Input.touchCount;i++)
+                {
+                    Touch touch=Input.GetTouch(i);Vector2 point=ScreenToUI(touch.position);
+                    if(touch.phase==TouchPhase.Began&&wearDragFinger==-1000&&viewport.Contains(point)&&touchScroll.Finger==-1000)
+                    {wearDragFinger=touch.fingerId;wearDragX=point.x;}
+                    if(touch.fingerId!=wearDragFinger)continue;
+                    found=true;
+                    if(touch.phase==TouchPhase.Ended||touch.phase==TouchPhase.Canceled){wearDragFinger=-1000;continue;}
+                    wearPreviewYaw=Mathf.Repeat(wearPreviewYaw-(point.x-wearDragX)*180/Mathf.Max(1,viewport.width),360);
+                    wearDragX=point.x;
+                }
+                if(!found)wearDragFinger=-1000;
+                return;
+            }
+            Event e=Event.current;int control=GUIUtility.GetControlID(FocusType.Passive);
+            if(e.type==EventType.MouseDown&&e.button==0&&viewport.Contains(e.mousePosition)&&GUIUtility.hotControl==0)
+            {wearMouseControl=control;GUIUtility.hotControl=control;wearDragX=e.mousePosition.x;e.Use();}
+            else if(wearMouseControl==control&&GUIUtility.hotControl==control)
+            {
+                if(e.type==EventType.MouseDrag)
+                {wearPreviewYaw=Mathf.Repeat(wearPreviewYaw-(e.mousePosition.x-wearDragX)*180/Mathf.Max(1,viewport.width),360);wearDragX=e.mousePosition.x;e.Use();}
+                else if(e.type==EventType.MouseUp){ResetWearRotationGesture();e.Use();}
+            }
+        }
         private bool inventoryFashionOpen;
         private bool inventoryStatsVisible;
         private Vector2 inventoryStatsScroll;
@@ -24,6 +62,19 @@ namespace Emberfall
             }
             EndTouchScroll();
         }
+        private string wornLastClick;
+        private float wornLastClickAt=-10;
+        private void WornSlotClick(string id,ItemSlot? equipment,FashionSlot? fashion)
+        {
+            bool twice=wornLastClick==id&&Time.unscaledTime-wornLastClickAt<.4f;
+            wornLastClick=id;wornLastClickAt=Time.unscaledTime;
+            if(!twice)return;
+            wornLastClick=null;
+            bool saved=equipment.HasValue?session.Progression.Unequip(equipment.Value):session.Progression.UnequipFashion(fashion.Value);
+            if(fashion.HasValue)MobileFashionResult(saved,"时装已脱下");else MobileInventoryResult(saved,"装备已脱下");
+            if(saved){inventoryComparisonOpen=false;inventoryPopupItem=null;RebuildBagItems();CancelMobileScroll();}
+        }
+
         private void DrawCurrentWear(Rect area,float u)
         {
             var p=session.Progression;
@@ -31,12 +82,15 @@ namespace Emberfall
             bool fashion=mobileInventoryTab==3||inventoryFashionOpen;
             float equipmentSize=MobileControls.Active?Mathf.Min(InventoryGridGeometry.MobileCellSize,(area.width/u-8)/3):InventoryGridGeometry.DesktopCellSize;
             Rect viewport=new Rect(area.x,area.y,area.width,Mathf.Max(64*u,area.height-(equipmentSize+8)*u));
-            wearModel.SetCenterOnAvatar(true);wearModel.SetComposition(CollectionPreviewComposition.Full);wearModel.SetYaw(20);
+            HandleWearRotation(viewport);
+            // Fit the complete silhouette, including worn weapons and wings, in any aspect ratio.
+            wearModel.SetEquipmentFraming(false,false);wearModel.SetCenterOnAvatar(false);
+            wearModel.SetComposition(CollectionPreviewComposition.Full);wearModel.SetYaw(wearPreviewYaw);
             wearModel.SetViewport(viewport.width*Mathf.Abs(GUI.matrix.m00),viewport.height*Mathf.Abs(GUI.matrix.m11),MobileControls.Active);
             Texture current=wearModel.RenderSafe(p.Profile.heroClass,p.Equipped(ItemSlot.Weapon),p.Equipped(ItemSlot.Armor),p.Equipped(ItemSlot.Relic),p.EquippedFashion(FashionSlot.Wings),p.EquippedFashion(FashionSlot.Weapon));
             if(current!=null)GUI.DrawTexture(viewport,current,ScaleMode.ScaleToFit,false);
             else Text(viewport,wearModel.LastError==null?"角色预览正在恢复":"预览暂不可用，其他操作可继续",Mathf.RoundToInt(11*u),muted,false,true);
-            Text(new Rect(viewport.x+6*u,viewport.y+4*u,90*u,24*u),"Lv."+p.Profile.level,Mathf.RoundToInt(15*u),gold,true);
+            if(!MobileControls.Active)Text(new Rect(viewport.x+6*u,viewport.y+4*u,90*u,24*u),"Lv."+p.Profile.level,Mathf.RoundToInt(15*u),gold,true);
             if(fashion){DrawFashionWearSlots(area,u);return;}
             for(int slot=0;slot<3;slot++)
             {
@@ -52,8 +106,8 @@ namespace Emberfall
                 foreach(var candidate in p.Profile.inventory)if(candidate.slot==(ItemSlot)slot&&UnreviewedEquipmentUpgrade(candidate)){slotUpgrade=true;break;}
                 if(slotUpgrade)DrawIcon(new Rect(r.xMax-18*u,r.yMax-31*u,18*u,18*u),UIIconAtlas.EquipmentUpgradeArrow(),new Color(.25f,1f,.4f));
                 if(item!=null)DesktopInventoryGesture(r,r,item.id);
-                if(MobileControls.Active&&QuietAction(r,"",item!=null&&!inventoryComparisonOpen))
-                {mobileInventoryTab=0;OpenInventoryPopup(item.id,r);}
+                if(QuietAction(r,"",item!=null&&!inventoryComparisonOpen,"双击脱下装备"))
+                    WornSlotClick(item.id,item.slot,null);
             }
         }
         private void DrawFashionWearSlots(Rect area,float u)
@@ -73,7 +127,7 @@ namespace Emberfall
                 {
                     Text(new Rect(r.xMax-18*u,r.y+2*u,16*u,16*u),"✓",Mathf.RoundToInt(11*u),jade,true);
                     DesktopInventoryGesture(r,r,"@fashion:"+item.id);
-                    if(MobileControls.Active&&QuietAction(r,"",!inventoryComparisonOpen)){OpenInventoryPopup("@fashion:"+item.id,r);}
+                    if(QuietAction(r,"",!inventoryComparisonOpen,"双击脱下时装"))WornSlotClick(item.id,null,item.slot);
                 }
             }
         }
@@ -81,7 +135,7 @@ namespace Emberfall
         {
             float u=MobileControls.Active?TouchRatio:1;Rect bounds=MobilePanelRect(area);
             var owned=new System.Collections.Generic.List<FashionData>(session.Progression.Profile.fashions);
-            owned.RemoveAll(f=>f==null);owned.Sort((a,b)=>{int c=a.slot.CompareTo(b.slot);if(c==0)c=b.rarity.CompareTo(a.rarity);return c!=0?c:string.CompareOrdinal(a.id,b.id);});
+            owned.RemoveAll(f=>f==null||f.id==session.Progression.Profile.wingsFashionId||f.id==session.Progression.Profile.weaponFashionId);owned.Sort((a,b)=>{int c=a.slot.CompareTo(b.slot);if(c==0)c=b.rarity.CompareTo(a.rarity);return c!=0?c:string.CompareOrdinal(a.id,b.id);});
             var grid=new InventoryGridGeometry(bounds.width/u-18,MobileControls.Active?InventoryGridGeometry.MobileCellSize:InventoryGridGeometry.DesktopCellSize);float h=Mathf.Max(bounds.height,((owned.Count+grid.Columns-1)/grid.Columns)*grid.Stride*u);
             bool prior=GUI.enabled;GUI.enabled=prior&&(!MobileControls.Active||!inventoryComparisonOpen)&&inventoryPopupDismissed!=Time.frameCount;
             Vector2 before=mobileFashionScroll;mobileFashionScroll=BeginTouchScroll("inventory-fashion-grid",bounds,mobileFashionScroll,new Rect(0,0,bounds.width-18*u,h));
@@ -100,7 +154,7 @@ namespace Emberfall
                 DesktopInventoryGesture(tile,screenTile,"@fashion:"+f.id);
                 if(GUI.Button(tile,GUIContent.none,invisibleButton)){if(MobileControls.Active){chosen="@fashion:"+f.id;anchor=screenTile;}else DesktopInventoryClick("@fashion:"+f.id);}
             }
-            if(owned.Count==0)Text(new Rect(8*u,12*u,bounds.width-34*u,48*u),"暂无已拥有时装",Mathf.RoundToInt(13*u),muted);
+            if(owned.Count==0)Text(new Rect(8*u,12*u,bounds.width-34*u,48*u),"暂无未穿戴时装",Mathf.RoundToInt(13*u),muted);
             EndTouchScroll();GUI.enabled=prior;if(before!=mobileFashionScroll)inventoryComparisonOpen=false;
             if(chosen!=null)OpenInventoryPopup(chosen,anchor);DrawInventoryPopup(bounds,u);
         }

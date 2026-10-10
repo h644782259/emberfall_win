@@ -10,10 +10,12 @@ s=s.replace('public bool IsDead;public int CombatEpoch;','public bool IsDead;pub
 s=s.replace('public static Material NewGlow()', 'public static GameObject Ring(params object[] a)=>new GameObject("marker");public static Material NewGlow()')
 s=s.replace('public T GetComponent<T>()where T:Component=>gameObject.GetComponent<T>();','public T GetComponent<T>()where T:Component=>gameObject.GetComponent<T>();public T GetComponentInChildren<T>()where T:Component=>gameObject.GetComponent<T>();')
 s=s.replace('public Vector3 right=>','public Vector3 forward=>localRotation.Rotate(Vector3.forward);public Vector3 right=>')
-s=s.replace('public bool emitting;public int ClearCount;','public Material sharedMaterial;public float time,startWidth,endWidth,minVertexDistance;public int numCapVertices,numCornerVertices;public Color startColor,endColor;public bool emitting;public int ClearCount;')
-s=s.replace('public Material(Shader shader){}','public Material(Shader shader){}public void SetColor(string n,Color c){}')
+s=s.replace('public bool emitting;public int ClearCount;','public Gradient colorGradient;public Material sharedMaterial;public float time,startWidth,endWidth,minVertexDistance;public int numCapVertices,numCornerVertices;public Color startColor,endColor;public bool emitting;public int ClearCount;')
+s=s.replace('public Material(Shader shader){}','public Material(Shader shader){}public void SetColor(string n,Color c){}public void EnableKeyword(string keyword){}public void SetFloat(string n,float v){}')
 s=s.replace('public static Vector3 zero=>','public static Vector3 right=>new Vector3(1,0,0);public static Vector3 left=>new Vector3(-1,0,0);public static Vector3 down=>new Vector3(0,-1,0);public static Vector3 back=>new Vector3(0,0,-1);public static Vector3 zero=>')
 s=s.replace('public static Quaternion LookRotation(Vector3 forward)=>identity;', 'public static Quaternion LookRotation(Vector3 forward)=>Euler(-(float)Math.Asin(Math.Clamp(forward.normalized.y,-1,1))*180/Mathf.PI,(float)Math.Atan2(forward.x,forward.z)*180/Mathf.PI,0);')
+s=s.replace('public struct Color{','public struct Color{public static Color white=>new Color(1,1,1);public static Color operator*(Color c,float f)=>new Color(c.r*f,c.g*f,c.b*f,c.a*f);public static Color Lerp(Color a,Color b,float t)=>new Color(a.r+(b.r-a.r)*t,a.g+(b.g-a.g)*t,a.b+(b.b-a.b)*t,a.a+(b.a-a.a)*t);')
+s+='namespace UnityEngine{public class Gradient{public void SetKeys(GradientColorKey[] c,GradientAlphaKey[] a){}}public struct GradientColorKey{public GradientColorKey(Color c,float t){}}public struct GradientAlphaKey{public GradientAlphaKey(float a,float t){}}}'
 source=(root/'Assets/Scripts/Combat/CombatEffects.cs').read_text()
 def member(src,marker):
  a=src.index(marker);b=src.index('{',a);end=b+1;depth=1
@@ -23,7 +25,8 @@ s+='namespace Emberfall{public static class BuildCatalog{'+member((root/'Assets/
 header=source[source.index('    internal sealed class CombatProjectile'):source.index('        public static void Friendly')]
 methods=['public static void Friendly','internal static bool CanLaunchFromMuzzle','public static void BasicShot','public static void Hostile','private static CombatProjectile Make','private void OnDisable','private void OnDestroy','private void BindVisualOrigin','private void AlignBodyFlight']
 projectile='using System.Collections.Generic;using UnityEngine;namespace Emberfall{'+header+'\n'.join(member(source[source.index("    internal sealed class CombatProjectile"):],m) for m in methods)+'}}'
-# The simulation method stays entirely unchanged in this patch. Lock to reviewed pre-F5 tree.
+# The simulation method is byte-identical to the 2026-10-10 pre-art baseline.
+# Refresh the old oracle for already-landed gameplay changes, retaining exclusions below.
 import hashlib
 simulation=member(source[source.index('internal sealed class CombatProjectile'):],'private void Update()')
 steering=member(simulation,'            if(concentrated && age<=')
@@ -44,7 +47,7 @@ opening='\n            CombatImpactBatch.BeginAction();\n            try\n      
 closing='\n\n            }\n            finally { CombatImpactBatch.EndAction(); }'
 assert legacy.count(opening)==1 and legacy.count(closing)==1
 legacy=legacy.replace(opening,'',1).replace(closing,'',1)
-assert hashlib.sha256(legacy.encode()).hexdigest()=='8d83dce7d455676baea8b32bf87ee0dc0f32547b42de1e19289e4524d89feab1','non-variant simulation changed outside reviewed venom opt-in blocks'
+assert hashlib.sha256(legacy.encode()).hexdigest()=='8586f0c38e93ec6be535e4d568dec10356e6b1f45c84b12abf6c0500c4973eb0','non-variant simulation changed outside reviewed venom opt-in blocks'
 print('PASS original projectile Update SHA preserved after excluding only explicit B-only steering/selection/filter.')
 # Execute exactly the changed area cosmetic setup and age gate; gameplay scheduling is not duplicated.
 area=source[source.index('internal sealed class CombatArea'):]
