@@ -7,6 +7,19 @@ namespace Emberfall
     public static class UIIconAtlas
     {
         private static readonly Dictionary<int, Texture2D> cache = new Dictionary<int, Texture2D>();
+        private static readonly Dictionary<int,Texture2D> detailCache=new Dictionary<int,Texture2D>();
+        private static readonly Queue<int> detailOrder=new Queue<int>();
+        private static readonly Dictionary<Texture2D,System.Func<Texture2D>> detailSources=new Dictionary<Texture2D,System.Func<Texture2D>>();
+        public static Texture2D ForDisplay(Texture2D source,float physicalSize)
+        {
+            System.Func<Texture2D> create;
+            return source!=null&&physicalSize>source.width&&detailSources.TryGetValue(source,out create)?create():source;
+        }
+        private static void StoreDetail(int key,Texture2D texture)
+        {
+            while(detailCache.Count>=32){int old=detailOrder.Dequeue();Texture2D retired;if(detailCache.TryGetValue(old,out retired)){detailCache.Remove(old);if(retired!=null)Object.Destroy(retired);}}
+            detailCache[key]=texture;detailOrder.Enqueue(key);
+        }
         // Skill identity colors are shared by glyphs, borders and rank marks.
         private static readonly Color[,] skillColors = {
             { new Color(1f,.68f,.32f), new Color(.9f,.48f,.28f), new Color(1f,.4f,.48f), new Color(.83f,.72f,1f), new Color(1f,.89f,.48f), new Color(.48f,.86f,.92f), new Color(.48f,1f,.65f), new Color(.87f,.65f,.4f), new Color(.73f,.83f,1f), new Color(1f,.82f,.4f) },
@@ -153,8 +166,9 @@ namespace Emberfall
             texture=ink.Finish("Skill page switch arrows",true);cache[key]=texture;return texture;
         }
 
-        public static Texture2D Utility(string name)
+        public static Texture2D Utility(string name,bool highResolution=false)
         {
+            var targetCache=highResolution?detailCache:cache;
             if (name == "inventory") name = "bag";
             if (name == "camp") name = "home";
             if (name == "blink") name = "dodge";
@@ -163,8 +177,8 @@ namespace Emberfall
             if (id < 0) id = 1;
             int key = 100 + id;
             Texture2D texture;
-            if (cache.TryGetValue(key, out texture)) return texture;
-            var ink = new Icon(new Color(.8f, .91f, .96f));
+            if (targetCache.TryGetValue(key, out texture)) return texture;
+            var ink = new Icon(new Color(.8f, .91f, .96f),highResolution?512:128);
             if (id == 0) { ink.Line(22, 19, 22, 10, 3); ink.Line(22, 10, 42, 10, 3); ink.Line(42, 10, 42, 19, 3); ink.Polygon(new[] { V(13, 20), V(51, 20), V(55, 53), V(9, 53) }); }
             else if (id == 1) { for (int i = 0; i < 5; i++) ink.Radial(-90 + i * 72, 7, 25, 4); ink.Ring(32, 32, 12, 3); }
             else if (id == 2) { ink.Line(7, 29, 32, 8, 5); ink.Line(32, 8, 57, 29, 5); ink.Line(16, 25, 16, 53, 5); ink.Line(16, 53, 49, 53, 5); ink.Line(49, 53, 49, 25, 5); }
@@ -191,7 +205,7 @@ namespace Emberfall
             else if(id==15){ink.Line(12,12,12,52,4);ink.Line(26,22,26,52,4);ink.Line(40,12,40,52,4);ink.Line(54,22,54,52,4);ink.Arrow(19,10,47,10);}
             else if(id==14){ink.color=new Color(.68f,.63f,1f);ink.Polygon(new[]{V(32,6),V(51,28),V(39,56),V(18,48),V(13,23)});ink.color=Color.white;ink.Line(32,9,27,44,3);}
             else { ink.Arrow(32, 46, 32, 10); ink.Line(15, 55, 49, 55, 4); }
-            texture = ink.Finish("Utility " + name); cache[key] = texture; return texture;
+            texture = ink.Finish("Utility " + name); if(highResolution)StoreDetail(key,texture);else{cache[key]=texture;detailSources[texture]=()=>Utility(name,true);} return texture;
         }
 
         public static Texture2D Mastery(MasteryType mastery)
@@ -248,11 +262,12 @@ namespace Emberfall
             ink.Arc(locked?32:42,29,13,180,360,5);ink.color=new Color(.09f,.15f,.19f);ink.Line(32,39,32,48,4);
             texture=ink.Finish(locked?"Locked equipment":"Unlocked equipment");cache[key]=texture;return texture;
         }
-        public static Texture2D EquipmentCardIcon(ItemSlot slot,int level=1,Rarity rarity=Rarity.Common,HeroClass hero=HeroClass.Vanguard)
+        public static Texture2D EquipmentCardIcon(ItemSlot slot,int level=1,Rarity rarity=Rarity.Common,HeroClass hero=HeroClass.Vanguard,bool highResolution=false)
         {
+            var targetCache=highResolution?detailCache:cache;
             int tier=Mathf.Clamp(level/10,0,10),rank=Mathf.Clamp((int)rarity,0,3),key=-3000000-(int)slot*10000-tier*100-rank*10-(int)hero;
-            Texture2D texture;if(cache.TryGetValue(key,out texture))return texture;
-            var ink=new Icon(Color.white);
+            Texture2D texture;if(targetCache.TryGetValue(key,out texture))return texture;
+            var ink=new Icon(Color.white,highResolution?512:128);
             IconQualityHalo(ink,rank);
             if(slot==ItemSlot.Weapon&&hero==HeroClass.Ranger)
             {
@@ -300,7 +315,7 @@ namespace Emberfall
                 else{ink.Line(32,23,32,35,2);ink.Line(32,28,25,23,2);ink.Line(32,28,39,23,2);}
             }
             IconQualityDetails(ink,rank);
-            texture=ink.Finish("Equipment "+hero+" "+slot+" tier "+tier+" quality "+rank);cache[key]=texture;return texture;
+            texture=ink.Finish("Equipment "+hero+" "+slot+" tier "+tier+" quality "+rank);if(highResolution)StoreDetail(key,texture);else{cache[key]=texture;detailSources[texture]=()=>EquipmentCardIcon(slot,level,rarity,hero,true);}return texture;
         }
         private static void IconQualityHalo(Icon ink,int rank)
         {
@@ -320,11 +335,12 @@ namespace Emberfall
                 for(int side=-1;side<=1;side+=2){ink.Line(32+side*25,42,32+side*25,54,2);ink.Line(32+side*21,48,32+side*29,48,2);}
             }
         }
-        public static Texture2D FashionCardIcon(FashionSlot slot,int appearanceTier=3,HeroClass hero=HeroClass.Vanguard)
+        public static Texture2D FashionCardIcon(FashionSlot slot,int appearanceTier=3,HeroClass hero=HeroClass.Vanguard,bool highResolution=false)
         {
+            var targetCache=highResolution?detailCache:cache;
             int tier=Mathf.Clamp(appearanceTier,0,3),key=-4000000-(int)slot*100-tier*10-(int)hero;
-            Texture2D texture;if(cache.TryGetValue(key,out texture))return texture;
-            var ink=new Icon(Color.white);IconQualityHalo(ink,3);
+            Texture2D texture;if(targetCache.TryGetValue(key,out texture))return texture;
+            var ink=new Icon(Color.white,highResolution?512:128);IconQualityHalo(ink,3);
             if(slot==FashionSlot.Weapon)
             {
                 if(hero==HeroClass.Ranger){ink.Arc(15,32,24,-80,80,5);ink.Line(19,7,19,57,2);ink.Arrow(13,32,55,32);}
@@ -345,29 +361,30 @@ namespace Emberfall
             }
             IconQualityDetails(ink,3);ink.color=Color.white;
             for(int mark=0;mark<=tier;mark++)ink.Disc(25+mark*5,58,1.6f);
-            texture=ink.Finish("Legendary fashion "+hero+" "+slot+" design "+tier);cache[key]=texture;return texture;
+            texture=ink.Finish("Legendary fashion "+hero+" "+slot+" design "+tier);if(highResolution)StoreDetail(key,texture);else{cache[key]=texture;detailSources[texture]=()=>FashionCardIcon(slot,appearanceTier,hero,true);}return texture;
         }
-        public static Texture2D Reward(int kind)
+        public static Texture2D Reward(int kind,bool highResolution=false)
         {
-            int key=-1000-kind;Texture2D texture;if(cache.TryGetValue(key,out texture))return texture;
-            var ink=new Icon(Color.white);
+            var targetCache=highResolution?detailCache:cache;
+            int key=-1000-kind;Texture2D texture;if(targetCache.TryGetValue(key,out texture))return texture;
+            var ink=new Icon(Color.white,highResolution?512:128);
             if(kind==0){ink.Disc(32,34,22);ink.color=new Color(.5f,.5f,.5f);ink.Ring(32,34,16,3);ink.Line(32,23,32,45,4);}
             else if(kind==1){ink.Polygon(new[]{V(32,5),V(48,28),V(39,57),V(20,51),V(14,24)});ink.color=new Color(.55f,.55f,.55f);ink.Line(32,7,28,49,3);ink.Line(16,25,46,28,3);}
             else if(kind==2){ink.Arc(32,32,21,-65,245,5);ink.Arc(32,32,12,115,425,4);for(int i=0;i<5;i++)ink.Radial(i*72-90,3,12,3);}
             else{ink.Line(19,51,19,13,5);ink.Line(32,51,32,24,5);ink.Line(45,51,45,34,5);ink.Arrow(13,23,40,9);}
-            texture=ink.Finish("Reward resource "+kind);cache[key]=texture;return texture;
+            texture=ink.Finish("Reward resource "+kind);if(highResolution)StoreDetail(key,texture);else{cache[key]=texture;detailSources[texture]=()=>Reward(kind,true);}return texture;
         }
-        public static void Clear() { foreach (Texture2D texture in cache.Values) if (texture != null) Object.Destroy(texture); cache.Clear(); }
+        public static void Clear() { foreach (Texture2D texture in cache.Values) if (texture != null) Object.Destroy(texture); cache.Clear();foreach(var texture in detailCache.Values)if(texture!=null)Object.Destroy(texture);detailCache.Clear();detailOrder.Clear();detailSources.Clear(); }
         private static Vector2 V(float x, float y) { return new Vector2(x, y); }
         private sealed class Icon
         {
-            private const int Size = 128;
-            private const float RasterScale = Size / 64f;
-            private readonly Color[] pixels = new Color[Size * Size];
+            private readonly int Size;
+            private readonly float RasterScale;
+            private readonly Color[] pixels;
             public Color color;
             public bool Layered;
             private readonly int outputSize;
-            public Icon(Color tint, int size = 128) { color = tint; outputSize = Mathf.Clamp(size,128,Size); }
+            public Icon(Color tint, int size = 128) { color=tint;Size=outputSize=Mathf.Clamp(size,128,512);RasterScale=Size/64f;pixels=new Color[Size*Size]; }
             private void Plot(int x, int y, float alpha)
             {
                 if (alpha <= 0 || x < 0 || y < 0 || x >= Size || y >= Size) return;
@@ -400,7 +417,8 @@ namespace Emberfall
             public void Arc(float x, float y, float radius, float start, float end, float thickness)
             {
                 Vector2 prev = V(x, y) + V(Mathf.Cos(start * Mathf.Deg2Rad), Mathf.Sin(start * Mathf.Deg2Rad)) * radius;
-                for (int i = 1; i <= 36; i++) { float a = Mathf.Lerp(start, end, i / 36f) * Mathf.Deg2Rad; Vector2 next = V(x, y) + V(Mathf.Cos(a), Mathf.Sin(a)) * radius; Line(prev.x, prev.y, next.x, next.y, thickness); prev = next; }
+                int segments=Mathf.Max(36,Mathf.CeilToInt(Mathf.Abs(end-start)*Size/2048f));
+                for (int i = 1; i <= segments; i++) { float a = Mathf.Lerp(start, end, i / (float)segments) * Mathf.Deg2Rad; Vector2 next = V(x, y) + V(Mathf.Cos(a), Mathf.Sin(a)) * radius; Line(prev.x, prev.y, next.x, next.y, thickness); prev = next; }
             }
             public void Radial(float angle, float inner, float outer, float thickness) { Vector2 d = V(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sin(angle * Mathf.Deg2Rad)); Line(32 + d.x * inner, 32 + d.y * inner, 32 + d.x * outer, 32 + d.y * outer, thickness); }
             public void Arrow(float x, float y, float tx, float ty) { Vector2 d = (V(tx, ty) - V(x, y)).normalized, n = V(-d.y, d.x); Line(x, y, tx, ty, 3); Vector2 end = V(tx, ty), a = end - d * 9 + n * 6, b = end - d * 9 - n * 6; Line(a.x, a.y, tx, ty, 3); Line(b.x, b.y, tx, ty, 3); }
@@ -419,7 +437,16 @@ namespace Emberfall
                     bool inside = false; int j = points.Length - 1;
                     for (int i = 0; i < points.Length; j = i++)
                         if ((points[i].y > sy) != (points[j].y > sy) && sx < (points[j].x - points[i].x) * (sy - points[i].y) / (points[j].y - points[i].y) + points[i].x) inside = !inside;
-                    if (inside) Plot(x, y, 1);
+                    if(Size<=128){if(inside)Plot(x,y,1);}
+                    else {
+                        int coverage=0;
+                        for(int sample=0;sample<4;sample++){
+                            float sampleX=(x+((sample&1)==0?.25f:.75f))/RasterScale,sampleY=(y+(sample<2?.25f:.75f))/RasterScale;bool hit=false;int prior=points.Length-1;
+                            for(int point=0;point<points.Length;prior=point++)if((points[point].y>sampleY)!=(points[prior].y>sampleY)&&sampleX<(points[prior].x-points[point].x)*(sampleY-points[point].y)/(points[prior].y-points[point].y)+points[point].x)hit=!hit;
+                            if(hit)coverage++;
+                        }
+                        Plot(x,y,coverage*.25f);
+                    }
                 }
             }
             public Texture2D Finish(string name,bool monochrome=false)

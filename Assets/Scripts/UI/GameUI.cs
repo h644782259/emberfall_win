@@ -1214,6 +1214,7 @@ namespace Emberfall
         private static void DrawIcon(Rect r, Texture2D texture, Color tint)
         {
             if (texture == null) return;
+            texture=UIIconAtlas.ForDisplay(texture,Mathf.Max(r.width,r.height)*Mathf.Abs(GUI.matrix.lossyScale.x));
             Color previous = GUI.color;
             tint.a*=controlOpacity;GUI.color = tint;
             GUI.DrawTexture(r, texture, ScaleMode.ScaleToFit, true);

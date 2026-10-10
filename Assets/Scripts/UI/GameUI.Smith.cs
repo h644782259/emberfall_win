@@ -58,7 +58,7 @@ namespace Emberfall
             for(int i=0;i<categories.Length;i++)
                 if(TabButton(new Rect((16+i*116)*u,58*u,108*u,40*u),categories[i],smithCategory==i)&&smithCategory!=i){smithCategory=i;smithDetailScroll=Vector2.zero;}
             Rect body=new Rect(16*u,110*u,width-32*u,height-122*u);
-            if(MobileControls.Active&&!MobileControls.IsIPad&&smithCategory==1)
+            if(smithCategory==1)
             {
                 DrawPhoneSocketService(body,u);
                 GUI.enabled=prior;DrawGemPreview(u);DrawSocketPicker(u);return;
@@ -109,7 +109,8 @@ namespace Emberfall
                         Color accent=quote!=null?gold:muted;
                         Fill(action,new Color(accent.r,accent.g,accent.b,.13f));Border(action,new Color(accent.r,accent.g,accent.b,.55f));
                         if(QuietAction(action,"",quote!=null))Feedback(p.UpgradeAtSmith(quote,SmithServiceActive),"部位强化已保存，换装自动继承");
-                        DrawIcon(new Rect(action.x+10*u,action.y+11*u,22*u,22*u),UIIconAtlas.Utility(capped?"confirm":"upgrade"),accent);
+                        if(capped)Text(action,"已满级",Mathf.RoundToInt(14*u),gold,true,false,TextAnchor.MiddleCenter);
+                        else DrawIcon(new Rect(action.x+10*u,action.y+11*u,22*u,22*u),UIIconAtlas.Utility("upgrade"),accent);
                         if(!capped)
                         {
                             DrawIcon(new Rect(action.x+42*u,action.y+13*u,18*u,18*u),UIIconAtlas.Utility("coin"),gold);
@@ -170,13 +171,18 @@ namespace Emberfall
                 Text(new Rect(4*u,(actionY+38)*u,(left-8)*u,20*u),lockHint,Mathf.RoundToInt(10*u),muted,false,false,TextAnchor.MiddleCenter);
                 string attribute=BuildCatalog.IsAttributeGem(gem.mechanic)?BuildCatalog.GemAttributeSummary(gem.mechanic,gem.rarity,gem.upgradeRank):BuildCatalog.AttributeLabel(BuildCatalog.MechanicAttribute(gem.mechanic))+" +"+(BuildCatalog.MechanicAttributeValue(gem.mechanic,gem.upgradeRank)*100).ToString("0.#")+"%";
                 Text(new Rect(4*u,(h-24)*u,(left-8)*u,22*u),attribute,Mathf.RoundToInt(10*u),jade,true,false,TextAnchor.MiddleCenter);
-                float cardHeight=(h-38)*.5f;
+                float cardHeight=h-38,formWidth=(right-8)*.5f;
                 for(int variant=0;variant<2;variant++)
                 {
-                    Rect option=new Rect((left+8)*u,(28+variant*(cardHeight+6))*u,right*u,cardHeight*u);
+                    Rect option=new Rect((left+8+variant*(formWidth+8))*u,28*u,formWidth*u,cardHeight*u);
                     bool active=gem.variantUnlocked&&gem.variant==variant;Fill(option,active?new Color(.055f,.19f,.18f):card);Border(option,active?gold:muted);
-                    Text(new Rect(option.x+7*u,option.y+3*u,option.width-14*u,20*u),SmithVariantName(gem.mechanic,variant)+(active?" · 当前":gem.variantUnlocked?"":" · 升华解锁"),Mathf.RoundToInt(11*u),active?gold:muted,true);
-                    Text(new Rect(option.x+7*u,option.y+25*u,option.width-14*u,option.height-28*u),PhoneGemFormDescription(gem,variant),Mathf.RoundToInt(10*u),pale,false,true);
+                    bool roomy=option.width>=180*u;
+                    DrawIcon(new Rect(option.x+8*u,option.y+8*u,20*u,20*u),UIIconAtlas.Utility(variant==0?"core":"attack"),active?gold:jade);
+                    Text(new Rect(option.x+34*u,option.y+3*u,option.width-42*u,30*u),SmithVariantName(gem.mechanic,variant),Mathf.RoundToInt((roomy?15:11)*u),active?gold:pale,true,false,TextAnchor.MiddleLeft);
+                    Fill(new Rect(option.x+8*u,option.y+36*u,option.width-16*u,u),new Color(jade.r,jade.g,jade.b,.25f));
+                    string formText=PhoneGemFormDescription(gem,variant);Rect copy=new Rect(option.x+10*u,option.y+44*u,option.width-20*u,option.height-52*u);
+                    int font=Mathf.RoundToInt((roomy?14:10)*u);while(font>Mathf.RoundToInt(9*u)&&Style(font,false,true).CalcHeight(new GUIContent(formText),copy.width)>copy.height)font--;
+                    Text(copy,formText,font,pale,false,true);
                     if(QuietAction(option,"",!active&&gem.variantUnlocked&&SmithServiceActive))SelectSmithVariant(gem.mechanic,variant);
                 }
             }
@@ -285,6 +291,7 @@ namespace Emberfall
             y+=34;
             if(smithCategory==2)
             {
+                GoalParagraph(ref y,width,u,"提高装备属性数值，不会降低。",11,muted,false,draw);
                 var cap=p.PreviewRefinementLimit(item.id);string reason=p.RefinementLockReason(item.id,SmithServiceActive);
                 if(cap==null)return y;
 

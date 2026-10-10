@@ -109,6 +109,13 @@ namespace Emberfall
         {return Finite(p.x)&&Finite(p.z)&&(double)p.x*p.x+(double)p.z*p.z<=limit*limit;}
         private static bool VisualFanClear(Vector3 a,Vector3 b,Vector3 c,Obstacle obstacle,double clearance)
         {
+            // Strictly disjoint bounds cannot affect the exact triangle test below.
+            double ex=(obstacle.Radius>0?obstacle.Radius:obstacle.Half.x)+clearance+.001;
+            double ez=(obstacle.Radius>0?obstacle.Radius:obstacle.Half.y)+clearance+.001;
+            if(System.Math.Max(a.x,System.Math.Max(b.x,c.x))<obstacle.Center.x-ex||
+                System.Math.Min(a.x,System.Math.Min(b.x,c.x))>obstacle.Center.x+ex||
+                System.Math.Max(a.z,System.Math.Max(b.z,c.z))<obstacle.Center.y-ez||
+                System.Math.Min(a.z,System.Math.Min(b.z,c.z))>obstacle.Center.y+ez)return true;
             Vector3 center=new Vector3(obstacle.Center.x,0,obstacle.Center.y);
             if(obstacle.Radius>0)
             {double radius=obstacle.Radius+clearance;return VisualPointTriangleDistance(center,a,b,c)>=radius*radius;}
@@ -199,8 +206,25 @@ namespace Emberfall
 
         private static bool Finite(float value) { return !float.IsNaN(value) && !float.IsInfinity(value); }
 
+        // Convex arena + obstacle-free bounding rectangle proves every sample clear.
+        // Keep the original sampled policy whenever anything could intersect.
+        private static bool OpenSightBounds(Vector3 from,Vector3 to,float radius)
+        {
+            if(!Finite(radius)||radius<0||radius>=arena)return false;
+            double limit=arena-radius-.001;
+            if(!VisualInsideArena(from,limit)||!VisualInsideArena(to,limit))return false;
+            double x0=System.Math.Min(from.x,to.x)-radius-.001,x1=System.Math.Max(from.x,to.x)+radius+.001;
+            double z0=System.Math.Min(from.z,to.z)-radius-.001,z1=System.Math.Max(from.z,to.z)+radius+.001;
+            foreach(var o in obstacles)
+            {
+                double ex=o.Radius>0?o.Radius:o.Half.x,ez=o.Radius>0?o.Radius:o.Half.y;
+                if(x1>=o.Center.x-ex&&x0<=o.Center.x+ex&&z1>=o.Center.y-ez&&z0<=o.Center.y+ez)return false;
+            }
+            return true;
+        }
         private static bool ClearSegment(Vector3 from, Vector3 to, float radius, bool ignoreWater, ObstacleHandle ignored=null)
         {
+            if(ignoreWater&&OpenSightBounds(from,to,radius))return true;
             int samples = Mathf.Max(1, Mathf.CeilToInt(CombatFx.Flat(to - from).magnitude / .18f));
             for (int i = 0; i <= samples; i++)
             {

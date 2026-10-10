@@ -14,12 +14,13 @@ namespace Emberfall
         {return CombatSight.Area(transform.position,point)&&CombatSight.VisualFootprint(point,point,radius);}
         private void LateUpdate()
         {
-            if(system==null)return;int n=system.GetParticles(samples);
+            if(system==null)return;int n=system.GetParticles(samples);bool changed=false;
             for(int i=0;i<n;i++)
             {
                 Vector3 point=samples[i].position;
                 float extent=Mathf.Max(.02f,samples[i].startSize*.5f);
                 if(Visible(point,extent))continue;
+                changed=true;
                 // Redirect freshly emitted cosmetic particles into a clear sector before their
                 // first render; do not repeatedly teleport old particles across the field.
                 float age=samples[i].startLifetime-samples[i].remainingLifetime;
@@ -33,7 +34,7 @@ namespace Emberfall
                 }
                 else samples[i].remainingLifetime=0;
             }
-            system.SetParticles(samples,n);
+            if(changed)system.SetParticles(samples,n);
         }
     }
 }

@@ -28,7 +28,7 @@ namespace Emberfall
    float u=MobileControls.Active?TouchRatio:1f;
    if(!entryRewardAnchorIsRoot){Vector2 at=GUIUtility.ScreenToGUIPoint(entryRewardScreenAnchor),end=GUIUtility.ScreenToGUIPoint(entryRewardScreenEnd);entryRewardAnchor=new Rect(at.x,at.y,end.x-at.x,end.y-at.y);}
    if(!entryRewardViewport.Overlaps(entryRewardAnchor)){entryRewardPopupVisible=false;return;}
-   float w=Mathf.Min(400*u,width-24*u),textWidth=w-40*u;
+   float w=Mathf.Min(620*u,width-24*u),textWidth=w-40*u;
    float contentHeight=DrawRewardDetailRows(entryRewardPopup,textWidth/u,u,false)*u;
    float comparisonHeight=0;
    float h=Mathf.Min(contentHeight+108*u+comparisonHeight,height-24*u);
@@ -121,35 +121,58 @@ namespace Emberfall
    else {var equipped=session.Progression.EquippedFashion(item.AppearanceSlot.Value);if(equipped!=null)current=ProgressionService.FashionBonus(equipped.slot,equipped.rarity);}
    var baseline=RewardStatValues(current);var selected=RewardStatValues(item.Description);
    foreach(var pair in baseline)if(!selected.ContainsKey(pair.Key))selected[pair.Key]=pair.Value.Contains("×")?"×100%":pair.Value.Contains("%")?"0%":"0";
-   float label=available*.32f,column=(available-label)*.5f,y=26;
-   if(draw){Text(new Rect(label*u,0,column*u,24*u),"当前穿戴",Mathf.RoundToInt(11*u),muted,true,false,TextAnchor.MiddleRight);Text(new Rect((label+column)*u,0,column*u,24*u),"所选物品",Mathf.RoundToInt(11*u),jade,true,false,TextAnchor.MiddleRight);}
+   float gap=12,cardWidth=(available-gap)*.5f,y=92;
+   EntryRewardPreview worn=null;
+   if(currentEquipment!=null)worn=ActualEquipmentPreview(currentEquipment);
+   if(item.AppearanceSlot.HasValue){var f=session.Progression.EquippedFashion(item.AppearanceSlot.Value);if(f!=null)worn=new EntryRewardPreview{Name=f.name,Rarity=f.rarity,AppearanceSlot=f.slot};}
+   if(draw)for(int col=0;col<2;col++)
+   {
+    var value=col==0?worn:item;float x=col*(cardWidth+gap);Color accent=value==null?muted:GameBalance.RarityColor(value.Rarity);
+    Fill(new Rect(x*u,0,cardWidth*u,86*u),new Color(.045f,.09f,.12f));
+    Text(new Rect((x+10)*u,2*u,(cardWidth-20)*u,20*u),col==0?"当前穿戴":"所选物品",Mathf.RoundToInt(10*u),col==0?muted:jade,true);
+    string name=value==null?"未穿戴":string.IsNullOrEmpty(value.Name)?"所选时装":value.Name;
+    Text(new Rect((x+10)*u,24*u,(cardWidth-20)*u,32*u),name,Mathf.RoundToInt(14*u),accent,true,true);
+    if(value!=null){DrawDetailTag(new Rect((x+8)*u,60*u,60*u,22*u),GameBalance.RarityName(value.Rarity),accent,u);DrawDetailTag(new Rect((x+74)*u,60*u,Mathf.Max(36,cardWidth-82)*u,22*u),item.GearSlot.HasValue?GameBalance.SlotName(item.GearSlot.Value):item.AppearanceSlot==FashionSlot.Wings?"羽翼":"兵装",jade,u);}
+   }
    for(int section=0;section<(item.GearSlot.HasValue?2:1);section++)
    {
-   bool any=false;foreach(var stat in selected)if(!item.GearSlot.HasValue||(IsRandomEquipmentStat(stat.Key)?1:0)==section)any=true;
-   if(!any)continue;
-   if(draw){Fill(new Rect(0,(y+5)*u,3*u,16*u),jade);Text(new Rect(8*u,y*u,(available-16)*u,26*u),item.GearSlot.HasValue?(section==0?"基础词条":"随机词条"):"时装属性",Mathf.RoundToInt(12*u),jade,true);}
-   y+=30;
-   foreach(var pair in selected)
-   {
-    if(item.GearSlot.HasValue&&(IsRandomEquipmentStat(pair.Key)?1:0)!=section)continue;
-    string before;if(!baseline.TryGetValue(pair.Key,out before))before=pair.Value.Contains("×")?"×100%":pair.Value.Contains("%")?"0%":"0";
-    if(draw){Fill(new Rect(0,y*u,available*u,30*u),card);DrawIcon(new Rect(3*u,(y+7)*u,16*u,16*u),UIIconAtlas.Utility(pair.Key=="攻击"?"attack":pair.Key=="防御"?"defense":pair.Key=="生命"?"health":"core"),jade);
-     Text(new Rect(22*u,y*u,(label-22)*u,30*u),pair.Key,Mathf.RoundToInt(10*u),muted,false,false,TextAnchor.MiddleLeft);
-     DrawEquipmentStatParts(new Rect(label*u,y*u,(column-4)*u,30*u),before,EquipmentStatBonus(currentEquipment,pair.Key),u,muted);
-     int direction=EquipmentComparisonPresentation.StatDirection(pair.Value,before);
-     Color valueTint=direction>0?new Color(.3f,.94f,.55f):direction<0?new Color(1f,.38f,.36f):pale;
-     Rect candidate=new Rect((label+column)*u,y*u,(column-4)*u,30*u);
-     float arrowWidth=18*u;
-     if(direction!=0)DrawIcon(new Rect(candidate.xMax-arrowWidth,candidate.center.y-8*u,16*u,16*u),UIIconAtlas.StatTrendArrow(direction>0),valueTint);
-     candidate.width-=arrowWidth;
-     DrawEquipmentStatParts(candidate,pair.Value,EquipmentStatBonus(item.Equipment,pair.Key),u,valueTint);}
-
-    y+=34;
+    bool any=false;foreach(var stat in selected)if(!item.GearSlot.HasValue||(IsRandomEquipmentStat(stat.Key)?1:0)==section)any=true;
+    if(!any)continue;
+    if(draw)for(int col=0;col<2;col++){
+     float x=col*(cardWidth+gap);
+     Fill(new Rect(x*u,y*u,cardWidth*u,28*u),new Color(.07f,.13f,.16f));
+     Fill(new Rect((x+8)*u,(y+8)*u,3*u,12*u),jade);
+     Text(new Rect((x+18)*u,y*u,(cardWidth-24)*u,28*u),item.GearSlot.HasValue?(section==0?"基础词条":"随机词条"):"时装属性",Mathf.RoundToInt(12*u),pale,true,false,TextAnchor.MiddleLeft);
+    }
+    y+=32;
+    foreach(var pair in selected)
+    {
+     if(item.GearSlot.HasValue&&(IsRandomEquipmentStat(pair.Key)?1:0)!=section)continue;
+     string before;if(!baseline.TryGetValue(pair.Key,out before))before=pair.Value.Contains("×")?"×100%":pair.Value.Contains("%")?"0%":"0";
+     if(draw)for(int col=0;col<2;col++){
+      float x=col*(cardWidth+gap);Fill(new Rect(x*u,y*u,cardWidth*u,48*u),card);
+      DrawIcon(new Rect((x+8)*u,(y+5)*u,16*u,16*u),UIIconAtlas.Utility(pair.Key=="攻击"?"attack":pair.Key=="防御"?"defense":pair.Key=="生命"?"health":"core"),jade);
+      Text(new Rect((x+30)*u,y*u,(cardWidth-38)*u,24*u),pair.Key,Mathf.RoundToInt(11*u),muted,true,false,TextAnchor.MiddleLeft);
+      int bonus=EquipmentStatBonus(col==0?currentEquipment:item.Equipment,pair.Key),oldBonus=EquipmentStatBonus(currentEquipment,pair.Key);
+      bool bonusVisible=bonus>0||col==1&&oldBonus>0;
+      float valueWidth=bonusVisible?(cardWidth-16)*.56f:cardWidth-16;
+      DrawComparedValue(new Rect((x+8)*u,(y+22)*u,valueWidth*u,24*u),col==0?before:pair.Value,col==0?0:EquipmentComparisonPresentation.StatDirection(pair.Value,before),u,false);
+      if(bonusVisible)DrawComparedValue(new Rect((x+8+valueWidth)*u,(y+22)*u,(cardWidth-16-valueWidth)*u,24*u),"+"+bonus,col==0?0:bonus.CompareTo(oldBonus),u,true);
+     }
+     y+=52;
+    }
    }
-   }
-   // Preserve the uncertainty of random affixes rather than implying guaranteed rolls.
-   if(item.Description.Contains("随机附加")){if(draw)Text(new Rect(0,y*u,available*u,26*u),item.Description.Contains("至多一项")?"随机词条 · 至多一项":"随机词条 · 最多两项",Mathf.RoundToInt(11*u),muted);y+=28;}
+   if(item.Description.Contains("随机附加")){if(draw)Text(new Rect((cardWidth+gap)*u,y*u,cardWidth*u,26*u),item.Description.Contains("至多一项")?"随机词条 · 至多一项":"随机词条 · 最多两项",Mathf.RoundToInt(11*u),muted);y+=28;}
    return y;
+  }
+  private void DrawDetailTag(Rect r,string label,Color tint,float u)
+  {Fill(r,new Color(tint.r,tint.g,tint.b,.15f));Border(r,new Color(tint.r,tint.g,tint.b,.3f));Text(r,label,Mathf.RoundToInt(10*u),tint,true,false,TextAnchor.MiddleCenter);}
+  private void DrawComparedValue(Rect r,string value,int direction,float u,bool enhancement)
+  {
+   Color tint=direction>0?new Color(.3f,.94f,.55f):direction<0?new Color(1f,.38f,.36f):enhancement?gold:pale;
+   if(direction!=0){DrawIcon(new Rect(r.xMax-16*u,r.center.y-8*u,16*u,16*u),UIIconAtlas.StatTrendArrow(direction>0),tint);r.width-=18*u;}
+   int size=Mathf.RoundToInt(15*u);while(size>Mathf.RoundToInt(9*u)&&Style(size,true,false).CalcSize(new GUIContent(value)).x>r.width)size--;
+   Text(r,value,size,tint,true,false,TextAnchor.MiddleLeft);
   }
   private static bool IsRandomEquipmentStat(string name)
   {return name=="攻击加成"||name=="暴击率"||name=="暴击伤害";}

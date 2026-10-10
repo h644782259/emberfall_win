@@ -186,14 +186,15 @@ namespace Emberfall
             var p=session.Progression;var next=p.PreviewEquippedItem(item);
             inventoryPopupCompare=true;
             bool compactCompare=height/u<400;
-            float sheetWidth=Mathf.Min(compactCompare?520:380,(width/u)-40),sheetHeight=Mathf.Min(480,(height/u)-32);
+            float sheetWidth=Mathf.Min(compactCompare?620:600,(width/u)-40),sheetHeight=Mathf.Min(480,(height/u)-32);
             Rect r=inventoryPopupRect=MobileControls.Active?new Rect((width-sheetWidth*u)*.5f,(height-sheetHeight*u)*.5f,sheetWidth*u,sheetHeight*u):DesktopInventorySheet(sheetWidth,sheetHeight);
             Fill(r,new Color(.025f,.055f,.075f,.995f));Border(r,jade);
             bool prior=GUI.enabled;GUI.enabled=prior&&Time.frameCount!=inventoryPopupOpened;
             Text(new Rect(r.x+12*u,r.y+4*u,46*u,36*u),"Lv"+item.level,Mathf.RoundToInt(13*u),item.level>session.Progression.Profile.level?new Color(1f,.35f,.3f):gold,true,false,TextAnchor.MiddleLeft);
             Text(new Rect(r.x+60*u,r.y+4*u,r.width-140*u,36*u),ItemTitle(next),Mathf.RoundToInt(15*u),pale,true,false,TextAnchor.MiddleLeft);
             if(DrawInventoryLock(new Rect(r.xMax-80*u,r.y+4*u,36*u,36*u),item.locked))session.Progression.SetItemLocked(item.id,!item.locked);
-            Text(new Rect(r.x+12*u,r.y+40*u,r.width-24*u,22*u),GameBalance.RarityName(item.rarity)+" · "+GameBalance.SlotName(item.slot),Mathf.RoundToInt(12*u),GameBalance.RarityColor(item.rarity));
+            DrawDetailTag(new Rect(r.x+12*u,r.y+40*u,70*u,22*u),GameBalance.RarityName(item.rarity),GameBalance.RarityColor(item.rarity),u);
+            DrawDetailTag(new Rect(r.x+90*u,r.y+40*u,70*u,22*u),GameBalance.SlotName(item.slot),jade,u);
             if(PopupCloseButton(new Rect(r.xMax-44*u,r.y,44*u,44*u))){inventoryComparisonOpen=false;GUI.enabled=prior;return;}
             float bodyY=r.y+66*u,rowHeight=(sheetHeight<360?22:28)*u;
             string[] labels={"评分","攻击","防御","生命","暴击率","暴击伤害","攻击加成"};
@@ -250,7 +251,7 @@ namespace Emberfall
             if(fashion)
             {
                 float statsTop=MobileControls.Active?120:76;
-                var detail=new EntryRewardPreview{Key="fashion:"+appearance.id,AppearanceSlot=appearance.slot,Description=ProgressionService.FashionBonus(appearance.slot,appearance.rarity)};
+                var detail=new EntryRewardPreview{Key="fashion:"+appearance.id,Name=appearance.name,Rarity=appearance.rarity,AppearanceSlot=appearance.slot,Description=ProgressionService.FashionBonus(appearance.slot,appearance.rarity)};
                 inventoryDetailScroll=BeginTouchScroll("fashion-detail",new Rect(r.x+12*u,r.y+statsTop*u,r.width-24*u,r.height-(statsTop+8)*u),inventoryDetailScroll,new Rect(0,0,r.width-32*u,DrawRewardDetailRows(detail,r.width/u-32,u,false)*u));
                 DrawRewardDetailRows(detail,r.width/u-32,u,true);
                 EndTouchScroll();

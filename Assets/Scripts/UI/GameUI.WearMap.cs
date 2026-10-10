@@ -116,7 +116,7 @@ namespace Emberfall
             Rect stone=new Rect(bounds.x,bounds.y+(cellSize+12)*u,cellSize*u,cellSize*u);Fill(stone,card);Border(stone,GameBalance.RarityColor(Rarity.Epic));
             DrawIcon(new Rect(stone.x+5*u,stone.y+3*u,stone.width-10*u,stone.height-17*u),UIIconAtlas.Utility("gem"),GameBalance.RarityColor(Rarity.Epic));
             Text(new Rect(stone.x,stone.yMax-16*u,stone.width-3*u,16*u),session.Progression.Profile.refinementStones.ToString(),Mathf.RoundToInt(10*u),pale,true,false,TextAnchor.MiddleRight);
-            InspectRewardItem(stone,new EntryRewardPreview{Key="refinement",Name="装备洗练石",Description="装备洗练石\n数量  "+session.Progression.Profile.refinementStones+"\n提高装备属性数值，不会降低。",Rarity=Rarity.Epic,Icon=UIIconAtlas.Utility("gem"),Tint=GameBalance.RarityColor(Rarity.Epic)});
+            InspectRewardItem(stone,new EntryRewardPreview{Key="refinement",Name="装备洗练石",Description="装备洗练石\n数量  "+session.Progression.Profile.refinementStones,Rarity=Rarity.Epic,Icon=UIIconAtlas.Utility("gem"),Tint=GameBalance.RarityColor(Rarity.Epic)});
             GUI.enabled=prior;DrawInventoryPopup(bounds,u);
         }
     }
