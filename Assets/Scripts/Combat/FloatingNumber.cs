@@ -42,7 +42,7 @@ namespace Emberfall
         private bool critical,mechanism,counted;
         private string display;
         private CombatTextLayout.Box bounds;
-        private float Duration {get{return mechanism?1.25f:critical?1.8f:1.5f;}}
+        private float Duration {get{return display!=null&&display.StartsWith("等级提升")?4.5f:mechanism?1.8f:critical?1.8f:1.5f;}}
         private static float Density {get{return MobileControls.Active?MobileControls.Layout.Scale:Mathf.Clamp(Screen.dpi>=120?Screen.dpi/163f:Screen.height/1080f,1,3);}}
 
         public static bool CanSpawn(Vector3 origin,bool isCritical=false)
@@ -168,13 +168,13 @@ namespace Emberfall
         private TextMesh Configure(GameObject obj,string value,Color tint)
         {
             TextMesh mesh=obj.AddComponent<TextMesh>();mesh.text=value;mesh.fontSize=64;mesh.characterSize=.085f;
-            mesh.anchor=TextAnchor.MiddleCenter;mesh.alignment=TextAlignment.Center;mesh.fontStyle=critical?FontStyle.BoldAndItalic:FontStyle.Bold;mesh.color=tint;
+            mesh.anchor=TextAnchor.MiddleCenter;mesh.alignment=TextAlignment.Center;mesh.fontStyle=critical||display=="连击兑现"?FontStyle.BoldAndItalic:FontStyle.Bold;mesh.color=tint;
             if(sharedFont!=null){mesh.font=sharedFont;obj.GetComponent<MeshRenderer>().sharedMaterial=sharedFont.material;}
             return mesh;
         }
         private void Update()
         {
-            life+=Time.deltaTime;float alpha=Mathf.Clamp01((Duration-life)/(mechanism?.25f:.45f));
+            life+=Time.deltaTime;float alpha=Mathf.Clamp01((Duration-life)/(display!=null&&display.StartsWith("等级提升")?1f:mechanism?.35f:.45f));
             Color face=critical?Color.Lerp(new Color(1f,.96f,.65f),color,Mathf.Clamp01(life/.22f)):color;
             if(textMesh!=null)textMesh.color=new Color(face.r,face.g,face.b,alpha);
             foreach(TextMesh edge in outline)if(edge!=null)edge.color=critical?new Color(.24f,.055f,.008f,alpha*.98f):new Color(.045f,.025f,.035f,alpha*.98f);
@@ -213,6 +213,8 @@ namespace Emberfall
             float glyphHeight=textRenderer.localBounds.size.y;if(glyphHeight<=.001f||camera.pixelHeight<=0)return;
             float visibleHeight=camera.orthographic?camera.orthographicSize*2:depth*2*Mathf.Tan(camera.fieldOfView*Mathf.Deg2Rad*.5f);
             float pixels=21*EffectPreferences.CombatTextScale*Density*(critical?1.28f:1);
+            float edgeOffset=glyphHeight/Mathf.Max(1,pixels)*(critical?1.25f:1f);
+            for(int i=0;i<outline.Length;i++)if(outline[i]!=null)outline[i].transform.localPosition=new Vector3(i%2==0?-edgeOffset:edgeOffset,i<2?-edgeOffset:edgeOffset,.001f);
             float pop=mechanism?(critical?1+Mathf.Max(0,1-life/.16f)*.14f*EffectPreferences.EffectsScale:1):DamageFloatScale;
             transform.localScale=Vector3.one*(pixels*visibleHeight/(camera.pixelHeight*glyphHeight)*pop);
         }

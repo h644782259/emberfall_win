@@ -378,7 +378,7 @@ namespace Emberfall
                 case 0: float handed=p.Phase<0?-1:1;scale*=.85f+t*.3f;rotation*=Quaternion.Euler(0,Mathf.Lerp(-18,38,t)*handed,-t*11*handed);break;
                 case 1: scale.y*=.25f+.75f*Mathf.Min(1,local*18);at.y-=Mathf.Max(0,t-.55f)*1.3f;break;
                 case 2: scale*=f.Expansion;scale.y*=1+t*.55f;at.y+=t*.65f;rotation*=Quaternion.Euler(0,t*45,0);break;
-                case 3: at+=new Vector3(Mathf.Cos(p.Phase),0,Mathf.Sin(p.Phase))*t*size*.3f*p.TravelScale;at.y+=Mathf.Sin(t*Mathf.PI)*1.1f;scale*=1-t*.4f;rotation*=Quaternion.Euler(t*65,t*35,0);break;
+                case 3: at+=new Vector3(Mathf.Cos(p.Phase),0,Mathf.Sin(p.Phase))*t*size*.3f*p.TravelScale;at.y+=Mathf.Sin(t*Mathf.PI)*1.1f;scale*=1-t*.65f;rotation*=Quaternion.Euler(t*65,t*35,0);break;
                 case 4: at+=new Vector3(Mathf.Sin(p.Phase),.4f,Mathf.Cos(p.Phase))*local*3*p.TravelScale;scale*=1-t*.8f;break;
                 case 5: scale*=f.Expansion;rotation*=Quaternion.Euler(0,t*45,0);break;
                 case 6: scale*=.8f+Mathf.Sin(t*Mathf.PI)*.2f;rotation*=Quaternion.Euler(0,local*(p.Phase%2==0?95:-80),0);at.y+=Mathf.Sin(local*3+p.Phase)*.06f;break;
@@ -406,6 +406,7 @@ namespace Emberfall
             }
             block.SetFloat("_Element",kind==FilledVfxKind.Fire?1:kind==FilledVfxKind.Ice?2:kind==FilledVfxKind.Lightning?3:kind==FilledVfxKind.Vine?4:kind==FilledVfxKind.Summon||kind==FilledVfxKind.Arcane?5:0);
             block.SetFloat("_Seed",p.Phase*.37f+p.Delay*3);
+            block.SetFloat("_ImpactLight",p.Secondary||p.Motion==20?0:Mathf.Clamp01(1-local/.16f)*EffectPreferences.EffectsScale);
             block.SetColor("_Color",color);block.SetFloat("_Opacity",opacity);block.SetFloat("_Progress",t);
             block.SetFloat("_EnvelopeMode",p.Motion==20?p.Phase+1:0);block.SetFloat("_EnvelopeAge",local);
             block.SetFloat("_Style",kind==FilledVfxKind.Fire||kind==FilledVfxKind.Summon?1:.35f);p.Renderer.SetPropertyBlock(block);

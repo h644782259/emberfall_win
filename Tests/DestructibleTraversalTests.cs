@@ -39,6 +39,16 @@ public static class DestructibleTraversalTests
         int oldRevision=WorldTraversal.Revision;
         WorldTraversal.Reset(ZoneKind.Wilderness);
         Check(WorldTraversal.Revision!=oldRevision&&!WorldTraversal.IsOpenWater(new Vector3(3,0,0)),"new town without river replaces old map");
+        WorldTraversal.Reset(ZoneKind.Dungeon);Vector3 portal;
+        Check(WorldTraversal.TryReturnPortalPosition(new Vector3(0,0,-8),out portal)&&portal.sqrMagnitude<.001f,"clear center remains portal origin");
+        WorldTraversal.AddBox(Vector3.zero,new Vector2(2,2));
+        Check(WorldTraversal.TryReturnPortalPosition(new Vector3(0,0,-8),out portal),"center obstacle finds nearby portal");
+        Check(WorldTraversal.IsWalkable(portal,2.65f)&&WorldTraversal.CanReach(new Vector3(0,0,-8),portal,.45f),"whole portal footprint clear and reachable");
+        Check(portal.magnitude<=4.25f,"search selects nearby clearance instead of entrance");
+        WorldTraversal.Reset(ZoneKind.Dungeon);WorldTraversal.AddBox(new Vector3(0,0,1),new Vector2(40,1));
+        Check(WorldTraversal.TryReturnPortalPosition(new Vector3(0,0,-8),out portal)&&portal.z<0,"portal remains on reachable side of arena partition");
+        WorldTraversal.Reset(ZoneKind.Dungeon);WorldTraversal.AddBox(Vector3.zero,new Vector2(40,40));
+        Check(!WorldTraversal.TryReturnPortalPosition(new Vector3(0,0,-8),out portal),"no valid point never returns obstructed zero as success");
         return "PASS: "+checks+" dynamic traversal handle assertions";
     }
 }
@@ -63,7 +73,7 @@ namespace UnityEngine
     }
     public struct Vector3
     {
-        public float x,y,z;public Vector3(float x,float y,float z){this.x=x;this.y=y;this.z=z;}public static Vector3 zero=>new Vector3();
+        public float x,y,z;public Vector3(float x,float y,float z){this.x=x;this.y=y;this.z=z;}public static Vector3 zero=>new Vector3();public static Vector3 up=>new Vector3(0,1,0);
         public float sqrMagnitude=>x*x+y*y+z*z;public float magnitude=>(float)Math.Sqrt(sqrMagnitude);public Vector3 normalized=>magnitude>1e-6f?this/magnitude:zero;
         public void Normalize(){this=normalized;}public static Vector3 operator +(Vector3 a,Vector3 b)=>new Vector3(a.x+b.x,a.y+b.y,a.z+b.z);
         public static Vector3 operator -(Vector3 a,Vector3 b)=>new Vector3(a.x-b.x,a.y-b.y,a.z-b.z);public static Vector3 operator *(Vector3 a,float b)=>new Vector3(a.x*b,a.y*b,a.z*b);
@@ -78,7 +88,7 @@ namespace UnityEngine
         public const float PI=(float)Math.PI;public static float Sin(float x)=>(float)Math.Sin(x);public static float Cos(float x)=>(float)Math.Cos(x);
         public static float Abs(float x)=>Math.Abs(x);public static float Min(float x,float y)=>Math.Min(x,y);public static int Min(int x,int y)=>Math.Min(x,y);
         public static float Max(float x,float y)=>Math.Max(x,y);public static int Max(int x,int y)=>Math.Max(x,y);
-        public static float Clamp(float x,float a,float b)=>Math.Min(b,Math.Max(a,x));public static int Clamp(int x,int a,int b)=>Math.Min(b,Math.Max(a,x));
+        public static float Clamp01(float x)=>Clamp(x,0,1);public static float Clamp(float x,float a,float b)=>Math.Min(b,Math.Max(a,x));public static int Clamp(int x,int a,int b)=>Math.Min(b,Math.Max(a,x));
         public static int CeilToInt(float x)=>(int)Math.Ceiling(x);public static int RoundToInt(float x)=>(int)Math.Round(x);
     }
 }

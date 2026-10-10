@@ -113,14 +113,20 @@ class Program{static int n;static void C(bool b,string s){n++;if(!b)throw new Ex
  var levels=new GameProfile{level=100,chapterBestTiers=new int[3]};
  for(int node=0;node<3;node++){
   var chapter=(ChapterNode)node;int first=ChapterProgression.UnlockLevel(chapter)/10;
-  C(ChapterProgression.AvailableTier(levels,chapter)==first,"high level cannot bypass initial chapter clear");
-  levels.chapterBestTiers[node]=first;C(ChapterProgression.AvailableTier(levels,chapter)==first+1,"clearing lower level unlocks next");
+  C(ChapterProgression.AvailableTier(levels,chapter)==10,"chapter difficulty follows character level without prior clears");
+  levels.chapterBestTiers[node]=first;C(ChapterProgression.AvailableTier(levels,chapter)==10,"chapter clear does not lower level-derived difficulty");
   levels.level=first*10;C(ChapterProgression.AvailableTier(levels,chapter)==first,"character level still limits selection");levels.level=100;
  }
  var goalService=new ProgressionService(Path.Combine(args[0],"finished-goal"));goalService.NewGame(HeroClass.Vanguard);goalService.Profile.automaticGrowth=true;goalService.Profile.classTutorialCompleted=true;goalService.Profile.attachments.Add(new MechanicAttachment{id="goal-gem",mechanic=EquipmentMechanic.ReturningBlade,upgradeRank=3,ascensionRank=1,variantUnlocked=true});goalService.Profile.chapterBestLevels[0]=100;
  C(goalService.SelectedProgressionGoal().RequiredAdventureTier==0&&goalService.SelectedProgressionGoal().Title=="成长目标已完成","Lv100 chapter clear advances goal without obsolete reward receipt");
  goalService.Profile.chapterBestLevels[0]=0;goalService.Profile.adventureBestTiers[2]=10;C(goalService.SelectedProgressionGoal().RequiredAdventureTier==0,"independent dungeon record counts for goal");
  goalService.Save();var goalReload=new ProgressionService(Path.Combine(args[0],"finished-goal"));C(goalReload.LoadSlot(goalService.CurrentSlotId)&&goalReload.SelectedProgressionGoal().RequiredAdventureTier==0,"completed goal stays complete after reload");
+ for(int hero=0;hero<4;hero++)C(GameBalance.SkillEnergyCost((HeroClass)hero,9)==0,"all ultimate skills cost zero energy");
+ var affixService=new ProgressionService(Path.Combine(args[0],"attack-affix"));affixService.NewGame(HeroClass.Ranger);
+ var affixItem=affixService.Equipped(ItemSlot.Weapon);C(affixItem!=null,"starter weapon fixture");
+ affixItem.attackPercent=0;float plainDamage=affixService.GetStats().Damage;affixItem.attackPercent=.12f;
+ C(affixService.GetStats().Damage>plainDamage,"attack percent changes actual equipped damage");
+ affixService.Save();var affixLoaded=new ProgressionService(Path.Combine(args[0],"attack-affix"));C(affixLoaded.LoadSlot(affixService.CurrentSlotId)&&Math.Abs(affixLoaded.Equipped(ItemSlot.Weapon).attackPercent-.12f)<.0001,"attack percent survives save reload");
  Console.WriteLine("PASS "+n+" achievement boundary/persistence assertions");}}
 '''
 with tempfile.TemporaryDirectory(prefix='achievement-milestones-') as tmp:

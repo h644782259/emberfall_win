@@ -679,7 +679,9 @@ namespace Emberfall
                 Vector3 position=Player.transform.position;
                 CombatFx.Ring(position,2.1f,glow,.85f,.12f);
                 CombatFx.Ring(position,1.25f,new Color(.65f,1f,.84f),.65f,.08f);
-                SpawnFloatingText(position+Vector3.up*3,"Lv"+level,glow);
+                CombatFx.Ring(position,3.4f,new Color(.65f,1f,.84f),1.5f,.16f);
+                FloatingNumber.Spawn(position+Vector3.up*3,"等级提升  Lv."+level,glow,false,"Level Up",true);
+                Notify("等级提升至 Lv."+level+" · 生命已恢复"+(learned.Count>0?" · 习得技能："+string.Join("、",learned):""));
             }
         }
         public void Notify(string message) { notification = message; notificationUntil = Time.unscaledTime + 6; }

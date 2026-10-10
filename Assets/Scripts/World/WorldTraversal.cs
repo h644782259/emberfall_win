@@ -228,6 +228,26 @@ namespace Emberfall
             }
             return from;
         }
+        // Search outward in distance order; never fall back to an obstructed origin.
+        public static bool TryReturnPortalPosition(Vector3 from,out Vector3 position,float clearance=2.65f)
+        {
+            position=Vector3.zero;
+            from=NearestWalkable(from,.45f);
+            if(IsWalkable(position,clearance)&&CanReach(from,position,.45f))return true;
+            for(float distance=.25f;distance<=arena-clearance;distance+=.25f)
+            {
+                int samples=Mathf.Max(32,Mathf.CeilToInt(distance*2*Mathf.PI/.5f));
+                for(int i=0;i<samples;i++)
+                {
+                    float angle=i*2*Mathf.PI/samples;
+                    Vector3 candidate=new Vector3(Mathf.Cos(angle),0,Mathf.Sin(angle))*distance;
+                    if(!IsWalkable(candidate,clearance)||!CanReach(from,candidate,.45f))continue;
+                    position=candidate;return true;
+                }
+            }
+            return false;
+        }
+
         public static Vector3 NearestWalkable(Vector3 point, float radius = .45f)
         {
             point = Vector3.ClampMagnitude(CombatFx.Flat(point), arena - radius - .02f);

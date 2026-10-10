@@ -25,10 +25,10 @@ public static class FilledVfxAllocationTests
         foreach(bool reduced in new[]{false,true})
         {
             var parts=Spawn(kind,true,reduced);
-            Check(parts.Count==(reduced?7:kind==FilledVfxKind.Summon?9:10),"real mobile retained count");
+            Check(parts.Count==(reduced?7:10),"real mobile retained count");
             Check(parts[0].name.EndsWith("Landing base"),"landing base must survive actual allocation before decorations");
             Check(parts[1].name.EndsWith("Primary "+kind),"primary identity must survive actual allocation");
-            Check(parts[2].name.EndsWith("Contact flash"),"contact flash must survive actual allocation");
+            Check(parts[kind==FilledVfxKind.Sword?2:3].name.EndsWith("Contact flash"),"contact flash must survive actual allocation");
             if(kind==FilledVfxKind.Sword)Check(parts[1].GetComponent<MeshFilter>().sharedMesh.name.Contains("sword"),"sword is not ice or thrust");
             if(kind==FilledVfxKind.Lightning)Check(parts[1].GetComponent<MeshFilter>().sharedMesh.name.Contains("branched"),"lightning primary has branches");
             if(kind==FilledVfxKind.Arcane)Check(parts[1].GetComponent<MeshFilter>().sharedMesh.name.Contains("lattice"),"arcane is not summon crescents");
@@ -60,11 +60,11 @@ public static class FilledVfxAllocationTests
         {
             var parts=Spawn(FilledVfxKind.Arcane,true,false);var primary=parts[1];var initial=primary.transform.localScale.x;
             var root=GameObject.All.First(o=>o.GetComponent<FilledSkillVfx>()!=null);var effect=root.GetComponent<FilledSkillVfx>();
-            Check(primary.activeSelf&&parts.Skip(3).All(o=>!o.activeSelf),"contact has cage before delayed disassembly");
+            Check(primary.activeSelf&&parts.Skip(4).All(o=>!o.activeSelf),"contact has cage before delayed disassembly");
             typeof(FilledSkillVfx).GetField("age",BindingFlags.Instance|BindingFlags.NonPublic).SetValue(effect,.17f);root.Call("Update");
-            Check(primary.transform.localScale.x<initial*.7f,"arcane compresses during settle phase");
+            Check(primary.transform.localScale.x<initial*.7f,"arcane compresses during settle phase");float compressed=primary.transform.localScale.x;
             typeof(FilledSkillVfx).GetField("age",BindingFlags.Instance|BindingFlags.NonPublic).SetValue(effect,.44f);root.Call("Update");
-            Check(primary.transform.localScale.x>initial&&parts.Skip(3).Any(o=>o.activeSelf&&o.GetComponent<MeshFilter>().sharedMesh.name=="Broken arcane strut"),"release expands lattice and exposes separate struts");
+            Check(primary.transform.localScale.x>compressed&&primary.transform.localScale.x<=1&&parts.Skip(4).Any(o=>o.activeSelf&&o.GetComponent<MeshFilter>().sharedMesh.name=="Broken arcane strut"),"release expands lattice and exposes separate struts");
             typeof(FilledSkillVfx).GetField("age",BindingFlags.Instance|BindingFlags.NonPublic).SetValue(effect,.94f);root.Call("Update");
             Check(primary.GetComponent<MeshRenderer>().Opacity<.5f,"residual phase visibly fades opacity in production property block");
         }

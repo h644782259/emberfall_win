@@ -44,9 +44,10 @@ namespace Emberfall{
  public static void Main(){
  foreach(float width in new[]{340f,520f,700f,900f})foreach(float u in new[]{.85f,1f,1.5f}){
  var ui=new GameUI();ui.Draw(width,u);C(!ui.Captions.Contains("配点管理")&&ui.Captions.FindAll(v=>v=="重置精通").Count==1,"reset is directly exposed once");
+ C(ui.Captions.FindAll(v=>v.Contains("核心已启用")||v=="启用核心"||v.StartsWith("投入 ")).Count==4,"each mastery card owns one core selector");
  int reset=ui.Captions.IndexOf("重置精通");var rect=ui.Targets[reset];C(rect.x>=0&&rect.xMax<=width*u+.01&&rect.height>=44*u,"reset stays in bounds with touch height");
  C(ui.session.Progression.Resets==0,"rendering does not reset");ui.Draw(width,u,click:"重置精通");C(ui.session.Progression.Resets==0&&ui.masteryResetConfirm,"first reset click only requests confirmation");ui.masteryResetConfirm=false;
- ui.session.IsInCamp=false;ui.Draw(width,u,click:"重置精通");C(ui.session.Progression.Resets==0&&!ui.masteryResetConfirm,"camp gate preserved");
+ ui.session.Progression.Profile.skillPoints=0;ui.session.IsInCamp=false;ui.Draw(width,u,click:"重置精通");C(ui.session.Progression.Resets==0&&ui.masteryResetConfirm,"reset is always available and still requests confirmation");
  }
  Console.WriteLine("PASS "+count+" direct mastery reset geometry and dispatch assertions; managed GUI boundary");}
  static string BuildModeName(ElementalistSpecialization m)=>m==ElementalistSpecialization.None?"均衡":m==ElementalistSpecialization.Shatter?"碎冰":"灼燃";

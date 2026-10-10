@@ -113,10 +113,10 @@ namespace Emberfall
             bool prior=GUI.enabled;GUI.enabled=prior&&(!MobileControls.Active||!inventoryComparisonOpen)&&inventoryPopupDismissed!=Time.frameCount;
             DesktopInventoryGesture(tile,tile,"@potion");
             if(GUI.Button(tile,GUIContent.none,invisibleButton)){if(MobileControls.Active)OpenInventoryPopup("@potion",tile);else DesktopInventoryClick("@potion");}
-            Rect stone=new Rect(bounds.x,bounds.y+(cellSize+12)*u,cellSize*u,cellSize*u);Fill(stone,card);Border(stone,gold);
-            DrawIcon(new Rect(stone.x+5*u,stone.y+3*u,stone.width-10*u,stone.height-17*u),UIIconAtlas.Utility("gem"),gold);
+            Rect stone=new Rect(bounds.x,bounds.y+(cellSize+12)*u,cellSize*u,cellSize*u);Fill(stone,card);Border(stone,GameBalance.RarityColor(Rarity.Epic));
+            DrawIcon(new Rect(stone.x+5*u,stone.y+3*u,stone.width-10*u,stone.height-17*u),UIIconAtlas.Utility("gem"),GameBalance.RarityColor(Rarity.Epic));
             Text(new Rect(stone.x,stone.yMax-16*u,stone.width-3*u,16*u),session.Progression.Profile.refinementStones.ToString(),Mathf.RoundToInt(10*u),pale,true,false,TextAnchor.MiddleRight);
-            Text(new Rect(stone.xMax+10*u,stone.y,bounds.width-stone.width-12*u,24*u),"装备洗练石",Mathf.RoundToInt(13*u),gold,true);
+            InspectRewardItem(stone,new EntryRewardPreview{Key="refinement",Name="装备洗练石",Description="装备洗练石\n数量  "+session.Progression.Profile.refinementStones,Rarity=Rarity.Epic,Icon=UIIconAtlas.Utility("gem"),Tint=GameBalance.RarityColor(Rarity.Epic)});
             GUI.enabled=prior;DrawInventoryPopup(bounds,u);
         }
     }

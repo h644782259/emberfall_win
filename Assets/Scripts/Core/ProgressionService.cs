@@ -738,6 +738,7 @@ namespace Emberfall
                     stats = new StatBlock { MaxHealth = 170 + 20 * growth, Damage = 20 + 3 * growth, Armor = 7 + 1.4f * growth, MoveSpeed = 6f, CritChance = .08f };
                     break;
             }
+            float equipmentAttackPercent=0;
             for (int slot = 0; slot < 3; slot++)
             {
                 ItemData item = Equipped((ItemSlot)slot);
@@ -746,8 +747,9 @@ namespace Emberfall
                 stats.Damage += item.attack;
                 stats.Armor += item.defense;
                 stats.CritChance=Math.Min(1f,stats.CritChance+item.criticalChance);
-                stats.CritDamageBonus+=item.criticalDamageBonus;
+                stats.CritDamageBonus+=item.criticalDamageBonus;equipmentAttackPercent+=item.attackPercent;
             }
+            stats.Damage*=1+equipmentAttackPercent;
             if(Profile.attachments!=null)foreach(var a in Profile.attachments)if(a.mounted&&BuildCatalog.GemCompatible(a.mechanic,Profile.heroClass))
             {
                 if(BuildCatalog.IsAttributeGem(a.mechanic))
@@ -2334,12 +2336,12 @@ namespace Emberfall
         public static string EquipmentDropPreview(ItemSlot slot,Rarity rarity,int level,EquipmentMechanic mechanic=EquipmentMechanic.None)
         {
             level=EquipmentGenerationLevel(level);int quality=Clamp((int)rarity,0,3);
-            string text=GameBalance.SlotName(slot)+" · "+GameBalance.RarityName(rarity)+" · Lv"+level+"\n基础属性范围（未强化）";
+            string text=GameBalance.SlotName(slot)+" · "+GameBalance.RarityName(rarity)+" · Lv"+level+"\n基础属性范围";
             if(slot==ItemSlot.Weapon)text+="\n攻击  "+EquipmentPreviewRange(5+level*2.5f,quality);
             else if(slot==ItemSlot.Armor)text+="\n防御  "+EquipmentPreviewRange(3+level*1.2f,quality)+"\n生命  "+EquipmentPreviewRange(10+level*4,quality);
             else text+="\n攻击  "+EquipmentPreviewRange(2+level,quality)+"\n生命  "+EquipmentPreviewRange(6+level*3,quality);
-            if(quality>0)text+="\n随机附加（非必得）\n暴击率  "+new[]{"","1%～3%","2%～5%","3%～8%"}[quality]+"\n暴击伤害  "+new[]{"","5%～10%","8%～15%","12%～20%"}[quality]+(quality==1?"\n至多一项":"\n可能同时获得两项");
-            text+=mechanic==EquipmentMechanic.None?"\n机制  无固定机制":"\n机制 · "+BuildCatalog.MechanicName(mechanic)+"\n"+BuildCatalog.MechanicDescription(mechanic);
+            if(quality>0)text+="\n随机附加\n攻击加成  "+new[]{"","2%～5%","4%～8%","6%～12%"}[quality]+"\n暴击率  "+new[]{"","1%～3%","2%～5%","3%～8%"}[quality]+"\n暴击伤害  "+new[]{"","5%～10%","8%～15%","12%～20%"}[quality]+(quality==1?"\n至多一项":"\n可能同时获得两项");
+            text+=mechanic==EquipmentMechanic.None?"":"\n机制 · "+BuildCatalog.MechanicName(mechanic)+"\n"+BuildCatalog.MechanicDescription(mechanic);
             return text;
         }
         private static string EquipmentPreviewRange(float basis,int quality)
@@ -2365,20 +2367,20 @@ namespace Emberfall
                 item.attack=RolledEquipmentStat(2+level,minimum[quality],maximum[quality],roll);
                 item.health=RolledEquipmentStat(6+level*3,minimum[quality],maximum[quality],roll);
             }
-            item.criticalChance=item.criticalDamageBonus=0;
+            item.criticalChance=item.criticalDamageBonus=item.attackPercent=0;
             int chance=new[]{0,25,55,80}[quality];
             if(roll.Next(100)<chance)
             {
-                bool criticalRate=roll.Next(2)==0;
-                if(criticalRate)item.criticalChance=roll.Next(new[]{0,100,200,300}[quality],new[]{0,301,501,801}[quality])/10000f;
-                else item.criticalDamageBonus=roll.Next(new[]{0,500,800,1200}[quality],new[]{0,1001,1501,2001}[quality])/10000f;
-                if(quality>=2&&roll.Next(100)<(quality==3?45:20))
-                {
-                    if(criticalRate)item.criticalDamageBonus=roll.Next(quality==3?1200:800,quality==3?2001:1501)/10000f;
-                    else item.criticalChance=roll.Next(quality==3?300:200,quality==3?801:501)/10000f;
-                }
+                int first=roll.Next(3);RollEquipmentAffix(item,quality,first,roll);
+                if(quality>=2&&roll.Next(100)<(quality==3?45:20))RollEquipmentAffix(item,quality,(first+1+roll.Next(2))%3,roll);
             }
             item.statRollRevision=1;
+        }
+        private static void RollEquipmentAffix(ItemData item,int quality,int affix,System.Random roll)
+        {
+            if(affix==0)item.criticalChance=roll.Next(new[]{0,100,200,300}[quality],new[]{1,301,501,801}[quality])/10000f;
+            else if(affix==1)item.criticalDamageBonus=roll.Next(new[]{0,500,800,1200}[quality],new[]{1,1001,1501,2001}[quality])/10000f;
+            else item.attackPercent=roll.Next(new[]{0,200,400,600}[quality],new[]{1,501,801,1201}[quality])/10000f;
         }
         private static int RolledEquipmentStat(float basis,float minimum,float maximum,System.Random random)
         {return Math.Max(1,Round(basis*(minimum+(maximum-minimum)*(random.Next(10001)/10000f))));}
@@ -2553,7 +2555,7 @@ namespace Emberfall
                 mechanic = item.mechanic, locked = item.locked,
                 mechanicVariant = item.mechanicVariant, mechanicVariantUnlocked = item.mechanicVariantUnlocked, balanceRevision = item.balanceRevision,
                 attack = item.attack, defense = item.defense, health = item.health, upgradeLevel = item.upgradeLevel,
-                criticalChance=item.criticalChance,criticalDamageBonus=item.criticalDamageBonus,statRollRevision=item.statRollRevision,
+                criticalChance=item.criticalChance,criticalDamageBonus=item.criticalDamageBonus,attackPercent=item.attackPercent,statRollRevision=item.statRollRevision,
                 upgradeBaseInitialized = item.upgradeBaseInitialized,
                 baseAttack = item.baseAttack, baseDefense = item.baseDefense, baseHealth = item.baseHealth,
                 upgradeAnchorLevel = item.upgradeAnchorLevel, upgradeAnchorAttack = item.upgradeAnchorAttack,
@@ -2618,6 +2620,7 @@ namespace Emberfall
             item.defense = Clamp(item.defense, 0, MaximumEquipmentStat);
             item.health = Clamp(item.health, 0, MaximumEquipmentHealth);
             item.criticalChance=float.IsNaN(item.criticalChance)||float.IsInfinity(item.criticalChance)?0:Math.Max(0,Math.Min(.08f,item.criticalChance));
+            item.attackPercent=float.IsNaN(item.attackPercent)||float.IsInfinity(item.attackPercent)?0:Math.Max(0,Math.Min(.12f,item.attackPercent));
             item.criticalDamageBonus=float.IsNaN(item.criticalDamageBonus)||float.IsInfinity(item.criticalDamageBonus)?0:Math.Max(0,Math.Min(.20f,item.criticalDamageBonus));
             bool old = item.balanceRevision < 1;
             bool validOld = item.upgradeBaseInitialized && item.upgradeAnchorLevel >= 0 && item.upgradeAnchorLevel <= MaximumUpgrade &&
@@ -2676,7 +2679,7 @@ namespace Emberfall
         {
             if(item==null)return 0;
             float attributes=item.attack*5f+item.defense*3f+item.health*.2f;
-            attributes+=(20+item.level*2)*(item.criticalChance*8f+item.criticalDamageBonus*2f);
+            attributes+=(20+item.level*2)*(item.criticalChance*8f+item.criticalDamageBonus*2f+item.attackPercent*4f);
             // Intrinsic item valuation, not a prediction of DPS or build synergy.
             bool mechanic=item.mechanic!=EquipmentMechanic.None&&Enum.IsDefined(typeof(EquipmentMechanic),item.mechanic)&&BuildCatalog.MechanicSlot(item.mechanic)==item.slot;
             return attributes+(mechanic?attributes*.2f:0);
@@ -3337,6 +3340,7 @@ namespace Emberfall
             item.defense = Clamp(item.defense, 0, MaximumEquipmentStat);
             item.health = Clamp(item.health, 0, MaximumEquipmentHealth);
             item.criticalChance=float.IsNaN(item.criticalChance)||float.IsInfinity(item.criticalChance)?0:Math.Max(0,Math.Min(.08f,item.criticalChance));
+            item.attackPercent=float.IsNaN(item.attackPercent)||float.IsInfinity(item.attackPercent)?0:Math.Max(0,Math.Min(.12f,item.attackPercent));
             item.criticalDamageBonus=float.IsNaN(item.criticalDamageBonus)||float.IsInfinity(item.criticalDamageBonus)?0:Math.Max(0,Math.Min(.20f,item.criticalDamageBonus));
             item.upgradeLevel = Clamp(item.upgradeLevel, 0, MaximumUpgrade);
             if (!Enum.IsDefined(typeof(EquipmentMechanic), item.mechanic) ||

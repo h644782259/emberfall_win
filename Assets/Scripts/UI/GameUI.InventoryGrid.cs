@@ -38,19 +38,11 @@ namespace Emberfall
             Color ink=enabled?(selected?gold:jade):muted;
             Fill(new Rect(hit.x+2*u,hit.y+3*u,hit.width-4*u,hit.height-6*u),new Color(ink.r,ink.g,ink.b,selected?.28f:.14f));
             Border(new Rect(hit.x+2*u,hit.y+3*u,hit.width-4*u,hit.height-6*u),new Color(ink.r,ink.g,ink.b,.65f));
-            if(!MobileControls.Active&&hit.width>=76)
-            {
-                float labelWidth=Style(12).CalcSize(new GUIContent(caption)).x;
-                float total=Mathf.Min(hit.width-16,22+8+labelWidth),left=hit.center.x-total*.5f;
-                DrawIcon(new Rect(left,hit.center.y-11,22,22),icon,enabled?Color.white:muted);
-                Text(new Rect(left+30,hit.y,Mathf.Max(0,total-30),hit.height),caption,12,ink,false,false,TextAnchor.MiddleLeft);
-            }
-            else
-            {
-                DrawIcon(new Rect(hit.center.x-11*u,hit.y+5*u,22*u,22*u),icon,enabled?Color.white:muted);
-                Text(new Rect(hit.x,hit.y+27*u,hit.width,17*u),caption,Mathf.RoundToInt(11*u),ink,false,false,TextAnchor.MiddleCenter);
-            }
-            // The visible action caption already identifies this button.
+            float labelWidth=Style(Mathf.RoundToInt(14*u)).CalcSize(new GUIContent(caption)).x;
+            float iconSize=Mathf.Min(22*u,hit.width*.25f),gap=6*u;
+            float total=Mathf.Min(hit.width-8*u,iconSize+gap+labelWidth),left=hit.center.x-total*.5f;
+            DrawIcon(new Rect(left,hit.center.y-iconSize*.5f,iconSize,iconSize),icon,enabled?Color.white:muted);
+            Text(new Rect(left+iconSize+gap,hit.y,Mathf.Max(0,total-iconSize-gap),hit.height),caption,Mathf.RoundToInt(14*u),ink,true,false,TextAnchor.MiddleLeft);
             GUI.enabled=enabled;bool clicked=GUI.Button(hit,GUIContent.none,invisibleButton);GUI.enabled=prior;
             if(!clicked||throttle&&Time.unscaledTime<inventoryActionUntil)return false;
             if(throttle)inventoryActionUntil=Time.unscaledTime+.25f;
@@ -202,39 +194,34 @@ namespace Emberfall
             if(PopupCloseButton(new Rect(r.xMax-44*u,r.y,44*u,44*u))){inventoryComparisonOpen=false;GUI.enabled=prior;return;}
             var p=session.Progression;var next=p.PreviewEquippedItem(item);var current=p.Equipped(item.slot);
             float bodyY=r.y+66*u,rowHeight=(sheetHeight<360?22:28)*u;
-            string[] labels={"评分","攻击","防御","生命","暴击率","暴击伤害"};
-            float inner=r.width-24*u,statsWidth=compactCompare?(inner-12*u)*.52f:inner,labelWidth=76*u,valueWidth=(statsWidth-labelWidth)*.5f;
+            string[] labels={"评分","攻击","防御","生命","暴击率","暴击伤害","攻击加成"};
+            float inner=r.width-24*u,statsWidth=compactCompare?(inner-12*u)*.52f:inner,labelWidth=96*u,valueWidth=(statsWidth-labelWidth)*.5f;
             if(inventoryPopupCompare)
             {
                 Text(new Rect(r.x+12*u+labelWidth,bodyY,valueWidth,22*u),current==null?"未穿戴":"当前穿戴",Mathf.RoundToInt(12*u),muted,true,false,TextAnchor.MiddleRight);
                 Text(new Rect(r.x+12*u+labelWidth+valueWidth,bodyY,valueWidth,22*u),"所选装备",Mathf.RoundToInt(12*u),jade,true,false,TextAnchor.MiddleRight);
                 bodyY+=22*u;
             }
-            for(int row=0;row<6;row++)
+            for(int row=0;row<7;row++)
             {
                 float x=r.x+12*u+(inventoryPopupCompare?0:(row%2)*(inner+8*u)*.5f);
                 float y=bodyY+(inventoryPopupCompare?row:row/2)*rowHeight;
                 float cellWidth=inventoryPopupCompare?statsWidth:(inner-8*u)*.5f;
                 Fill(new Rect(x,y,cellWidth,rowHeight-u),card);
-                Text(new Rect(x+4*u,y,72*u,rowHeight),labels[row],Mathf.RoundToInt(11*u),pale,true,false,TextAnchor.MiddleLeft);
+                DrawIcon(new Rect(x+3*u,y+5*u,18*u,18*u),UIIconAtlas.Utility(row==1?"attack":row==2?"defense":row==3?"health":"core"),jade);
+                Text(new Rect(x+24*u,y,72*u,rowHeight),labels[row],Mathf.RoundToInt(11*u),pale,true,false,TextAnchor.MiddleLeft);
                 for(int col=0;col<(inventoryPopupCompare?2:1);col++)
                 {
                     var value=inventoryPopupCompare&&col==0?current:next;
-                    float number=value==null?0:row==0?ProgressionService.EquipmentScore(value):row==1?value.attack:row==2?value.defense:row==3?value.health:row==4?value.criticalChance*100:value.criticalDamageBonus*100;
-                    float baseline=current==null?0:row==0?ProgressionService.EquipmentScore(current):row==1?current.attack:row==2?current.defense:row==3?current.health:row==4?current.criticalChance*100:current.criticalDamageBonus*100;
+                    float number=value==null?0:row==0?ProgressionService.EquipmentScore(value):row==1?value.attack:row==2?value.defense:row==3?value.health:row==4?value.criticalChance*100:row==5?value.criticalDamageBonus*100:value.attackPercent*100;
+                    float baseline=current==null?0:row==0?ProgressionService.EquipmentScore(current):row==1?current.attack:row==2?current.defense:row==3?current.health:row==4?current.criticalChance*100:row==5?current.criticalDamageBonus*100:current.attackPercent*100;
                     Color valueColor=inventoryPopupCompare&&col==0?muted:number>baseline?jade:number<baseline?new Color(1,.48f,.42f):pale;
                     float cell=inventoryPopupCompare?valueWidth:cellWidth-labelWidth;
                     Text(new Rect(x+labelWidth+col*cell,y,cell-4*u,rowHeight),number.ToString(row>=4?"0.##":"0.#")+(row>=4?"%":""),Mathf.RoundToInt(13*u),valueColor,true,false,TextAnchor.MiddleRight);
                 }
             }
-            float mechanismY=compactCompare?r.y+66*u:bodyY+(inventoryPopupCompare?6:3)*rowHeight+8*u;
+            float mechanismY=compactCompare?r.y+66*u:bodyY+(inventoryPopupCompare?7:4)*rowHeight+8*u;
             float mechanismX=compactCompare?r.x+24*u+statsWidth:r.x+12*u,mechanismWidth=compactCompare?inner-statsWidth-12*u:inner;
-            Text(new Rect(mechanismX,mechanismY,mechanismWidth,24*u),"装备机制",Mathf.RoundToInt(14*u),gold,true);
-            string mechanism=EquipmentComparisonPresentation.Description(next,p);
-            Rect mechanismRect=new Rect(mechanismX,mechanismY+26*u,mechanismWidth,r.yMax-60*u-mechanismY-26*u);
-            int font=Mathf.RoundToInt(13*u);
-            while(font>Mathf.RoundToInt(11*u)&&Style(font,false,true).CalcHeight(new GUIContent(mechanism),mechanismRect.width)>mechanismRect.height)font--;
-            Text(mechanismRect,mechanism,font,pale,false,true);
             bool worn=IsEquipped(item);float buttonWidth=r.width-24*u;
             if(MobileControls.Active&&InventoryPictogramAction(new Rect(r.x+12*u,r.yMax-52*u,buttonWidth,44*u),worn?"脱下":"穿戴",UIIconAtlas.Utility("confirm"),worn||item.level<=p.Profile.level,worn,true))
             {
@@ -289,7 +276,9 @@ namespace Emberfall
                     if(f!=null)
                     {
                         DrawIcon(new Rect(compare.center.x-20*u,compare.y+28*u,40*u,40*u),UIIconAtlas.FashionCardIcon(f.slot,(int)f.AppearanceRarity,session.Progression.Profile.heroClass),GameBalance.RarityColor(f.rarity));
-                        Text(new Rect(compare.x+6*u,compare.y+72*u,compare.width-12*u,compare.height-76*u),ProgressionService.FashionName(f.slot,f.AppearanceRarity,session.Progression.Profile.heroClass)+"\n"+ProgressionService.FashionBonus(f.slot,f.rarity),Mathf.RoundToInt(11*u),pale,false,true);
+                        GUI.BeginGroup(new Rect(compare.x+6*u,compare.y+72*u,compare.width-12*u,compare.height-76*u));
+                        DrawEntryRewardRows(new EntryRewardPreview{Key="fashion:"+f.slot,Description="属性\n"+ProgressionService.FashionBonus(f.slot,f.rarity),Rarity=f.rarity,Tint=GameBalance.RarityColor(f.rarity)},(compare.width-12*u)/u,u,true);
+                        GUI.EndGroup();
                     }
                     else Text(new Rect(compare.x+6*u,compare.y+40*u,compare.width-12*u,32*u),"未穿戴",Mathf.RoundToInt(12*u),muted);
                 }
@@ -340,7 +329,7 @@ namespace Emberfall
                     h=Mathf.Max(h,206*u+Style(Mathf.RoundToInt(11*u),false,true).CalcHeight(new GUIContent(copy),half-12*u));
                 }
                 inventoryComparisonScroll=BeginTouchScroll("inventory-popup-comparison",body,inventoryComparisonScroll,new Rect(0,0,width,Mathf.Max(body.height,h)));
-                string[] labels={"评分","攻击","防御","生命","暴击率","暴击伤害"};
+                string[] labels={"评分","攻击","防御","生命","暴击率","暴击伤害","攻击加成"};
                 for(int row=0;row<labels.Length;row++)
                     Text(new Rect(0,(30+row*28)*u,labelWidth,24*u),labels[row],Mathf.RoundToInt(12*u),pale,true,false,TextAnchor.MiddleLeft);
                 for(int col=0;col<2;col++)

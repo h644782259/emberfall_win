@@ -57,7 +57,7 @@ namespace Emberfall
             Rect r=Modal(Mathf.Min(460*u,width-24*u),Mathf.Min(240*u,height-24*u),"重置职业精通","");
             Text(new Rect(r.x+24*u,r.y+100*u,r.width-48*u,40*u),"确认重置所有精通加点并返还精通点？",Mathf.RoundToInt(14*u),pale,false,true);
             if(Button(new Rect(r.x+24*u,r.yMax-60*u,(r.width-60*u)/2,40*u),"取消",jade))masteryResetConfirm=false;
-            if(Button(new Rect(r.center.x+6*u,r.yMax-60*u,(r.width-60*u)/2,40*u),"确认重置",gold,session.IsInCamp))
+            if(Button(new Rect(r.center.x+6*u,r.yMax-60*u,(r.width-60*u)/2,40*u),"确认重置",gold))
             {bool saved=session.Progression.ResetMastery(true);masteryChangeNotice=saved?"职业精通已重置，精通点已返还":session.Progression.LastError;if(saved)masteryResetConfirm=false;}
             if(PopupCloseButton(new Rect(r.xMax-52*u,r.y+12*u,40*u,36*u)))masteryResetConfirm=false;
             return true;
@@ -103,6 +103,14 @@ namespace Emberfall
             float amount=rank*(index==0?.3f:index==1?.5f:index==2?.75f:.1f);
             return new[]{"攻击","生命","护甲","普攻回能"}[index]+" +"+amount.ToString("0.##")+(index==3?"":"%");
         }
+        private string MasteryCoreText(MasteryType mastery)
+        {
+            string text=BuildCatalog.MasteryDescription(mastery);
+            int end=text.IndexOf(MasteryProgressionRules.TierSummary,System.StringComparison.Ordinal);
+            if(end>=0)text=text.Substring(0,end);
+            int start=text.IndexOf("核心：",System.StringComparison.Ordinal);
+            return start>=0?text.Substring(start+3):text;
+        }
         private float DrawSkillDevelopmentContent(float width,float u,bool draw)
         {
             var p=session.Progression;float y=8;
@@ -111,11 +119,13 @@ namespace Emberfall
             if(draw)
             {
                 Text(new Rect(4*u,y*u,(width-132)*u,44*u),"可用精通点 "+p.Profile.skillPoints,Mathf.RoundToInt(16*u),gold,true);
-                if(Button(new Rect((width-128)*u,y*u,124*u,44*u),"重置精通",jade,session.IsInCamp))masteryResetConfirm=true;
+                if(Button(new Rect((width-128)*u,y*u,124*u,44*u),"重置精通",jade))masteryResetConfirm=true;
             }
             y+=52;
             int columns=width>=760?4:2,cap=ProgressionService.MasteryCap(p.Profile.level);
-            float tileWidth=(width-(columns-1)*10)/columns,tileHeight=174;
+            float tileWidth=(width-(columns-1)*10)/columns,coreHeight=0;
+            for(int i=0;i<4;i++)coreHeight=Mathf.Max(coreHeight,Style(Mathf.RoundToInt(12*u),false,true).CalcHeight(new GUIContent(MasteryCoreText((MasteryType)i)),(tileWidth-24)*u)/u);
+            float tileHeight=228+coreHeight;
             for(int i=0;i<4;i++)
             {
                 var mastery=(MasteryType)i;int rank=p.Profile.masteryRanks[i];
@@ -123,7 +133,7 @@ namespace Emberfall
                 Rect tile=new Rect((i%columns)*(tileWidth+10)*u,(y+i/columns*(tileHeight+10))*u,tileWidth*u,tileHeight*u);
                 if(!draw)continue;
                 bool selected=selectedMastery==i,flashing=masteryChangedNode==i&&Time.unscaledTime-masteryChangedAt<1.2f;
-                Fill(tile,flashing?new Color(.07f,.23f,.17f):card);Border(tile,selected?gold:jade*.4f);
+                Fill(tile,flashing?new Color(.07f,.23f,.17f):card);Border(tile,p.HasMasteryCore(mastery)?gold:jade*.4f);
                 DrawIcon(new Rect(tile.x+10*u,tile.y+10*u,28*u,28*u),UIIconAtlas.Mastery(mastery),pale);
                 Text(new Rect(tile.x+46*u,tile.y+8*u,tile.width-54*u,28*u),BuildCatalog.MasteryName(mastery),Mathf.RoundToInt(14*u),pale,true);
                 Text(new Rect(tile.x+12*u,tile.y+42*u,tile.width-24*u,22*u),"已投入 "+rank+" 点"+(p.HasMasteryCore(mastery)?" · 核心":""),Mathf.RoundToInt(12*u),muted);
@@ -137,23 +147,17 @@ namespace Emberfall
                     masteryChangeNotice=saved?BuildCatalog.MasteryName(mastery)+"："+MasteryBonusText(i,rank)+" → "+MasteryBonusText(i,p.Profile.masteryRanks[i])+"（消耗 1 精通点）":p.LastError;
                     if(saved){masteryChangedNode=i;masteryChangedAt=Time.unscaledTime;}
                 }
+                bool active=p.HasMasteryCore(mastery);
+                Text(new Rect(tile.x+12*u,tile.y+176*u,tile.width-24*u,coreHeight*u),MasteryCoreText(mastery),Mathf.RoundToInt(12*u),active?gold:pale,false,true);
+                string coreAction=active?"✓ 核心已启用":rank<MasteryCoreRules.InitialInvestment?"投入 "+MasteryCoreRules.InitialInvestment+" 点解锁":"启用核心";
+                if(Button(new Rect(tile.x+10*u,tile.yMax-44*u,tile.width-20*u,36*u),coreAction,active?gold:jade,session.IsInCamp&&rank>=MasteryCoreRules.InitialInvestment&&!active))
+                {bool saved=p.SelectMasteryCore(mastery,true);masteryChangeNotice=saved?"已启用 "+BuildCatalog.MasteryName(mastery)+"核心":p.LastError;}
             }
             y+=((4+columns-1)/columns)*(tileHeight+10);
-            string notice=string.IsNullOrEmpty(masteryChangeNotice)?"选择精通查看核心效果；加点立即生效，使用独立精通点。":masteryChangeNotice;
-            float noticeHeight=Style(Mathf.RoundToInt(13*u),false,true).CalcHeight(new GUIContent(notice),(width-24)*u)/u+16;
-            if(draw){Fill(new Rect(0,y*u,width*u,noticeHeight*u),new Color(.045f,.13f,.12f));Text(new Rect(12*u,(y+8)*u,(width-24)*u,(noticeHeight-16)*u),notice,Mathf.RoundToInt(13*u),jade,false,true);}
+            string notice=string.IsNullOrEmpty(masteryChangeNotice)?"":masteryChangeNotice;
+            float noticeHeight=string.IsNullOrEmpty(notice)?0:Style(Mathf.RoundToInt(13*u),false,true).CalcHeight(new GUIContent(notice),(width-24)*u)/u+16;
+            if(draw&&noticeHeight>0){Fill(new Rect(0,y*u,width*u,noticeHeight*u),new Color(.045f,.13f,.12f));Text(new Rect(12*u,(y+8)*u,(width-24)*u,(noticeHeight-16)*u),notice,Mathf.RoundToInt(13*u),jade,false,true);}
             y+=noticeHeight+12;
-            var chosen=(MasteryType)selectedMastery;int chosenRank=p.Profile.masteryRanks[selectedMastery];bool hasCore=p.HasMasteryCore(chosen);
-            string description=BuildCatalog.MasteryDescription(chosen);int start=description.IndexOf("核心：",System.StringComparison.Ordinal),end=description.IndexOf(MasteryProgressionRules.TierSummary,System.StringComparison.Ordinal);
-            if(end>=0)description=description.Substring(0,end);
-            if(start>=0)description=description.Substring(start+3);
-            GoalParagraph(ref y,width,u,BuildCatalog.MasteryName(chosen)+" · 核心效果",15,gold,true,draw);
-            GoalParagraph(ref y,width,u,description,13,pale,false,draw);
-            string coreState=hasCore?"当前已启用 · "+(p.MasteryCoreTier(chosen)==2?"增强":"初阶"):chosenRank<MasteryCoreRules.InitialInvestment?"投入 "+chosenRank+" / "+MasteryCoreRules.InitialInvestment+" 点后可启用":"启用此核心";
-            if(draw&&Button(new Rect(4*u,y*u,Mathf.Min(260,width-8)*u,40*u),coreState,jade,session.IsInCamp&&chosenRank>=MasteryCoreRules.InitialInvestment&&!hasCore))
-            {bool saved=p.SelectMasteryCore(chosen,true);masteryChangeNotice=saved?"已启用 "+BuildCatalog.MasteryName(chosen)+"核心，其他核心已关闭":p.LastError;}
-            y+=46;
-            GoalParagraph(ref y,width,u,"仅一个核心生效 · "+MasteryCoreRules.EnhancedInvestment+" 点增强"+(!session.IsInCamp?" · 返回营地可切换核心":""),12,muted,false,draw);
             y=DrawSpecializationChoices(width,u,y+8,draw)+16;
             return y+8;
         }

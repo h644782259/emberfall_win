@@ -94,29 +94,7 @@ namespace Emberfall
 
         private void DrawMobileChestResult(MobilePanelLayout layout, ChestReward reward, Color accent, bool complete)
         {
-            float progress = ChestRevealPresentation.Progress(Time.unscaledTime - chestRevealedAt,ChestDuration);
-            if(!complete){DrawChestRevealTransition(MobilePanelRect(layout.Body),reward,TouchRect(layout.BodyLeft.X+8,layout.BodyLeft.Y+8,layout.BodyLeft.Width-16,layout.BodyLeft.Height-16));return;}
-            float artWidth=Mathf.Min(240,layout.Body.Width*.32f);
-            var art = new MobilePanelLayout.Area(layout.Body.X,layout.Body.Y,artWidth,layout.Body.Height);
-            Fill(MobilePanelRect(art), new Color(.055f, .08f, .11f)); Border(MobilePanelRect(art), accent);
-            float artHeight=Mathf.Max(art.Height-16,144);
-            mobileChestArtScroll=BeginTouchScroll("mobile-chest-art",MobilePanelRect(art),mobileChestArtScroll,new Rect(0,0,(art.Width-8)*TouchRatio,(artHeight+16)*TouchRatio));
-            DrawChestCommittedReward(TouchRect(8,8,art.Width-24,artHeight),reward,accent);
-            EndTouchScroll();
-            if (progress > .35f)
-            {
-                Rect clip = TouchRect(art.X + 8, art.Y + 8, art.Width - 16, art.Height - 16);
-                GUI.BeginGroup(clip);
-                DrawRewardRadiance(new Rect(0, 0, clip.width, clip.height), accent, progress);
-                GUI.EndGroup();
-            }
-            var viewport=new MobilePanelLayout.Area(art.XMax+12,art.Y,layout.Body.Width-art.Width-12,art.Height);float contentWidth=viewport.Width-24;
-            string error=string.IsNullOrEmpty(mobileChestError)?session.Progression.LastError:mobileChestError;
-            float total=DrawChestRewardContents(contentWidth,TouchRatio,reward,error,false);
-            mobileChestScroll=BeginTouchScroll("mobile-chest-result",MobilePanelRect(viewport),mobileChestScroll,
-                new Rect(0,0,(viewport.Width-16)*TouchRatio,Mathf.Max(viewport.Height,total)*TouchRatio));
-            DrawChestRewardContents(contentWidth,TouchRatio,reward,error,true);
-            EndTouchScroll();
+            DrawDesktopChestResult(MobilePanelRect(layout.Body),reward,accent);
         }
 
         private void DrawMobileChestDetails(MobilePanelLayout layout)

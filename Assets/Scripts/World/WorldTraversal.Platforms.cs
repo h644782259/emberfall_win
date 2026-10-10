@@ -49,7 +49,7 @@ namespace Emberfall
         {
             float t=Mathf.Clamp01(progress);
             // Rise clear of the starting ledge before moving across its side.
-            float travel=Mathf.Clamp01((t-.25f)/.5f);
+            float travel=t;
             return Vector3.Lerp(from,to,travel)+Vector3.up*(Mathf.Sin(t*Mathf.PI)*1.65f);
         }
         public static bool TryResolvePlatformJump(Vector3 from,Vector3 direction,float distance,float radius,out Vector3 landing)

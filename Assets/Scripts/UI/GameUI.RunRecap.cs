@@ -116,12 +116,20 @@ namespace Emberfall
         }
         private void DrawSettlementChestStage(Rect stage,ChestReward reward,float u)
         {
-            float size=Mathf.Min(stage.height,stage.width*.62f);
-            Rect art=new Rect(stage.center.x-size*.5f,stage.y,size,size);
             bool animating=chestReceiptId==reward.Id&&!ChestAnimationDone;
             float progress=animating?ChestRevealPresentation.Progress(Time.unscaledTime-chestRevealedAt,ChestDuration):1;
-            if(animating)DrawChestRevealTransition(stage,reward,art);else DrawRewardChest(art,true,1,1);
+            float badgeSize=Mathf.Min(112*u,Mathf.Min(stage.height,stage.width*.2f));
+            Rect badge=new Rect(stage.x,stage.center.y-badgeSize*.5f,badgeSize,badgeSize);
+            float heroSize=Mathf.Min(stage.height,stage.width*.52f);
+            Rect hero=new Rect(stage.center.x-heroSize*.5f,stage.center.y-heroSize*.5f,heroSize,heroSize);
+            float dock=Mathf.SmoothStep(0,1,Mathf.Clamp01((progress-.45f)/.32f));
+            Rect art=new Rect(Mathf.Lerp(hero.x,badge.x,dock),Mathf.Lerp(hero.y,badge.y,dock),Mathf.Lerp(hero.width,badge.width,dock),Mathf.Lerp(hero.height,badge.height,dock));
+            if(animating&&progress>.18f&&progress<.8f)
+            {GUI.BeginGroup(art);DrawRewardRadiance(new Rect(0,0,art.width,art.height),gold,progress);GUI.EndGroup();}
+            DrawRewardChest(art,true,1,progress);
             if(progress<.55f)return;
+            Rect rewardsArea=new Rect(badge.xMax+16*u,stage.y+8*u,Mathf.Max(1,stage.xMax-badge.xMax-24*u),stage.height-16*u);
+            Fill(new Rect(badge.xMax+6*u,stage.y+stage.height*.15f,u,stage.height*.7f),new Color(gold.r,gold.g,gold.b,.25f));
             var icons=new System.Collections.Generic.List<EntryRewardPreview>();
             if(reward.equipmentIds!=null)foreach(string id in reward.equipmentIds)
             {var item=session.Progression.Profile.inventory.Find(v=>v!=null&&v.id==id);if(item!=null)icons.Add(ActualEquipmentPreview(item));}
@@ -129,18 +137,21 @@ namespace Emberfall
                 icons.Add(new EntryRewardPreview{Key="fashion:"+reward.Id,Name=reward.Name,Rarity=reward.Rarity.Value,Tint=GameBalance.RarityColor(reward.Rarity.Value),Icon=UIIconAtlas.FashionCardIcon(reward.Slot.Value,(int)reward.Rarity.Value,session.Progression.Profile.heroClass),Description=ProgressionService.FashionBonus(reward.Slot.Value,reward.Rarity.Value)});
             if(reward.gemMechanic!=EquipmentMechanic.None)
                 icons.Add(new EntryRewardPreview{Key="gem:"+reward.Id,Name=BuildCatalog.GemName(reward.gemMechanic),Rarity=reward.gemRarity,Tint=GameBalance.RarityColor(reward.gemRarity),Icon=UIIconAtlas.Utility("gem"),Description=BuildCatalog.MechanicDescription(reward.gemMechanic)});
-            if(icons.Count==0){DrawChestResourceVisuals(new Rect(art.x,art.center.y,art.width,art.height*.4f),reward);return;}
-            int cols=Mathf.Min(3,icons.Count),rows=(icons.Count+cols-1)/cols;
-            float cell=Mathf.Min(66*u,Mathf.Min(art.width/(cols+.5f),stage.height/(rows+1))),gap=8*u;
-            // Reward art keeps its own square frame throughout the reveal.
+            if(icons.Count==0){DrawChestResourceVisuals(rewardsArea,reward);return;}
+            float cell=Mathf.Min(82*u,Mathf.Max(36*u,rewardsArea.height-12*u)),gap=10*u;
+            int cols=Mathf.Max(1,Mathf.FloorToInt((rewardsArea.width+gap)/(cell+gap))),rows=(icons.Count+cols-1)/cols;
+            if(rows*(cell+gap)>rewardsArea.height){cell=Mathf.Max(24*u,Mathf.Min(cell,(rewardsArea.height-gap*(rows-1))/rows));cols=Mathf.Max(1,Mathf.FloorToInt((rewardsArea.width+gap)/(cell+gap)));rows=(icons.Count+cols-1)/cols;}
+            float top=rewardsArea.center.y-(rows*cell+(rows-1)*gap)*.5f;
             for(int i=0;i<icons.Count;i++)
             {
-                float x=stage.center.x-(cols*cell+(cols-1)*gap)*.5f+(i%cols)*(cell+gap);
-                float y=stage.center.y-(rows*cell+(rows-1)*gap)*.5f+(i/cols)*(cell+gap)-12*u;
-                Rect icon=new Rect(x,y,cell,cell);
-                DrawEntryRewardIcon(icon,icons[i],u);InspectRewardItem(icon,icons[i]);
+                float reveal=animating?Mathf.Clamp01((progress-.55f-i*.035f)/.16f):1;
+                if(reveal<=0)continue;
+                Rect icon=new Rect(rewardsArea.x+(i%cols)*(cell+gap),top+(i/cols)*(cell+gap),cell,cell);
+                Color before=GUI.color;GUI.color=new Color(before.r,before.g,before.b,before.a*reveal);
+                DrawEntryRewardIcon(icon,icons[i],u);GUI.color=before;
+                InspectRewardItem(icon,icons[i]);
             }
-            if(!animating)Text(new Rect(stage.x,stage.yMax-28*u,stage.width,24*u),"奖励已获得",Mathf.RoundToInt(13*u),gold,true,false,TextAnchor.MiddleCenter);
+
         }
 
         // Returns only the explicit primary action. Respawn/navigation stays with the caller.

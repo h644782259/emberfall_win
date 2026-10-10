@@ -1140,7 +1140,7 @@ namespace Emberfall
             if(travel.sqrMagnitude>.0001f)
             {
                 float bonus=(passiveTime>0?passiveSpeed:0)+(mobilityTime>0?.1f+mobilityRank*.05f:0)+(pursuitTime>0?.2f:0)+(burnStrideTime>0?.6f:0);
-                float distance=Mathf.Max(6f,stats.MoveSpeed*(1+bonus)*.55f)*MovementMultiplier*travel.magnitude;
+                float distance=(stats.MoveSpeed*(1+bonus)*.55f)*MovementMultiplier*travel.magnitude;
                 Vector3 landing;
                 if(WorldTraversal.TryResolvePlatformJump(origin,travel,distance,.45f,out landing))jumpDestination=landing;
                 else if(origin.y<=.05f&&WorldTraversal.TryResolveBlink(origin,travel,distance,.45f,session.ArenaRadius-.65f,out landing))jumpDestination=landing;

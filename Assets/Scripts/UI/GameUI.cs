@@ -829,11 +829,11 @@ namespace Emberfall
             var p=session.Progression.Profile;float u=MobileControls.Active?TouchRatio:1;
             bool capped=p.level>=ProgressionService.MaximumLevel;
             // Keep labels within the safe area; the thin rail continues to the screen edges.
-            float railY=(Screen.height-guiOffset.y)/scale-5*u;
-            Bar(new Rect(-guiOffset.x/scale,railY,Screen.width/scale,5*u),capped?1:p.xp/(float)GameBalance.XpToNext(p.level),gold);
-            Rect label=new Rect(12*u,height-29*u,260*u,22*u);
-            Fill(label,new Color(.025f,.045f,.06f,.85f));
-            Text(label,"Lv."+p.level+"   "+(capped?"满级":p.xp+" / "+GameBalance.XpToNext(p.level)),Mathf.RoundToInt(11*u),gold,true,false,TextAnchor.MiddleLeft);
+            float railY=height-24*u;
+            Rect rail=new Rect(-guiOffset.x/scale,railY,Screen.width/scale,24*u);
+            Bar(rail,capped?1:p.xp/(float)GameBalance.XpToNext(p.level),gold);
+            DrawHudVital(new Rect(0,railY,width,24*u),capped?1:p.xp/(float)GameBalance.XpToNext(p.level),gold,"Lv."+p.level+"   "+(capped?"满级":p.xp+" / "+GameBalance.XpToNext(p.level)));
+
         }
         private void DrawHUD()
         {

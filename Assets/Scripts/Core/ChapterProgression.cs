@@ -41,7 +41,7 @@ namespace Emberfall
             if(profile==null||!Valid(node))return 1;
             int first=UnlockLevel(node)/10;
             int best=profile.chapterBestTiers!=null&&profile.chapterBestTiers.Length>=(int)node+1?profile.chapterBestTiers[(int)node]:0;
-            return Math.Min(LevelTier(profile.level),Math.Max(first,best+1));
+            return LevelTier(profile.level);
         }
         public static ChapterDifficulty AvailableDifficulty(GameProfile profile,ChapterNode node)
         {return LevelDifficulty(node,AvailableTier(profile,node)*10);}

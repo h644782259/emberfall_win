@@ -216,7 +216,7 @@ namespace Emberfall
             blockedRects.Add(TouchRect(layout.PlayerStatus));
             Bar(TouchRect(layout.PlayerHealth),hp/Mathf.Max(1,max),new Color(.86f,.16f,.19f));
             Text(TouchRect(layout.PlayerHealth),Mathf.CeilToInt(hp)+" / "+Mathf.CeilToInt(max),TouchFont(MobileControls.IsIPad?11:9),pale,true,false,TextAnchor.MiddleCenter);
-            Bar(TouchRect(layout.PlayerEnergy),session.Player==null?0:session.Player.Energy/Mathf.Max(1,session.Player.MaxEnergy),new Color(.35f,.63f,1));
+            DrawHudVital(TouchRect(layout.PlayerEnergy),session.Player==null?0:session.Player.Energy/Mathf.Max(1,session.Player.MaxEnergy),new Color(.35f,.63f,1),session.Player==null?"0 / 100":Mathf.FloorToInt(session.Player.Energy)+" / "+Mathf.RoundToInt(session.Player.MaxEnergy));
         }
         // Objective text is informational; touching it must not open travel or click through.
         private void DrawMobileObjectiveText(Rect bounds,ref float y,string value,int size,Color tint,bool bold=false,bool locate=false)

@@ -8,6 +8,7 @@ Shader "Emberfall/Filled Spell Volume"
         _Style ("Dissolve", Range(0,1)) = 0
         _Element ("Element family", Float) = 0
         _Seed ("Variation", Float) = 0
+        _ImpactLight ("Impact pulse", Range(0,1)) = 0
         _EnvelopeMode ("State envelope", Float) = 0
         _EnvelopeAge ("State age", Float) = 0
     }
@@ -27,7 +28,7 @@ Shader "Emberfall/Filled Spell Volume"
             #include "UnityCG.cginc"
             struct appdata { float4 vertex:POSITION; float3 normal:NORMAL; float2 uv:TEXCOORD0; };
             struct v2f { float4 pos:SV_POSITION; float2 uv:TEXCOORD0; float3 normal:TEXCOORD1; float3 local:TEXCOORD2; float3 view:TEXCOORD3; };
-            fixed4 _Color; float _Opacity, _Progress, _Style, _EnvelopeMode, _EnvelopeAge, _Element, _Seed;
+            fixed4 _Color; float _Opacity, _Progress, _Style, _EnvelopeMode, _EnvelopeAge, _Element, _Seed, _ImpactLight;
             v2f vert(appdata v)
             {v2f o;o.pos=UnityObjectToClipPos(v.vertex);o.uv=v.uv;o.normal=UnityObjectToWorldNormal(v.normal);o.local=v.vertex.xyz;o.view=WorldSpaceViewDir(v.vertex);return o;}
             float hash(float3 p) { p=frac(p*.3183099+float3(.13,.37,.71));p*=17;return frac(p.x*p.y*p.z*(p.x+p.y+p.z)); }
@@ -46,7 +47,7 @@ Shader "Emberfall/Filled Spell Volume"
                 float fine=noise(i.local*23+_Seed);
                 float light=.62+.38*abs(dot(normal,normalize(float3(.35,.8,.4))));
                 float heat=saturate(grain*.85+rim*.4+(1-saturate(i.uv.y))*.25);
-                float3 core=lerp(_Color.rgb,1,.7),outer=_Color.rgb*.45;
+                float3 core=lerp(_Color.rgb,1,.84),outer=_Color.rgb*.32;
                 float pattern=grain;
                 if(_Element>.5&&_Element<1.5) { // Fire: turbulent bright root, dark cooling tongues.
                     core=float3(1,.94,.55);outer=lerp(float3(.48,.025,.006),_Color.rgb,.2);
@@ -89,6 +90,11 @@ Shader "Emberfall/Filled Spell Volume"
                     (_Element>4.5)?float3(.4,.2,1):_Color.rgb;
                 tint=lerp(tint,accent*1.15,bands*.18*(1-heat));
                 tint+=core*(rim*.32+highlights*.5)*(1-_Progress*.35);
+                // White-hot release, colored midtones and a narrow travelling light edge.
+                // Reuses the existing pass; no extra lights, bloom requirement or draw calls.
+                float ribbon=pow(saturate(1-abs(frac(i.uv.y*2.0-_Progress*1.8+_Seed)-.5)*2),12);
+                float edgeLight=pow(rim,2)*.42+ribbon*.32;
+                if(_EnvelopeMode<.5)tint+=core*(edgeLight+_ImpactLight*.48);
                 return fixed4(tint,alpha);
             }
             ENDCG

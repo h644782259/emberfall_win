@@ -34,7 +34,8 @@ namespace Emberfall
      if(Event.current.isMouse&&Event.current.type!=EventType.Repaint&&Event.current.type!=EventType.Layout)Event.current.Use();
     }
    }
-   return GUI.BeginScrollView(viewport,position,content,horizontal,vertical,GUIStyle.none,scrollBar);
+   bool overflow=vertical&&content.height>viewport.height+.5f;
+   return GUI.BeginScrollView(viewport,position,content,horizontal,false,GUIStyle.none,overflow?scrollBar:GUIStyle.none);
   }
   private void EndTouchScroll(){GUI.EndScrollView();GUI.enabled=scrollPriorEnabled;}
   private void ReconcileMobileScroll()

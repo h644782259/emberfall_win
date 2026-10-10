@@ -113,14 +113,14 @@ namespace Emberfall
             var profile=session.Progression.Profile;var node=session.SelectedChapterNode;
             int level=AdventureRewardRules.DungeonLevel(session.SelectedChapterTier),mode=(int)node;
             float w=body.width/u-18;
-            string mechanic="装备洗练石 × "+ProgressionService.ChapterRefinementStones(node,session.SelectedChapterTier)+(node==ChapterNode.Redrock?" · 主要产地":"")+"\n"+ChapterDefinition.Get(node).Mechanic+"\n"+ChapterDefinition.DifficultyMechanic(node,session.SelectedChapterDifficulty);
+            string mechanic=ChapterDefinition.Get(node).Mechanic+"\n"+ChapterDefinition.DifficultyMechanic(node,session.SelectedChapterDifficulty);
             float descriptionHeight=Style(Mathf.RoundToInt(14*u),false,true).CalcHeight(new GUIContent(mechanic),(w-24)*u)/u+20;
             float rewardsHeight=DrawEntryRewardPreviews(w,u,mode,session.SelectedChapterTier,true,false);
             float total=132+descriptionHeight+rewardsHeight;
             chapterScroll=BeginTouchScroll("chapter-entry",body,chapterScroll,new Rect(0,0,w*u,Mathf.Max(body.height,total*u)));
             DrawChapterSymbol(new Rect(12*u,14*u,28*u,28*u),node,gold);
             Text(new Rect(50*u,8*u,(w-58)*u,30*u),ChapterDefinition.Get(node).Name,Mathf.RoundToInt(20*u),pale,true);
-            Text(new Rect(12*u,50*u,(w-24)*u,30*u),"Lv"+level+" 挑战 · 每10级自动提升",Mathf.RoundToInt(14*u),gold,true);
+            Text(new Rect(12*u,50*u,(w-24)*u,30*u),"",Mathf.RoundToInt(14*u),gold,true);
             Text(new Rect(12*u,84*u,(w-24)*u,descriptionHeight*u),mechanic,Mathf.RoundToInt(14*u),muted,false,true);
             float y=84+descriptionHeight;
             entryRewardViewport=body;entryRewardContentOrigin=new Vector2(body.x-chapterScroll.x,body.y+y*u-chapterScroll.y);

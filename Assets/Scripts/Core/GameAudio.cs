@@ -416,7 +416,7 @@ namespace Emberfall
                     value=fire?(noise*.6+Math.Sin(Tau*(65+skill*8)*t)*.3)*Math.Sin(Math.PI*p)*Math.Exp(-p*1.5):(Bell(t,900+skill*115)+Bell(t-.06,1500+skill*95)*.6+noise*.12*Math.Exp(-p*9));
                 }
                 else if(hero==HeroClass.Ranger)value=Math.Sin(Tau*(tone*2*t+50*t*t))*Math.Exp(-p*13)*.65+noise*Math.Sin(Math.PI*p)*Math.Exp(-p*4)*.45;
-                else value=(Math.Sin(Tau*tone*t)+Math.Sin(Tau*tone*1.5*t)*.4+Math.Sin(Tau*tone*2.01*t)*.2)*Math.Sin(Math.PI*p)*(.45+.15*Math.Sin(Tau*(3+skill)*t));
+                else value=Bell(t,660+skill*64)*.6+Bell(t-.055,990+skill*91)*.4+Bell(t-.12,1320+skill*110)*.25+noise*.035*Math.Sin(Math.PI*p)*Math.Exp(-p*5);
                 double envelope=Math.Min(1,t/.004)*Math.Min(1,(duration-t)/.025);samples[i]=(float)(value*Math.Max(0,envelope));peak=Math.Max(peak,Math.Abs(samples[i]));
             }
             for(int i=0;i<samples.Length;i++)samples[i]*=.7f/peak;

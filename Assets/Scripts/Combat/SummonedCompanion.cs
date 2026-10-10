@@ -613,12 +613,12 @@ namespace Emberfall
             if(Form==Kind.Treant)
             {
                 healingPulseTime+=dt;
-                if(healingPulseTime>=3f)
+                if(healingPulseTime>=2.5f)
                 {
-                    healingPulseTime-=3f;
+                    healingPulseTime-=2.5f;
                     if(CombatFx.Flat(Owner.transform.position-transform.position).sqrMagnitude<=36&&CombatSight.Area(transform.position,Owner.transform.position))
                     {
-                        float before=Owner.Health;Owner.Heal(Owner.MaxHealth*.06f);
+                        float before=Owner.Health;Owner.Heal(Owner.MaxHealth*(.08f+.02f*Rank));
                         if(Owner.Health>before)FilledSkillVfx.HealingPulse(Owner,GameBalance.ClassColor(HeroClass.Summoner),transform);
                     }
                 }

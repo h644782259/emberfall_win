@@ -282,12 +282,12 @@ namespace Emberfall
                 var cap=p.PreviewRefinementLimit(item.id);string reason=p.RefinementLockReason(item.id,SmithServiceActive);
                 if(cap==null)return y;
 
-                string[] labels={"攻击","防御","生命","暴击率","暴击伤害"};
-                string[] current={item.attack.ToString(),item.defense.ToString(),item.health.ToString(),(item.criticalChance*100).ToString("0.##")+"%",(item.criticalDamageBonus*100).ToString("0.##")+"%"};
-                string[] limits={cap.attack.ToString(),cap.defense.ToString(),cap.health.ToString(),(cap.criticalChance*100).ToString("0.##")+"%",(cap.criticalDamageBonus*100).ToString("0.##")+"%"};
-                for(int stat=0;stat<5;stat++)
+                string[] labels={"攻击","防御","生命","暴击率","暴击伤害","攻击加成"};
+                string[] current={item.attack.ToString(),item.defense.ToString(),item.health.ToString(),(item.criticalChance*100).ToString("0.##")+"%",(item.criticalDamageBonus*100).ToString("0.##")+"%",(item.attackPercent*100).ToString("0.##")+"%"};
+                string[] limits={cap.attack.ToString(),cap.defense.ToString(),cap.health.ToString(),(cap.criticalChance*100).ToString("0.##")+"%",(cap.criticalDamageBonus*100).ToString("0.##")+"%",(cap.attackPercent*100).ToString("0.##")+"%"};
+                for(int stat=0;stat<6;stat++)
                 {
-                    bool present=stat==0?item.attack>0:stat==1?item.defense>0:stat==2?item.health>0:stat==3?item.criticalChance>0:item.criticalDamageBonus>0;if(!present)continue;
+                    bool present=stat==0?item.attack>0:stat==1?item.defense>0:stat==2?item.health>0:stat==3?item.criticalChance>0:stat==4?item.criticalDamageBonus>0:item.attackPercent>0;if(!present)continue;
                     if(draw){Rect row=new Rect(8*u,y*u,(width-16)*u,34*u);Fill(row,card);Text(new Rect(row.x+6*u,row.y,row.width*.32f,row.height),labels[stat],Mathf.RoundToInt(12*u),muted);Text(new Rect(row.x+row.width*.34f,row.y,row.width*.66f,row.height),current[stat]+" / "+limits[stat],Mathf.RoundToInt(13*u),jade,true,false,TextAnchor.MiddleCenter);}y+=38;
                 }
 

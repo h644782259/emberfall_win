@@ -149,14 +149,15 @@ namespace Emberfall
         }
         private void DrawDesktopChestResult(Rect r,ChestReward reward,Color accent)
         {
-            float size=ChestRevealPresentation.DesktopArtSize(r.height);
-            Rect art=new Rect(r.x,r.y,size,size);Fill(art,new Color(.025f,.045f,.07f));Border(art,accent);
-            DrawChestCommittedReward(art,reward,accent);
-            Rect details=new Rect(art.xMax+24,r.y,r.width-size-24,r.height);
-            string error=session.Progression.LastError;float contentWidth=details.width-20;
-            float total=Mathf.Max(details.height,DrawChestRewardContents(contentWidth,1,reward,error,false));
-            desktopChestResultScroll=BeginTouchScroll("desktop-chest-result",details,desktopChestResultScroll,new Rect(0,0,details.width-16,total));
-            DrawChestRewardContents(contentWidth,1,reward,error,true);EndTouchScroll();
+            float u=MobileControls.Active?TouchRatio:1;
+            bool hasItems=reward!=null&&(reward.equipmentIds!=null&&reward.equipmentIds.Length>0||reward.Rarity.HasValue||reward.gemMechanic!=EquipmentMechanic.None);
+            if(hasItems)
+            {
+                int[] amounts={reward.hasCurrencyDeltas?reward.goldDelta:reward.Gold,reward.materialKind==RewardMaterialKind.StarAshFragment?reward.materialsDelta:0,reward.threadsDelta};
+                for(int i=0;i<3;i++)DrawRewardToken(new Rect(r.x+i*r.width/3,r.y,r.width/3-8*u,36*u),i,amounts[i],u);
+                r=new Rect(r.x,r.y+42*u,r.width,Mathf.Max(24*u,r.height-42*u));
+            }
+            DrawSettlementChestStage(r,reward,u);
         }
         private string[] ChestSectionCopy(ChestReward reward)
         {
@@ -240,9 +241,27 @@ namespace Emberfall
 
         }
 
+        private Texture2D rewardChestHD;
+        private bool rewardChestHDLoaded;
+        private void DrawChestAtlasFrame(Rect area,bool opened,float opacity)
+        {
+            float size=Mathf.Min(area.width,area.height);
+            Rect square=new Rect(area.center.x-size*.5f,area.center.y-size*.5f,size,size);
+            Color old=GUI.color;GUI.color=new Color(old.r,old.g,old.b,old.a*opacity);
+            GUI.DrawTextureWithTexCoords(square,rewardChestHD,new Rect(opened?.5f:0,0,.5f,1),true);
+            GUI.color=old;
+        }
         private void DrawRewardChest(Rect r,bool opened,float opacity,float progress)
         {
             if(Event.current.type!=EventType.Repaint)return;
+            if(!rewardChestHDLoaded){rewardChestHD=Resources.Load<Texture2D>("RewardChestHD");rewardChestHDLoaded=true;}
+            if(rewardChestHD!=null)
+            {
+                float opening=opened?Mathf.SmoothStep(0,1,Mathf.Clamp01((progress-.12f)/.30f)):0;
+                if(opening<1)DrawChestAtlasFrame(r,false,opacity*(1-opening));
+                if(opening>0)DrawChestAtlasFrame(r,true,opacity*opening);
+                return;
+            }
             int key=opened?Mathf.Clamp(Mathf.RoundToInt(Mathf.Clamp01((progress-.12f)/.64f)*96),0,96):0;
             Texture2D texture=key==0?rewardChestClosed:rewardChestComposite;
             bool created=texture==null;

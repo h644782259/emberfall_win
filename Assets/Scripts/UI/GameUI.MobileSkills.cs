@@ -28,7 +28,7 @@ namespace Emberfall
             selectedSkill = Mathf.Clamp(selectedSkill, 0, GameBalance.SkillCount - 1);
             var layout = MobilePanelGeometry();
             if (DrawMobilePanelChrome(layout, GameBalance.ClassName(profile.heroClass) + " · 技能",
-                "Lv." + profile.level + " · 等级自动解锁",showNotice:false,headerRightReserve:276)) return;
+                "人物等级达成后技能自动解锁",showNotice:false,headerRightReserve:276)) return;
 
             DrawSkillTabs(TouchRect(layout.Close.X-276,8,264,44));
             if(skillSection!=0)return;
@@ -42,13 +42,13 @@ namespace Emberfall
             if(RouteSkillReturnAvailable&&NavigationButton(MobilePanelRect(layout.FooterButton(0,1)),"返回职业路线",jade)){ClosePanel();BlockUITransition();return;}
             Rect r=TouchRect(listArea.XMax+12,listArea.Y,layout.Body.Width-leftWidth-12,bodyHeight);
             Fill(r,new Color(.025f,.055f,.075f,.99f));Border(r,jade*.5f);
-            Text(new Rect(r.x+10*u,r.y+4*u,r.width-20*u,36*u),GameBalance.SkillName(profile.heroClass,selectedSkill)+" · "+profile.skillRanks[selectedSkill]+"/3",TouchFont(16),pale,true,false,TextAnchor.MiddleLeft);
+            Text(new Rect(r.x+10*u,r.y+4*u,r.width-20*u,36*u),GameBalance.SkillName(profile.heroClass,selectedSkill),TouchFont(16),pale,true,false,TextAnchor.MiddleLeft);
             Rect detailArea=new Rect(r.x+6*u,r.y+44*u,r.width-12*u,Mathf.Max(32*u,r.height-100*u));float detailWidth=detailArea.width/u-16;
             float detailHeight=DrawMobileSkillDescription(detailWidth,false);
             mobileSkillDetailScroll=BeginTouchScroll("mobile-skill-detail",detailArea,mobileSkillDetailScroll,new Rect(0,0,detailWidth*u,Mathf.Max(detailArea.height,detailHeight*u)));
             DrawMobileSkillDescription(detailWidth,true);EndTouchScroll();
             int rank = progression.Profile.skillRanks[selectedSkill];
-            string reason = progression.SkillLockReason(selectedSkill);
+            string reason = rank >= 3 ? "" : progression.SkillLockReason(selectedSkill);
             Text(new Rect(r.x+8*u,r.yMax-48*u,r.width-16*u,40*u),reason,TouchFont(14),gold,true,false,TextAnchor.MiddleCenter);
 
         }
@@ -79,8 +79,8 @@ namespace Emberfall
                 DrawSkillIdentity(icon,p.heroClass,skill,rank,rank>0||canLearn,48);
                 if(selectedSkill==skill)DrawIcon(new Rect(node.center.x+20*TouchRatio,node.y+2*TouchRatio,12*TouchRatio,12*TouchRatio),UIIconAtlas.Utility("confirm"),gold);
                 Text(new Rect(node.x+4*TouchRatio,node.y+44*TouchRatio,node.width-8*TouchRatio,22*TouchRatio),GameBalance.SkillName(p.heroClass,skill),TouchFont(10),rank>0||canLearn?pale:muted,true,false,TextAnchor.MiddleCenter);
-                string state="Lv."+GameBalance.SkillRequiredLevels[skill]+" · "+(canLearn?rank>0?"可进阶":"可学习":rank>0?GameBalance.SkillRankName(rank):GameBalance.IsPassive(skill)?"被动 · 未学":"未解锁");
-                Text(new Rect(node.x+4*TouchRatio,node.y+64*TouchRatio,node.width-8*TouchRatio,16*TouchRatio),state,TouchFont(10),canLearn?gold:accent,false,false,TextAnchor.MiddleCenter);
+                SkillStateTag(new Rect(node.x+3*TouchRatio,node.y+64*TouchRatio,(node.width-10*TouchRatio)*.45f,18*TouchRatio),"Lv."+GameBalance.SkillRequiredLevels[skill],muted,TouchFont(9));
+                SkillStateTag(new Rect(node.x+node.width*.46f,node.y+64*TouchRatio,node.width*.54f-3*TouchRatio,18*TouchRatio),rank>0?GameBalance.SkillRankName(rank):"未解锁",accent,TouchFont(9));
                 Badge(icon,canLearn);
                 if(MobileSkillRowClicked(node)&&selectedSkill!=skill)
                 {selectedSkill=skill;mobileSkillDetailScroll=Vector2.zero;mobileSkillStatus=null;CancelMobileScroll();}
@@ -95,19 +95,39 @@ namespace Emberfall
             float y = 8;
             if (!string.IsNullOrEmpty(mobileSkillStatus))
                 MobileSkillParagraph(ref y, width, mobileSkillStatus, 14, mobileSkillStatusFailed ? gold : jade, true, draw);
-            MobileSkillParagraph(ref y, width, (GameBalance.IsPassive(skill) ? "被动" : "主动") + " · " +
-                GameBalance.CategoryName(GameBalance.GetSkillCategory(p.heroClass, skill)), 13, jade, true, draw);
-            MobileSkillParagraph(ref y, width, SkillTooltip(p, skill, rank), 14, pale, false, draw);
-            MobileSkillParagraph(ref y,width,session.Progression.SkillLockReason(skill),14,gold,true,draw);
+            if(draw)
+            {
+                SkillStateTag(TouchRect(8,y,56,24),GameBalance.IsPassive(skill)?"被动":"主动",jade,TouchFont(12));
+                SkillStateTag(TouchRect(72,y,72,24),GameBalance.CategoryName(GameBalance.GetSkillCategory(p.heroClass,skill)),gold,TouchFont(12));
+            }
+            y+=34;
+            string description=BuildCatalog.VenomSkillOverride(p,skill,rank);
+            if(description.Length==0)description=GameBalance.SkillDescription(p.heroClass,skill);
+            MobileSkillParagraph(ref y,width,description,14,pale,false,draw);
             for (int stage = 1; stage <= 3; stage++)
             {
-                MobileSkillParagraph(ref y, width, GameBalance.SkillRankName(stage) + " · Lv." + GameBalance.SkillRankRequiredLevel(skill, stage) +
-                    (stage == rank ? " · 当前" : stage < rank ? " · 已学习" : ""), 16, stage <= rank ? jade : pale, true, draw);
+                if(draw)
+                {
+                    Rect header=TouchRect(8,y,width-16,30);
+                    Fill(header,stage==rank?new Color(.13f,.25f,.24f):new Color(.035f,.075f,.11f));
+                    if(stage==rank){Border(header,gold);Fill(new Rect(header.x,header.y,3*TouchRatio,header.height),gold);}
+                    Text(TouchRect(14,y,48,30),GameBalance.SkillRankName(stage),TouchFont(14),stage<=rank?jade:pale,true);
+                    SkillStateTag(TouchRect(66,y+4,52,22),"Lv."+GameBalance.SkillRankRequiredLevel(skill,stage),muted,TouchFont(10));
+                    if(stage==rank)SkillStateTag(TouchRect(width-70,y+4,54,22),"✓ 当前",gold,TouchFont(10));
+                }
+                y+=38;
                 string evolution = skill == 2 && p.heroClass != HeroClass.Summoner ? SkillBudgetHint(p.heroClass, skill, stage) : GameBalance.SkillEvolution(p.heroClass, skill, stage);
                 string venom=BuildCatalog.VenomSkillOverride(p,skill,stage);if(venom.Length>0)evolution=venom;
                 MobileSkillParagraph(ref y, width, evolution, 14, muted, false, draw);
             }
             return y;
+        }
+
+        private void SkillStateTag(Rect rect,string label,Color accent,int size)
+        {
+            Fill(rect,new Color(accent.r,accent.g,accent.b,.16f));
+            Border(rect,new Color(accent.r,accent.g,accent.b,.55f));
+            Text(rect,label,size,accent,true,false,TextAnchor.MiddleCenter);
         }
 
         private void MobileSkillParagraph(ref float y, float width, string text, int size, Color color, bool bold, bool draw)

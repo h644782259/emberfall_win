@@ -308,12 +308,13 @@ namespace Emberfall
             TrailRenderer trail = body.AddComponent<TrailRenderer>();projectile.visualTrail=trail;trail.emitting=false;
             projectile.trailMaterial = CombatFx.NewGlow();
             trail.sharedMaterial = projectile.trailMaterial;
-            trail.time = EffectPreferences.ReducedEffects ? .08f : .16f;
+            trail.time = EffectPreferences.ReducedEffects ? .08f : arrow ? .22f : .24f;
             trail.numCapVertices = 4; trail.numCornerVertices = 4;
             trail.startWidth = arrow ? .11f : .22f;
             trail.endWidth = 0;
-            trail.startColor = Color.Lerp(tint,Color.white,.65f);
-            trail.endColor = new Color(tint.r,tint.g,tint.b,0);
+            var gradient=new Gradient();
+            gradient.SetKeys(new[]{new GradientColorKey(Color.Lerp(tint,Color.white,.9f),0),new GradientColorKey(tint,.35f),new GradientColorKey(tint*.55f,1)},new[]{new GradientAlphaKey(.95f,0),new GradientAlphaKey(.55f,.4f),new GradientAlphaKey(0,1)});
+            trail.colorGradient=gradient;
             trail.minVertexDistance = .035f;
             return projectile;
         }

@@ -20,11 +20,12 @@ namespace Emberfall
             Fill(new Rect(r.x, r.y, r.width, 3), accent);
             DrawSkillIdentity(new Rect(r.x+18,r.y+15,48,48),p.heroClass,skill,rank,rank>0,48);
             Text(new Rect(r.x + 78, r.y + 15, 490, 35), GameBalance.SkillName(p.heroClass, skill), 27, pale, true);
-            Text(new Rect(r.x + 78, r.y + 54, 490, 20), (passive ? "被动" : "主动") + " / " + GameBalance.CategoryName(category) + " / " + GameBalance.SkillRankName(rank), 12, accent, true);
+            SkillStateTag(new Rect(r.x+78,r.y+52,54,24),passive?"被动":"主动",accent,12);
+            SkillStateTag(new Rect(r.x+140,r.y+52,70,24),GameBalance.CategoryName(category),jade,12);
             if (desktopDetailSkill != skill) { desktopDetailSkill=skill; desktopDetailScroll=Vector2.zero; }
             string description=BuildCatalog.VenomSkillOverride(p,skill,rank);
             if(description.Length==0)description=GameBalance.SkillDescription(p.heroClass,skill);
-            string prerequisite="达到对应等级自动习得、进阶和觉醒";
+            string prerequisite="人物等级达成后技能自动解锁";
             float descriptionHeight=DesktopParagraphHeight(description,530,13);
             float prerequisiteHeight=DesktopParagraphHeight(prerequisite,530,12);
             string[] evolutions=new string[3];
@@ -38,7 +39,7 @@ namespace Emberfall
             }
             float statsY=descriptionHeight+10,prerequisiteY=statsY+73;
             float evolutionY=prerequisiteY+prerequisiteHeight+10;
-            float evolutionCardHeight=(scaleLine?50:32)+evolutionHeight+9;
+            float evolutionCardHeight=(scaleLine?78:60)+evolutionHeight+9;
             Rect viewport=new Rect(r.x+18,r.y+80,550,245);
             desktopDetailScroll=BeginTouchScroll("desktop-skill-detail",viewport,desktopDetailScroll,
                 new Rect(0,0,532,Mathf.Max(viewport.height,evolutionY+evolutionCardHeight+6)));
@@ -60,15 +61,17 @@ namespace Emberfall
                 bool current = stage == rank;
                 Fill(evolution, current ? new Color(.13f, .2f, .2f) : new Color(.045f, .08f, .115f));
                 Border(evolution, new Color(accent.r, accent.g, accent.b, current ? .75f : .18f));
-                string stageName = GameBalance.SkillRankName(stage) + " / Lv." + GameBalance.SkillRankRequiredLevel(skill, stage);
-                Text(new Rect(evolution.x+9,evolution.y+7,154,18),stageName+(current?" ✓":""),12,stage<=rank?gold:pale,true);
+                if(current)Fill(new Rect(evolution.x,evolution.y,3,evolution.height),gold);
+                Text(new Rect(evolution.x+9,evolution.y+7,65,20),GameBalance.SkillRankName(stage),14,stage<=rank?gold:pale,true);
+                SkillStateTag(new Rect(evolution.x+9,evolution.y+31,60,22),"Lv."+GameBalance.SkillRankRequiredLevel(skill,stage),muted,10);
+                if(current)SkillStateTag(new Rect(evolution.xMax-68,evolution.y+7,60,22),"✓ 当前",gold,11);
                 if(scaleLine)
-                    Text(new Rect(evolution.x+9,evolution.y+31,154,16),"阶级系数 "+(100+(stage-1)*30)+"% · 范围 "+Mathf.RoundToInt(GameBalance.SkillRangeMultiplier(stage)*100)+"%",10,jade);
-                Text(new Rect(evolution.x+9,evolution.y+(scaleLine?50:32),154,evolutionHeight),evolutions[stage-1],scaleLine?10:11,scaleLine?muted:jade,false,true);
+                    Text(new Rect(evolution.x+9,evolution.y+59,154,16),"阶级系数 "+(100+(stage-1)*30)+"% · 范围 "+Mathf.RoundToInt(GameBalance.SkillRangeMultiplier(stage)*100)+"%",10,jade);
+                Text(new Rect(evolution.x+9,evolution.y+(scaleLine?78:60),154,evolutionHeight),evolutions[stage-1],scaleLine?10:11,scaleLine?muted:jade,false,true);
             }
             EndTouchScroll();
             float actionX = r.x + 18;
-            Text(new Rect(actionX,r.y+341,530,40),session.Progression.SkillLockReason(skill),14,gold,true);
+            Text(new Rect(actionX,r.y+341,530,40),rank>=3?"":session.Progression.SkillLockReason(skill),14,gold,true);
             if (passive) return;
             if(MobileControls.Active)return;
             Rect loadoutHeading = new Rect(actionX, r.y + 397, 365, 21);

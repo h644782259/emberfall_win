@@ -315,7 +315,7 @@ namespace Emberfall
         public int attack;
         public int defense;
         public int health;
-        public float criticalChance,criticalDamageBonus;
+        public float criticalChance,criticalDamageBonus,attackPercent;
         public int statRollRevision;
         public int upgradeLevel;
         public EquipmentMechanic mechanic;
@@ -616,7 +616,7 @@ namespace Emberfall
                 "向前方释放灵能冲击，造成扇形伤害并将敌人轰开；可打断带青色符号的首领预警。", "在目标地点生长荆棘，使敌人减速并持续中毒；首领减速效果降低。", "召唤灵狼自动追击并近战撕咬，持续14秒；群契模式同时召唤两只。再次施放替换旧灵狼。",
                 "被动：提高自身攻击，召唤物继承强化后的攻击。学习后永久生效。", "在选定地点召唤星灵炮台，自动发射追踪灵弹，射程10.5米，持续12秒；炮台固定不动，再次施放替换旧炮台。", "自身发射穿透敌人的灵魂长矛，造成260%攻击伤害。",
                 "召唤烬羽灵，自动移动并发射穿透灵羽攻击敌人，持续12秒；再次施放替换旧烬羽灵。", "在目标地点施加引力印记，持续聚拢敌人，结束时击飞普通/精英敌人；首领免疫浮空，牵引衰减。", "被动：受伤时释放灵能反击并回复灵力，具有独立内置冷却。",
-                "召唤一只远古树灵守卫，持续12秒，使用范围重击并击倒敌人；最多存在1只树灵；每3秒为6米内可见的主人恢复6%最大生命。"
+                "召唤一只远古树灵守卫，持续12秒，使用范围重击并击倒敌人；最多存在1只树灵；无需灵力；每2.5秒为6米内可见的主人恢复10%/12%/14%最大生命，树灵范围重击造成225%攻击伤害。"
             }
         };
         private static readonly string[,] ReinforcedEffects = {
@@ -708,7 +708,7 @@ namespace Emberfall
         public static float SkillEnergyCost(HeroClass hero, int skill)
         {
             ValidateSkillBudget(hero, skill);
-            return ClassSkillEnergyCosts[(int)hero, skill];
+            return skill==9?0:ClassSkillEnergyCosts[(int)hero, skill];
         }
         public static float EffectiveCooldown(HeroClass hero, int skill, int rank)
         {

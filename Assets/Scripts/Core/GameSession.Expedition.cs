@@ -42,14 +42,17 @@ namespace Emberfall
         public Vector3 DungeonReturnPosition {get{return dungeonReturnPosition;}}
         public bool DungeonReturnAvailable {get{return HasStarted&&InDungeon&&(DungeonCleared||ModeFinished)&&!IsDead;}}
         public bool NearDungeonReturn {get{return DungeonReturnAvailable&&Player!=null&&Vector3.Distance(Player.transform.position,dungeonReturnPosition)<3.5f;}}
+        private float nextReturnPortalSearch;
         private void RefreshDungeonReturnPortal()
         {
-            if(DungeonReturnAvailable&&dungeonReturnMarker==null)
+            if(DungeonReturnAvailable&&dungeonReturnMarker==null&&Time.unscaledTime>=nextReturnPortalSearch)
             {
-                dungeonReturnPosition=WorldTraversal.NearestWalkable(Vector3.zero,.65f);
-                if(Player!=null&&!WorldTraversal.CanReach(Player.transform.position,dungeonReturnPosition,.65f))
-                    dungeonReturnPosition=WorldTraversal.NearestWalkable(Vector3.Lerp(Player.transform.position,Vector3.zero,.5f),.65f);
-                dungeonReturnMarker=WorldBuilder.MakeDungeonReturnMarker(dungeonReturnPosition);transientObjects.Add(dungeonReturnMarker);
+                nextReturnPortalSearch=Time.unscaledTime+.5f;
+                if(Player==null)return;
+                float markerRadius=2.5f;
+                if(!WorldTraversal.TryReturnPortalPosition(Player.transform.position,out dungeonReturnPosition))
+                {if(!WorldTraversal.TryReturnPortalPosition(Player.transform.position,out dungeonReturnPosition,1f))return;markerRadius=.85f;}
+                dungeonReturnMarker=WorldBuilder.MakeDungeonReturnMarker(dungeonReturnPosition,markerRadius);transientObjects.Add(dungeonReturnMarker);
             }
             if(dungeonReturnMarker!=null&&dungeonReturnMarker.activeInHierarchy!=DungeonReturnAvailable)dungeonReturnMarker.SetActive(DungeonReturnAvailable);
         }

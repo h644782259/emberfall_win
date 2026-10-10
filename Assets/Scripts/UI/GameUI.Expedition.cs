@@ -98,8 +98,17 @@ namespace Emberfall
             int count=session.ComboHitCount;
             if(count<=0||panel!=Panel.None||session.Paused||session.IsDead)return;
             float u=MobileControls.Active?TouchRatio:1;
-            Rect r=new Rect((width-200*u)*.5f,(MobileControls.Active?114:188)*u,200*u,40*u);
-            Text(r,"连击 ×"+count,Mathf.RoundToInt(23*u),gold,true,false,TextAnchor.MiddleCenter);
+            Rect r=new Rect(width-170*u,height*.46f,156*u,54*u);
+            var previous=GUI.matrix;
+            GUIUtility.RotateAroundPivot(-7,r.center);
+            Fill(new Rect(r.x+44*u,r.yMax-5*u,108*u,3*u),gold);
+            var style=new GUIStyle(Style(Mathf.RoundToInt(30*u),true,false));
+            style.fontStyle=FontStyle.BoldAndItalic;style.alignment=TextAnchor.MiddleRight;
+            style.normal.textColor=new Color(.12f,.05f,.015f,.95f);
+            GUI.Label(new Rect(r.x+2*u,r.y+2*u,r.width,r.height),"×"+count,style);
+            style.normal.textColor=gold;GUI.Label(r,"×"+count,style);
+            Text(new Rect(r.x,r.y-14*u,r.width,20*u),"连 击",Mathf.RoundToInt(12*u),pale,true,false,TextAnchor.MiddleRight);
+            GUI.matrix=previous;
         }
 
         public void OpenDungeonExit()

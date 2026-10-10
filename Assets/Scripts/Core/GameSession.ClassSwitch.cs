@@ -12,10 +12,11 @@ namespace Emberfall
         private string ClassSwitchLockReason(bool preparing)
         {
             if(classSwitchBusy&&!preparing)return "正在切换职业。";
-            if(!HasStarted||!IsInCamp||InDungeon||PracticeActive||IsDead||Player==null||Paused||BackgroundPaused)return "请先安全返回营地。";
+            if(!HasStarted||IsDead||Player==null||Paused||BackgroundPaused)return "当前无法切换职业。";
+            if(InCombat)return "正在战斗，请先脱离战斗。";
+            if(!IsInCamp||InDungeon||PracticeActive)return "请在营地切换职业。";
             if(ui!=null&&ui.ClassSwitchHasPendingEdit)return "请先完成或取消当前草稿与确认。";
             if(Player.HasClassSwitchTransientState)return "请等施法、动作与临时效果结束后切换。";
-            if(InCombat)return "正在战斗，请先脱离战斗。";
             if(SummonedCompanion.HasPracticeTimedState(Player))return "请等伙伴的契约强化、护契或共鸣结束。";
             foreach(var root in gameObject.scene.GetRootGameObjects())
                 if(root.activeSelf&&(root.GetComponentInChildren<CombatProjectile>()!=null||root.GetComponentInChildren<CombatArea>()!=null||
