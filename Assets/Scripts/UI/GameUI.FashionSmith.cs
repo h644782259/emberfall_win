@@ -12,26 +12,53 @@ namespace Emberfall
             if(smithFashionAfter!=null)smithFashionAfter.Dispose();
             smithFashionBefore=smithFashionAfter=null;smithFashionQuote=null;
         }
+        private bool DrawFashionServiceAction(Rect rect,bool dismantle,int amount,bool enabled,string reason,float u)
+        {
+            bool clicked=Button(rect,"",dismantle?jade:gold,enabled);
+            float center=rect.center.x;
+            DrawIcon(new Rect(center-30*u,rect.center.y-12*u,20*u,20*u),dismantle?UIIconAtlas.Utility("smith"):UIIconAtlas.EquipmentUpgradeArrow(),enabled?(dismantle?jade:gold):muted);
+            DrawIcon(new Rect(center-6*u,rect.center.y-9*u,16*u,16*u),UIIconAtlas.Reward(2),GameBalance.RarityColor(Rarity.Rare));
+            Text(new Rect(center+14*u,rect.y,rect.xMax-center-6*u,rect.height),(dismantle?"+":"")+amount,Mathf.RoundToInt(14*u),enabled?pale:muted,true,false,TextAnchor.MiddleLeft);
+            if(rect.Contains(Event.current.mousePosition)&&!string.IsNullOrEmpty(reason))GUI.Label(rect,new GUIContent("",reason));
+            return clicked;
+        }
+        private void DrawFashionStatRows(Rect area,FashionData value,FashionData previous,float u)
+        {
+            string[] rows=ProgressionService.FashionBonus(value).Split(new[]{" · "},System.StringSplitOptions.RemoveEmptyEntries);
+            Text(new Rect(area.x,area.y,area.width,20*u),"基础属性 / 升阶加成",Mathf.RoundToInt(11*u),muted,true);
+            for(int i=0;i<rows.Length;i++)
+            {
+                int split=rows[i].LastIndexOf(' ');if(split<0)continue;
+                string label=rows[i].Substring(0,split);
+                Rect row=new Rect(area.x,area.y+(22+i*28)*u,area.width,26*u);Fill(row,new Color(.055f,.105f,.12f,.95f));
+                Text(new Rect(row.x+7*u,row.y,row.width*.5f-7*u,row.height),label,Mathf.RoundToInt(13*u),muted,true);
+                int basis=ProgressionService.FashionBaseStat(value,label),rank=ProgressionService.FashionRankStat(value,label);
+                float start=row.width*.5f,space=row.width-start-5*u;
+                DrawComparedValue(new Rect(row.x+start,row.y,space*.55f,row.height),(label=="暴击几率"?"×":"")+basis+"%",previous==null?0:basis.CompareTo(ProgressionService.FashionBaseStat(previous,label)),u,false);
+                DrawComparedValue(new Rect(row.x+start+space*.55f,row.y,space*.45f,row.height),"+"+rank+"%",previous==null?0:rank.CompareTo(ProgressionService.FashionRankStat(previous,label)),u,true);
+            }
+        }
         private void DrawFashionSmith(Rect body,float u)
         {
             var p=session.Progression;bool enabled=GUI.enabled;GUI.enabled=enabled&&smithFashionQuote==null;
-            Text(new Rect(body.x,body.y,body.width,26*u),"星纹 "+p.Profile.fashionThreads+" · 分解闲置时装获取星纹，升阶强化外观与属性",Mathf.RoundToInt(12*u),gold,true);
-            Rect list=new Rect(body.x,body.y+32*u,body.width,body.height-32*u);
-            int columns=body.width/u>=540?3:2;float cw=(list.width/u-(columns-1)*12)/columns;
-            float rowHeight=238;
+            Rect list=body;
+            int columns=body.width/u>=660?3:body.width/u>=420?2:1;float cw=(list.width/u-(columns-1)*12)/columns;
+            float rowHeight=278;
             smithFashionScroll=BeginTouchScroll("smith-fashion",list,smithFashionScroll,new Rect(0,0,list.width,Mathf.Max(list.height,((p.Profile.fashions.Count+columns-1)/columns)*rowHeight*u)));
             for(int i=0;i<p.Profile.fashions.Count;i++)
             {
                 var fashion=p.Profile.fashions[i];Rect tile=new Rect(i%columns*(cw+12)*u,i/columns*rowHeight*u,cw*u,(rowHeight-12)*u);
                 Fill(tile,card);Border(tile,GameBalance.RarityColor(fashion.rarity));
-                DrawIcon(new Rect(tile.x+10*u,tile.y+10*u,42*u,42*u),UIIconAtlas.FashionCardIcon(fashion.slot,(int)fashion.VisualRarity,p.Profile.heroClass),GameBalance.RarityColor(fashion.VisualRarity));
-                Text(new Rect(tile.x+60*u,tile.y+8*u,tile.width-68*u,44*u),fashion.name+"\n"+fashion.upgradeRank+"阶 / "+ProgressionService.MaximumFashionRank+"阶",Mathf.RoundToInt(12*u),pale,true,true);
-                Text(new Rect(tile.x+10*u,tile.y+58*u,tile.width-20*u,94*u),ProgressionService.FashionBonus(fashion).Replace(" · ","\n"),Mathf.RoundToInt(11*u),jade,false,true);
+                DrawIcon(new Rect(tile.x+10*u,tile.y+10*u,48*u,48*u),UIIconAtlas.FashionCardIcon(fashion.slot,(int)fashion.VisualRarity,p.Profile.heroClass),GameBalance.RarityColor(fashion.rarity));
+                Text(new Rect(tile.x+66*u,tile.y+8*u,tile.width-74*u,44*u),fashion.name+"\n"+fashion.upgradeRank+"阶 / "+ProgressionService.MaximumFashionRank+"阶",Mathf.RoundToInt(12*u),pale,true,true);
+                DrawFashionStatRows(new Rect(tile.x+10*u,tile.y+62*u,tile.width-20*u,132*u),fashion,null,u);
                 var upgrade=p.PrepareFashionService(fashion.id,false,SmithServiceActive);
                 var dismantle=p.PrepareFashionService(fashion.id,true,SmithServiceActive);
                 string upgradeReason=p.FashionServiceLock(fashion.id,false,SmithServiceActive),dismantleReason=p.FashionServiceLock(fashion.id,true,SmithServiceActive);
-                if(Button(new Rect(tile.x+8*u,tile.y+158*u,tile.width-16*u,28*u),upgradeReason.Length==0?"升阶 · "+ProgressionService.FashionUpgradeCost(fashion)+"星纹":upgradeReason,gold,upgrade!=null))smithFashionQuote=upgrade;
-                if(Button(new Rect(tile.x+8*u,tile.y+192*u,tile.width-16*u,28*u),dismantleReason.Length==0?"分解 · +"+ProgressionService.FashionDismantleValue(fashion)+"星纹":dismantleReason,jade,dismantle!=null))smithFashionQuote=dismantle;
+                if(fashion.upgradeRank>=ProgressionService.MaximumFashionRank)
+                    DrawSmithMaxBadge(new Rect(tile.x+8*u,tile.y+202*u,(tile.width-24*u)*.5f,48*u),"已满阶",u);
+                else if(DrawFashionServiceAction(new Rect(tile.x+8*u,tile.y+202*u,(tile.width-24*u)*.5f,48*u),false,ProgressionService.FashionUpgradeCost(fashion),upgrade!=null,upgradeReason,u))smithFashionQuote=upgrade;
+                if(DrawFashionServiceAction(new Rect(tile.center.x+4*u,tile.y+202*u,(tile.width-24*u)*.5f,48*u),true,ProgressionService.FashionDismantleValue(fashion),dismantle!=null,dismantleReason,u))smithFashionQuote=dismantle;
             }
             if(p.Profile.fashions.Count==0)Text(new Rect(10*u,20*u,list.width-20*u,60*u),"暂无时装 · 副本宝箱可获取兵装和羽翼",Mathf.RoundToInt(14*u),muted,false,true);
             EndTouchScroll();GUI.enabled=enabled;
@@ -55,7 +82,7 @@ namespace Emberfall
                 if(next==null){smithFashionQuote=null;return;}
                 if(smithFashionBefore==null)smithFashionBefore=new CollectionModelPreview();
                 if(smithFashionAfter==null)smithFashionAfter=new CollectionModelPreview();
-                float cw=(w-34*u)*.5f,visualHeight=Mathf.Min(150*u,h*.35f);
+                float cw=(w-34*u)*.5f,visualHeight=Mathf.Min(150*u,Mathf.Max(0,h-264*u));
                 for(int col=0;col<2;col++)
                 {
                     var value=col==0?fashion:next;var model=col==0?smithFashionBefore:smithFashionAfter;
@@ -65,11 +92,12 @@ namespace Emberfall
                     var texture=model.RenderSafe(p.Profile.heroClass,p.Equipped(ItemSlot.Weapon),p.Equipped(ItemSlot.Armor),p.Equipped(ItemSlot.Relic),value.slot==FashionSlot.Wings?value:p.EquippedFashion(FashionSlot.Wings),value.slot==FashionSlot.Weapon?value:p.EquippedFashion(FashionSlot.Weapon));
                     if(texture!=null)GUI.DrawTexture(visual,texture,ScaleMode.ScaleToFit,false);
                     Text(new Rect(visual.x,box.y+40*u,cw,22*u),(col==0?"当前":"升阶后")+" · "+value.upgradeRank+"阶",Mathf.RoundToInt(12*u),col==0?muted:jade,true);
-                    Text(new Rect(visual.x,visual.yMax+8*u,cw,Mathf.Max(30*u,box.yMax-64*u-visual.yMax-8*u)),ProgressionService.FashionBonus(value).Replace(" · ","\n"),Mathf.RoundToInt(12*u),col==0?pale:jade,false,true);
+                    DrawFashionStatRows(new Rect(visual.x,visual.yMax+8*u,cw,box.yMax-64*u-visual.yMax-8*u),value,col==0?null:fashion,u);
                 }
             }
             string reason=fresh?p.FashionServiceLock(quote.Id,quote.Dismantle,SmithServiceActive):"时装或材料已变化，请重新打开";
-            if(PrimaryButton(new Rect(box.x+12*u,box.yMax-48*u,w-24*u,36*u),reason.Length>0?reason:quote.Dismantle?"确认分解 · +"+quote.Threads+"星纹":"确认升阶 · "+quote.Threads+"星纹",gold,reason.Length==0))
+            Rect confirm=new Rect(box.x+12*u,box.yMax-48*u,w-24*u,36*u);
+            if(DrawFashionServiceAction(confirm,quote.Dismantle,quote.Threads,reason.Length==0,reason,u))
             {bool saved=p.ApplyFashionService(quote,SmithServiceActive);Feedback(saved,quote.Dismantle?"时装已分解":"时装已升阶");if(saved){smithFashionQuote=null;RebuildBagItems();}}
         }
     }

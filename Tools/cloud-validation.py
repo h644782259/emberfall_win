@@ -376,6 +376,8 @@ def main():
         for name, script in [("unified-ui-integration", "UnifiedUiIntegrationTests.py"), ("mandatory-chest-service", "MandatoryChestServiceTests.py"), ("mandatory-chest-ui", "MandatoryChestUIProductionTests.py"), ("equipment-visual-identity-production", "EquipmentVisualIdentityProductionTests.py")]:
             passed = run_check(name, [[sys.executable, str(ROOT / "Tests" / script), dotnet]], dict(env, DOTNET=dotnet), output, report)
             failed = failed or not passed
+        passed = run_check("fashion-stat-comparison", [[sys.executable, str(ROOT/"Tests/FashionStatComparisonProductionTests.py"), dotnet]], dict(env, DOTNET=dotnet), output, report)
+        failed = failed or not passed
         for name, sources, program in checks:
             project = write_project(workspace / name, sources, program, defines={"collection-render-lifecycle-modern":"UNITY_2023_1_OR_NEWER", "combat-review-object-id-modern-contract":"UNITY_6000_6_OR_NEWER", "game-font-android":"UNITY_ANDROID", "game-font-ios":"UNITY_IOS"}.get(name, ""))
             commands = [[dotnet, "restore", str(project), "--configfile", str(config), "--verbosity", "quiet"],

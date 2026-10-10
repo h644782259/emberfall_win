@@ -4,6 +4,7 @@ namespace Emberfall
     public sealed class InventoryGridGeometry
     {
         public const float RowHeight=48;
+        public const float MobileCellSize=66,DesktopCellSize=50;
         public const float ItemPopupWidth=250,ItemPopupHeight=120;
         public const float FilterRailWidth=60;
         public static MobilePanelLayout.Area FilterButton(MobilePanelLayout.Area viewport,int index)

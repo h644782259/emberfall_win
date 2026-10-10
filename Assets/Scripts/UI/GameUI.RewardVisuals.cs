@@ -10,7 +10,7 @@ namespace Emberfall
             if(amount==0)return;
             if(area.width<=16*unit||area.height<=8*unit)return;
             float icon=Mathf.Max(1,Mathf.Min(area.height-6*unit,38*unit));
-            Color tint=kind==0?gold:kind==1?new Color(.52f,.86f,1):kind==2?new Color(.87f,.72f,1):jade;
+            Color tint=kind==0?gold:kind==1||kind==2?GameBalance.RarityColor(Rarity.Rare):jade;
             DrawIcon(new Rect(area.x,area.y+(area.height-icon)*.5f,icon,icon),UIIconAtlas.Reward(kind),tint);
             string number=(amount>0?"+":"")+amount;
             int font=Mathf.RoundToInt(Mathf.Clamp((area.width-icon-8*unit)/Mathf.Max(1,number.Length)*1.5f,Mathf.Min(11*unit,area.height-6*unit),Mathf.Min(23*unit,area.height-6*unit)));

@@ -141,6 +141,8 @@ namespace Emberfall
             float half=r.width*.5f;
             DrawPrice(new Rect(r.x,r.y,half-4*unit,r.height),session.Progression.Profile.gold,false,unit);
             DrawPrice(new Rect(r.x+half,r.y,half,r.height),session.Progression.Profile.mechanicMaterials,true,unit);
+            InspectRewardItem(new Rect(r.x,r.y,half-4*unit,r.height),ResourceItemPreview("gold",session.Progression.Profile.gold));
+            InspectRewardItem(new Rect(r.x+half,r.y,half,r.height),ResourceItemPreview("shard",session.Progression.Profile.mechanicMaterials));
         }
         private void DrawPrice(Rect r,int amount,bool material,float unit)
         {DrawPriceTint(r,amount,material,unit,gold);}
@@ -148,7 +150,7 @@ namespace Emberfall
         {
             Fill(r,new Color(.14f,.115f,.055f,.55f));
             Border(r,new Color(tint.r,tint.g,tint.b,.25f));
-            DrawIcon(new Rect(r.x+4*unit,r.center.y-9*unit,18*unit,18*unit),UIIconAtlas.Utility(material?"shard":"coin"),gold);
+            DrawIcon(new Rect(r.x+4*unit,r.center.y-9*unit,18*unit,18*unit),UIIconAtlas.Utility(material?"shard":"coin"),material?GameBalance.RarityColor(Rarity.Rare):gold);
             Text(new Rect(r.x+27*unit,r.y,r.width-31*unit,r.height),amount.ToString(),Mathf.RoundToInt(13*unit),tint,true,false,TextAnchor.MiddleLeft);
         }
     }

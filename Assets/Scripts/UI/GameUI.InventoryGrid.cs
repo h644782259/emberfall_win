@@ -138,21 +138,32 @@ namespace Emberfall
         }
         private void DrawWornIconBadge(Rect icon,float u,string caption)
         {
-            float badgeWidth=Mathf.Min(icon.width,38*u);
-            Rect badge=new Rect(icon.x,icon.yMax-14*u,badgeWidth,14*u);
-            Fill(badge,new Color(.035f,.22f,.18f,1f));Border(badge,jade);
-            Text(badge,caption,Mathf.RoundToInt(9*u),pale,true,false,TextAnchor.MiddleCenter);
+            float size=Mathf.Min(20*u,icon.width*.34f);
+            Rect badge=new Rect(icon.x+2*u,icon.yMax-size-2*u,size,size);
+            Fill(badge,new Color(.035f,.2f,.1f,.95f));
+            DrawIcon(badge,UIIconAtlas.Utility("confirm"),new Color(.3f,1f,.5f));
         }
-        private void DrawInventoryIcon(Rect tile,ItemData item,float u)
+        private void DrawItemLockAction(Rect tile,ItemData item,float u)
+        {
+            Rect hit=new Rect(tile.xMax-26*u,tile.y,26*u,26*u);
+            if(DrawInventoryLock(hit,item.locked))
+            {
+                bool saved=session.Progression.SetItemLocked(item.id,!item.locked);
+                if(!saved)Feedback(false,session.Progression.LastError);
+                inventoryLastClick=null;
+                if(saved)RebuildBagItems();
+            }
+        }
+        private void DrawInventoryIcon(Rect tile,ItemData item,float u,bool showWorn=true)
         {
             Color rarity=GameBalance.RarityColor(item.rarity);
             Fill(tile,card);Border(tile,rarity);
-            DrawIcon(new Rect(tile.x+6*u,tile.y+5*u,tile.width-12*u,tile.height-17*u),UIIconAtlas.EquipmentCardIcon(item.slot,item.level,item.rarity,session.Progression.Profile.heroClass),rarity);
+            DrawIcon(new Rect(tile.x+6*u,tile.y+5*u,tile.width-10*u,tile.height-14*u),UIIconAtlas.EquipmentCardIcon(item.slot,item.level,item.rarity,session.Progression.Profile.heroClass),rarity);
             // Counted pips encode rarity without relying on color alone.
             for(int pip=0;pip<=(int)item.rarity;pip++)Fill(new Rect(tile.x+3*u+pip*5*u,tile.y+3*u,3*u,3*u),pale);
-            Text(new Rect(tile.x+2*u,tile.yMax-(IsEquipped(item)?29:15)*u,tile.width-4*u,14*u),"Lv"+item.level,Mathf.RoundToInt(9*u),item.level>session.Progression.Profile.level?new Color(1f,.35f,.3f):pale,true,false,TextAnchor.MiddleRight);
-            if(item.locked)DrawIcon(new Rect(tile.xMax-14*u,tile.y+2*u,12*u,12*u),UIIconAtlas.EquipmentLock(true),Color.white);
-            if(IsEquipped(item))DrawWornIconBadge(tile,u,"已穿戴");
+            Text(new Rect(tile.x+2*u,tile.yMax-15*u,tile.width-4*u,14*u),"Lv"+item.level,Mathf.RoundToInt(9*u),item.level>session.Progression.Profile.level?new Color(1f,.35f,.3f):pale,true,false,TextAnchor.MiddleRight);
+
+            if(showWorn&&IsEquipped(item))DrawWornIconBadge(tile,u,"已穿戴");
             if(UnreviewedEquipmentUpgrade(item))DrawIcon(new Rect(tile.xMax-18*u,tile.yMax-31*u,18*u,18*u),UIIconAtlas.EquipmentUpgradeArrow(),new Color(.25f,1f,.4f));
         }
         private void DrawEquipmentIconGrid(Rect viewport,ref Vector2 scroll,float u)
@@ -169,7 +180,7 @@ namespace Emberfall
                 {inventoryFilter=index-1;scroll=Vector2.zero;RebuildBagItems();ResolveSelectedItem();CancelMobileScroll();}
             }
             viewport.width-=InventoryGridGeometry.FilterRailWidth*u;
-            float available=viewport.width/u-18;var geometry=new InventoryGridGeometry(available,MobileControls.Active?60:44);
+            float available=viewport.width/u-18;var geometry=new InventoryGridGeometry(available,MobileControls.Active?InventoryGridGeometry.MobileCellSize:InventoryGridGeometry.DesktopCellSize);
             float contentHeight=Mathf.Max(viewport.height/u,((bagItems.Count+geometry.Columns-1)/geometry.Columns)*geometry.Stride+4);
             bool previous=GUI.enabled;GUI.enabled=previous&&(!MobileControls.Active||!inventoryComparisonOpen)&&inventoryPopupDismissed!=Time.frameCount;
             Vector2 before=scroll;
@@ -180,6 +191,7 @@ namespace Emberfall
                 var cell=geometry.Tile(index);Rect tile=new Rect(cell.X*u,cell.Y*u,cell.Width*u,cell.Height*u);
                 if(tile.yMax<scroll.y||tile.y>scroll.y+viewport.height)continue;
                 var item=bagItems[index];DrawInventoryIcon(tile,item,u);
+                DrawItemLockAction(tile,item,u);
                 Rect screenTile=new Rect(viewport.x+tile.x,viewport.y+tile.y-scroll.y,tile.width,tile.height);
                 DesktopInventoryGesture(tile,screenTile,item.id);
                 if(GUI.Button(tile,GUIContent.none,invisibleButton)){if(MobileControls.Active){chosen=item.id;anchor=screenTile;}else DesktopInventoryClick(item.id);}
@@ -239,8 +251,6 @@ namespace Emberfall
                 Text(tag,GameBalance.RarityName(item.rarity),Mathf.RoundToInt(11*u),rarity,true,false,TextAnchor.MiddleCenter);
                 Rect nameRect=new Rect(r.x+54*u,rowY,r.width-170*u,rowHeight);
                 Text(nameRect,item.name,Mathf.RoundToInt(14*u),pale,true,false,TextAnchor.MiddleLeft);
-                if(DrawInventoryLock(new Rect(nameRect.xMax,rowY,36*u,rowHeight),item.locked))
-                {if(!session.Progression.SetItemLocked(item.id,!item.locked))MobileInventoryResult(false,"");inventoryPopupOpened=Time.frameCount;}
                 Text(new Rect(r.x+8*u,r.y+38*u,48*u,28*u),"评分",Mathf.RoundToInt(14*u),pale,true,false,TextAnchor.MiddleLeft);
                 Text(new Rect(r.x+60*u,r.y+38*u,r.width-70*u,28*u),EquipmentPreviewScore(item).ToString("0.#"),Mathf.RoundToInt(18*u),gold,true,false,TextAnchor.MiddleRight);
             }

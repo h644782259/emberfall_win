@@ -29,8 +29,8 @@ namespace Emberfall
             var p=session.Progression;
             if(wearModel==null)wearModel=new CollectionModelPreview();
             bool fashion=mobileInventoryTab==3||inventoryFashionOpen;
-            float equipmentSize=MobileControls.Active?Mathf.Min(60,(area.width/u-8)/3):44;
-            Rect viewport=new Rect(area.x,area.y,area.width,Mathf.Max(64*u,area.height-(fashion?80:equipmentSize+8)*u));
+            float equipmentSize=MobileControls.Active?Mathf.Min(InventoryGridGeometry.MobileCellSize,(area.width/u-8)/3):InventoryGridGeometry.DesktopCellSize;
+            Rect viewport=new Rect(area.x,area.y,area.width,Mathf.Max(64*u,area.height-(equipmentSize+8)*u));
             wearModel.SetCenterOnAvatar(true);wearModel.SetComposition(CollectionPreviewComposition.Full);wearModel.SetYaw(20);
             wearModel.SetViewport(viewport.width*Mathf.Abs(GUI.matrix.m00),viewport.height*Mathf.Abs(GUI.matrix.m11),MobileControls.Active);
             Texture current=wearModel.RenderSafe(p.Profile.heroClass,p.Equipped(ItemSlot.Weapon),p.Equipped(ItemSlot.Armor),p.Equipped(ItemSlot.Relic),p.EquippedFashion(FashionSlot.Wings),p.EquippedFashion(FashionSlot.Weapon));
@@ -40,7 +40,7 @@ namespace Emberfall
             for(int slot=0;slot<3;slot++)
             {
                 var item=p.Equipped((ItemSlot)slot);Rect r=new Rect(area.center.x-(equipmentSize*3+8)*u*.5f+slot*(equipmentSize+4)*u,area.yMax-equipmentSize*u,equipmentSize*u,equipmentSize*u);
-                if(item!=null)DrawInventoryIcon(r,item,u);
+                if(item!=null){DrawInventoryIcon(r,item,u,false);DrawItemLockAction(r,item,u);}
                 else
                 {
                     Fill(r,card);Border(r,new Color(jade.r,jade.g,jade.b,.35f));
@@ -62,12 +62,12 @@ namespace Emberfall
                 FashionSlot slot=i==0?FashionSlot.Weapon:FashionSlot.Wings;
                 var item=session.Progression.EquippedFashion(slot);
                 float cell=(area.width-8*u)*.5f;
-                Rect r=new Rect(area.x+i*(cell+8*u),area.yMax-76*u,cell,76*u);
+                Rect r=new Rect(area.x+i*(cell+8*u),area.yMax-(MobileControls.Active?InventoryGridGeometry.MobileCellSize:InventoryGridGeometry.DesktopCellSize)*u,cell,(MobileControls.Active?InventoryGridGeometry.MobileCellSize:InventoryGridGeometry.DesktopCellSize)*u);
                 Color tint=item==null?muted:GameBalance.RarityColor(item.rarity);
                 Fill(r,card);Border(r,tint,item==null?1:2);
-                DrawIcon(new Rect(r.center.x-18*u,r.y+4*u,36*u,36*u),UIIconAtlas.FashionCardIcon(slot,item==null?3:(int)item.VisualRarity,session.Progression.Profile.heroClass),tint);
+                DrawIcon(new Rect(r.x+3*u,r.center.y-20*u,40*u,40*u),UIIconAtlas.FashionCardIcon(slot,item==null?3:(int)item.VisualRarity,session.Progression.Profile.heroClass),tint);
                 string label=item==null?(slot==FashionSlot.Weapon?"兵装":"羽翼")+"\n未穿戴":ProgressionService.FashionName(item.slot,item.AppearanceRarity,session.Progression.Profile.heroClass);
-                Text(new Rect(r.x+3*u,r.y+42*u,r.width-6*u,32*u),label,Mathf.RoundToInt(10*u),item==null?muted:pale,item!=null,true,TextAnchor.MiddleCenter);
+                Text(new Rect(r.x+46*u,r.y,r.width-49*u,r.height),label,Mathf.RoundToInt(10*u),item==null?muted:pale,item!=null,true,TextAnchor.MiddleCenter);
                 if(item!=null)
                 {
                     Text(new Rect(r.xMax-18*u,r.y+2*u,16*u,16*u),"✓",Mathf.RoundToInt(11*u),jade,true);
@@ -81,7 +81,7 @@ namespace Emberfall
             float u=MobileControls.Active?TouchRatio:1;Rect bounds=MobilePanelRect(area);
             var owned=new System.Collections.Generic.List<FashionData>(session.Progression.Profile.fashions);
             owned.RemoveAll(f=>f==null);owned.Sort((a,b)=>{int c=a.slot.CompareTo(b.slot);if(c==0)c=b.rarity.CompareTo(a.rarity);return c!=0?c:string.CompareOrdinal(a.id,b.id);});
-            var grid=new InventoryGridGeometry(bounds.width/u-18,MobileControls.Active?60:44);float h=Mathf.Max(bounds.height,((owned.Count+grid.Columns-1)/grid.Columns)*grid.Stride*u);
+            var grid=new InventoryGridGeometry(bounds.width/u-18,MobileControls.Active?InventoryGridGeometry.MobileCellSize:InventoryGridGeometry.DesktopCellSize);float h=Mathf.Max(bounds.height,((owned.Count+grid.Columns-1)/grid.Columns)*grid.Stride*u);
             bool prior=GUI.enabled;GUI.enabled=prior&&(!MobileControls.Active||!inventoryComparisonOpen)&&inventoryPopupDismissed!=Time.frameCount;
             Vector2 before=mobileFashionScroll;mobileFashionScroll=BeginTouchScroll("inventory-fashion-grid",bounds,mobileFashionScroll,new Rect(0,0,bounds.width-18*u,h));
             string chosen=null;Rect anchor=default;
@@ -93,7 +93,8 @@ namespace Emberfall
                 DrawIcon(new Rect(tile.x+5*u,tile.y+5*u,tile.width-10*u,tile.height-17*u),UIIconAtlas.FashionCardIcon(f.slot,(int)f.VisualRarity,session.Progression.Profile.heroClass),rarity);
                 for(int pip=0;pip<=(int)f.rarity;pip++)Fill(new Rect(tile.x+(3+pip*5)*u,tile.y+3*u,3*u,3*u),pale);
                 var worn=session.Progression.EquippedFashion(f.slot);bool equipped=worn!=null&&worn.id==f.id;
-                Text(new Rect(tile.x+2*u,tile.yMax-14*u,tile.width-4*u,14*u),(equipped?"✓ ":"")+(f.slot==FashionSlot.Wings?"翼":"刃"),Mathf.RoundToInt(9*u),pale,true,false,TextAnchor.MiddleRight);
+                Text(new Rect(tile.x+2*u,tile.yMax-14*u,tile.width-4*u,14*u),(f.slot==FashionSlot.Wings?"翼":"刃"),Mathf.RoundToInt(9*u),pale,true,false,TextAnchor.MiddleRight);
+                if(equipped)DrawWornIconBadge(tile,u,"");
                 Rect screenTile=new Rect(bounds.x+tile.x,bounds.y+tile.y-mobileFashionScroll.y,tile.width,tile.height);
                 DesktopInventoryGesture(tile,screenTile,"@fashion:"+f.id);
                 if(GUI.Button(tile,GUIContent.none,invisibleButton)){if(MobileControls.Active){chosen="@fashion:"+f.id;anchor=screenTile;}else DesktopInventoryClick("@fashion:"+f.id);}
@@ -103,20 +104,37 @@ namespace Emberfall
             if(chosen!=null)OpenInventoryPopup(chosen,anchor);DrawInventoryPopup(bounds,u);
         }
 
+        private EntryRewardPreview ResourceItemPreview(string key,int count)
+        {
+            string name=key=="thread"?"星纹":key=="shard"?"星烬碎片":key=="refinement"?"装备洗练石":"金币";
+            Rarity rarity=key=="refinement"?Rarity.Epic:key=="gold"?Rarity.Common:Rarity.Rare;
+            return new EntryRewardPreview{Key=key,Name=name,Quantity=count,Rarity=rarity,
+                Icon=key=="thread"?UIIconAtlas.Reward(2):UIIconAtlas.Utility(key=="refinement"?"gem":key=="gold"?"coin":"shard"),
+                Description=name+"\n数量  "+count};
+        }
         private void DrawBagSupplies(MobilePanelLayout.Area area)
         {
             float u=MobileControls.Active?TouchRatio:1;Rect bounds=MobilePanelRect(area);
-            float cellSize=MobileControls.Active?60:44;
-            Rect tile=new Rect(bounds.x,bounds.y,cellSize*u,cellSize*u);Fill(tile,card);Border(tile,jade);
-            DrawIcon(new Rect(tile.x+5*u,tile.y+3*u,tile.width-10*u,tile.height-17*u),UIIconAtlas.Utility("potion"),jade);
+            float cellSize=MobileControls.Active?InventoryGridGeometry.MobileCellSize:InventoryGridGeometry.DesktopCellSize;
+            Rect tile=new Rect(bounds.x,bounds.y,cellSize*u,cellSize*u);Fill(tile,card);Border(tile,GameBalance.RarityColor(Rarity.Common));
+            DrawIcon(new Rect(tile.x+5*u,tile.y+3*u,tile.width-10*u,tile.height-17*u),UIIconAtlas.Utility("potion"),GameBalance.RarityColor(Rarity.Common));
             Text(new Rect(tile.x,tile.yMax-14*u,tile.width-2*u,14*u),session.Progression.Profile.potions.ToString(),Mathf.RoundToInt(9*u),pale,true,false,TextAnchor.MiddleRight);
             bool prior=GUI.enabled;GUI.enabled=prior&&(!MobileControls.Active||!inventoryComparisonOpen)&&inventoryPopupDismissed!=Time.frameCount;
             DesktopInventoryGesture(tile,tile,"@potion");
             if(GUI.Button(tile,GUIContent.none,invisibleButton)){if(MobileControls.Active)OpenInventoryPopup("@potion",tile);else DesktopInventoryClick("@potion");}
-            Rect stone=new Rect(bounds.x,bounds.y+(cellSize+12)*u,cellSize*u,cellSize*u);Fill(stone,card);Border(stone,GameBalance.RarityColor(Rarity.Epic));
-            DrawIcon(new Rect(stone.x+5*u,stone.y+3*u,stone.width-10*u,stone.height-17*u),UIIconAtlas.Utility("gem"),GameBalance.RarityColor(Rarity.Epic));
-            Text(new Rect(stone.x,stone.yMax-16*u,stone.width-3*u,16*u),session.Progression.Profile.refinementStones.ToString(),Mathf.RoundToInt(10*u),pale,true,false,TextAnchor.MiddleRight);
-            InspectRewardItem(stone,new EntryRewardPreview{Key="refinement",Name="装备洗练石",Description="装备洗练石\n数量  "+session.Progression.Profile.refinementStones,Rarity=Rarity.Epic,Icon=UIIconAtlas.Utility("gem"),Tint=GameBalance.RarityColor(Rarity.Epic)});
+            var grid=new InventoryGridGeometry(bounds.width/u,cellSize);
+            string[] keys={"refinement","shard","thread"};
+            int[] quantities={session.Progression.Profile.refinementStones,session.Progression.Profile.mechanicMaterials,session.Progression.Profile.fashionThreads};
+            for(int i=0;i<keys.Length;i++)
+            {
+                var cell=grid.Tile(i+1);
+                Rect hit=new Rect(bounds.x+cell.X*u,bounds.y+cell.Y*u,cell.Width*u,cell.Height*u);
+                var item=ResourceItemPreview(keys[i],quantities[i]);
+                Fill(hit,card);Border(hit,item.QualityColor);
+                DrawIcon(new Rect(hit.x+5*u,hit.y+3*u,hit.width-10*u,hit.height-17*u),item.Icon,item.QualityColor);
+                Text(new Rect(hit.x+2*u,hit.yMax-16*u,hit.width-5*u,16*u),quantities[i].ToString(),Mathf.RoundToInt(10*u),pale,true,false,TextAnchor.MiddleRight);
+                InspectRewardItem(hit,item);
+            }
             GUI.enabled=prior;DrawInventoryPopup(bounds,u);
         }
     }

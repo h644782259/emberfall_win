@@ -95,7 +95,7 @@ namespace Emberfall
                 Rect r=new Rect(frame.x+16*u+i*rw,top,rw-4*u,resourceHeight);
                 Fill(r,new Color(.055f,.095f,.12f));
                 float iconSize=(spacious?32:20)*u;
-                DrawIcon(new Rect(r.x+5*u,r.center.y-iconSize*.5f,iconSize,iconSize),UIIconAtlas.Utility(icons[i]),i==0?gold:jade);
+                DrawIcon(new Rect(r.x+5*u,r.center.y-iconSize*.5f,iconSize,iconSize),UIIconAtlas.Utility(icons[i]),i==0?gold:i==1?jade:GameBalance.RarityColor(i==3?Rarity.Epic:Rarity.Rare));
                 float textX=r.x+iconSize+10*u,textWidth=r.xMax-textX-4*u;
                 Text(new Rect(textX,r.y+3*u,textWidth,resourceHeight*.42f),labels[i],Mathf.RoundToInt((spacious?12:9)*u),muted,false,false,TextAnchor.MiddleLeft);
                 Text(new Rect(textX,r.y+resourceHeight*.43f,textWidth,resourceHeight*.52f),"+"+amounts[i],Mathf.RoundToInt((spacious?19:12)*u),pale,true,false,TextAnchor.MiddleLeft);
@@ -174,10 +174,10 @@ namespace Emberfall
                 float rowLeft=rewardsArea.center.x-(rowCount*cell+(rowCount-1)*gap)*.5f;
                 Rect icon=new Rect(rowLeft+(i%cols)*(cell+gap),top+(i/cols)*(cell+caption+gap),cell,cell);
                 Color before=GUI.color;GUI.color=new Color(before.r,before.g,before.b,before.a*reveal);
-                Fill(icon,card);Border(icon,icons[i].Tint,2*u);
-                DrawIcon(new Rect(icon.x+5*u,icon.y+5*u,icon.width-10*u,icon.height-10*u),icons[i].Icon,icons[i].Tint);
+                Fill(icon,card);Border(icon,icons[i].QualityColor,2*u);
+                DrawIcon(new Rect(icon.x+5*u,icon.y+5*u,icon.width-10*u,icon.height-10*u),icons[i].Icon,icons[i].QualityColor);
                 if(icons[i].Quantity>1)Text(new Rect(icon.x+2*u,icon.yMax-18*u,icon.width-5*u,16*u),icons[i].Quantity.ToString(),Mathf.RoundToInt(11*u),pale,true,false,TextAnchor.MiddleRight);
-                if(caption>0)Text(new Rect(icon.x,icon.yMax+4*u,icon.width,caption-4*u),icons[i].Name,Mathf.RoundToInt(12*u),icons[i].Tint,true,true,TextAnchor.MiddleCenter);
+                if(caption>0)Text(new Rect(icon.x,icon.yMax+4*u,icon.width,caption-4*u),icons[i].Name,Mathf.RoundToInt(12*u),icons[i].QualityColor,true,true,TextAnchor.MiddleCenter);
                 GUI.color=before;
                 InspectRewardItem(icon,icons[i]);
             }
@@ -320,7 +320,7 @@ namespace Emberfall
             {
                 float cell=(w-8)*.5f;Rect tile=new Rect((i%2)*(cell+8)*unit,(y+(i/2)*76)*unit,cell*unit,68*unit);
                 Fill(tile,card);
-                DrawIcon(new Rect(tile.x+10*unit,tile.y+15*unit,32*unit,32*unit),i==5?UIIconAtlas.Utility("gem"):i==4?UIIconAtlas.Utility("potion"):i==1?UIIconAtlas.Utility("upgrade"):UIIconAtlas.Reward(i==0?0:i-1),i==0?gold:jade);
+                DrawIcon(new Rect(tile.x+10*unit,tile.y+15*unit,32*unit,32*unit),i==5?UIIconAtlas.Utility("gem"):i==4?UIIconAtlas.Utility("potion"):i==1?UIIconAtlas.Utility("upgrade"):UIIconAtlas.Reward(i==0?0:i-1),i==0?gold:i==1?jade:GameBalance.RarityColor(i==5?Rarity.Epic:i==4?Rarity.Common:Rarity.Rare));
                 Text(new Rect(tile.x+52*unit,tile.y+7*unit,tile.width-60*unit,22*unit),labels[i],Mathf.RoundToInt(13*unit),muted);
                 Text(new Rect(tile.x+52*unit,tile.y+29*unit,tile.width-60*unit,30*unit),"+"+amounts[i].ToString("N0"),Mathf.RoundToInt(21*unit),pale,true);
             }

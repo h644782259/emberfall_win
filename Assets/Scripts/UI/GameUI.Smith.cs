@@ -38,6 +38,18 @@ namespace Emberfall
             DrawPriceTint(new Rect(confirm.xMax-100*u,confirm.y,90*u,confirm.height),cost,true,u,enough?gold:new Color(1,.25f,.2f));
             if(accepted){bool saved=smithPreviewAscend?p.AscendAttachment(gem.mechanic,SmithServiceActive):p.UpgradeAttachment(gem.mechanic,SmithServiceActive);Feedback(saved,smithPreviewAscend?"宝石已升华":"宝石已升阶");if(saved)smithPreviewScroll=Vector2.zero;}
         }
+        private void DrawSmithResource(Rect rect,int amount,Texture2D icon,Color tint,float u,string resourceKey)
+        {
+            Fill(rect,new Color(.14f,.115f,.055f,.55f));Border(rect,new Color(tint.r,tint.g,tint.b,.25f));
+            DrawIcon(new Rect(rect.x+4*u,rect.center.y-9*u,18*u,18*u),icon,tint);
+            Text(new Rect(rect.x+27*u,rect.y,rect.width-31*u,rect.height),amount.ToString(),Mathf.RoundToInt(13*u),pale,true,false,TextAnchor.MiddleLeft);
+            InspectRewardItem(rect,ResourceItemPreview(resourceKey,amount));
+        }
+        private void DrawSmithMaxBadge(Rect rect,string label,float u)
+        {
+            Fill(rect,new Color(.24f,.14f,.035f));Border(rect,gold,2*u);
+            Text(rect,label,Mathf.RoundToInt(15*u),new Color(1,.9f,.55f),true,false,TextAnchor.MiddleCenter);
+        }
         private void DrawSmithService()
         {
             var p=session.Progression;float u=MobileControls.Active?TouchRatio:1;
@@ -45,13 +57,15 @@ namespace Emberfall
             var l=new SmithServiceLayout(width/u,height/u,MobileControls.IsIPad);
             blockedRects.Add(new Rect(0,0,width,height));
             Box(new Rect(8*u,4*u,width-16*u,height-8*u),jade,false);
-            Text(new Rect(16*u,10*u,width-432*u,36*u),"铁匠",Mathf.RoundToInt(22*u),gold,true);
-            DrawServiceBalances(new Rect(width-416*u,12*u,224*u,28*u),u);
-            Rect stones=new Rect(width-184*u,12*u,112*u,28*u);
-            Color stoneTint=GameBalance.RarityColor(Rarity.Epic);
-            Fill(stones,new Color(.14f,.115f,.055f,.55f));Border(stones,new Color(stoneTint.r,stoneTint.g,stoneTint.b,.25f));
-            DrawIcon(new Rect(stones.x+4*u,stones.center.y-9*u,18*u,18*u),UIIconAtlas.Utility("gem"),stoneTint);
-            Text(new Rect(stones.x+27*u,stones.y,stones.width-31*u,stones.height),p.Profile.refinementStones.ToString(),Mathf.RoundToInt(13*u),pale,true,false,TextAnchor.MiddleLeft);
+            float balanceWidth=Mathf.Min(100,(width/u-132)/4);
+            float balanceStart=width-64*u-4*(balanceWidth+4)*u;
+            Text(new Rect(16*u,10*u,Mathf.Max(48*u,balanceStart-24*u),36*u),"铁匠",Mathf.RoundToInt(22*u),gold,true);
+            DrawPrice(new Rect(balanceStart,12*u,balanceWidth*u,28*u),p.Profile.gold,false,u);
+            DrawPrice(new Rect(balanceStart+(balanceWidth+4)*u,12*u,balanceWidth*u,28*u),p.Profile.mechanicMaterials,true,u);
+            InspectRewardItem(new Rect(balanceStart,12*u,balanceWidth*u,28*u),ResourceItemPreview("gold",p.Profile.gold));
+            InspectRewardItem(new Rect(balanceStart+(balanceWidth+4)*u,12*u,balanceWidth*u,28*u),ResourceItemPreview("shard",p.Profile.mechanicMaterials));
+            DrawSmithResource(new Rect(balanceStart+2*(balanceWidth+4)*u,12*u,balanceWidth*u,28*u),p.Profile.refinementStones,UIIconAtlas.Utility("gem"),GameBalance.RarityColor(Rarity.Epic),u,"refinement");
+            DrawSmithResource(new Rect(balanceStart+3*(balanceWidth+4)*u,12*u,balanceWidth*u,28*u),p.Profile.fashionThreads,UIIconAtlas.Reward(2),GameBalance.RarityColor(Rarity.Rare),u,"thread");
             if(PopupCloseButton(new Rect(width-56*u,10*u,42*u,36*u))){smithPreviewMechanic=EquipmentMechanic.None;GUI.enabled=prior;ClosePanel();return;}
             smithCategory=Mathf.Clamp(smithCategory,0,3);
             string[] categories={"强化","镶嵌","洗练","时装"};
@@ -96,10 +110,14 @@ namespace Emberfall
                         string reason=p.RefinementLockReason(item.id,SmithServiceActive);
                         float aw=Mathf.Min(180,cardWidth-32);
                         Rect action=new Rect((cardWidth-16-aw)*.5f*u,tile.height-68*u,aw*u,44*u);
+                        if(reason=="数值已满")DrawSmithMaxBadge(action,"数值已满",u);
+                        else
+                        {
                         if(Button(action,"",gold,reason.Length==0))Feedback(p.RefineEquipment(item.id,SmithServiceActive),"洗练已保存");
                         Text(new Rect(action.x+8*u,action.y,action.width*.5f,action.height),reason=="数值已满"?"数值已满":"洗练",Mathf.RoundToInt(13*u),reason.Length==0?gold:muted,true,false,TextAnchor.MiddleLeft);
-                        DrawIcon(new Rect(action.xMax-66*u,action.y+12*u,20*u,20*u),UIIconAtlas.Utility("gem"),p.Profile.refinementStones>0?gold:muted);
+                        DrawIcon(new Rect(action.xMax-66*u,action.y+12*u,20*u,20*u),UIIconAtlas.Utility("gem"),GameBalance.RarityColor(Rarity.Epic));
                         Text(new Rect(action.xMax-42*u,action.y,38*u,action.height),"×1",Mathf.RoundToInt(12*u),p.Profile.refinementStones>0?gold:new Color(1,.3f,.25f),true,false,TextAnchor.MiddleLeft);
+                        }
                     }
                     if(smithCategory==0)
                     {
@@ -110,12 +128,7 @@ namespace Emberfall
                         Color accent=capped||quote!=null?gold:muted;
                         Fill(action,new Color(accent.r,accent.g,accent.b,.13f));Border(action,new Color(accent.r,accent.g,accent.b,.55f));
                         if(!capped&&QuietAction(action,"",quote!=null)&&!p.UpgradeAtSmith(quote,SmithServiceActive))Feedback(false,p.LastError);
-                        if(capped){
-                            Fill(action,new Color(.24f,.14f,.035f));Border(action,gold,2*u);
-                            Fill(new Rect(action.x+4*u,action.y+4*u,action.width-8*u,2*u),new Color(1,.86f,.42f,.65f));
-                            DrawIcon(new Rect(action.x+10*u,action.y+10*u,24*u,24*u),UIIconAtlas.Utility("upgrade"),new Color(1,.85f,.35f));
-                            Text(new Rect(action.x+34*u,action.y,action.width-40*u,action.height),"已满级",Mathf.RoundToInt(15*u),new Color(1,.9f,.55f),true,false,TextAnchor.MiddleCenter);
-                        }
+                        if(capped)DrawSmithMaxBadge(action,"已满级",u);
                         else DrawIcon(new Rect(action.x+10*u,action.y+11*u,22*u,22*u),UIIconAtlas.Utility("upgrade"),accent);
                         if(!capped)
                         {

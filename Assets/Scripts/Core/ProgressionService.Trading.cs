@@ -121,6 +121,22 @@ namespace Emberfall
         {return fashion==null||fashion.upgradeRank>=MaximumFashionRank?0:6*(fashion.upgradeRank+1);}
         public static int FashionDismantleValue(FashionData fashion)
         {return fashion==null?0:2+2*(int)fashion.AppearanceRarity+3*fashion.upgradeRank*(fashion.upgradeRank+1);}
+        public static int FashionBaseStat(FashionData fashion,string stat)
+        {
+            if(fashion==null)return stat=="暴击几率"?100:0;
+            int q=(int)fashion.rarity;
+            if(fashion.slot==FashionSlot.Wings){if(stat=="生命")return WingHealthPercents[q];if(stat=="防御")return WingArmorPercents[q];if(stat=="移动速度")return WingMovePercents[q];}
+            else {if(stat=="攻击")return WeaponPercents[q];if(stat=="暴击几率")return 100+WeaponPercents[q];}
+            return 0;
+        }
+        public static int FashionRankStat(FashionData fashion,string stat)
+        {
+            if(fashion==null)return 0;
+            int r=System.Math.Max(0,System.Math.Min(MaximumFashionRank,fashion.upgradeRank));
+            if(fashion.slot==FashionSlot.Wings){if(stat=="生命")return 5*r;if(stat=="防御")return 4*r;if(stat=="移动速度")return r;if(stat=="受到伤害减免")return 2*System.Math.Max(0,r-1);}
+            else {if(stat=="攻击")return 5*r;if(stat=="暴击几率")return 3*r;if(stat=="暴击伤害")return 5*System.Math.Max(0,r-1);}
+            return 0;
+        }
         public static string FashionBonus(FashionData fashion)
         {
             if(fashion==null)return "";
