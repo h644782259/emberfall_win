@@ -1,0 +1,73 @@
+{
+  "beforeSha": "f0d267a",
+  "mergedSha": "db794cc",
+  "assertionCalls": [
+    {
+      "file": "ReforgeSelectionTests.cs",
+      "beforeCount": 29,
+      "afterCount": 29,
+      "removedOrReplaced": [],
+      "addedOrReplacement": []
+    },
+    {
+      "file": "ReturningCounterPersistenceTests.cs",
+      "beforeCount": 14,
+      "afterCount": 14,
+      "removedOrReplaced": [],
+      "addedOrReplacement": []
+    },
+    {
+      "file": "CollectionRenderLifecycleTests.cs",
+      "beforeCount": 64,
+      "afterCount": 65,
+      "removedOrReplaced": [],
+      "addedOrReplacement": [
+        "Check(Math.Abs(importedCamera.transform.position.x)<.0001f&&importedCamera.orthographicSize>uncenteredSize,\"centered imported weapon preserves asymmetric envelope without clipping\")"
+      ]
+    },
+    {
+      "file": "MobileOpportunityInputProductionTests.cs",
+      "beforeCount": 15,
+      "afterCount": 17,
+      "removedOrReplaced": [],
+      "addedOrReplacement": [
+        "C(ui.SwapBindingForFixture(3,0),\"valid binding swap\")",
+        "C(moved.X==MobileControls.Layout.Skills[3].X,\"hint follows remapped physical slot\")"
+      ]
+    },
+    {
+      "file": "MobileOpportunityPresentationTests.cs",
+      "beforeCount": 30,
+      "afterCount": 31,
+      "removedOrReplaced": [],
+      "addedOrReplacement": [
+        "C(name.Rect.x>=8&&name.Rect.xMax<=MobileControls.Layout.Width-8&&name.Rect.y>=80&&name.Rect.yMax<=MobileControls.Layout.Height-8&&name.Rect.height>20,\"long pinned identity has measured wrapped bounds\")"
+      ]
+    },
+    {
+      "file": "MobilePinnedTargetProductionTests.cs",
+      "beforeCount": 67,
+      "afterCount": 67,
+      "removedOrReplaced": [],
+      "addedOrReplacement": []
+    },
+    {
+      "file": "MobilePassiveStatusTests.py",
+      "beforeCount": 25,
+      "afterCount": 25,
+      "removedOrReplaced": [
+        "C(ui.discs==expected.Length+1&&ui.rims==expected.Length+1&&ui.glows==expected.Length,\"every skill and page control retains a circular base and rim; only ready skills glow\")"
+      ],
+      "addedOrReplacement": [
+        "C(ui.discs==expected.Length&&ui.rims==expected.Length&&ui.glows==expected.Length,\"every skill retains a circular base and rim; page arrow uses rectangular tab; only ready skills glow\")"
+      ]
+    },
+    {
+      "file": "ReturningCounterDesktopFixture.cs",
+      "beforeCount": 7,
+      "afterCount": 7,
+      "removedOrReplaced": [],
+      "addedOrReplacement": []
+    }
+  ]
+}

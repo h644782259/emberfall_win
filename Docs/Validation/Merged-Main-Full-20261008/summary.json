@@ -1,0 +1,450 @@
+{
+  "exactMergedMainSha": "db794ccddb6fe784868a9b841c82c03d73be300f",
+  "fullPassed": 290,
+  "fullTotal": 304,
+  "failedNames": [
+    "reforgeselection",
+    "returning-counter-persistence",
+    "chest-choice-presentation",
+    "build-plan-page-geometry",
+    "scenery-presentation-production",
+    "companion-path-allocation",
+    "fixed-scenery-production",
+    "fixed-scenery-enabled-integration",
+    "concentrated-venom-production",
+    "camp-practice-session",
+    "opportunity-channels-round2",
+    "g07-factory-inventory",
+    "reward-presentation-exceptions",
+    "practice-potion-input"
+  ],
+  "sourceChangedDuringRun": [],
+  "previousFullPassed": 279,
+  "previousFullTotal": 304,
+  "priorFixtureFailuresNowPassed": [
+    "collection-render-lifecycle",
+    "collection-render-lifecycle-modern",
+    "collection-stage-recovery-negative",
+    "collection-collider-free",
+    "collectionpreviewpresentationproduction",
+    "mobilepinnedtargetproduction",
+    "restricted-healing-production",
+    "mobile-opportunity-input",
+    "mobile-floating-joystick",
+    "combat-opportunity-slot",
+    "mobile-basic-window-draw",
+    "mobile-passive-status"
+  ],
+  "causeGroups": [
+    {
+      "cause": "Bounds.size missing from native-resource stand-in",
+      "checks": [
+        "collection-render-lifecycle",
+        "collection-render-lifecycle-modern",
+        "collection-stage-recovery-negative",
+        "collection-collider-free",
+        "collectionpreviewpresentationproduction"
+      ],
+      "repair": "Equivalent extents*2 property; unchanged host code; original lifecycle/render/group mutations retained plus centered-envelope mutation."
+    },
+    {
+      "cause": "Bound skill visibility/opportunity area missing from GUI stand-in",
+      "checks": [
+        "mobilepinnedtargetproduction",
+        "restricted-healing-production",
+        "mobile-opportunity-input",
+        "mobile-floating-joystick"
+      ],
+      "repair": "Extract actual BoundMobileSkill/MobileOpportunityArea/MobileSkillVisible; explicit managed PlayerPrefs boundary; retain pointer/resource/captured-intent assertions and add remap ownership."
+    },
+    {
+      "cause": "Wrapped target-name GUI API absent",
+      "checks": [
+        "combat-opportunity-slot",
+        "mobile-basic-window-draw"
+      ],
+      "repair": "Add RectOffset, GUIContent, CalcSize/CalcHeight, wrapping/clipping and GUI.Label overload boundaries; retain clock/opacity/availability/hit-area negative controls."
+    },
+    {
+      "cause": "HUD bound-skill method absent and old circular page-selector expectation",
+      "checks": [
+        "mobile-passive-status"
+      ],
+      "repair": "Use actual binding method; replace only obsolete page primitive-count assertion, retaining every skill rim/readiness/resource/page-release assertion. Independent audit adds backing/underline/arrow geometry and missing-arrow mutation."
+    },
+    {
+      "cause": "iOS graphic choice/footer buttons no longer carry old text labels",
+      "checks": [
+        "reforgeselection"
+      ],
+      "repair": "Deliver same recorded click to actual option/footer rectangles with enabled gate; all29 business check expressions unchanged."
+    },
+    {
+      "cause": "iOS extracted smith branch now calls price action wrapper",
+      "checks": [
+        "returning-counter-persistence"
+      ],
+      "repair": "Supply GUI-boundary ServiceCostAction; enabled/camp/material conditions and actual service transaction execute; all14 persistence checks and7 desktop checks unchanged."
+    }
+  ],
+  "baselineSignatureComparison": [
+    {
+      "name": "reforgeselection",
+      "previousFailureSignatures": [
+        "Unhandled exception. System.Exception: three distinct actual choices"
+      ],
+      "currentFailureSignatures": [
+        "Unhandled exception. System.Exception: three distinct actual choices"
+      ],
+      "identical": true
+    },
+    {
+      "name": "returning-counter-persistence",
+      "previousFailureSignatures": [
+        "TEMP/Desktop.cs(52,30): error CS0103: The name 'ServiceCostAction' does not exist in the current context [TEMP/p/Validation.csproj]",
+        "TEMP/Desktop.cs(56,134): error CS0103: The name 'ServiceCostAction' does not exist in the current context [TEMP/p/Validation.csproj]",
+        "TEMP/Desktop.cs(60,30): error CS0103: The name 'ServiceCostAction' does not exist in the current context [TEMP/p/Validation.csproj]",
+        "TEMP/Desktop.cs(52,30): error CS0103: The name 'ServiceCostAction' does not exist in the current context [TEMP/p/Validation.csproj]",
+        "TEMP/Desktop.cs(56,134): error CS0103: The name 'ServiceCostAction' does not exist in the current context [TEMP/p/Validation.csproj]",
+        "TEMP/Desktop.cs(60,30): error CS0103: The name 'ServiceCostAction' does not exist in the current context [TEMP/p/Validation.csproj]"
+      ],
+      "currentFailureSignatures": [
+        "Unhandled exception. System.Exception: reforge retainsB"
+      ],
+      "identical": false
+    },
+    {
+      "name": "chest-choice-presentation",
+      "previousFailureSignatures": [
+        "AssertionError"
+      ],
+      "currentFailureSignatures": [
+        "AssertionError"
+      ],
+      "identical": true
+    },
+    {
+      "name": "build-plan-page-geometry",
+      "previousFailureSignatures": [
+        "AssertionError: button font policy changed; update explicit boundary"
+      ],
+      "currentFailureSignatures": [
+        "AssertionError: button font policy changed; update explicit boundary"
+      ],
+      "identical": true
+    },
+    {
+      "name": "scenery-presentation-production",
+      "previousFailureSignatures": [
+        "AssertionError: TEMP/HubNpcIdle.cs(21,45): error CS0117: 'GameSession' does not contain a definition for 'Instance' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(22,40): error CS1061: 'GameSession' does not contain a definition for 'HasStarted' and no accessible extension method 'HasStarted' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(22,60): error CS1061: 'GameSession' does not contain a definition for 'BackgroundPaused' and no accessible extension method 'BackgroundPaused' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(22,86): error CS1061: 'GameSession' does not contain a definition for 'Paused' and no accessible extension method 'Paused' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(22,102): error CS1061: 'GameSession' does not contain a definition for 'IsDead' and no accessible extension method 'IsDead' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(23,34): error CS1061: 'GameSession' does not contain a definition for 'ActiveHubNpc' and no accessible extension method 'ActiveHubNpc' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(23,49): error CS0246: The type or namespace name 'HubNpcKind' could not be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(25,38): error CS0117: 'Time' does not contain a definition for 'unscaledDeltaTime' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(31,30): error CS0117: 'Mathf' does not contain a definition for 'MoveTowards' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(33,33): error CS1061: 'GameSession' does not contain a definition for 'Player' and no accessible extension method 'Player' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(35,44): error CS0117: 'CombatFx' does not contain a definition for 'Flat' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(35,57): error CS1061: 'GameSession' does not contain a definition for 'Player' and no accessible extension method 'Player' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(37,80): error CS0117: 'Quaternion' does not contain a definition for 'LookRotation' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(39,43): error CS0117: 'Quaternion' does not contain a definition for 'RotateTowards' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(50,31): error CS0117: 'Mathf' does not contain a definition for 'Clamp01' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(55,55): error CS0117: 'Quaternion' does not contain a definition for 'Slerp' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(56,65): error CS0117: 'Quaternion' does not contain a definition for 'Slerp' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(21,45): error CS0117: 'GameSession' does not contain a definition for 'Instance' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(22,40): error CS1061: 'GameSession' does not contain a definition for 'HasStarted' and no accessible extension method 'HasStarted' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(22,60): error CS1061: 'GameSession' does not contain a definition for 'BackgroundPaused' and no accessible extension method 'BackgroundPaused' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(22,86): error CS1061: 'GameSession' does not contain a definition for 'Paused' and no accessible extension method 'Paused' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(22,102): error CS1061: 'GameSession' does not contain a definition for 'IsDead' and no accessible extension method 'IsDead' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(23,34): error CS1061: 'GameSession' does not contain a definition for 'ActiveHubNpc' and no accessible extension method 'ActiveHubNpc' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(23,49): error CS0246: The type or namespace name 'HubNpcKind' could not be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(25,38): error CS0117: 'Time' does not contain a definition for 'unscaledDeltaTime' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(31,30): error CS0117: 'Mathf' does not contain a definition for 'MoveTowards' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(33,33): error CS1061: 'GameSession' does not contain a definition for 'Player' and no accessible extension method 'Player' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(35,44): error CS0117: 'CombatFx' does not contain a definition for 'Flat' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(35,57): error CS1061: 'GameSession' does not contain a definition for 'Player' and no accessible extension method 'Player' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(37,80): error CS0117: 'Quaternion' does not contain a definition for 'LookRotation' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(39,43): error CS0117: 'Quaternion' does not contain a definition for 'RotateTowards' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(50,31): error CS0117: 'Mathf' does not contain a definition for 'Clamp01' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(55,55): error CS0117: 'Quaternion' does not contain a definition for 'Slerp' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(56,65): error CS0117: 'Quaternion' does not contain a definition for 'Slerp' [TEMP/Test.csproj]"
+      ],
+      "currentFailureSignatures": [
+        "AssertionError: TEMP/HubNpcIdle.cs(21,45): error CS0117: 'GameSession' does not contain a definition for 'Instance' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(22,40): error CS1061: 'GameSession' does not contain a definition for 'HasStarted' and no accessible extension method 'HasStarted' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(22,60): error CS1061: 'GameSession' does not contain a definition for 'BackgroundPaused' and no accessible extension method 'BackgroundPaused' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(22,86): error CS1061: 'GameSession' does not contain a definition for 'Paused' and no accessible extension method 'Paused' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(22,102): error CS1061: 'GameSession' does not contain a definition for 'IsDead' and no accessible extension method 'IsDead' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(23,34): error CS1061: 'GameSession' does not contain a definition for 'ActiveHubNpc' and no accessible extension method 'ActiveHubNpc' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(23,49): error CS0246: The type or namespace name 'HubNpcKind' could not be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(25,38): error CS0117: 'Time' does not contain a definition for 'unscaledDeltaTime' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(31,30): error CS0117: 'Mathf' does not contain a definition for 'MoveTowards' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(33,33): error CS1061: 'GameSession' does not contain a definition for 'Player' and no accessible extension method 'Player' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(35,44): error CS0117: 'CombatFx' does not contain a definition for 'Flat' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(35,57): error CS1061: 'GameSession' does not contain a definition for 'Player' and no accessible extension method 'Player' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(37,80): error CS0117: 'Quaternion' does not contain a definition for 'LookRotation' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(39,43): error CS0117: 'Quaternion' does not contain a definition for 'RotateTowards' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(50,31): error CS0117: 'Mathf' does not contain a definition for 'Clamp01' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(55,55): error CS0117: 'Quaternion' does not contain a definition for 'Slerp' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(56,65): error CS0117: 'Quaternion' does not contain a definition for 'Slerp' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(21,45): error CS0117: 'GameSession' does not contain a definition for 'Instance' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(22,40): error CS1061: 'GameSession' does not contain a definition for 'HasStarted' and no accessible extension method 'HasStarted' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(22,60): error CS1061: 'GameSession' does not contain a definition for 'BackgroundPaused' and no accessible extension method 'BackgroundPaused' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(22,86): error CS1061: 'GameSession' does not contain a definition for 'Paused' and no accessible extension method 'Paused' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(22,102): error CS1061: 'GameSession' does not contain a definition for 'IsDead' and no accessible extension method 'IsDead' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(23,34): error CS1061: 'GameSession' does not contain a definition for 'ActiveHubNpc' and no accessible extension method 'ActiveHubNpc' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(23,49): error CS0246: The type or namespace name 'HubNpcKind' could not be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(25,38): error CS0117: 'Time' does not contain a definition for 'unscaledDeltaTime' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(31,30): error CS0117: 'Mathf' does not contain a definition for 'MoveTowards' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(33,33): error CS1061: 'GameSession' does not contain a definition for 'Player' and no accessible extension method 'Player' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(35,44): error CS0117: 'CombatFx' does not contain a definition for 'Flat' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(35,57): error CS1061: 'GameSession' does not contain a definition for 'Player' and no accessible extension method 'Player' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(37,80): error CS0117: 'Quaternion' does not contain a definition for 'LookRotation' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(39,43): error CS0117: 'Quaternion' does not contain a definition for 'RotateTowards' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(50,31): error CS0117: 'Mathf' does not contain a definition for 'Clamp01' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(55,55): error CS0117: 'Quaternion' does not contain a definition for 'Slerp' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(56,65): error CS0117: 'Quaternion' does not contain a definition for 'Slerp' [TEMP/Test.csproj]"
+      ],
+      "identical": true
+    },
+    {
+      "name": "fixed-scenery-production",
+      "previousFailureSignatures": [
+        "TEMP/HubNpcIdle.cs(21,45): error CS0117: 'GameSession' does not contain a definition for 'Instance' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(22,40): error CS1061: 'GameSession' does not contain a definition for 'HasStarted' and no accessible extension method 'HasStarted' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(22,60): error CS1061: 'GameSession' does not contain a definition for 'BackgroundPaused' and no accessible extension method 'BackgroundPaused' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(22,86): error CS1061: 'GameSession' does not contain a definition for 'Paused' and no accessible extension method 'Paused' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(22,102): error CS1061: 'GameSession' does not contain a definition for 'IsDead' and no accessible extension method 'IsDead' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(23,34): error CS1061: 'GameSession' does not contain a definition for 'ActiveHubNpc' and no accessible extension method 'ActiveHubNpc' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(23,49): error CS0246: The type or namespace name 'HubNpcKind' could not be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(25,38): error CS0117: 'Time' does not contain a definition for 'unscaledDeltaTime' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(31,30): error CS0117: 'Mathf' does not contain a definition for 'MoveTowards' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(33,33): error CS1061: 'GameSession' does not contain a definition for 'Player' and no accessible extension method 'Player' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(35,44): error CS0117: 'CombatFx' does not contain a definition for 'Flat' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(35,57): error CS1061: 'GameSession' does not contain a definition for 'Player' and no accessible extension method 'Player' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(37,80): error CS0117: 'Quaternion' does not contain a definition for 'LookRotation' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(39,43): error CS0117: 'Quaternion' does not contain a definition for 'RotateTowards' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(50,31): error CS0117: 'Mathf' does not contain a definition for 'Clamp01' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(55,55): error CS0117: 'Quaternion' does not contain a definition for 'Slerp' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(56,65): error CS0117: 'Quaternion' does not contain a definition for 'Slerp' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(21,45): error CS0117: 'GameSession' does not contain a definition for 'Instance' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(22,40): error CS1061: 'GameSession' does not contain a definition for 'HasStarted' and no accessible extension method 'HasStarted' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(22,60): error CS1061: 'GameSession' does not contain a definition for 'BackgroundPaused' and no accessible extension method 'BackgroundPaused' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(22,86): error CS1061: 'GameSession' does not contain a definition for 'Paused' and no accessible extension method 'Paused' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(22,102): error CS1061: 'GameSession' does not contain a definition for 'IsDead' and no accessible extension method 'IsDead' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(23,34): error CS1061: 'GameSession' does not contain a definition for 'ActiveHubNpc' and no accessible extension method 'ActiveHubNpc' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(23,49): error CS0246: The type or namespace name 'HubNpcKind' could not be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(25,38): error CS0117: 'Time' does not contain a definition for 'unscaledDeltaTime' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(31,30): error CS0117: 'Mathf' does not contain a definition for 'MoveTowards' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(33,33): error CS1061: 'GameSession' does not contain a definition for 'Player' and no accessible extension method 'Player' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(35,44): error CS0117: 'CombatFx' does not contain a definition for 'Flat' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(35,57): error CS1061: 'GameSession' does not contain a definition for 'Player' and no accessible extension method 'Player' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(37,80): error CS0117: 'Quaternion' does not contain a definition for 'LookRotation' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(39,43): error CS0117: 'Quaternion' does not contain a definition for 'RotateTowards' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(50,31): error CS0117: 'Mathf' does not contain a definition for 'Clamp01' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(55,55): error CS0117: 'Quaternion' does not contain a definition for 'Slerp' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(56,65): error CS0117: 'Quaternion' does not contain a definition for 'Slerp' [TEMP/Test.csproj]",
+        "AssertionError"
+      ],
+      "currentFailureSignatures": [
+        "TEMP/HubNpcIdle.cs(21,45): error CS0117: 'GameSession' does not contain a definition for 'Instance' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(22,40): error CS1061: 'GameSession' does not contain a definition for 'HasStarted' and no accessible extension method 'HasStarted' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(22,60): error CS1061: 'GameSession' does not contain a definition for 'BackgroundPaused' and no accessible extension method 'BackgroundPaused' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(22,86): error CS1061: 'GameSession' does not contain a definition for 'Paused' and no accessible extension method 'Paused' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(22,102): error CS1061: 'GameSession' does not contain a definition for 'IsDead' and no accessible extension method 'IsDead' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(23,34): error CS1061: 'GameSession' does not contain a definition for 'ActiveHubNpc' and no accessible extension method 'ActiveHubNpc' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(23,49): error CS0246: The type or namespace name 'HubNpcKind' could not be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(25,38): error CS0117: 'Time' does not contain a definition for 'unscaledDeltaTime' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(31,30): error CS0117: 'Mathf' does not contain a definition for 'MoveTowards' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(33,33): error CS1061: 'GameSession' does not contain a definition for 'Player' and no accessible extension method 'Player' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(35,44): error CS0117: 'CombatFx' does not contain a definition for 'Flat' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(35,57): error CS1061: 'GameSession' does not contain a definition for 'Player' and no accessible extension method 'Player' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(37,80): error CS0117: 'Quaternion' does not contain a definition for 'LookRotation' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(39,43): error CS0117: 'Quaternion' does not contain a definition for 'RotateTowards' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(50,31): error CS0117: 'Mathf' does not contain a definition for 'Clamp01' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(55,55): error CS0117: 'Quaternion' does not contain a definition for 'Slerp' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(56,65): error CS0117: 'Quaternion' does not contain a definition for 'Slerp' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(21,45): error CS0117: 'GameSession' does not contain a definition for 'Instance' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(22,40): error CS1061: 'GameSession' does not contain a definition for 'HasStarted' and no accessible extension method 'HasStarted' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(22,60): error CS1061: 'GameSession' does not contain a definition for 'BackgroundPaused' and no accessible extension method 'BackgroundPaused' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(22,86): error CS1061: 'GameSession' does not contain a definition for 'Paused' and no accessible extension method 'Paused' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(22,102): error CS1061: 'GameSession' does not contain a definition for 'IsDead' and no accessible extension method 'IsDead' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(23,34): error CS1061: 'GameSession' does not contain a definition for 'ActiveHubNpc' and no accessible extension method 'ActiveHubNpc' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(23,49): error CS0246: The type or namespace name 'HubNpcKind' could not be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(25,38): error CS0117: 'Time' does not contain a definition for 'unscaledDeltaTime' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(31,30): error CS0117: 'Mathf' does not contain a definition for 'MoveTowards' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(33,33): error CS1061: 'GameSession' does not contain a definition for 'Player' and no accessible extension method 'Player' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(35,44): error CS0117: 'CombatFx' does not contain a definition for 'Flat' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(35,57): error CS1061: 'GameSession' does not contain a definition for 'Player' and no accessible extension method 'Player' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(37,80): error CS0117: 'Quaternion' does not contain a definition for 'LookRotation' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(39,43): error CS0117: 'Quaternion' does not contain a definition for 'RotateTowards' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(50,31): error CS0117: 'Mathf' does not contain a definition for 'Clamp01' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(55,55): error CS0117: 'Quaternion' does not contain a definition for 'Slerp' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(56,65): error CS0117: 'Quaternion' does not contain a definition for 'Slerp' [TEMP/Test.csproj]",
+        "AssertionError"
+      ],
+      "identical": true
+    },
+    {
+      "name": "fixed-scenery-enabled-integration",
+      "previousFailureSignatures": [
+        "TEMP/HubNpcIdle.cs(21,45): error CS0117: 'GameSession' does not contain a definition for 'Instance' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(22,40): error CS1061: 'GameSession' does not contain a definition for 'HasStarted' and no accessible extension method 'HasStarted' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(22,60): error CS1061: 'GameSession' does not contain a definition for 'BackgroundPaused' and no accessible extension method 'BackgroundPaused' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(22,86): error CS1061: 'GameSession' does not contain a definition for 'Paused' and no accessible extension method 'Paused' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(22,102): error CS1061: 'GameSession' does not contain a definition for 'IsDead' and no accessible extension method 'IsDead' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(23,34): error CS1061: 'GameSession' does not contain a definition for 'ActiveHubNpc' and no accessible extension method 'ActiveHubNpc' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(23,49): error CS0246: The type or namespace name 'HubNpcKind' could not be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(25,38): error CS0117: 'Time' does not contain a definition for 'unscaledDeltaTime' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(31,30): error CS0117: 'Mathf' does not contain a definition for 'MoveTowards' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(33,33): error CS1061: 'GameSession' does not contain a definition for 'Player' and no accessible extension method 'Player' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(35,44): error CS0117: 'CombatFx' does not contain a definition for 'Flat' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(35,57): error CS1061: 'GameSession' does not contain a definition for 'Player' and no accessible extension method 'Player' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(37,80): error CS0117: 'Quaternion' does not contain a definition for 'LookRotation' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(39,43): error CS0117: 'Quaternion' does not contain a definition for 'RotateTowards' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(50,31): error CS0117: 'Mathf' does not contain a definition for 'Clamp01' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(55,55): error CS0117: 'Quaternion' does not contain a definition for 'Slerp' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(56,65): error CS0117: 'Quaternion' does not contain a definition for 'Slerp' [TEMP/Test.csproj]",
+        "AssertionError"
+      ],
+      "currentFailureSignatures": [
+        "TEMP/HubNpcIdle.cs(21,45): error CS0117: 'GameSession' does not contain a definition for 'Instance' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(22,40): error CS1061: 'GameSession' does not contain a definition for 'HasStarted' and no accessible extension method 'HasStarted' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(22,60): error CS1061: 'GameSession' does not contain a definition for 'BackgroundPaused' and no accessible extension method 'BackgroundPaused' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(22,86): error CS1061: 'GameSession' does not contain a definition for 'Paused' and no accessible extension method 'Paused' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(22,102): error CS1061: 'GameSession' does not contain a definition for 'IsDead' and no accessible extension method 'IsDead' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(23,34): error CS1061: 'GameSession' does not contain a definition for 'ActiveHubNpc' and no accessible extension method 'ActiveHubNpc' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(23,49): error CS0246: The type or namespace name 'HubNpcKind' could not be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(25,38): error CS0117: 'Time' does not contain a definition for 'unscaledDeltaTime' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(31,30): error CS0117: 'Mathf' does not contain a definition for 'MoveTowards' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(33,33): error CS1061: 'GameSession' does not contain a definition for 'Player' and no accessible extension method 'Player' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(35,44): error CS0117: 'CombatFx' does not contain a definition for 'Flat' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(35,57): error CS1061: 'GameSession' does not contain a definition for 'Player' and no accessible extension method 'Player' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(37,80): error CS0117: 'Quaternion' does not contain a definition for 'LookRotation' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(39,43): error CS0117: 'Quaternion' does not contain a definition for 'RotateTowards' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(50,31): error CS0117: 'Mathf' does not contain a definition for 'Clamp01' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(55,55): error CS0117: 'Quaternion' does not contain a definition for 'Slerp' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(56,65): error CS0117: 'Quaternion' does not contain a definition for 'Slerp' [TEMP/Test.csproj]",
+        "AssertionError"
+      ],
+      "identical": true
+    },
+    {
+      "name": "concentrated-venom-production",
+      "previousFailureSignatures": [
+        "Unhandled exception. System.Exception: front guard intercept independent of list order",
+        "Unhandled exception. System.Exception: reforge retainsB"
+      ],
+      "currentFailureSignatures": [
+        "Unhandled exception. System.Exception: front guard intercept independent of list order",
+        "Unhandled exception. System.Exception: reforge retainsB"
+      ],
+      "identical": true
+    },
+    {
+      "name": "camp-practice-session",
+      "previousFailureSignatures": [
+        "TEMP/Shutdown.cs(51,13): error CS0103: The name 'EndHubNpcConversation' does not exist in the current context [TEMP/project/Validation.csproj]",
+        "AssertionError"
+      ],
+      "currentFailureSignatures": [
+        "TEMP/Shutdown.cs(51,13): error CS0103: The name 'EndHubNpcConversation' does not exist in the current context [TEMP/project/Validation.csproj]",
+        "AssertionError"
+      ],
+      "identical": true
+    },
+    {
+      "name": "opportunity-channels-round2",
+      "previousFailureSignatures": [
+        "current BUILD TEMP/Player.cs(30,18): error CS0103: The name 'CanUseMovementSkillAt' does not exist in the current context [TEMP/Test.csproj]",
+        "TEMP/Player.cs(32,18): error CS0103: The name 'SkillBudgetReady' does not exist in the current context [TEMP/Test.csproj]",
+        "TEMP/Player.cs(30,18): error CS0103: The name 'CanUseMovementSkillAt' does not exist in the current context [TEMP/Test.csproj]",
+        "TEMP/Player.cs(32,18): error CS0103: The name 'SkillBudgetReady' does not exist in the current context [TEMP/Test.csproj]",
+        "AssertionError"
+      ],
+      "currentFailureSignatures": [
+        "current BUILD TEMP/Player.cs(30,18): error CS0103: The name 'CanUseMovementSkillAt' does not exist in the current context [TEMP/Test.csproj]",
+        "TEMP/Player.cs(32,18): error CS0103: The name 'SkillBudgetReady' does not exist in the current context [TEMP/Test.csproj]",
+        "TEMP/Player.cs(30,18): error CS0103: The name 'CanUseMovementSkillAt' does not exist in the current context [TEMP/Test.csproj]",
+        "TEMP/Player.cs(32,18): error CS0103: The name 'SkillBudgetReady' does not exist in the current context [TEMP/Test.csproj]",
+        "AssertionError"
+      ],
+      "identical": true
+    },
+    {
+      "name": "g07-factory-inventory",
+      "previousFailureSignatures": [
+        "TEMP/HubNpcIdle.cs(21,45): error CS0117: 'GameSession' does not contain a definition for 'Instance' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(22,40): error CS1061: 'GameSession' does not contain a definition for 'HasStarted' and no accessible extension method 'HasStarted' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(22,60): error CS1061: 'GameSession' does not contain a definition for 'BackgroundPaused' and no accessible extension method 'BackgroundPaused' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(22,86): error CS1061: 'GameSession' does not contain a definition for 'Paused' and no accessible extension method 'Paused' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(22,102): error CS1061: 'GameSession' does not contain a definition for 'IsDead' and no accessible extension method 'IsDead' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(23,34): error CS1061: 'GameSession' does not contain a definition for 'ActiveHubNpc' and no accessible extension method 'ActiveHubNpc' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(23,49): error CS0246: The type or namespace name 'HubNpcKind' could not be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(25,38): error CS0117: 'Time' does not contain a definition for 'unscaledDeltaTime' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(31,30): error CS0117: 'Mathf' does not contain a definition for 'MoveTowards' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(33,33): error CS1061: 'GameSession' does not contain a definition for 'Player' and no accessible extension method 'Player' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(35,44): error CS0117: 'CombatFx' does not contain a definition for 'Flat' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(35,57): error CS1061: 'GameSession' does not contain a definition for 'Player' and no accessible extension method 'Player' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(37,80): error CS0117: 'Quaternion' does not contain a definition for 'LookRotation' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(39,43): error CS0117: 'Quaternion' does not contain a definition for 'RotateTowards' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(50,31): error CS0117: 'Mathf' does not contain a definition for 'Clamp01' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(55,55): error CS0117: 'Quaternion' does not contain a definition for 'Slerp' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(56,65): error CS0117: 'Quaternion' does not contain a definition for 'Slerp' [TEMP/Test.csproj]",
+        "AssertionError"
+      ],
+      "currentFailureSignatures": [
+        "TEMP/HubNpcIdle.cs(21,45): error CS0117: 'GameSession' does not contain a definition for 'Instance' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(22,40): error CS1061: 'GameSession' does not contain a definition for 'HasStarted' and no accessible extension method 'HasStarted' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(22,60): error CS1061: 'GameSession' does not contain a definition for 'BackgroundPaused' and no accessible extension method 'BackgroundPaused' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(22,86): error CS1061: 'GameSession' does not contain a definition for 'Paused' and no accessible extension method 'Paused' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(22,102): error CS1061: 'GameSession' does not contain a definition for 'IsDead' and no accessible extension method 'IsDead' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(23,34): error CS1061: 'GameSession' does not contain a definition for 'ActiveHubNpc' and no accessible extension method 'ActiveHubNpc' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(23,49): error CS0246: The type or namespace name 'HubNpcKind' could not be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(25,38): error CS0117: 'Time' does not contain a definition for 'unscaledDeltaTime' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(31,30): error CS0117: 'Mathf' does not contain a definition for 'MoveTowards' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(33,33): error CS1061: 'GameSession' does not contain a definition for 'Player' and no accessible extension method 'Player' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(35,44): error CS0117: 'CombatFx' does not contain a definition for 'Flat' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(35,57): error CS1061: 'GameSession' does not contain a definition for 'Player' and no accessible extension method 'Player' accepting a first argument of type 'GameSession' could be found (are you missing a using directive or an assembly reference?) [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(37,80): error CS0117: 'Quaternion' does not contain a definition for 'LookRotation' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(39,43): error CS0117: 'Quaternion' does not contain a definition for 'RotateTowards' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(50,31): error CS0117: 'Mathf' does not contain a definition for 'Clamp01' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(55,55): error CS0117: 'Quaternion' does not contain a definition for 'Slerp' [TEMP/Test.csproj]",
+        "TEMP/HubNpcIdle.cs(56,65): error CS0117: 'Quaternion' does not contain a definition for 'Slerp' [TEMP/Test.csproj]",
+        "AssertionError"
+      ],
+      "identical": true
+    },
+    {
+      "name": "reward-presentation-exceptions",
+      "previousFailureSignatures": [
+        "RESULT cases=66 checks=1069 failures=45 (actual reward hosts/service; scene-completion shells, not Unity)"
+      ],
+      "currentFailureSignatures": [
+        "RESULT cases=66 checks=1069 failures=45 (actual reward hosts/service; scene-completion shells, not Unity)"
+      ],
+      "identical": true
+    },
+    {
+      "name": "practice-potion-input",
+      "previousFailureSignatures": [
+        "TEMP/Actual.cs(61,13): error CS0103: The name 'EndHubNpcConversation' does not exist in the current context [TEMP/project/Validation.csproj]",
+        "AssertionError"
+      ],
+      "currentFailureSignatures": [
+        "TEMP/Actual.cs(61,13): error CS0103: The name 'EndHubNpcConversation' does not exist in the current context [TEMP/project/Validation.csproj]",
+        "AssertionError"
+      ],
+      "identical": true
+    }
+  ],
+  "independentBranch": "codex/windows-level-band-tests",
+  "independentTestedSha": "02cfaab1f1642672a2ea78849831f80b98971a54",
+  "independentPassed": 7,
+  "independentTotal": 7,
+  "mainAssetsTree": "c277cfa8a0e41482a1bb6bc09f8e83e66323a798",
+  "independentAssetsTree": "c277cfa8a0e41482a1bb6bc09f8e83e66323a798",
+  "independentBranchFullSuiteExecuted": false
+}

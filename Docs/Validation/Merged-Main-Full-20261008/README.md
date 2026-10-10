@@ -1,0 +1,32 @@
+# Merged exact main full regression and assertion audit
+
+Exact merged main `db794ccddb6fe784868a9b841c82c03d73be300f` was tested in detached `/workspace/final-fixture-main-win`. **290/304 full checks pass**, with `sourceChangedDuringRun=[]`; platform API compilation passes. This supersedes targeted-only evidence for this exact SHA. The previous main full run was 279/304; every previously new fixture failure passes now. No restarted full process after the connection notice: both original processes continued and produced terminal reports.
+
+Windows retains13 historical failing check names plus the recurring allocation measurement failure. Twelve historical error signatures match the preceding frozen main. ReturningCounterPersistence now executes beyond its repaired GUI dependency and rejects invalid level25→20 native-band quote; this is test policy mismatch, not changed production loss. iOS passes305/305. Failure logs and exact baseline signatures are preserved.
+
+Windows full legacy four-companion blocked allocation is7204816 bytes versus the usual7204560 (extra256); current allocation7186080 is unchanged, and every exact targeting/direction checksum and trace hash matches. Isolated unchanged-source rerun passes1/1 with exact savings4480/18480 bytes. Preserve the original full count290/304; do not rewrite it using isolated success. No proven root-cause attribution to JIT, disconnect or game code is made.
+
+## Common causes of the prior12/14 new fixture failures
+
+| Shared cause | Affected checks | Repair and retained protections |
+|---|---|---|
+| Bounds.size missing from native-resource stand-in | collection-render-lifecycle, collection-render-lifecycle-modern, collection-stage-recovery-negative, collection-collider-free, collectionpreviewpresentationproduction | Equivalent extents*2 property; unchanged host code; original lifecycle/render/group mutations retained plus centered-envelope mutation. |
+| Bound skill visibility/opportunity area missing from GUI stand-in | mobilepinnedtargetproduction, restricted-healing-production, mobile-opportunity-input, mobile-floating-joystick | Extract actual BoundMobileSkill/MobileOpportunityArea/MobileSkillVisible; explicit managed PlayerPrefs boundary; retain pointer/resource/captured-intent assertions and add remap ownership. |
+| Wrapped target-name GUI API absent | combat-opportunity-slot, mobile-basic-window-draw | Add RectOffset, GUIContent, CalcSize/CalcHeight, wrapping/clipping and GUI.Label overload boundaries; retain clock/opacity/availability/hit-area negative controls. |
+| HUD bound-skill method absent and old circular page-selector expectation | mobile-passive-status | Use actual binding method; replace only obsolete page primitive-count assertion, retaining every skill rim/readiness/resource/page-release assertion. Independent audit adds backing/underline/arrow geometry and missing-arrow mutation. |
+| iOS graphic choice/footer buttons no longer carry old text labels | reforgeselection | Deliver same recorded click to actual option/footer rectangles with enabled gate; all29 business check expressions unchanged. |
+| iOS extracted smith branch now calls price action wrapper | returning-counter-persistence | Supply GUI-boundary ServiceCostAction; enabled/camp/material conditions and actual service transaction execute; all14 persistence checks and7 desktop checks unchanged. |
+
+The first four groups explain12 new failures on each platform. The final two were additional iOS failures; the same Windows check names already failed in its historical baseline. Production Assets never changed in the fixture merge. Bounds.size equals extents×2; binding mapping/area/visibility execute extracted production methods. PlayerPrefs delivery and native GUI/text measurement remain explicit substitutes, not real-engine validation. Price/blank-button delivery preserves enabled-state gating and invokes actual services.
+
+## Business assertions retained
+
+The mechanical call-expression audit compares pre-fixture versus merged tests: ReforgeSelection29→29, ReturningCounterPersistence14→14, MobilePinnedTarget67→67 and desktop variant7→7; zero removed/replaced business expressions. Collection lifecycle64→65, opportunity input15→17, opportunity presentation30→31: existing expressions retained with additions. Only MobilePassiveStatus replaces one obsolete circular page-selector appearance expression, retaining all other24 expressions. The updated production UI has a rectangular page tab; skill circles/readiness, page release, target identity, vitals and resource assertions remain. See retained-assertion-audit.json for complete expressions. Independent audit adds backing+underline+arrow bounds and a compiled missing-arrow mutation, plus checks actual wrapping/clipping flags and a compiled clipped-name mutation. Original preview7 mutations remain and an eighth detects deleted centered-envelope behavior; hierarchy/cache mutation remains separate.
+
+## Independent test-only follow-up
+
+`codex/windows-level-band-tests` tested source `02cfaab1f1642672a2ea78849831f80b98971a54` passes **7/7 targeted checks**, no source changes. Production Assets tree `c277cfa8a0e41482a1bb6bc09f8e83e66323a798` is identical to exact merged main. This branch is not merged and has not run another full suite. Its subsequent evidence commit changes Docs only.
+
+Windows native reforge scenarios now assert 500 gold yields2 deduplicated unavailable choices; with2000 gold, actual20/30/50 targets cost510/1220/3240. Normal UI preview/commit checks all attack/defense/health, identity, rank4, variant, fixed target, exact one-time cost and780 remaining gold. Failed saves preserve money/item/selected quote; stale/cross-save quotes and beyond-role targets remain rejected. A level25 request on equipped20 rounds to20 and must reject without changing profile or file; an actual30 quote preserves variant, rarity, identity, preview attributes, exact charge and reloaded attributes. Every original protection remains; incorrect +5/exact-level numbers are adapted only to existing Windows10-level policy. Three compiled mutations still fail their specific business assertions; the fixed-target mutation retains the band-wrapper syntax so compilation succeeds before the assertion fails. iOS exact-level rules and tests are not altered.
+
+No Unity Editor, actual JsonUtility migration, rendered UI, GPU, platform package, Mac installation, simulator or device operation was performed.
