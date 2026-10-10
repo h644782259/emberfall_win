@@ -45,7 +45,7 @@ namespace Emberfall
             if(merchantMode==2)foreach(var gear in p.Profile.inventory)if(gear!=null&&!gear.locked&&!IsEquipped(gear))saleItems.Add(gear);
             var saleGems=new List<MechanicAttachment>();
             if(merchantMode==2)foreach(var gem in p.Profile.attachments)if(gem!=null)saleGems.Add(gem);
-            int count=merchantMode==0?1:merchantMode==1?mechanics.Length:saleItems.Count+saleGems.Count;
+            int count=merchantMode==0?3:merchantMode==1?mechanics.Length:saleItems.Count+saleGems.Count;
             if(merchantMode==2)merchantSelection=-1;
             else merchantSelection=Mathf.Clamp(merchantSelection,0,Mathf.Max(0,count-1));
             float contentHeight=l.GridHeight(count,true)+(merchantMode==1?((count+l.Columns-1)/l.Columns)*54:0);
@@ -57,6 +57,20 @@ namespace Emberfall
                 bool selected=false;
                 Fill(tile,selected?new Color(.12f,.22f,.24f):card);Border(tile,selected?gold:muted*.4f);
                 if(selected){Border(new Rect(tile.x+2*u,tile.y+2*u,tile.width-4*u,tile.height-4*u),gold);DrawIcon(new Rect(tile.xMax-25*u,tile.y+4*u,20*u,20*u),UIIconAtlas.Utility("confirm"),gold);}
+                if(merchantMode==0&&index>0)
+                {
+                    int quantity=index==1?1:5;
+                    var purchase=p.PrepareRefinementPurchase(MerchantServiceActive,quantity);
+                    Color tint=GameBalance.RarityColor(Rarity.Epic);
+                    DrawIcon(new Rect(tile.center.x-23*u,tile.y+6*u,46*u,46*u),UIIconAtlas.Utility("gem"),tint);
+                    Text(new Rect(tile.x+6*u,tile.y+52*u,tile.width-12*u,30*u),"装备洗练石 ×"+quantity,Mathf.RoundToInt(11*u),pale,false,true,TextAnchor.MiddleCenter);
+                    DrawPriceTint(new Rect(tile.x+8*u,tile.y+77*u,tile.width-16*u,20*u),quantity*ProgressionService.RefinementStonePrice,false,u,purchase!=null?gold:new Color(.98f,.28f,.24f));
+                    InspectRewardItem(new Rect(tile.x,tile.y,tile.width,96*u),new EntryRewardPreview{Key="merchant:refinement:"+quantity,Name="装备洗练石",Rarity=Rarity.Epic,Tint=tint,Icon=UIIconAtlas.Utility("gem"),Description="装备洗练石\n数量  "+quantity+"\n用于铁匠洗练，提高装备属性数值。"},true);
+                    string reason=p.Profile.refinementStones>999999-quantity?"洗练石已满":purchase==null?"金币不足":"购买";
+                    if(PrimaryButton(new Rect(tile.x+6*u,tile.y+100*u,tile.width-12*u,44*u),reason,gold,purchase!=null&&Time.unscaledTime>=merchantActionUntil)&&StartMerchantAction())
+                        Feedback(p.BuyAtMerchant(purchase,MerchantServiceActive),"购买成功 · 装备洗练石 +"+quantity);
+                    continue;
+                }
                 if(merchantMode==2&&index>=saleItems.Count)
                 {
                     var gem=saleGems[index-saleItems.Count];Color tint=GameBalance.RarityColor(gem.rarity);

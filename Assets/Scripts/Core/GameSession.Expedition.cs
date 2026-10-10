@@ -186,6 +186,7 @@ namespace Emberfall
             if(RoomChainRun!=null)return ConfirmRoomInterlude(index);
             if(ModeRun!=null)return ConfirmArenaBlessing(index);
             if (!InDungeon || IsDead || DungeonCleared || Enemies.Count > 0 || reinforcementQueue.Count>0 || !RunChoices.Choose(index)) return false;
+            if(!Progression.SaveDungeonCheckpoint())Notify(Progression.LastError);
             DungeonWave++; SpawnDungeonWave(); UpdateTimeScale();
             Notify(DungeonWave == TotalWaves ? "最终波 · 星蚀巨像" : "第 " + DungeonWave + " 波");
             return true;

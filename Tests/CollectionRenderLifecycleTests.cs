@@ -59,12 +59,12 @@ public static class CollectionRenderLifecycleTests
             Check(Camera.Renders==rendered,"repeated repaint advances neither motion nor render count");
         }
         Check(Camera.Renders>=199&&Camera.Renders<=201&&CombatModel.Builds==1&&RenderTexture.Instances==allocations+1,"ten seconds of motion remain20Hz with stable one-model/one-RT cache");
-        Check(animated.width==320&&animated.height==512&&animated.samples==1,"physical viewport cap and unsupported MSAA fallback use production allocation");
+        Check(animated.width==512&&animated.height==800&&animated.samples==1,"physical viewport cap and unsupported MSAA fallback use production allocation");
         Check(Live<Material>()==2&&Live<Texture2D>()==1&&Live<Light>()==4,"motion does not accumulate owned materials/textures/lights");
         preview.SetComposition(CollectionPreviewComposition.Back);Time.frameCount++;var prior=animated;Draw(preview);
         Check(CombatModel.Builds==1&&RenderTexture.Instances==allocations+1,"composition reuses mannequin and surface");
         preview.SetViewport(900,1200,false);Time.frameCount++;animated=Draw(preview);
-        Check(prior.Destroyed&&!prior.IsCreated()&&animated.width==576&&animated.height==768,"resize releases old RT before bounded replacement");
+        Check(prior.Destroyed&&!prior.IsCreated()&&animated.width==912&&animated.height==1200,"resize releases old RT before bounded replacement");
         int native=RenderTexture.Instances;preview.SetViewport(200,200,true);Draw(preview);
         Check(RenderTexture.Instances==native,"multiple viewport requests allocate at most one surface per frame");
         Time.frameCount++;animated=Draw(preview);Check(animated.width==208&&animated.height==208,"deferred viewport applies next frame");
@@ -177,7 +177,7 @@ namespace Emberfall
 {
     public enum HeroClass{Arcanist}public enum Rarity{Common}public enum EquipmentMechanic{None}public enum FashionSlot{Wings,Weapon}
     public class ItemData{public string id;public int level,upgradeLevel,mechanicVariant;public Rarity rarity;public EquipmentMechanic mechanic;}
-    public class FashionData{public string id;public FashionSlot slot;public Rarity rarity;}
+    public class FashionData{public string id;public FashionSlot slot;public Rarity rarity;public int upgradeRank;public Rarity VisualRarity=>rarity;}
     public class CombatModel:MonoBehaviour
     {
         public static bool ImportedGroups;public static int Builds;

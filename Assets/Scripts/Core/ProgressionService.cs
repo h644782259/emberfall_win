@@ -517,6 +517,7 @@ namespace Emberfall
         public bool CommitSkillStock(HeroClass hero,int count,float remaining,float period)
         {
             if(Profile.heroClass!=hero)return Fail("职业已变化，技能未释放。");
+            if(dungeonStageActive){TrackSkillStock(hero,count,remaining,period);return true;}
             var candidate=Snapshot();SkillStockRules.Normalize(candidate);candidate.skillStockVersion=1;
             int i=(int)hero;candidate.skillStockCounts[i]=count;candidate.skillStockRemaining[i]=remaining;candidate.skillStockPeriods[i]=period;
             string failure;if(!TryWriteAttachedProfile(candidate,out failure))return Fail(failure);
@@ -529,8 +530,63 @@ namespace Emberfall
             int i=(int)hero;Profile.skillStockCounts[i]=count;Profile.skillStockRemaining[i]=remaining;Profile.skillStockPeriods[i]=period;
         }
 
+        private bool dungeonStageActive;
+        public bool DungeonStageActive { get { return dungeonStageActive; } }
+        public void BeginDungeonStage() { if(!IsPracticeOnly)dungeonStageActive=true; }
+        public void DiscardDungeonStage() { dungeonStageActive=false; }
+        public void RecordDungeonKill(int gold,int experience,int potions)
+        {
+            if(gold<0||experience<0||potions<0)throw new ArgumentOutOfRangeException();
+            Profile.dungeonRewardRevision=1;
+            Profile.kills=(int)Math.Min(int.MaxValue,(long)Profile.kills+1);
+            Profile.dungeonGold=(int)Math.Min(MaximumGold,(long)Profile.dungeonGold+gold);
+            Profile.dungeonExperience=(int)Math.Min(int.MaxValue,(long)Profile.dungeonExperience+experience);
+            Profile.dungeonPotions=(int)Math.Min(999,(long)Profile.dungeonPotions+potions);
+        }
+        public bool RecordDungeonLoot(ItemData item)
+        {
+            if(item==null||string.IsNullOrWhiteSpace(item.id)||item.id.Length>80||!Enum.IsDefined(typeof(ItemSlot),item.slot)||!Enum.IsDefined(typeof(Rarity),item.rarity))return Fail("掉落装备无效。");
+            if(Profile.dungeonLoot.Exists(x=>x.id==item.id)||FindItem(item.id)!=null||Profile.pendingLoot.Exists(x=>x.id==item.id)||Profile.recoveryLoot.Exists(x=>x.id==item.id))return true;
+            if(Profile.inventory.Count+Profile.pendingLoot.Count+Profile.recoveryLoot.Count+Profile.dungeonLoot.Count>=MaximumRetainedEquipment)return Fail("装备保全空间已满，掉落保留在场景中。");
+            Profile.dungeonRewardRevision=1;Profile.dungeonLoot.Add(item);return true;
+        }
+        public bool SaveDungeonCheckpoint()
+        {
+            if(!dungeonStageActive){Save();return string.IsNullOrEmpty(LastError);}
+            var candidate=Snapshot();string failure;
+            if(!TryWriteAttachedProfile(candidate,out failure,true))return Fail(failure);
+            Profile=candidate;LastError=string.Empty;return true;
+        }
+        private static void ApplyDungeonRewards(GameProfile candidate)
+        {
+            long experience=(long)candidate.xp+candidate.dungeonExperience;
+            while(candidate.level<MaximumLevel&&experience>=GameBalance.XpToNext(candidate.level))
+            {experience-=GameBalance.XpToNext(candidate.level);candidate.level++;candidate.skillPoints+=GameBalance.SkillPointsGainedAtLevel(candidate.level);}
+            candidate.xp=candidate.level>=MaximumLevel?0:(int)experience;
+            candidate.gold=(int)Math.Min(MaximumGold,(long)candidate.gold+candidate.dungeonGold);
+            candidate.potions=Math.Min(99,candidate.potions+candidate.dungeonPotions);
+            foreach(var item in candidate.dungeonLoot)
+            {
+                if(candidate.inventory.Exists(x=>x.id==item.id)||candidate.pendingLoot.Exists(x=>x.id==item.id)||candidate.recoveryLoot.Exists(x=>x.id==item.id))continue;
+                if(item.mechanic!=EquipmentMechanic.None&&!candidate.attachments.Exists(x=>x.mechanic==item.mechanic))
+                    candidate.attachments.Add(new MechanicAttachment{id=Guid.NewGuid().ToString("N"),legacySourceId=item.id,mechanic=item.mechanic,level=item.level,rarity=item.rarity,variant=item.mechanicVariant,variantUnlocked=item.mechanicVariantUnlocked});
+                if(item.mechanic!=EquipmentMechanic.None&&!candidate.discoveredMechanics.Contains(item.mechanic))candidate.discoveredMechanics.Add(item.mechanic);
+                candidate.inventory.Add(item); // Existing visible overflow policy retains every earned item.
+            }
+            candidate.dungeonExperience=candidate.dungeonGold=candidate.dungeonPotions=0;candidate.dungeonLoot.Clear();
+            SynchronizeAutomaticSkills(candidate);
+        }
+        public bool FinishDungeonRewards()
+        {
+            if(!dungeonStageActive&&Profile.dungeonExperience==0&&Profile.dungeonGold==0&&Profile.dungeonPotions==0&&Profile.dungeonLoot.Count==0)return true;
+            int oldLevel=Profile.level;var candidate=Snapshot();
+            if(!CommitCandidate(candidate,completeDungeon:true))return false;
+            for(int level=oldLevel+1;level<=candidate.level;level++)RaiseLeveledUp(level);
+            return true;
+        }
         public void Save()
         {
+            if(dungeonStageActive)return;
             string failure;
             var candidate=Snapshot();
             if (TryWriteAttachedProfile(candidate, out failure))
@@ -548,9 +604,9 @@ namespace Emberfall
             }
         }
 
-        private bool TryWriteAttachedProfile(GameProfile profile, out string failure)
+        private bool TryWriteAttachedProfile(GameProfile profile, out string failure, bool checkpoint=false)
         {
-            if(IsPracticeOnly){failure=string.Empty;return true;}
+            if(IsPracticeOnly||dungeonStageActive&&!checkpoint){failure=string.Empty;return true;}
             lock (StorageGate)
             {
                 if (activeSlotDeleted || File.Exists(savePath + DeletionSuffix) ||
@@ -603,7 +659,7 @@ namespace Emberfall
                     throw new IOException("发现可恢复的临时存档，已保留且未覆盖。请先备份整个存档目录，再处理临时存档恢复。");
                 // Older readers must reject independent attachment investments
                 // and reward receipts instead of silently erasing unknown fields.
-                var save = new SaveFile { format = SaveFormat, version = profile.adventureRewardRevision>0?7:profile.inventory.Count>MaximumRetainedEquipment?6:profile.rewardInventoryRevision>0?5:profile.attachmentRevision>0?4:profile.chestRulesRevision>=2?3:profile.classStateRevision>0?2:1, profile = profile };
+                var save = new SaveFile { format = SaveFormat, version = profile.dungeonRewardRevision>0?8:profile.adventureRewardRevision>0?7:profile.inventory.Count>MaximumRetainedEquipment?6:profile.rewardInventoryRevision>0?5:profile.attachmentRevision>0?4:profile.chestRulesRevision>=2?3:profile.classStateRevision>0?2:1, profile = profile };
                 string json = PreserveOptionalReceiptNulls(JsonUtility.ToJson(save, true), profile);
                 if (Encoding.UTF8.GetByteCount(json) > MaximumSaveBytes)
                     throw new IOException("存档超过 4 MiB 安全大小，未覆盖原文件或备份。请保留现有文件。");
@@ -794,16 +850,18 @@ namespace Emberfall
             if (wings != null)
             {
                 int rank = (int)wings.rarity;
-                stats.MaxHealth *= 1f + WingHealthPercents[rank] / 100f;
-                stats.Armor *= 1f + WingArmorPercents[rank] / 100f;
-                stats.MoveSpeed *= 1f + WingMovePercents[rank] / 100f;
+                stats.MaxHealth *= 1f + (WingHealthPercents[rank]+5*wings.upgradeRank) / 100f;
+                stats.Armor *= 1f + (WingArmorPercents[rank]+4*wings.upgradeRank) / 100f;
+                stats.MoveSpeed *= 1f + (WingMovePercents[rank]+wings.upgradeRank) / 100f;
+                if(wings.upgradeRank>=2)stats.DamageReduction=1f-(1f-stats.DamageReduction)*(1f-.02f*(wings.upgradeRank-1));
             }
             FashionData weaponFashion = StrongestFashion(FashionSlot.Weapon);
             if (weaponFashion != null)
             {
-                float bonus = WeaponPercents[(int)weaponFashion.rarity] / 100f;
+                float bonus = (WeaponPercents[(int)weaponFashion.rarity]+5*weaponFashion.upgradeRank) / 100f;
                 stats.Damage *= 1f + bonus;
-                stats.CritChance = Math.Min(1f, stats.CritChance * (1f + bonus));
+                stats.CritChance = Math.Min(1f, stats.CritChance * (1f + (WeaponPercents[(int)weaponFashion.rarity]+3*weaponFashion.upgradeRank)/100f));
+                if(weaponFashion.upgradeRank>=2)stats.CritDamageBonus+=.05f*(weaponFashion.upgradeRank-1);
             }
             if (Profile.masteryRanks != null && Profile.masteryRanks.Length >= 3)
             {
@@ -956,7 +1014,7 @@ namespace Emberfall
 
         public bool CanReceiveProtectedLoot
         {
-            get { return Profile.inventory.Count + Profile.pendingLoot.Count + Profile.recoveryLoot.Count < MaximumRetainedEquipment; }
+            get { return Profile.inventory.Count + Profile.pendingLoot.Count + Profile.recoveryLoot.Count + Profile.dungeonLoot.Count < MaximumRetainedEquipment; }
         }
 
         public static int CombatTrialProgress(GameProfile profile)
@@ -1702,17 +1760,19 @@ namespace Emberfall
         // True only while publishing a successfully persisted draft candidate.
         // Nested non-draft transactions get their own false scope.
         internal bool IsApplyingBuildDraft { get; private set; }
-        private bool CommitCandidate(GameProfile candidate,bool buildDraft=false)
+        private bool CommitCandidate(GameProfile candidate,bool buildDraft=false,bool completeDungeon=false)
         {
             SkillStockRules.Normalize(Profile);
             candidate.skillStockVersion=Profile.skillStockVersion;
             candidate.skillStockCounts=(int[])Profile.skillStockCounts.Clone();
             candidate.skillStockRemaining=(float[])Profile.skillStockRemaining.Clone();
             candidate.skillStockPeriods=(float[])Profile.skillStockPeriods.Clone();
+            if(completeDungeon)ApplyDungeonRewards(candidate);
             MigrateOwnedRewards(candidate);
             string failure;
-            if (!TryWriteAttachedProfile(candidate, out failure)) return Fail(failure);
+            if (!TryWriteAttachedProfile(candidate, out failure,completeDungeon)) return Fail(failure);
             Profile = candidate; LastError = string.Empty;
+            if(completeDungeon)dungeonStageActive=false;
             bool previousDraft=IsApplyingBuildDraft;IsApplyingBuildDraft=buildDraft;
             try { RaiseChanged(); } finally { IsApplyingBuildDraft=previousDraft; }
             return true;
@@ -1752,7 +1812,7 @@ namespace Emberfall
         {
             FashionData best = null;
             foreach (FashionData fashion in Profile.fashions)
-                if (fashion != null && fashion.slot == slot && (best == null || fashion.rarity > best.rarity)) best = fashion;
+                if (fashion != null && fashion.slot == slot && (best == null || fashion.rarity > best.rarity || fashion.rarity==best.rarity&&fashion.upgradeRank>best.upgradeRank)) best = fashion;
             return best;
         }
 
@@ -2046,6 +2106,12 @@ namespace Emberfall
         public int HighestAdventureTier {get{return HighestCompletedAdventureTier(Profile);}}
         public bool CollectGroundSupplies(int gold,int potions) {
             if(gold<0||potions<0)return false;
+            if(dungeonStageActive)
+            {
+                int stagedGold=Math.Min(gold,Profile.groundGold),stagedPotions=Math.Min(potions,Profile.groundPotions);
+                Profile.groundGold-=stagedGold;Profile.groundPotions-=stagedPotions;Profile.dungeonRewardRevision=1;
+                Profile.dungeonGold=(int)Math.Min(MaximumGold,(long)Profile.dungeonGold+stagedGold);Profile.dungeonPotions=Math.Min(999,Profile.dungeonPotions+stagedPotions);return true;
+            }
             var candidate=Snapshot();int g=Math.Min(gold,candidate.groundGold),p=Math.Min(Math.Max(0,99-candidate.potions),Math.Min(potions,candidate.groundPotions));
             if(g==0&&p==0)return true;
             candidate.groundGold-=g;candidate.groundPotions-=p;
@@ -2297,8 +2363,9 @@ namespace Emberfall
             candidate.pendingFirstClearReward = !candidate.firstClearRewardClaimed;
             candidate.lastDungeonRewardId = rewardId;
             // Equipment is granted atomically when the completion chest is opened.
+            candidate.refinementStones=Math.Min(999999,candidate.refinementStones+DungeonRefinementStones(tier));
             candidate.lastDungeonRewardDetails=CaptureRewardPresentation(rewardId,Profile,candidate);
-            if (!CommitCandidate(candidate)) return false;
+            if (!CommitCandidate(candidate,completeDungeon:true)) return false;
             for (int level = oldLevel + 1; level <= candidate.level; level++) RaiseLeveledUp(level);
             return true;
         }
@@ -2322,8 +2389,9 @@ namespace Emberfall
                 candidate.pendingFirstClearReward=!candidate.firstClearRewardClaimed;
             }
             if(adventureMode>=-1){if(Profile.pendingFashionChest||Profile.pendingChestReveal)return Fail("请先收下已有宝箱。");NewChestQualification(candidate,completedTier,receipt);candidate.pendingChestMode=adventureMode;}
+            if(adventureMode>=-1)candidate.refinementStones=Math.Min(999999,candidate.refinementStones+DungeonRefinementStones(completedTier));
             candidate.lastModeRewardDetails=CaptureRewardPresentation(receipt,Profile,candidate);
-            if(!CommitCandidate(candidate))return false;
+            if(!CommitCandidate(candidate,completeDungeon:true))return false;
             for(int level=oldLevel+1;level<=candidate.level;level++)RaiseLeveledUp(level);
             return true;
         }
@@ -2486,6 +2554,7 @@ namespace Emberfall
         /// acquisition without consuming the drop; the caller must retain it or block departure.</summary>
         public bool CollectLoot(ItemData item)
         {
+            if(dungeonStageActive)return RecordDungeonLoot(item);
             if (item == null || string.IsNullOrWhiteSpace(item.id) || item.id.Length > 80 || !Enum.IsDefined(typeof(ItemSlot), item.slot) ||
                 !Enum.IsDefined(typeof(Rarity), item.rarity) || !Enum.IsDefined(typeof(EquipmentMechanic), item.mechanic))
                 return Fail("掉落装备无效。");
@@ -2999,7 +3068,7 @@ namespace Emberfall
 
         private static GameProfile CreateProfile(HeroClass heroClass)
         {
-            var profile = new GameProfile { heroClass = heroClass,chestRulesRevision=2, chapterDifficultyRewardRevision = 1, variantKnowledgeRevision = 1 };
+            var profile = new GameProfile { heroClass = heroClass,chestRulesRevision=2, chapterDifficultyRewardRevision = 1, variantKnowledgeRevision = 1, fashionQualityRevision = 1 };
             SkillStockRules.Normalize(profile);profile.skillStockVersion=1;
             profile.skillRanks[0] = 1;
             for (int slot = 0; slot < 3; slot++) AddStarterItem(profile, (ItemSlot)slot);
@@ -3122,9 +3191,9 @@ namespace Emberfall
                 if (frozenRecord && !emptyChestDraw && (data == null || data.profile == null || data.profile.pendingChestDraw == null))
                     throw new ArgumentException("冻结奖励内容不是有效对象；原文件保留。");
                 frozenRecord=frozenRecord||(data!=null&&data.profile!=null&&data.profile.pendingChestDraw!=null);
-                if(data!=null&&data.format==SaveFormat&&(data.version>7||data.profile!=null&&(data.profile.independentTierRevision>1||data.profile.adventureRewardRevision>1||data.profile.version>1||data.profile.rewardInventoryRevision>1||data.profile.attachmentRevision>1||data.profile.growthRevision>1||data.profile.classStateRevision>1||data.profile.chestRulesRevision>3||data.profile.pendingChestRulesRevision>3||data.profile.pendingChestDraw!=null&&data.profile.pendingChestDraw.rulesRevision>3)))
+                if(data!=null&&data.format==SaveFormat&&(data.version>8||data.profile!=null&&(data.profile.dungeonRewardRevision>1||data.profile.independentTierRevision>1||data.profile.adventureRewardRevision>1||data.profile.version>1||data.profile.rewardInventoryRevision>1||data.profile.attachmentRevision>1||data.profile.growthRevision>1||data.profile.classStateRevision>1||data.profile.chestRulesRevision>3||data.profile.pendingChestRulesRevision>3||data.profile.pendingChestDraw!=null&&data.profile.pendingChestDraw.rulesRevision>3)))
                 {error="future format";return false;}
-                if (data == null || data.format != SaveFormat || (data.version != 1 && data.version != 2 && data.version != 3 && data.version != 4 && data.version != 5 && data.version != 6 && data.version != 7) || data.profile == null || data.profile.version != 1)
+                if (data == null || data.format != SaveFormat || (data.version != 1 && data.version != 2 && data.version != 3 && data.version != 4 && data.version != 5 && data.version != 6 && data.version != 7 && data.version != 8) || data.profile == null || data.profile.version != 1)
                 { error = frozenRecord?FrozenRewardReadFailure+" unsupported format":"unsupported format"; return false; }
                 bool balanceChanged = HasLegacyEnhancement(data.profile.inventory) || HasLegacyEnhancement(data.profile.pendingLoot) || HasLegacyEnhancement(data.profile.recoveryLoot);
                 bool masteryMigrated = data.profile.masteryRevision < 1 && data.profile.masteryRanks != null && Array.Exists(data.profile.masteryRanks, rank => rank > 0);
@@ -3201,6 +3270,9 @@ namespace Emberfall
             profile.gold = Clamp(profile.gold, 0, MaximumGold);
             profile.potions = Clamp(profile.potions, 0, 99);
             profile.kills = Clamp(profile.kills, 0, int.MaxValue);
+            if(profile.dungeonExperience<0||profile.dungeonGold<0||profile.dungeonGold>MaximumGold||profile.dungeonPotions<0||profile.dungeonPotions>999)throw new ArgumentException("副本待结算奖励无效。");
+            if(profile.dungeonLoot==null)profile.dungeonLoot=new List<ItemData>();
+            if(profile.dungeonLoot.Count>MaximumRetainedEquipment)throw new ArgumentException("副本待结算装备超过容量。");
             profile.clearedRuns = Clamp(profile.clearedRuns, 0, 999999);
             profile.bestFloor = Clamp(profile.bestFloor, 0, 999999);
             profile.highestAdventureTier=Clamp(Math.Max(profile.highestAdventureTier,profile.bestFloor),0,100);
@@ -3343,6 +3415,13 @@ namespace Emberfall
             }
             if (recovery.Count > MaximumRetainedEquipment) throw new ArgumentException("临时保管栏超过安全容量；保留原存档，请从备份恢复。");
             profile.recoveryLoot = recovery;
+            var dungeonItems=new List<ItemData>();
+            foreach(var item in profile.dungeonLoot)
+            {
+                if(item==null||string.IsNullOrWhiteSpace(item.id)||item.id.Length>80||!Enum.IsDefined(typeof(ItemSlot),item.slot)||!Enum.IsDefined(typeof(Rarity),item.rarity))throw new ArgumentException("副本待结算装备无效。");
+                if(!ids.Add(item.id))continue;RepairItem(item,profile.heroClass);dungeonItems.Add(item);
+            }
+            profile.dungeonLoot=dungeonItems;
             NormalizeVariantKnowledge(profile);
             var discovered = new List<EquipmentMechanic>();
             if (profile.discoveredMechanics != null)
@@ -3375,6 +3454,7 @@ namespace Emberfall
                     int oldTier;string prefix="fashion-"+(int)fashion.slot+"-";
                     fashion.appearanceTier=fashion.id!=null&&fashion.id.StartsWith(prefix,StringComparison.Ordinal)&&int.TryParse(fashion.id.Substring(prefix.Length),out oldTier)&&oldTier>=0&&oldTier<=3?oldTier:(int)fashion.rarity;
                 }
+                fashion.upgradeRank=Clamp(fashion.upgradeRank,0,MaximumFashionRank);
                 if(fashion.appearanceTier<0||fashion.appearanceTier>3)fashion.appearanceTier=(int)fashion.rarity;
                 string expectedId = "fashion-" + (int)fashion.slot + "-" + fashion.appearanceTier;
                 if (!fashionIds.Add(expectedId)) continue;

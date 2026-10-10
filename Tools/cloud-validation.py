@@ -350,6 +350,8 @@ def main():
             'using System; internal static class Program { static void Main(string[] args) { Console.WriteLine(ChestCurrencyDeltaTests.Run(args[0])); } }'))
         checks.append(("reward-viewing-rules",[ROOT/"Assets/Scripts/Core/GameTypes.cs",ROOT/"Assets/Scripts/Core/ProgressionService.cs",ROOT/"Assets/Scripts/UI/ChestRevealPresentation.cs",ROOT/"Assets/Scripts/UI/ChestCompositeRules.cs",ROOT/"Assets/Scripts/UI/CollectionViewingState.cs",ROOT/"Assets/Scripts/UI/CollectionPreviewComposition.cs",ROOT/"Tests/ProgressionTests.cs",ROOT/"Tests/RewardViewingRulesTests.cs"],
             'using System; internal static class Program { static void Main() { Console.WriteLine(RewardViewingRulesTests.Run()); } }'))
+        checks.append(("dungeon-stage-rewards",[ROOT/"Assets/Scripts/Core/GameTypes.cs",ROOT/"Assets/Scripts/Core/ProgressionService.cs",ROOT/"Tests/ProgressionTests.cs",ROOT/"Tests/DungeonStageRewardTests.cs"],
+            'using System; internal static class Program { static void Main(string[] args) { Console.WriteLine(DungeonStageRewardTests.Run(args[0])); } }'))
         for _, sources, _ in checks:
             if ROOT / "Assets/Scripts/Core/RoomChainState.cs" in sources:
                 sources.append(ROOT / "Assets/Scripts/Core/RoomTactics.cs")

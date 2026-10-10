@@ -127,8 +127,8 @@ namespace Emberfall
         {
             pilotHasFashion = wings != null || weapon != null;
             if(pilotHasFashion)SetBlenderPilotVisible(false);
-            string wingId = wings == null ? null : wings.id;
-            string weaponId = weapon == null ? null : weapon.id;
+            string wingId = wings == null ? null : wings.id+":"+wings.upgradeRank+":"+(int)wings.VisualRarity;
+            string weaponId = weapon == null ? null : weapon.id+":"+weapon.upgradeRank+":"+(int)weapon.VisualRarity;
             if (wingId == fashionWingsId && weaponId == fashionWeaponId) return;
             InvalidatePilotRendererGroup(); // Component-only replacements must invalidate all display owners.
             fashionWingsId = wingId;

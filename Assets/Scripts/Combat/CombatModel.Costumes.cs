@@ -13,20 +13,21 @@ namespace Emberfall
         private void BuildFashionWingShape(FashionData wings,Color color)
         {
             fashionWings.localPosition += RearSilhouette.WingOffset(heroClass);
-            fashionWings.localScale=Vector3.one*CostumeRecipes.WingScale(wings.AppearanceRarity);
-            WingSilhouette style=CostumeRecipes.WingStyle(wings.AppearanceRarity);
-            Color primary=wings.AppearanceRarity==Rarity.Common?new Color(.7f,.76f,.82f):wings.AppearanceRarity==Rarity.Rare?new Color(.16f,.7f,1):wings.AppearanceRarity==Rarity.Epic?new Color(.7f,.32f,1):new Color(1,.58f,.18f);
-            int count=CostumeRecipes.WingFeathers(wings.AppearanceRarity);
+            fashionWings.localScale=Vector3.one*CostumeRecipes.WingScale(wings.VisualRarity)*(1f+.05f*wings.upgradeRank);
+            WingSilhouette style=CostumeRecipes.WingStyle(wings.VisualRarity);
+            Color primary=wings.VisualRarity==Rarity.Common?new Color(.7f,.76f,.82f):wings.VisualRarity==Rarity.Rare?new Color(.16f,.7f,1):wings.VisualRarity==Rarity.Epic?new Color(.7f,.32f,1):new Color(1,.58f,.18f);
+            primary=Color.Lerp(primary,Color.white,wings.upgradeRank*.1f);
+            int count=CostumeRecipes.WingFeathers(wings.VisualRarity)+wings.upgradeRank;
             for(int side=-1;side<=1;side+=2)
             {
                 for(int i=0;i<count;i++)
                 {
-                    bool crystal=(int)wings.AppearanceRarity>=(int)Rarity.Epic;
-                    Color accent=wings.AppearanceRarity==Rarity.Common?primary:i%3==0?primary:i%3==1?Color.Lerp(primary,Color.white,.45f):new Color(.18f,.95f,.85f);
+                    bool crystal=(int)wings.VisualRarity>=(int)Rarity.Epic;
+                    Color accent=wings.VisualRarity==Rarity.Common?primary:i%3==0?primary:i%3==1?Color.Lerp(primary,Color.white,.45f):new Color(.18f,.95f,.85f);
                     var feather=CostumeMesh(crystal?"Layered prismatic flight blade":"Swept flight feather",crystal?WingSilhouette.Crystal:WingSilhouette.Feather,fashionWings,
                         new Vector3(side*(.12f+i*.115f),.12f-i*.07f,-i*.025f),new Vector3(1,.78f-i*.06f,1),accent,crystal?VisualSurface.Crystal:VisualSurface.Cloth);
                     feather.localRotation=Quaternion.Euler(12,side*RearSilhouette.WingYaw(heroClass),-side*(RearSilhouette.WingSpread(heroClass)+i*12));
-                    int trails=CostumeRecipes.WingTrailCount(wings.AppearanceRarity,Application.isMobilePlatform,EffectPreferences.ReducedEffects);
+                    int trails=CostumeRecipes.WingTrailCount(wings.VisualRarity,Application.isMobilePlatform,EffectPreferences.ReducedEffects);
                     if(i==count-1&&trails>=2||i==count-2&&trails>=4)
                     {
                         var tip=NewJoint("Bounded wing glimmer trail",feather,new Vector3(0,.95f,0));var trail=tip.gameObject.AddComponent<TrailRenderer>();
@@ -45,7 +46,7 @@ namespace Emberfall
                 orbit.gameObject.AddComponent<FashionOrbit>();
             }
             if(wings.rarity==Rarity.Legendary)for(int side=-1;side<=1;side+=2)
-                CostumeMesh("Legendary flight rim",WingSilhouette.Crystal,fashionWings,new Vector3(side*.34f,.28f,-.055f),new Vector3(.28f,.38f,.24f),Color.Lerp(primary,Color.white,.55f),VisualSurface.Crystal).localRotation=Quaternion.Euler(0,0,-side*(32+(int)wings.AppearanceRarity*8));
+                CostumeMesh("Legendary flight rim",WingSilhouette.Crystal,fashionWings,new Vector3(side*.34f,.28f,-.055f),new Vector3(.28f,.38f,.24f),Color.Lerp(primary,Color.white,.55f),VisualSurface.Crystal).localRotation=Quaternion.Euler(0,0,-side*(32+(int)wings.VisualRarity*8));
             Part("Wing clasp",PrimitiveType.Sphere,Vector3.zero,new Vector3(.16f,.18f,.1f),Color.white,fashionWings,VisualSurface.Crystal);
         }
         private void BuildClassCostume()

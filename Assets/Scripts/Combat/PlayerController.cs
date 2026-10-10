@@ -24,6 +24,7 @@ namespace Emberfall
 
         private GameSession session;
         private StatBlock stats;
+        internal float BaseAttackDamage {get{return stats.Damage;}}
         private CombatModel model;
         private SkillTargetingController targeting;
         private SkillChargeController charge;

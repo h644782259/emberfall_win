@@ -65,8 +65,15 @@ namespace Emberfall
             internal ProgressionService Owner;
             internal int Gold,Materials,Potions;
             internal bool First;
+            internal int Stones;
+            public int RefinementStoneCount {get;internal set;}
             public EquipmentMechanic Mechanic {get;internal set;}
             public Rarity Rarity {get;internal set;}
+        }
+        public MerchantPurchaseQuote PrepareRefinementPurchase(bool atMerchant,int count=1)
+        {
+            if(!atMerchant||IsPracticeOnly||count<1||count>99||Profile.refinementStones>999999-count||Profile.gold<count*RefinementStonePrice)return null;
+            return new MerchantPurchaseQuote{Owner=this,Gold=Profile.gold,Stones=Profile.refinementStones,RefinementStoneCount=count};
         }
         public MerchantPurchaseQuote PrepareMerchantPurchase(EquipmentMechanic mechanic,bool atMerchant,Rarity rarity=Rarity.Epic)
         {
@@ -87,6 +94,13 @@ namespace Emberfall
         public bool BuyAtMerchant(MerchantPurchaseQuote quote,bool atMerchant)
         {
             if(!atMerchant||quote==null||quote.Owner!=this)return Fail("请在商人处核对并交易。");
+            if(quote.RefinementStoneCount>0)
+            {
+                if(quote.Gold!=Profile.gold||quote.Stones!=Profile.refinementStones||PrepareRefinementPurchase(atMerchant,quote.RefinementStoneCount)==null)
+                    return Fail("余额或洗练石数量已变化，请重新核对；尚未扣费。");
+                var purchase=Snapshot();purchase.gold-=quote.RefinementStoneCount*RefinementStonePrice;purchase.refinementStones+=quote.RefinementStoneCount;
+                return CommitCandidate(purchase,true);
+            }
             if(quote.Gold!=Profile.gold||quote.Materials!=Profile.mechanicMaterials||quote.Potions!=Profile.potions||quote.First!=(Profile.pendingFirstClearReward&&!Profile.firstClearRewardClaimed)||PrepareMerchantPurchase(quote.Mechanic,atMerchant,quote.Rarity)==null)
                 return Fail("余额、物品或兑换资格已变化，请重新核对；尚未扣费。");
             if(quote.Mechanic==EquipmentMechanic.None)return BuyPotion();
@@ -100,6 +114,60 @@ namespace Emberfall
             if(free){candidate.firstClearRewardClaimed=true;candidate.pendingFirstClearReward=false;}
             if(!CommitCandidate(candidate,true))return false;
             PublishRewardMoment(free?RewardMomentKind.FirstCore:RewardMomentKind.MechanicExchange,materials:-cost,attachment:Attachment(quote.Mechanic));return true;
+        }
+
+        public const int MaximumFashionRank=3;
+        public static int FashionUpgradeCost(FashionData fashion)
+        {return fashion==null||fashion.upgradeRank>=MaximumFashionRank?0:6*(fashion.upgradeRank+1);}
+        public static int FashionDismantleValue(FashionData fashion)
+        {return fashion==null?0:2+2*(int)fashion.AppearanceRarity+3*fashion.upgradeRank*(fashion.upgradeRank+1);}
+        public static string FashionBonus(FashionData fashion)
+        {
+            if(fashion==null)return "";
+            int q=(int)fashion.rarity,r=System.Math.Max(0,System.Math.Min(MaximumFashionRank,fashion.upgradeRank));
+            return fashion.slot==FashionSlot.Wings?
+                "生命 +"+(WingHealthPercents[q]+5*r)+"% · 防御 +"+(WingArmorPercents[q]+4*r)+"% · 移动速度 +"+(WingMovePercents[q]+r)+"%"+(r>=2?" · 受到伤害减免 +"+(2*(r-1))+"%":""):
+                "攻击 +"+(WeaponPercents[q]+5*r)+"% · 暴击几率 ×"+(100+WeaponPercents[q]+3*r)+"%"+(r>=2?" · 暴击伤害 +"+(5*(r-1))+"%":"");
+        }
+        public FashionData PreviewFashionUpgrade(string id)
+        {
+            var fashion=Profile.fashions.Find(f=>f!=null&&f.id==id);
+            if(fashion==null||fashion.upgradeRank>=MaximumFashionRank)return null;
+            return new FashionData{id=fashion.id,slot=fashion.slot,rarity=fashion.rarity,name=fashion.name,appearanceTier=fashion.appearanceTier,upgradeRank=fashion.upgradeRank+1};
+        }
+        public string FashionServiceLock(string id,bool dismantle,bool atSmith)
+        {
+            if(IsPracticeOnly||!atSmith)return "请在铁匠处操作";
+            var fashion=Profile.fashions.Find(f=>f!=null&&f.id==id);
+            if(fashion==null)return "请选择已拥有的时装";
+            if(dismantle)
+            {
+                if(EquippedFashion(fashion.slot)?.id==id)return "请先卸下时装";
+                return Profile.fashionThreads>999999-FashionDismantleValue(fashion)?"星纹已满":"";
+            }
+            return fashion.upgradeRank>=MaximumFashionRank?"已满阶":Profile.fashionThreads<FashionUpgradeCost(fashion)?"星纹不足":"";
+        }
+        public sealed class FashionServiceQuote
+        {
+            internal ProgressionService Owner;internal string Fingerprint;
+            public string Id {get;internal set;}
+            public bool Dismantle {get;internal set;}
+            public int Threads {get;internal set;}
+        }
+        public FashionServiceQuote PrepareFashionService(string id,bool dismantle,bool atSmith)
+        {
+            if(FashionServiceLock(id,dismantle,atSmith).Length>0)return null;
+            var fashion=Profile.fashions.Find(f=>f.id==id);
+            return new FashionServiceQuote{Owner=this,Fingerprint=BuildStateFingerprint(),Id=id,Dismantle=dismantle,Threads=dismantle?FashionDismantleValue(fashion):FashionUpgradeCost(fashion)};
+        }
+        public bool ApplyFashionService(FashionServiceQuote quote,bool atSmith)
+        {
+            if(quote==null||quote.Owner!=this||quote.Fingerprint!=BuildStateFingerprint())return Fail("时装或材料已变化，请重新核对。");
+            string reason=FashionServiceLock(quote.Id,quote.Dismantle,atSmith);if(reason.Length>0)return Fail(reason);
+            var candidate=Snapshot();var fashion=candidate.fashions.Find(f=>f.id==quote.Id);
+            if(quote.Dismantle){candidate.fashions.Remove(fashion);candidate.fashionThreads+=quote.Threads;}
+            else {candidate.fashionThreads-=quote.Threads;fashion.upgradeRank++;}
+            return CommitCandidate(candidate,true);
         }
     }
 }

@@ -9,6 +9,7 @@ namespace Emberfall
         private static int depth, actionDepth, resolving;
         private static readonly List<Action> pending = new List<Action>();
         private static readonly List<Action> afterAction = new List<Action>();
+        public static bool InAction { get { return depth != 0 || actionDepth != 0 || resolving != 0; } }
         public static void Begin() { depth++; }
         public static void Resolve(Action action)
         {

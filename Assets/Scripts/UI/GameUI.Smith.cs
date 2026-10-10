@@ -53,11 +53,12 @@ namespace Emberfall
             DrawIcon(new Rect(stones.x+4*u,stones.center.y-9*u,18*u,18*u),UIIconAtlas.Utility("gem"),stoneTint);
             Text(new Rect(stones.x+27*u,stones.y,stones.width-31*u,stones.height),p.Profile.refinementStones.ToString(),Mathf.RoundToInt(13*u),pale,true,false,TextAnchor.MiddleLeft);
             if(PopupCloseButton(new Rect(width-56*u,10*u,42*u,36*u))){smithPreviewMechanic=EquipmentMechanic.None;GUI.enabled=prior;ClosePanel();return;}
-            smithCategory=Mathf.Clamp(smithCategory,0,2);
-            string[] categories={"强化","镶嵌","洗练"};
+            smithCategory=Mathf.Clamp(smithCategory,0,3);
+            string[] categories={"强化","镶嵌","洗练","时装"};
             for(int i=0;i<categories.Length;i++)
                 if(TabButton(new Rect((16+i*116)*u,58*u,108*u,40*u),categories[i],smithCategory==i)&&smithCategory!=i){smithCategory=i;smithDetailScroll=Vector2.zero;}
             Rect body=new Rect(16*u,110*u,width-32*u,height-122*u);
+            if(smithCategory==3){DrawFashionSmith(body,u);GUI.enabled=prior;return;}
             if(smithCategory==1)
             {
                 DrawPhoneSocketService(body,u);

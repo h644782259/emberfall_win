@@ -189,7 +189,7 @@ namespace Emberfall
                 nextImpactTime = Time.time + .10f;
                 Vector3 push = CombatFx.Flat(direction).normalized;
                 if (push.sqrMagnitude < .01f) push = -transform.forward;
-                float strength = Mathf.Clamp(amount / Mathf.Max(1f, session.Progression.GetStats().Damage), critical ? 1.6f : .55f, critical ? 2.5f : 2f);
+                float strength = Mathf.Clamp(amount / Mathf.Max(1f, session.Player!=null?session.Player.BaseAttackDamage:1f), critical ? 1.6f : .55f, critical ? 2.5f : 2f);
                 model.Recoil(push, strength * (IsBoss ? .5f : 1f));
                 if (Time.time >= nextFlinchAllowed)
                 {

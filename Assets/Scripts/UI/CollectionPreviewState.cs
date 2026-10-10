@@ -21,9 +21,9 @@ namespace Emberfall
         }
         private readonly struct FashionSnapshot
         {
-            readonly bool present;readonly string id;readonly int slot,rarity;
-            public FashionSnapshot(FashionData item){present=item!=null;id=item==null?null:item.id;slot=item==null?0:(int)item.slot;rarity=item==null?0:(int)item.rarity;}
-            public bool Equals(FashionSnapshot other){return present==other.present&&id==other.id&&slot==other.slot&&rarity==other.rarity;}
+            readonly bool present;readonly string id;readonly int slot,rarity,appearance,upgrade;
+            public FashionSnapshot(FashionData item){present=item!=null;id=item==null?null:item.id;slot=item==null?0:(int)item.slot;rarity=item==null?0:(int)item.rarity;appearance=item==null?0:(int)item.VisualRarity;upgrade=item==null?0:item.upgradeRank;}
+            public bool Equals(FashionSnapshot other){return present==other.present&&id==other.id&&slot==other.slot&&rarity==other.rarity&&appearance==other.appearance&&upgrade==other.upgrade;}
         }
     }
     public sealed class CollectionPreviewState

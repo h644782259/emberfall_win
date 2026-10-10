@@ -250,7 +250,7 @@ namespace Emberfall
             if(fashion)
             {
                 float statsTop=0;
-                var detail=new EntryRewardPreview{AllowActions=MobileControls.Active,Key="fashion:"+appearance.id,Name=appearance.name,Rarity=appearance.rarity,AppearanceSlot=appearance.slot,Description=ProgressionService.FashionBonus(appearance.slot,appearance.rarity)};
+                var detail=new EntryRewardPreview{AllowActions=MobileControls.Active,Key="fashion:"+appearance.id,Name=appearance.name,Rarity=appearance.rarity,AppearanceSlot=appearance.slot,Description=ProgressionService.FashionBonus(appearance)};
                 inventoryDetailScroll=BeginTouchScroll("fashion-detail",new Rect(r.x+12*u,r.y+statsTop*u,r.width-24*u,r.height-(statsTop+8)*u),inventoryDetailScroll,new Rect(0,0,r.width-32*u,DrawRewardDetailRows(detail,r.width/u-32,u,false)*u));
                 DrawRewardDetailRows(detail,r.width/u-32,u,true);
                 EndTouchScroll();

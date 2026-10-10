@@ -305,6 +305,8 @@ namespace Emberfall
         public string name;
         // Preserve the collected visual identity while quality is upgraded.
         public int appearanceTier=-1;
+        public int upgradeRank;
+        public Rarity VisualRarity {get{return (Rarity)System.Math.Min(3,(int)AppearanceRarity+System.Math.Max(0,upgradeRank));}}
         public Rarity AppearanceRarity {get{return appearanceTier>=0&&appearanceTier<=3?(Rarity)appearanceTier:rarity;}}
     }
     public enum EnemyKind { Slime, Goblin, Wisp, Guardian }
@@ -516,6 +518,9 @@ namespace Emberfall
         public int hotbarPage;
         public int[] hotbarKeys = (int[])GameBalance.DefaultHotbarKeys.Clone();
         public int kills;
+        // Durable stage checkpoint; paid exactly once at the run result, never on a hit.
+        public int dungeonRewardRevision, dungeonExperience, dungeonGold, dungeonPotions;
+        public List<ItemData> dungeonLoot = new List<ItemData>();
         public int clearedRuns;
         public int bestFloor;
         public string lastModeRewardId;

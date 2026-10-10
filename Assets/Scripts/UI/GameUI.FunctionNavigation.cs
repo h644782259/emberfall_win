@@ -36,6 +36,7 @@ namespace Emberfall
             pendingSaveDeletion=null;rebindingSlot=-1;mobileBindingEditor=false;bindingDragSource=-1;bindingDragFinger=-1000;
             entryRewardPopup=null;entryRewardSelection=entryRewardHoverKey=null;entryRewardPopupVisible=false;
             inventoryComparisonOpen=false;inventoryFashionOpen=false;mobileInventoryDetail=false;
+            ReleaseFashionSmithPreview();
             smithPreviewMechanic=EquipmentMechanic.None;smithSocketPicker=false;masteryResetConfirm=false;
             merchantGemSaleConfirmation=EquipmentMechanic.None;if(presetSaleOpen)CancelPresetSale();
             merchantExchangeOpen=false;inventoryHubNpc=HubNpcKind.None;

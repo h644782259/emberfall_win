@@ -249,6 +249,7 @@ namespace Emberfall
         }
         private void OnDestroy()
         {
+            ReleaseFashionSmithPreview();
             ReleaseLootNotices();
             if(session!=null&&session.Progression!=null)session.Progression.Changed-=InvalidateAttention;
             if(attentionDot!=null)Destroy(attentionDot);
@@ -1830,6 +1831,7 @@ namespace Emberfall
 
         private void ClosePanel()
         {
+            if(smithFashionQuote!=null){ReleaseFashionSmithPreview();return;}
             if(CloseTopPopup())return;
             if(SmithServiceActive&&smithPreviewMechanic!=EquipmentMechanic.None){smithPreviewMechanic=EquipmentMechanic.None;return;}
             if(presetSaleOpen){CancelPresetSale();return;}

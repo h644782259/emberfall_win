@@ -16,22 +16,23 @@ namespace UnityEngine{
 }
 namespace Emberfall{
  public class PracticeRecordStub{public bool HasSupplier;public void Defeat(string name,bool supplier,bool last){}}
- public class EnemyController{public Transform transform=new Transform();public GameObject gameObject=new GameObject();public bool IsBoss;public EnemyKind Kind;public int DeathCalls;public void BeginDeath(){DeathCalls++;}}
+ public class EnemyController{public enum ThreatTier{Normal,Elite} public ThreatTier Tier;public Transform transform=new Transform();public GameObject gameObject=new GameObject();public bool IsBoss;public EnemyKind Kind;public int DeathCalls;public void BeginDeath(){DeathCalls++;}}
  public sealed partial class GameSession{
  public bool PracticeActive,HasStarted=true,CombatEnded,ChapterActive,InDungeon=true,changingZone,DungeonCleared;public PracticeRecordStub PracticeRecord=new PracticeRecordStub();
  public ProgressionService Progression;public List<EnemyController> Enemies=new List<EnemyController>();public List<GameObject> transientObjects=new List<GameObject>();
- public object ModeRun,RoomChainRun,waveRoutine;public int DungeonTier=1,wavePopulation=6;public Queue<int> reinforcementQueue=new Queue<int>();
+ public object ModeRun,RoomChainRun,waveRoutine;public int DungeonTier=1,wavePopulation=6,DungeonEntryLevel=1,runEnemyExperience,runPickupGold,RunPickupPotions;public Queue<int> reinforcementQueue=new Queue<int>();
  public int ExpeditionRecorded,ArenaRecorded,RoomRecorded,LootDelivered,ChapterFinalized,RoomFinalized,ArenaFinalized,WavesScheduled;
  bool RecordChapterDefeat(EnemyController e,out int xp){xp=112;return true;}
  void OnExpeditionEnemyKilled(EnemyController e){ExpeditionRecorded++;}void RecordArenaDefeat(EnemyController e){ArenaRecorded++;}void RecordRoomDefeat(EnemyController e){RoomRecorded++;}
  void LogSystem(string s){}void SpawnFloatingText(Vector3 p,string s,Color c){}
- void DeliverEnemyLoot(ItemData item,Vector3 at){if(item==null||string.IsNullOrEmpty(item.id))throw new Exception("real RollLoot missing identity");LootDelivered++;}
+ void DeliverEnemyLoot(ItemData item,Vector3 at){if(item==null||string.IsNullOrEmpty(item.id))throw new Exception("real RollLoot missing identity");LootDelivered++;Progression.RecordDungeonLoot(item);}
  void FinalizeChapterBoss(){ChapterFinalized++;}void FinalizeRoomChain(){RoomFinalized++;}void FinalizeArenaResult(){ArenaFinalized++;}
  void TrySpawnReinforcements(){}IEnumerator NextWave(){yield break;}object StartCoroutine(IEnumerator next){WavesScheduled++;return new object();}
 '''+method+'}}'
-core=['SafeSaveFlow','GameTypes','ProgressionService','ProgressionService.Attachments','ProgressionService.AutomaticGrowth','ProgressionService.Reforge','ReforgeQuote','ProgressionService.Chapter','ChapterProgression','RoomTactics','CombatBalance','HubTravelRules','MasteryCoreRuntime','CastFirstHitReceipt','TierRewardRules','TierRewardBand','ProgressionGoalState','AdventureResultPolicy']
+core=['CombatImpactBatch','SafeSaveFlow','GameTypes','ProgressionService','ProgressionService.Attachments','ProgressionService.AutomaticGrowth','ProgressionService.Reforge','ReforgeQuote','ProgressionService.Chapter','ChapterProgression','RoomTactics','CombatBalance','HubTravelRules','MasteryCoreRuntime','CastFirstHitReceipt','TierRewardRules','TierRewardBand','ProgressionGoalState','AdventureResultPolicy']
 with tempfile.TemporaryDirectory(prefix='enemy-kill-callback-fault-') as tmp:
  p=Path(tmp)
+ core+=['ProgressionService.Smith','ProgressionService.Trading']
  for name in core:(p/(name+'.cs')).write_text((root/'Assets/Scripts/Core'/(name+'.cs')).read_text())
  for name in ['ProgressionTests','EnemyKillCallbackFaultTests']:(p/(name+'.cs')).write_text((root/'Tests'/(name+'.cs')).read_text())
  (p/'Host.cs').write_text(fixture);(p/'Program.cs').write_text('System.Console.WriteLine(EnemyKillCallbackFaultTests.Run(args[0]));')

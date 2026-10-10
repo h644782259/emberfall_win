@@ -4,6 +4,10 @@ namespace Emberfall
     public partial class ProgressionService
     {
 
+        public const int RefinementStonePrice=50;
+        public static int DungeonRefinementStones(int tier)
+        {return 2+TierRewardBand.Of(tier);}
+
         public static int ChapterRefinementStones(ChapterNode node,int tier)
         {return node==ChapterNode.Redrock?3+Math.Max(1,Math.Min(10,tier))/3:1;}
         public static int ChapterRefinementStonesMinimum(ChapterNode node,int tier)
@@ -34,7 +38,7 @@ namespace Emberfall
             var current=FindItem(id);var cap=PreviewRefinementLimit(id);if(current==null||cap==null)return "请选择装备";
             if(current.attack>=cap.attack&&current.defense>=cap.defense&&current.health>=cap.health&&current.criticalChance>=cap.criticalChance&&current.criticalDamageBonus>=cap.criticalDamageBonus&&current.attackPercent>=cap.attackPercent)return "数值已满";
             if(Profile.refinementCount==int.MaxValue)return "洗练次数已达上限";
-            return Profile.refinementStones<1?"需要装备洗练石 · 赤岩断供主要产出":string.Empty;
+            return Profile.refinementStones<1?"需要装备洗练石 · 副本通关掉落／商店金币购买":string.Empty;
         }
         private static int RefinedValue(int value,int cap,Random random)
         {return value>=cap?value:Math.Min(cap,value+Math.Max(1,(int)Math.Ceiling((cap-value)*(.15+random.NextDouble()*.3)))) ;}

@@ -282,7 +282,7 @@ namespace Emberfall
         private ChapterResultSnapshot CaptureChapterResult(bool failed,string reason)
         {return new ChapterResultSnapshot(ActiveChapterNode,ActiveChapterDifficulty,chapterReceipt==null?DungeonTier:chapterReceipt.Tier,chapterEntryPotions,ChallengeRun,ChapterRoomIndex,(chapterFirstSealSeconds>=3?1:0)+(chapterSecondSealSeconds>=3?1:0),chapterFirstSealSeconds,chapterSecondSealSeconds,failed,reason,lastDamageSource,lastDamageAmount,Progression.ChapterKillExperienceEarned,MechanismEvidence.Snapshot());}
         private void FailChapter(string reason)
-        {if(!ChapterActive||ChapterFinished)return;ChapterResult=CaptureChapterResult(true,reason);ChapterRun.Fail();RunChoices.Reset();Progression.CancelChapterRun();Notify(reason);SuspendInputs();UpdateTimeScale();}
+        {if(!ChapterActive||ChapterFinished)return;ChapterResult=CaptureChapterResult(true,reason);ChapterRun.Fail();RunChoices.Reset();Progression.CancelChapterRun();if(!Progression.FinishDungeonRewards())Notify(Progression.LastError);Notify(reason);SuspendInputs();UpdateTimeScale();}
         private void FinalizeChapter()
         {ChapterResult=CaptureChapterResult(false,null);DungeonCleared=true;TrySettleChapterReward();LastRunSummary=BuildRunSummary(true);UpdateTimeScale();GameAudio.Play(SoundCue.Victory);}
         public bool TrySettleChapterReward()

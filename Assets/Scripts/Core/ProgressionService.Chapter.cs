@@ -72,7 +72,7 @@ namespace Emberfall
             detail.UnlockedDifficulty=highest>ChapterProgression.HighestCompletedDifficulty(Profile,receipt.Node)&&highest<2?highest+1:-1;
             detail.UnlockedNode=index<2&&!ChapterProgression.IsUnlocked(Profile,(ChapterNode)(index+1))&&ChapterProgression.IsUnlocked(candidate,(ChapterNode)(index+1))?index+1:-1;
             candidate.lastChapterRewardDetails=detail;
-            if(!CommitCandidate(candidate))return false;
+            if(!CommitCandidate(candidate,completeDungeon:true))return false;
             for(int level=oldLevel+1;level<=candidate.level;level++)RaiseLeveledUp(level);
             return true;
         }

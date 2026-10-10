@@ -53,9 +53,13 @@ namespace Emberfall
         }
         private void BuildWeaponFashionShape(FashionData fashion)
         {
-            Color accent=Color.Lerp(GameBalance.ClassColor(heroClass),GameBalance.RarityColor(fashion.AppearanceRarity),.55f);
-            WingSilhouette style=CostumeRecipes.WingStyle(fashion.AppearanceRarity);
-            if(fashion.AppearanceRarity==Rarity.Rare)BuildRareWeaponFashion(accent);
+            Color accent=Color.Lerp(GameBalance.ClassColor(heroClass),GameBalance.RarityColor(fashion.VisualRarity),.55f);
+            accent=Color.Lerp(accent,Color.white,fashion.upgradeRank*.12f);
+            for(int step=0;step<fashion.upgradeRank;step++)for(int side=-1;side<=1;side+=2)
+                CostumeMesh("Fashion ascended crystal "+step,WingSilhouette.Crystal,fashionWeapon,
+                    new Vector3(side*(.12f+step*.065f),.08f+step*.09f,.12f),Vector3.one*(.12f+step*.025f),accent,VisualSurface.Crystal);
+            WingSilhouette style=CostumeRecipes.WingStyle(fashion.VisualRarity);
+            if(fashion.VisualRarity==Rarity.Rare)BuildRareWeaponFashion(accent);
             // Small structural ornaments echo the back silhouette; the blade, string and core stay readable.
             if(swordRig!=null)
             {
@@ -75,9 +79,9 @@ namespace Emberfall
             {
                 Vector3 at=swordRig!=null?WeaponAnchorLocal(WeaponVisualAnchor.SwordGuard):staffRig!=null?WeaponAnchorLocal(WeaponVisualAnchor.StaffCore):new Vector3(0,0,.2f);
                 for(int side=-1;side<=1;side+=2)
-                    GearSuncrest("Legendary weapon suncrest",fashionWeapon,bowRig!=null?new Vector3(.03f,side*weaponStructure.BowReach*.78f,.20f):at+new Vector3(side*.12f,.035f,.025f),new Vector3(.24f,.23f,.20f),Color.Lerp(accent,Color.white,.4f),VisualSurface.Crystal).localRotation=Quaternion.Euler(0,0,-side*(18+(int)fashion.AppearanceRarity*7));
+                    GearSuncrest("Legendary weapon suncrest",fashionWeapon,bowRig!=null?new Vector3(.03f,side*weaponStructure.BowReach*.78f,.20f):at+new Vector3(side*.12f,.035f,.025f),new Vector3(.24f,.23f,.20f),Color.Lerp(accent,Color.white,.4f),VisualSurface.Crystal).localRotation=Quaternion.Euler(0,0,-side*(18+(int)fashion.VisualRarity*7));
             }
-            int rank=(int)fashion.AppearanceRarity;
+            int rank=(int)fashion.VisualRarity;
             if(staffRig!=null&&heroClass==HeroClass.Summoner)
             {
                 // Contract staff uses branching wood/leaf forms, distinct from the elementalist's crystal astrolabe.

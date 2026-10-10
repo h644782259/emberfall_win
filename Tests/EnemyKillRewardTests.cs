@@ -75,7 +75,7 @@ public static class EnemyKillRewardTests
             Check(ReferenceEquals(live, p.Profile) && p.CurrentSlotId == slot && p.SaveFilePath == path,
                 "reward callbacks retain the live profile and selected save identity");
             Check(p.Profile.kills == 9 && p.Profile.gold == 160 && p.Profile.level == finalLevel && p.Profile.xp == 13 &&
-                p.Profile.skillPoints + p.Profile.skillRanks[0] == GameBalance.SkillPointBudget(finalLevel), "every callback sees all final earned values together");
+                p.Profile.skillPoints == GameBalance.SkillPointBudget(finalLevel), "every callback sees all final earned values together");
             Check(string.IsNullOrEmpty(p.LastError) && File.ReadAllText(path + ".bak") == before,
                 "successful callbacks observe the durable complete reward and exact pre-kill backup");
         };
@@ -100,7 +100,7 @@ public static class EnemyKillRewardTests
         p.Changed += () => events.Add("changed");
         p.LeveledUp += level => events.Add("level:" + level);
         p.GrantEnemyKillReward(1, 1);
-        Check(p.Profile.level == 2 && p.Profile.xp == 0 && p.Profile.skillPoints == 0 &&
+        Check(p.Profile.level == 2 && p.Profile.xp == 0 && p.Profile.skillPoints == GameBalance.SkillPointBudget(2) &&
             string.Join(",", events) == "changed,level:2", "exact threshold grants one level, no duplicate starting point and one ordered callback");
         string beforeRoll = Files(p.SaveFilePath);
         ItemData ordinary = p.RollLoot(p.Profile.level, false);
@@ -134,7 +134,7 @@ public static class EnemyKillRewardTests
         p = Fresh(); var allLevels = new List<int>();
         p.LeveledUp += level => allLevels.Add(level);
         p.GrantEnemyKillReward(int.MaxValue, int.MaxValue);
-        Check(p.Profile.gold == 999999999 && p.Profile.level == ProgressionService.MaximumLevel && p.Profile.skillPoints + p.Profile.skillRanks[0] == ProgressionService.MaximumLevel - 1 &&
+        Check(p.Profile.gold == 999999999 && p.Profile.level == ProgressionService.MaximumLevel && p.Profile.skillPoints == GameBalance.SkillPointBudget(ProgressionService.MaximumLevel) &&
             p.Profile.xp == 0 && p.Profile.kills == 1, "int maximum XP can safely traverse the complete level range");
         Check(allLevels.SequenceEqual(Enumerable.Range(2, ProgressionService.MaximumLevel - 1)),
             "even a maximum-sized grant emits every earned level once and in order");
@@ -181,7 +181,7 @@ public static class EnemyKillRewardTests
         {
             Check(ReferenceEquals(live, p.Profile) && p.CurrentSlotId == slot && p.SaveFilePath == path,
                 "failed reward keeps the original live profile and selected slot");
-            Check(p.Profile.kills == 1 && p.Profile.gold == 85 && p.Profile.level == 3 && p.Profile.xp == 7 && p.Profile.skillPoints == 1 &&
+            Check(p.Profile.kills == 1 && p.Profile.gold == 85 && p.Profile.level == 3 && p.Profile.xp == 7 && p.Profile.skillPoints == GameBalance.SkillPointBudget(3) &&
                 p.LastError.StartsWith("保存失败") && Files(path) == blocked,
                 "failure callbacks see complete live earnings and a visible error with every storage artifact preserved");
         };

@@ -39,6 +39,7 @@ namespace Emberfall
         }
         private string BuildRunSummary(bool won,string explicitFailure=null)
         {
+            if(!won&&!Progression.FinishDungeonRewards())Notify(Progression.LastError);
             if(won)recapGoldLost=0;
             var blessings=new List<string>();
             foreach(RunBlessing blessing in RunChoices.Active)blessings.Add(Emberfall.RunChoices.Name(blessing));

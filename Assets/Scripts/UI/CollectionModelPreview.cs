@@ -195,7 +195,7 @@ namespace Emberfall
             {
                 model.SamplePreview(0,(CollectionPreviewAction)action,step*.25f);
                 foreach(var renderer in renderers)
-                    if(renderer!=null&&renderer.enabled&&renderer.gameObject.activeInHierarchy&&InComposition(renderer.transform)&&(!centerOnAvatar||IsBodyRenderer(renderer.transform)))
+                    if(renderer!=null&&renderer.enabled&&renderer.gameObject.activeInHierarchy&&InComposition(renderer.transform)&&(!centerOnAvatar||composition!=CollectionPreviewComposition.Full||IsBodyRenderer(renderer.transform)))
                     {if(!found){bounds=renderer.bounds;found=true;}else bounds.Encapsulate(renderer.bounds);}
             }
             if(!found)bounds=new Bounds(avatar.transform.position+Vector3.up*1.3f,new Vector3(1.3f,1.6f,1));

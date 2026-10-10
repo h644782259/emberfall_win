@@ -218,6 +218,7 @@ namespace Emberfall
 
         private void DiscardTransientAdventureForLoad()
         {
+            Progression.DiscardDungeonStage();
             EndHubNpcConversation();
             // Only after staging succeeded and the user chose how to handle the
             // current progress. This path intentionally never saves/settles loot.
@@ -257,6 +258,8 @@ namespace Emberfall
 
         private void BeginAdventure()
         {
+            // A checkpoint recovered after interruption still belongs to this character.
+            if(!Progression.FinishDungeonRewards()){Notify(Progression.LastError);return;}
             EndHubNpcConversation();
             if(!Progression.CollectGroundSupplies(Progression.Profile.groundGold,Progression.Profile.groundPotions)){Notify(Progression.LastError);return;}
             HasStarted = true;
@@ -303,6 +306,7 @@ namespace Emberfall
                 portalHintTimer -= Time.deltaTime;
                 if (!MobileControls.Active && NearPortal() && portalHintTimer <= 0) { Notify("沉星遗迹传送门 · 按 T 开始副本挑战"); portalHintTimer = 16f; }
             }
+            if(InDungeon)return;
             autosaveTimer += Time.deltaTime;
             if (autosaveTimer > 25) { autosaveTimer = 0; if(!DungeonRewardPending||TrySettleDungeonReward())Progression.Save(); }
         }
@@ -381,6 +385,7 @@ namespace Emberfall
 
         private bool ChangeZone(bool dungeon)
         {
+            if(!loadingSaveSnapshot&&InDungeon&&!Progression.FinishDungeonRewards()){Notify(Progression.LastError);return false;}
             // Preserve the old adventure before destroying anything. Staged load
             // and committed hub travel already supply a durable target snapshot.
             // Room retry sets this flag only after its own successful save preflight.
@@ -407,6 +412,8 @@ namespace Emberfall
             DungeonWave = 0;
             DungeonTier = enteringChapter ? chapterReceipt.Tier : Mathf.Clamp(SelectedDungeonTier, 1, MaximumDungeonTier);
             ResetExpedition(dungeon);
+            checkpointRoom=-1;
+            if(dungeon)Progression.BeginDungeonStage();
             if(ChapterActive){chapterPlan=ChapterRoomGeometry.Plan(ActiveChapterNode,ChapterRoomIndex,ChapterSeed);DungeonLayout=chapterPlan.Layout;}
             world = WorldBuilder.Build(dungeon ? ZoneKind.Dungeon : ZoneKind.Wilderness, DungeonLayout, Progression.HighestAdventureTier,CurrentHub,ChapterSeed);
             if(!dungeon)WorldBuilder.ApplyChapterLandmark(world,Progression.Profile.chapterCompletedMask);
@@ -516,16 +523,15 @@ namespace Emberfall
             if(InDungeon)gold=Mathf.RoundToInt(gold*(1f+.15f*TierRewardBand.Of(DungeonTier)));
             if(chapterKill)experience=chapterExperience;
             int potions=InDungeon&&(boss||Random.Range(0,100)<AdventureRewardRules.PotionChance(DungeonTier))?1+TierRewardBand.Of(DungeonTier)/2:0;
-            int beforeKillLevel=Progression.Profile.level,beforeKillXp=Progression.Profile.xp;
-            Progression.GrantEnemyKillReward(gold, experience, InDungeon, potions);
             if(InDungeon)
             {
-                long earned=Progression.Profile.xp-beforeKillXp;
-                for(int l=beforeKillLevel;l<Progression.Profile.level;l++)earned+=GameBalance.XpToNext(l);
-                runEnemyExperience=(int)System.Math.Min(int.MaxValue,(long)runEnemyExperience+System.Math.Max(0,earned));
+                Progression.RecordDungeonKill(gold,experience,potions);
+                runEnemyExperience=(int)System.Math.Min(int.MaxValue,(long)runEnemyExperience+experience);
+                runPickupGold=(int)System.Math.Min(int.MaxValue,(long)runPickupGold+gold);
+                RunPickupPotions=(int)System.Math.Min(int.MaxValue,(long)RunPickupPotions+potions);
             }
-            if(InDungeon)SpawnGroundSupplies(position,gold,potions);
-            LogSystem((InDungeon?"地面补给 · ":"+"+gold+" 金币 · ")+"+"+experience+" 经验");
+            else Progression.GrantEnemyKillReward(gold,experience);
+            if(!InDungeon)LogSystem("+"+gold+" 金币 · +"+experience+" 经验");
             if (Random.Range(0,100)<AdventureRewardRules.EnemyEquipmentChance(boss,enemy.Tier!=EnemyController.ThreatTier.Normal))
             {
                 ItemData loot = Progression.RollLoot(InDungeon&&!ChapterActive?DungeonEntryLevel:Progression.Profile.level, boss, InDungeon ? DungeonTier : 0);
@@ -535,7 +541,7 @@ namespace Emberfall
             transientObjects.RemoveAll(go => go == null);
             transientObjects.Add(enemy.gameObject);
             // Capture real callback mutations; unchanged rewards do not rotate backups.
-            Progression.Save();
+            if(!InDungeon)Progression.Save();
             if(ChapterActive)FinalizeChapterBoss();
             if(RoomChainRun!=null)FinalizeRoomChain();
             if(ModeRun!=null)FinalizeArenaResult();
@@ -546,6 +552,15 @@ namespace Emberfall
             }
         }
 
+        private int checkpointRoom=-1;
+        private void LateUpdate()
+        {
+            if(!InDungeon||BackgroundPaused||Progression==null||!Progression.DungeonStageActive)return;
+            int completed=ChapterActive&&ChapterRun.DoorUnlocked?ChapterRoomIndex:RoomChainRun!=null&&RoomChainRun.DoorUnlocked?RoomChainRun.Room.Index:-1;
+            if(completed<0||completed==checkpointRoom)return;
+            checkpointRoom=completed;
+            if(!Progression.SaveDungeonCheckpoint())Notify(Progression.LastError);
+        }
         private IEnumerator NextWave()
         {
             if (DungeonWave < TotalWaves)
@@ -560,6 +575,7 @@ namespace Emberfall
                     yield return null;
                 if (Player != owner || owner.CombatEpoch != epoch || !InDungeon || IsDead || changingZone)
                     yield break;
+                if(!Progression.SaveDungeonCheckpoint())Notify(Progression.LastError);
                 DungeonWave++;
                 SpawnDungeonWave();
                 Notify(DungeonWave == TotalWaves ? "最终波 · 星蚀巨像" : "第 " + DungeonWave + " 波");
@@ -632,6 +648,7 @@ namespace Emberfall
 
         public bool QuitToTitle(bool alreadySaved = false)
         {
+            if(!Progression.FinishDungeonRewards()){Notify(Progression.LastError);return false;}
             if (!alreadySaved && !SaveBeforeLeaving()) return false;
             SuspendInputs();
             StopAllCoroutines();
@@ -668,6 +685,7 @@ namespace Emberfall
         }
         private void OnLevelUp(int level)
         {
+            if(InDungeon)return; // Final settlement owns the level result; no combat heal/VFX burst.
             GameAudio.Play(SoundCue.LevelUp);
             var learned=new System.Collections.Generic.List<string>();
             for(int skill=0;skill<GameBalance.SkillCount;skill++)
@@ -702,7 +720,9 @@ namespace Emberfall
 
         private void DeliverEnemyLoot(ItemData loot, Vector3 position)
         {
-            if(loot!=null)SpawnGroundLoot(loot,position);
+            if(loot==null)return;
+            if(InDungeon&&Progression.RecordDungeonLoot(loot)){if(!runItemIds.Contains(loot.id))runItemIds.Add(loot.id);return;}
+            SpawnGroundLoot(loot,position);
         }
 
         public GroundLootPickup SpawnGroundLoot(ItemData item, Vector3 position)
@@ -791,7 +811,7 @@ namespace Emberfall
             if (!PreserveWorldLoot()) return false;
             // Settlement callbacks can change the live profile. The service checks
             // the complete document and skips only an already durable snapshot.
-            Progression.Save();
+            if(!Progression.SaveDungeonCheckpoint()){Notify(Progression.LastError);return false;}
             if (!string.IsNullOrEmpty(Progression.LastError)) { Notify(Progression.LastError); return false; }
             return true;
         }
