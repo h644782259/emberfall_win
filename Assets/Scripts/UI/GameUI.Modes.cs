@@ -368,7 +368,9 @@ namespace Emberfall
    if(adventureChapterSelected)
    {
     DrawInlineChapterEntry(AdventureRect(l.Details,u),u);
-    if(PrimaryButton(new Rect(l.Details.X*u,l.FooterY*u,l.Details.Width*u,48*u),"进入 "+ChapterDefinition.Get(session.SelectedChapterNode).Name,gold,ChapterProgression.IsUnlocked(session.Progression.Profile,session.SelectedChapterNode)))ConfirmSelectedChapter();
+    float chapterControlsWidth=session.SelectedChapterDifficulty==ChapterDifficulty.Heroic?340:164;
+    DrawChapterEntryControls(new Rect((l.X+inset)*u,l.FooterY*u,chapterControlsWidth*u,48*u),u);
+    if(PrimaryButton(new Rect((l.X+inset+chapterControlsWidth+8)*u,l.FooterY*u,(l.Frame.Width-2*inset-chapterControlsWidth-8)*u,48*u),"进入 "+ChapterDefinition.Get(session.SelectedChapterNode).Name,gold,ChapterProgression.IsUnlocked(session.Progression.Profile,session.SelectedChapterNode)))ConfirmSelectedChapter();
     return;
    }
    int mode=session.SelectedArenaMode,tier=session.SelectedDungeonTier;float contentWidth=l.Details.Width-18;

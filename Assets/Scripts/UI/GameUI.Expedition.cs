@@ -117,7 +117,8 @@ namespace Emberfall
         {
             if(!session.InDungeon||session.IsDead||session.Paused||panel!=Panel.None)return;
             float u=MobileControls.Active?TouchRatio:1f;
-            Rect exit=new Rect(width*.5f-56*u,6*u,112*u,40*u);
+            float exitY=MobileControls.Active?MobileControls.Layout.EncounterText.Y+MobileControls.Layout.EncounterText.Height+14:72;
+            Rect exit=new Rect(width-128*u,exitY*u,112*u,40*u);
             blockedRects.Add(exit);
             if(Button(exit,"退出副本",jade,!session.InCombat,"脱离战斗后可退出副本"))
             {
@@ -145,14 +146,15 @@ namespace Emberfall
                 BlockUITransition();return;
             }
             y+=54*u;
-            if(Button(new Rect(x,y,bw,44*u),"挑战下一阶",gold,session.CanChallengeNextTier))
+            bool showNextTier=!session.ChapterActive||session.ActiveChapterDifficulty==ChapterDifficulty.Heroic;
+            if(showNextTier&&Button(new Rect(x,y,bw,44*u),"挑战下一阶",gold,session.CanChallengeNextTier))
             {
                 session.SetUIBlocking(false);
                 if(session.ChallengeNextTier())panel=Panel.None;
                 else session.SetUIBlocking(true);
                 BlockUITransition();return;
             }
-            if(Button(new Rect(x+bw+8*u,y,bw,44*u),"返回营地",jade))
+            if(Button(new Rect(showNextTier?x+bw+8*u:x,y,showNextTier?bw:w.width-48*u,44*u),"返回营地",jade))
             {
                 session.SetUIBlocking(false);session.ReturnToCamp();
                 if(!session.InDungeon)panel=Panel.None;else session.SetUIBlocking(true);

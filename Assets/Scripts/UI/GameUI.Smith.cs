@@ -249,6 +249,7 @@ namespace Emberfall
                 before=new[]{gem.upgradeRank+" / 9",ascension+" / 3",(BuildCatalog.GemAttributeValue(gem.mechanic,gem.rarity,gem.upgradeRank)*100).ToString("0.#")+"%",ascension>0?"已解锁":"未解锁",(BuildCatalog.GemAscensionValue(gem.mechanic,ascension)*(BuildCatalog.MechanicSlot(gem.mechanic)==ItemSlot.Weapon&&gem.variant==1?150:100)).ToString("0.#")+"%"};
                 after=new[]{nextRank+" / 9",nextAscension+" / 3",(BuildCatalog.GemAttributeValue(gem.mechanic,nextRarity,nextRank)*100).ToString("0.#")+"%",nextAscension>0?"已解锁":"未解锁",(BuildCatalog.GemAscensionValue(gem.mechanic,nextAscension)*(BuildCatalog.MechanicSlot(gem.mechanic)==ItemSlot.Weapon&&gem.variant==1?150:100)).ToString("0.#")+"%"};
             }
+            if(gem.mechanic==EquipmentMechanic.WeaponRuin)labels[4]="暴击伤害加成";
             if(BuildCatalog.IsAttributeGem(gem.mechanic)&&BuildCatalog.MechanicSlot(gem.mechanic)==ItemSlot.Relic){labels[4]="连携效果";before[4]=BuildCatalog.RelicFormStrength(gem.mechanic,gem.variant,ascension);after[4]=BuildCatalog.RelicFormStrength(gem.mechanic,gem.variant,nextAscension);}
             if(!BuildCatalog.IsAttributeGem(gem.mechanic)&&!BuildCatalog.HasMechanicVariant(gem.mechanic)){labels[5]="共鸣强化";before[5]=ascension+"次";after[5]=nextAscension+"次";}
             GoalParagraph(ref y,width,u,(ascend?"升华":"升阶")+(capped?" · 已达上限":!gem.mounted?" · 镶嵌后生效":""),15,gold,true,draw);

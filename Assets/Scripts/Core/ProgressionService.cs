@@ -806,6 +806,7 @@ namespace Emberfall
                 stats.CritDamageBonus+=item.criticalDamageBonus;equipmentAttackPercent+=item.attackPercent;
             }
             stats.Damage*=1+equipmentAttackPercent;
+            float gemCritPenalty=0;
             if(Profile.attachments!=null)foreach(var a in Profile.attachments)if(a.mounted&&BuildCatalog.GemCompatible(a.mechanic,Profile.heroClass))
             {
                 if(BuildCatalog.IsAttributeGem(a.mechanic))
@@ -814,6 +815,12 @@ namespace Emberfall
                     int attribute=BuildCatalog.GemAttribute(a.mechanic);
                     ApplyGemAttribute(ref stats,attribute,value);
                     int ascension=Math.Max(0,a.ascensionRank);
+                    if(a.mechanic==EquipmentMechanic.WeaponRuin)
+                    {
+                        stats.CritDamageBonus+=BuildCatalog.GemAscensionValue(a.mechanic,ascension)*(a.variant==1?1.5f:1f);
+                        if(a.variant==1)gemCritPenalty+=.02f*ascension;
+                        continue;
+                    }
                     switch(BuildCatalog.MechanicSlot(a.mechanic))
                     {
                         case ItemSlot.Weapon:if(a.variant==1)stats.GemLowHealthDamage+=.075f*ascension;else stats.GemHealthyDamage+=.05f*ascension;break;
@@ -869,6 +876,7 @@ namespace Emberfall
                 stats.MaxHealth *= 1f + Clamp(Profile.masteryRanks[1], 0, MaximumMasteryRank) * .005f;
                 stats.Armor *= 1f + Clamp(Profile.masteryRanks[2], 0, MaximumMasteryRank) * .0075f;
             }
+            stats.CritChance=Math.Max(0,stats.CritChance-gemCritPenalty);
             return stats;
         }
 
@@ -1524,7 +1532,7 @@ namespace Emberfall
         {
             var state=new ClassBuildState
             {
-                initialized=true,heroClass=p.heroClass,skillRanks=p.skillRanks,masteryRanks=p.masteryRanks,
+                initialized=true,heroClass=p.heroClass,mountedGems=CaptureMountedGems(p,p.heroClass),skillRanks=p.skillRanks,masteryRanks=p.masteryRanks,
                 masteryCore=p.masteryCore,specialization=p.specialization,summonerRoute=p.summonerRoute,
                 equippedSkills=p.equippedSkills,hotbarKeys=p.hotbarKeys,hotbarPage=p.hotbarPage,
                 tutorialMask=p.tutorialMask,classTutorialCompleted=p.classTutorialCompleted,growthRevision=1,automaticGrowth=p.automaticGrowth,
@@ -1534,8 +1542,30 @@ namespace Emberfall
             };
             return JsonUtility.FromJson<ClassBuildState>(JsonUtility.ToJson(state,true));
         }
+        private static EquipmentMechanic[] CaptureMountedGems(GameProfile profile,HeroClass hero)
+        {
+            var gems=new List<EquipmentMechanic>();
+            foreach(var gem in profile.attachments)if(gem.mounted&&BuildCatalog.GemCompatible(gem.mechanic,hero))gems.Add(gem.mechanic);
+            return gems.ToArray();
+        }
+        private static EquipmentMechanic[] InitialMountedGems(GameProfile profile,HeroClass target)
+        {
+            var gems=new List<EquipmentMechanic>();var counts=new int[3];
+            for(int pass=0;pass<2;pass++)foreach(var gem in profile.attachments)
+            {
+                bool shared=BuildCatalog.GemCompatible(gem.mechanic,profile.heroClass);
+                if(!gem.mounted||!BuildCatalog.GemCompatible(gem.mechanic,target)||shared!=(pass==0))continue;
+                int slot=(int)BuildCatalog.MechanicSlot(gem.mechanic);
+                if(counts[slot]>=MaximumMountedGemsPerSlot)continue;
+                counts[slot]++;gems.Add(gem.mechanic);
+            }
+            return gems.ToArray();
+        }
         private static void RestoreClassState(GameProfile p,ClassBuildState state)
         {
+            if(state.mountedGems!=null)
+                foreach(var gem in p.attachments)
+                    if(BuildCatalog.GemCompatible(gem.mechanic,p.heroClass))gem.mounted=Array.IndexOf(state.mountedGems,gem.mechanic)>=0;
             p.skillRanks=state.skillRanks;p.masteryRanks=state.masteryRanks;p.masteryCore=state.masteryCore;
             p.specialization=state.specialization;p.summonerRoute=state.summonerRoute;
             p.equippedSkills=state.equippedSkills;p.hotbarKeys=state.hotbarKeys;p.hotbarPage=state.hotbarPage;
@@ -1594,13 +1624,14 @@ namespace Emberfall
             {
                 // First visit maps the already-legal shared skill indices and mastery budget.
                 // Equipment, economy, world progress, receipts and pending draws stay shared.
-                state=CaptureClassState(candidate);state.heroClass=target;
+                state=CaptureClassState(candidate);state.heroClass=target;state.mountedGems=InitialMountedGems(candidate,target);
                 state.specialization=ElementalistSpecialization.None;state.summonerRoute=SummonerRoute.Bonded;
                 state.tutorialMask=0;state.classTutorialCompleted=false;
                 state.progressionGoal=ProgressionGoalKind.None;state.progressionGoalItemId=null;state.progressionGoalMechanic=EquipmentMechanic.None;
                 state.automaticGrowth=true;state.growthRevision=1;
                 state.progressionGoalTier=1;state.progressionGoalLevel=0;state.progressionGoalMinimumRarity=Rarity.Common;
             }
+            if(state.mountedGems==null)state.mountedGems=InitialMountedGems(candidate,target);
             candidate.heroClass=target;RestoreClassState(candidate,state);ValidateProfile(candidate);
             LastError=string.Empty;
             return new ClassSwitchTransaction{Owner=this,Source=Profile,Candidate=candidate,Fingerprint=BuildStateFingerprint()};
@@ -3320,6 +3351,13 @@ namespace Emberfall
             item.mechanicVariant = item.mechanicVariantUnlocked && BuildCatalog.HasMechanicVariant(item.mechanic) ? Clamp(item.mechanicVariant, 0, 1) : 0;
             EnsureUpgradeBasis(item);
             if (string.IsNullOrWhiteSpace(item.name)) item.name = "无名" + ItemBaseName(item.slot, hero);
+            if(item.slot==ItemSlot.Weapon)
+                foreach(HeroClass sourceClass in Enum.GetValues(typeof(HeroClass)))
+                {
+                    string suffix=ItemBaseName(ItemSlot.Weapon,sourceClass);
+                    if(!item.name.EndsWith(suffix,StringComparison.Ordinal))continue;
+                    item.name=item.name.Substring(0,item.name.Length-suffix.Length)+ItemBaseName(ItemSlot.Weapon,hero);break;
+                }
             if (item.name.Length > 60) item.name = item.name.Substring(0, 60);
         }
 

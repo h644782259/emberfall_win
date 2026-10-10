@@ -154,7 +154,7 @@ namespace Emberfall
 
             }
             EnemyController boss=null;foreach(var e in session.Enemies)if(e!=null&&e.IsBoss&&!e.IsDead){boss=e;break;}
-            if(boss!=null){Rect bossBar=HubServicesAvailable?TouchRect(l.BossHealth.X,58,l.BossHealth.Width,l.BossHealth.Height):TouchRect(l.BossHealth);blockedRects.Add(bossBar);Bar(bossBar,boss.Health/Mathf.Max(1,boss.MaxHealth),new Color(.93f,.34f,.29f));}
+            if(boss!=null){Rect bossBar=TouchRect(l.BossHealth);Rect bossName=TouchRect(l.BossHealth.X,8,l.BossHealth.Width,20);blockedRects.Add(bossName);Text(bossName,boss.DisplayName,TouchFont(11),gold,true,false,TextAnchor.MiddleCenter);blockedRects.Add(bossBar);Bar(bossBar,boss.Health/Mathf.Max(1,boss.MaxHealth),new Color(.93f,.34f,.29f));}
             var targeting=session.Player==null?null:session.Player.GetComponent<SkillTargetingController>();
             var charge=session.Player==null?null:session.Player.GetComponent<SkillChargeController>();
             if(charge!=null&&charge.IsCharging)Bar(TouchRect(26,l.Height-40,128,5),charge.Progress,gold);

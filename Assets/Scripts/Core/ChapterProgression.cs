@@ -38,6 +38,7 @@ namespace Emberfall
         public static int LevelTier(int level){return Math.Max(1,Math.Min(10,level/10));}
         public static int AvailableTier(GameProfile profile,ChapterNode node,ChapterDifficulty difficulty=ChapterDifficulty.Normal)
         {
+            if(difficulty!=ChapterDifficulty.Heroic)return 1;
             int best=CompletedTier(profile,node,difficulty);return best==int.MaxValue?int.MaxValue:best+1;
         }
         public static int CompletedTier(GameProfile profile,ChapterNode node,ChapterDifficulty difficulty)

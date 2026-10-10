@@ -50,10 +50,10 @@ namespace Emberfall
                 if(GUI.Button(choice,GUIContent.none,invisibleButton)&&!current)
                 {
                     if(!string.IsNullOrEmpty(reason))classSwitchMessage=reason;
-                    else {bool saved=session.TrySwitchClass(hero);skillSection=2;classSwitchMessage=saved?"已切换为"+GameBalance.ClassName(hero):session.ClassSwitchError;}
+                    else {classSwitchOwner=session.Progression;classSwitchHero=session.Player;classSwitchOpen=true;PreviewClassSwitch(hero);BlockUITransition();return;}
                 }
             }
-            Text(new Rect(body.x,top+cardHeight+8*u,body.width,32*u),!string.IsNullOrEmpty(classSwitchMessage)?classSwitchMessage:!string.IsNullOrEmpty(reason)?reason:"选择职业即可切换",Mathf.RoundToInt(13*u),gold,false,true,TextAnchor.MiddleCenter);
+            Text(new Rect(body.x,top+cardHeight+8*u,body.width,32*u),!string.IsNullOrEmpty(classSwitchMessage)?classSwitchMessage:!string.IsNullOrEmpty(reason)?reason:"选择职业后确认切换",Mathf.RoundToInt(13*u),gold,false,true,TextAnchor.MiddleCenter);
         }
         private bool CloseClassSwitchSurface()
         {
@@ -86,7 +86,7 @@ namespace Emberfall
             if(!classSwitchOpen)return false;
             float unit=MobileControls.Active?TouchRatio:1;var layout=new MobileDialogLayout(width/unit,height/unit);
             blockedRects.Add(new Rect(0,0,width,height));
-            Box(BuildPlanRect(layout.Frame,unit),gold,false);Text(BuildPlanRect(layout.Header,unit),"营地 · 切换职业",Mathf.RoundToInt(21*unit),pale,true);
+            Box(BuildPlanRect(layout.Frame,unit),gold,false);Text(BuildPlanRect(layout.Header,unit),"确认切换职业",Mathf.RoundToInt(21*unit),pale,true);
             float bodyWidth=layout.Body.Width-18,bodyHeight=DrawClassSwitchContent(bodyWidth,unit,false);
             classSwitchScroll=BeginTouchScroll("class-switch",BuildPlanRect(layout.Body,unit),classSwitchScroll,new Rect(0,0,bodyWidth*unit,Mathf.Max(layout.Body.Height,bodyHeight)*unit));
             DrawClassSwitchContent(bodyWidth,unit,true);EndTouchScroll();
@@ -107,18 +107,13 @@ namespace Emberfall
             float y=4;var p=session.Progression;
             BuildPlanParagraph(ref y,bodyWidth,unit,"当前："+GameBalance.ClassName(p.Profile.heroClass),gold,draw,true);
             BuildPlanParagraph(ref y,bodyWidth,unit,"共享等级、装备与地图进度。每个职业独立保留配点、路线和快捷栏。首次切换按技能位置保留合法配点，不复制教程。",muted,draw);
-            BuildPlanParagraph(ref y,bodyWidth,unit,"真实装备及其数值、品质、强化保持；专属机制不会转成其他职业收益。切换保持生命比例与能量，冷却继续计时，不重复发奖。",muted,draw);
+            BuildPlanParagraph(ref y,bodyWidth,unit,"装备与宝石保留，武器名称随职业更新；各职业的宝石镶嵌分别恢复。切换不会重置生命比例、能量和冷却。",muted,draw);
             BuildPlanParagraph(ref y,bodyWidth,unit,classSwitchMessage,gold,draw,true);
             BuildPlanParagraph(ref y,bodyWidth,unit,session.ClassSwitchLockReason(),gold,draw);
-            for(int i=0;i<4;i++)
-            {
-                HeroClass hero=(HeroClass)i;bool current=hero==p.Profile.heroClass;
-                DraftButton(ref y,bodyWidth,unit,(current?"当前 · ":classSwitchPreview!=null&&classSwitchPreview.Target==hero?"已选择 · ":"预览 · ")+GameBalance.ClassName(hero),!current,draw,()=>PreviewClassSwitch(hero));
-            }
             if(classSwitchPreview!=null)
             {
                 BuildPlanParagraph(ref y,bodyWidth,unit,"切换后："+GameBalance.ClassName(classSwitchPreview.Target),gold,draw,true);
-                BuildPlanParagraph(ref y,bodyWidth,unit,classSwitchPreview.PreviewSummary,pale,draw);
+
             }
             return y;
         }

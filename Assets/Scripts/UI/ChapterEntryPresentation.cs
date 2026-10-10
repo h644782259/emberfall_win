@@ -66,7 +66,7 @@ namespace Emberfall
         public static string Result(ChapterResultSnapshot result)
         {
             if(result==null)return "章节记录暂不可用";
-            string text=ChapterDefinition.Get(result.Node).Name+" · "+DifficultyName(result.Difficulty)+" · 第 "+result.Tier+" 阶\n"+
+            string text=ChapterDefinition.Get(result.Node).Name+" · "+DifficultyName(result.Difficulty)+(result.Difficulty==ChapterDifficulty.Heroic?" · 第 "+result.Tier+" 阶":"")+"\n"+
                 "携带药剂 "+result.EntryPotions+"\n\n";
             if(result.Failed)return text+"止步房间 "+(result.Room+1)+" / "+ChapterDefinition.RoomCount(result.Node)+"\n"+
                 (result.Node==ChapterNode.ForestCourt?"封印 "+result.Seals+"/2 · 一 "+result.FirstSealSeconds.ToString("0.0")+"s · 二 "+result.SecondSealSeconds.ToString("0.0")+"s\n":"")+

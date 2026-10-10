@@ -995,11 +995,12 @@ namespace Emberfall
                 if (enemy != null && enemy.IsBoss && !enemy.IsDead) { boss = enemy; break; }
             }
             if (boss == null) return;
-            Rect bossBar = new Rect((width - 462) * .5f, 114, 462, 67);
+            float bossWidth=Mathf.Clamp(width-860,160,462);
+            Rect bossBar = new Rect((width-bossWidth)*.5f,8,bossWidth,58);
             blockedRects.Add(bossBar);
             Box(bossBar, new Color(1f, .4f, .32f));
-            Text(new Rect(bossBar.x + 14, bossBar.y + 9, 432, 25), boss.DisplayName + "  /  遗迹首领", 16, gold, true, false, TextAnchor.MiddleCenter);
-            Bar(new Rect(bossBar.x + 17, bossBar.y + 44, 428, 8), boss.Health / Mathf.Max(1, boss.MaxHealth), new Color(.89f, .33f, .28f));
+            Text(new Rect(bossBar.x + 14, bossBar.y + 8, bossBar.width-28, 25), boss.DisplayName, 16, gold, true, false, TextAnchor.MiddleCenter);
+            Bar(new Rect(bossBar.x + 17, bossBar.y + 40, bossBar.width-34, 8), boss.Health / Mathf.Max(1, boss.MaxHealth), new Color(.89f, .33f, .28f));
         }
 
         private void DrawHotbar()

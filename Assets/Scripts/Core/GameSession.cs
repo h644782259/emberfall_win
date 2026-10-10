@@ -20,7 +20,7 @@ namespace Emberfall
         public float ArenaRadius { get { return InDungeon ? 18f : 22f; } }
         public bool DungeonCleared { get; private set; }
         public int PendingLootCount { get { return pendingLoot.Count; } }
-        public string ZoneName { get { return InDungeon ? ModeName + (ChapterActive?" · 第 "+DungeonTier+" 阶":" · Lv"+AdventureRewardRules.DungeonLevel(DungeonTier)) : HubTravelRules.Name(CurrentHub); } }
+        public string ZoneName { get { return InDungeon ? ModeName + (ChapterActive?(ActiveChapterDifficulty==ChapterDifficulty.Heroic?" · 第 "+DungeonTier+" 阶":""):" · Lv"+AdventureRewardRules.DungeonLevel(DungeonTier)) : HubTravelRules.Name(CurrentHub); } }
         public string Notification
         {
             get

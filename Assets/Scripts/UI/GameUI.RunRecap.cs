@@ -215,7 +215,7 @@ namespace Emberfall
             DrawIcon(new Rect(header.x,header.y+2*unit,iconSize*unit,iconSize*unit),UIIconAtlas.Utility(snapshot!=null&&snapshot.Won?"confirm":"skills"),accent);
             string title=snapshot==null?"战斗复盘":snapshot.Won?(snapshot.ModeName.Length>0?"挑战完成":"遗迹通关"):"本次止步";
             Text(new Rect(header.x+(iconSize+12)*unit,header.y,header.width-(iconSize+126)*unit,32*unit),title,Mathf.RoundToInt((mobile?23:28)*unit),pale,true);
-            string location=snapshot==null?"":snapshot.InDungeon?(snapshot.ModeName.Length>0?snapshot.ModeName+"  ·  ":"")+(session.ChapterActive?"第 "+snapshot.Tier+" 阶":"Lv"+AdventureRewardRules.DungeonLevel(snapshot.Tier))+"  ·  "+snapshot.Wave+" / "+snapshot.TotalWaves+(snapshot.ModeName.Length>0?" 阶段":" 波"):"原野探索";
+            string location=snapshot==null?"":snapshot.InDungeon?(snapshot.ModeName.Length>0?snapshot.ModeName+"  ·  ":"")+(session.ChapterActive?(session.ActiveChapterDifficulty==ChapterDifficulty.Heroic?"第 "+snapshot.Tier+" 阶":ChapterEntryPresentation.DifficultyName(session.ActiveChapterDifficulty)):"Lv"+AdventureRewardRules.DungeonLevel(snapshot.Tier))+"  ·  "+snapshot.Wave+" / "+snapshot.TotalWaves+(snapshot.ModeName.Length>0?" 阶段":" 波"):"原野探索";
             Text(new Rect(header.x+(iconSize+12)*unit,header.y+34*unit,header.width-(iconSize+20)*unit,22*unit),location,Mathf.RoundToInt(13*unit),muted);
             Rule(frame.x+16*unit,frame.y+(mobile?61:78)*unit,frame.width-32*unit,accent*.5f);
             Rect viewport=RecapRect(layout.Viewport,unit);

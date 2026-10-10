@@ -39,15 +39,17 @@ namespace Emberfall
         public bool CanRetryChapter {get{return HasStarted&&InDungeon&&ChapterFinished&&ChapterRun.Failed&&Player!=null&&chapterReceipt!=null&&chapterReceipt.SavePath==Progression.SaveFilePath&&!enteringChapter&&!changingZone&&lastChapterRetryFrame!=Time.frameCount;}}
         public bool RetryFailedChapter()
         {return CanRetryChapter&&RestartChapterAttempt();}
-        private bool RestartChapterAttempt()
+        private bool CanAdvanceChapterTier {get{return ChapterFinished&&ChapterRun.Difficulty==ChapterDifficulty.Heroic&&!ChapterRun.Failed&&!ChapterRewardPending&&chapterReceipt!=null&&chapterReceipt.SavePath==Progression.SaveFilePath&&!enteringChapter&&chapterRetryTier<int.MaxValue&&ChapterProgression.CanEnter(Progression.Profile,ChapterRun.Node,ChapterRun.Difficulty,chapterRetryTier+1);}}
+        private bool RestartChapterAttempt(int? targetTier=null)
         {
             if(!SaveBeforeLeaving())return false;
             ChapterRunReceipt receipt;
-            if(!Progression.TryBeginChapterNode(ChapterRun.Node,ChapterRun.Difficulty,chapterRetryTier,out receipt))
+            if(!Progression.TryBeginChapterNode(ChapterRun.Node,ChapterRun.Difficulty,targetTier??chapterRetryTier,out receipt))
             {Notify(Progression.LastError);return false;}
             // A new receipt invalidates all callbacks from the failed attempt. Seed and
             // the admitted tactic are frozen, independent of mutable selection controls.
             lastChapterRetryFrame=Time.frameCount;
+            chapterRetryTier=receipt.Tier;
             chapterReceipt=receipt;ChapterRun=new ChapterCombatRun(receipt.Node,receipt.Difficulty,chapterRetrySeed);
             chapterEntryPotions=Progression.Profile.potions;chapterFirstSealSeconds=chapterSecondSealSeconds=0;
             ChapterResult=null;chapterBossDeathFrame=-1;chapterResultSkipped=false;
@@ -58,7 +60,7 @@ namespace Emberfall
                 IsDead=false;Paused=false;uiBlocking=false;
                 if(ChapterFinished)return false;
                 if(chapterRetryTactic.HasValue)RunChoices.RestoreChapterTactic(chapterRetryTactic.Value);
-                Notify("已按原条件从节点起点重试 · "+ChapterObjectiveStatus);return true;
+                Notify((targetTier.HasValue?"挑战第 "+receipt.Tier+" 阶":"已按原条件从节点起点重试")+" · "+ChapterObjectiveStatus);return true;
             }
             catch(System.Exception error){IsDead=false;FailChapter("重试生成异常："+error.Message);return false;}
             finally {enteringChapter=false;changingZone=false;UpdateTimeScale();}

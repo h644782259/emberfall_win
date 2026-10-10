@@ -97,7 +97,8 @@ namespace Emberfall
             AdventureStatus=new Area(12,ipad?140.4f:86,188,76);
             // Transient notices replace this left-side information slot, never the battlefield.
             Notice=AdventureStatus;
-            EncounterText=new Area(Width-(ipad?238:172),ipad?76:60,164,18);BossHealth=new Area(Width-(ipad?238:172),ipad?97:81,164,5);
+            EncounterText=new Area(Width-(ipad?238:172),ipad?76:60,164,18);float bossWidth=Math.Min(280,Math.Max(48,Math.Min(Width*.3f,2*(Catalog.X-Width*.5f-12))));
+            BossHealth=new Area(Width*.5f-bossWidth*.5f,32,bossWidth,6);
             CombatView=ChooseCombatView(Width*.5f-12,Height*.3f-32,96,64);
         }
 
