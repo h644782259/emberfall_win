@@ -173,6 +173,7 @@ namespace Emberfall.Editor
                     name + ": unopened qualification persists without a phantom frozen draw");
                 gold = restored.Profile.gold;
                 int threads = restored.Profile.fashionThreads, materials = restored.Profile.mechanicMaterials;
+                int stones = restored.Profile.refinementStones;
                 bool adventureChest = restored.Profile.pendingAdventureChest;
                 int chestMode = restored.Profile.pendingChestMode, chestTier = restored.Profile.pendingChestTier;
                 Check(!string.IsNullOrEmpty(restored.OpenDungeonChest()) && string.IsNullOrEmpty(restored.LastError),
@@ -181,9 +182,23 @@ namespace Emberfall.Editor
                 int expectedChestMaterials = adventureChest
                     ? AdventureRewardRules.ChestMaterials(chestMode, chestTier, receiptId) : 1;
                 if (restored.LastChestReward.duplicateGem) expectedChestMaterials += AdventureRewardRules.DuplicateGemMaterials;
-                Check(restored.Profile.gold > gold && restored.Profile.fashionThreads > threads &&
-                    restored.Profile.mechanicMaterials == materials + expectedChestMaterials && restored.Profile.pendingChestReveal,
-                    name + ": guaranteed resources and committed reveal are present");
+                var chestReceipt = restored.LastChestReward;
+                bool validReward = chestReceipt.rulesRevision >= 3
+                    ? chestReceipt.primaryKind >= 1 && chestReceipt.primaryKind <= 6 &&
+                        restored.Profile.gold == gold + chestReceipt.goldDelta &&
+                        restored.Profile.fashionThreads == threads + chestReceipt.threadsDelta &&
+                        restored.Profile.mechanicMaterials == materials + chestReceipt.materialsDelta &&
+                        restored.Profile.refinementStones == stones + chestReceipt.refinementStonesDelta &&
+                        (chestReceipt.primaryKind == 1 && chestReceipt.equipmentIds != null && chestReceipt.equipmentIds.Length == 1 ||
+                         chestReceipt.primaryKind == 2 && restored.Profile.fashions.Exists(f => f.name == chestReceipt.name) ||
+                         chestReceipt.primaryKind == 4 && restored.Profile.attachments.Exists(a => a.mechanic == chestReceipt.gemMechanic) ||
+                         chestReceipt.primaryKind == 3 && chestReceipt.materialsDelta > 0 ||
+                         chestReceipt.primaryKind == 5 && chestReceipt.refinementStonesDelta > 0 ||
+                         chestReceipt.primaryKind == 6 && chestReceipt.threadsDelta > 0)
+                    : restored.Profile.gold > gold && restored.Profile.fashionThreads > threads &&
+                        restored.Profile.mechanicMaterials == materials + expectedChestMaterials;
+                Check(validReward && restored.Profile.pendingChestReveal,
+                    name + ": current chest reward and committed reveal are present");
                 gold = restored.Profile.gold; threads = restored.Profile.fashionThreads; materials = restored.Profile.mechanicMaterials;
                 Check(restored.Load() && restored.LastChestReward.id == receiptId && restored.Profile.pendingChestDraw == null,
                     name + ": durable reward survives restart without a frozen draw");
