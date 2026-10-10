@@ -45,7 +45,7 @@ namespace Emberfall
         public const int InventoryCapacity = 256;
         public const int MaximumSavedEquipment = 4098; // Two reserved clear-reward slots; new pickups still stop at 4096.
         public const int MaximumRetainedEquipment = 4096; // Visible overflow; bounded by the save byte limit as well.
-        public const int MaximumUpgrade = MaximumLevel;
+        public const int MaximumUpgrade = CombatBalance.MaximumUpgradeRank;
         public int CurrentUpgradeLimit {get{return Clamp(Profile.level,1,MaximumUpgrade);}}
         public const int PotionPrice = 20;
         public const int PendingLootCapacity = 24;
@@ -87,7 +87,7 @@ namespace Emberfall
         }
 
         public static int WeaponFashionPercent(Rarity rarity) { return WeaponPercents[(int)rarity]; }
-        private const int MaximumGold = 999999999;
+        internal const int MaximumGold = 999999999;
         private const int MaximumEquipmentStat = 10000;
         private const int MaximumEquipmentHealth = 100000;
         private const string SaveFormat = "emberfall-character";
@@ -209,13 +209,14 @@ namespace Emberfall
                 // Migration is written before selecting/publishing the loaded role.
                 // A failed save leaves the active role and durable reward flags intact.
                 string migrationFailure;
-                bool migrationRequired=ChapterProgression.BackfillDifficultyRewards(loaded);
+                bool migrationRequired=ChapterProgression.BackfillDifficultyRewards(loaded)||loaded.enhancementMigrationPending||loaded.chapterTierMigrationPending;
                 if(loaded.fashionQualityRevision<1){loaded.fashionQualityRevision=1;migrationRequired=true;}
                 if(loaded.rewardInventoryRevision<1){loaded.rewardInventoryRevision=1;migrationRequired=true;}
                 if(loaded.skillStockVersion<1){SkillStockRules.Normalize(loaded);loaded.skillStockVersion=1;migrationRequired=true;}
                 if(loaded.variantKnowledgeRevision<1){loaded.variantKnowledgeRevision=1;migrationRequired=true;}
                 if (migrationRequired && !TryWriteProfile(loaded, candidatePath, false, out migrationFailure))
                     return Fail(migrationFailure);
+                loaded.enhancementMigrationPending=false;loaded.chapterTierMigrationPending=false;
                 if (currentSlotId != normalized) collectedLootIds.Clear();
                 SelectSlotPath(normalized);
                 attachedSaveExists = true;
@@ -1744,7 +1745,7 @@ namespace Emberfall
         private static void NewChestQualification(GameProfile candidate,int tier,string id)
         {
             candidate.chestRulesRevision=SingleChestRulesRevision;
-            candidate.adventureRewardRevision=1;candidate.pendingAdventureChest=true;candidate.pendingChestMode=-1;candidate.pendingChestGemSource=false;
+            candidate.adventureRewardRevision=1;candidate.pendingAdventureChest=true;candidate.pendingChestMode=-1;candidate.pendingChestGemSource=false;candidate.pendingChestChapterSource=false;
             candidate.pendingFashionChest=true;candidate.pendingChestTier=TierRewardRules.ClampTier(tier);
             candidate.pendingChestRulesRevision=SingleChestRulesRevision;candidate.pendingChestLegacyGoldProtection=false;
             candidate.pendingChestQualificationId=id;candidate.pendingChestDraw=null;
@@ -1767,7 +1768,9 @@ namespace Emberfall
             if(qualityRoll<0||qualityRoll>=100)throw new ArgumentOutOfRangeException("qualityRoll");
             var r=new ChestReward{rulesRevision=3,rewardKind=ChestRewardKind.SingleChest,id=id,choice=-1,materialKind=RewardMaterialKind.StarAshFragment,primaryCount=1};
             bool legendary=qualityRoll<4||profile.legendaryEquipmentMisses>=AdventureRewardRules.LegendaryPityChests-1;
-            r.primaryKind=legendary||qualityRoll<40?1:qualityRoll>=95?7:profile.pendingChestGemSource?(qualityRoll<75?4:3):qualityRoll<70?3:qualityRoll<85?2:5;
+            bool fashion=AdventureRewardRules.ChestFashion(profile.pendingChestMode,profile.pendingChestChapterSource);
+            bool reforge=AdventureRewardRules.ChestAffixReforge(profile.pendingChestMode,profile.pendingChestChapterSource);
+            r.primaryKind=legendary||qualityRoll<40?1:qualityRoll>=95&&reforge?7:profile.pendingChestGemSource?(qualityRoll<75?4:3):qualityRoll<70?3:qualityRoll<85&&fashion?2:5;
             r.primaryRarity=legendary?Rarity.Legendary:Rarity.Epic;
             if(r.primaryKind==1)r.primarySlot=(int)AdventureRewardRules.EquipmentSlot(profile.pendingChestMode,profile.pendingChestMode==3?slotRoll:0);
             else if(r.primaryKind==2)
@@ -2007,7 +2010,7 @@ namespace Emberfall
             candidate.gold=(int)Math.Min(MaximumGold,(long)candidate.gold+g);candidate.potions=Math.Min(99,candidate.potions+p);
             return CommitCandidate(candidate);
         }
-        public int UnlockedChapterTier(ChapterNode node){return ChapterProgression.IsUnlocked(Profile,node)?ChapterProgression.AvailableTier(Profile,node):0;}
+        public int UnlockedChapterTier(ChapterNode node,ChapterDifficulty difficulty=ChapterDifficulty.Normal){return ChapterProgression.CanEnter(Profile,node,difficulty)?ChapterProgression.AvailableTier(Profile,node,difficulty):0;}
         public int UnlockedAdventureTier(int mode) { int i=Clamp(mode+1,0,4); return Math.Min(100,1+(Profile.adventureBestTiers!=null && Profile.adventureBestTiers.Length==5?Profile.adventureBestTiers[i]:0)); }
         public int HighestUnlockedAdventureTier {get{return Math.Min(AdventureRewardRules.MaximumDungeonIndex(Profile.level),HighestAdventureTier+1);}}
         public bool RecordTutorialEvidence(int bit)
@@ -2446,31 +2449,32 @@ namespace Emberfall
             return CommitCandidate(candidate);
         }
 
+        public bool LastUpgradeSucceeded {get;private set;}
         public bool Upgrade(string id)
         {
-            ItemData item = FindItem(id);
-            if (item == null) return Fail("找不到这件装备。");
-            int rank = SlotUpgradeRank(item.slot);
-            if (rank >= CurrentUpgradeLimit) return Fail("已达到当前角色等级的强化上限 +"+CurrentUpgradeLimit+"；角色升级后可继续强化。");
-            int cost = UpgradeCost(item);
-            if (Profile.gold < cost) return Fail("金币不足，部位强化需要 " + cost + " 金币。");
-            ItemData equipped = Equipped(item.slot);
-            ItemData oldEquipped = equipped == null ? null : PreviewUpgrade(equipped, equipped.upgradeLevel);
-            int oldGold = Profile.gold;
-            Profile.gold -= cost;
-            Profile.slotUpgradeRanks[(int)item.slot] = rank + 1;
-            if (equipped != null) { EnsureUpgradeBasis(equipped); ApplyUpgradeRank(equipped, rank + 1); }
-            string failure;
-            if (!TryWriteAttachedProfile(Profile, out failure))
-            {
-                Profile.gold = oldGold;
-                Profile.slotUpgradeRanks[(int)item.slot] = rank;
-                if (equipped != null) RestoreUpgradeState(equipped, oldEquipped);
-                return Fail(failure);
-            }
-            LastError = string.Empty;
-            RaiseChanged();
-            return true;
+            int seed=Profile.equipmentUpgradeAttempts;
+            unchecked{foreach(char c in CurrentSlotId??SaveFilePath)seed=seed*31+c;foreach(char c in id??"")seed=seed*31+c;}
+            return ApplyUpgradeAttempt(id,new System.Random(seed).Next(100));
+        }
+        private bool ApplyUpgradeAttempt(string id,int roll)
+        {
+            LastUpgradeSucceeded=false;
+            if(IsPracticeOnly)return Fail("请在铁匠处强化装备。");
+            ItemData item=FindItem(id);if(item==null)return Fail("找不到这件装备。");
+            int rank=SlotUpgradeRank(item.slot);
+            if(rank>=CurrentUpgradeLimit)return Fail(rank>=MaximumUpgrade?"已达到强化上限 +20。":"已达到当前角色等级的强化上限 +"+CurrentUpgradeLimit+"。");
+            if(Profile.equipmentUpgradeAttempts==int.MaxValue)return Fail("强化次数已达上限。");
+            int cost=UpgradeCost(item);if(Profile.gold<cost)return Fail("金币不足，部位强化需要 "+cost+" 金币。");
+            if(roll<0||roll>=100)return Fail("强化结果无效。");
+            bool success=roll<CombatBalance.UpgradeSuccessPercent(rank+1);
+            var candidate=Snapshot();candidate.gold-=cost;candidate.equipmentUpgradeAttempts++;
+            if(success)candidate.slotUpgradeRanks[(int)item.slot]=rank+1;
+            var equippedId=item.slot==ItemSlot.Weapon?candidate.weaponId:item.slot==ItemSlot.Armor?candidate.armorId:candidate.relicId;
+            var equipped=candidate.inventory.Find(x=>x.id==equippedId);
+            if(equipped!=null){EnsureUpgradeBasis(equipped);ApplyUpgradeRank(equipped,candidate.slotUpgradeRanks[(int)item.slot]);}
+            if(!CommitCandidate(candidate,true))return false;
+            LastUpgradeSucceeded=success;
+            return success||Fail("强化失败，等级保持 +"+rank+"；已消耗 "+cost+" 金币。");
         }
 
         /// <summary>Compatibility entry point for old UI callers. Training now
@@ -2483,7 +2487,7 @@ namespace Emberfall
         private static void RestoreUpgradeState(ItemData item, ItemData state)
         {
             item.attack = state.attack; item.defense = state.defense; item.health = state.health;
-            item.upgradeLevel = state.upgradeLevel; item.upgradeBaseInitialized = state.upgradeBaseInitialized;
+            item.upgradeLevel = state.upgradeLevel;item.enhancementRevision=state.enhancementRevision; item.upgradeBaseInitialized = state.upgradeBaseInitialized;
             item.balanceRevision = state.balanceRevision;
             item.baseAttack = state.baseAttack; item.baseDefense = state.baseDefense; item.baseHealth = state.baseHealth;
             item.upgradeAnchorLevel = state.upgradeAnchorLevel; item.upgradeAnchorAttack = state.upgradeAnchorAttack;
@@ -2499,7 +2503,7 @@ namespace Emberfall
                 id = item.id, name = item.name, slot = item.slot, rarity = item.rarity, level = item.level,
                 mechanic = item.mechanic, locked = item.locked,
                 mechanicVariant = item.mechanicVariant, mechanicVariantUnlocked = item.mechanicVariantUnlocked, balanceRevision = item.balanceRevision,
-                attack = item.attack, defense = item.defense, health = item.health, upgradeLevel = item.upgradeLevel,
+                attack = item.attack, defense = item.defense, health = item.health, upgradeLevel = item.upgradeLevel,enhancementRevision=item.enhancementRevision,
                 criticalChance=item.criticalChance,criticalDamageBonus=item.criticalDamageBonus,attackPercent=item.attackPercent,statRollRevision=item.statRollRevision,
                 upgradeBaseInitialized = item.upgradeBaseInitialized,
                 baseAttack = item.baseAttack, baseDefense = item.baseDefense, baseHealth = item.baseHealth,
@@ -2560,7 +2564,8 @@ namespace Emberfall
 
         private static void EnsureUpgradeBasis(ItemData item)
         {
-            item.upgradeLevel = Clamp(item.upgradeLevel, 0, MaximumUpgrade);
+            bool migrating=item.enhancementRevision<1;
+            item.upgradeLevel = Clamp(item.upgradeLevel, 0, migrating?100:MaximumUpgrade);
             item.attack = Clamp(item.attack, 0, MaximumEquipmentStat);
             item.defense = Clamp(item.defense, 0, MaximumEquipmentStat);
             item.health = Clamp(item.health, 0, MaximumEquipmentHealth);
@@ -2568,36 +2573,40 @@ namespace Emberfall
             item.attackPercent=float.IsNaN(item.attackPercent)||float.IsInfinity(item.attackPercent)?0:Math.Max(0,Math.Min(.12f,item.attackPercent));
             item.criticalDamageBonus=float.IsNaN(item.criticalDamageBonus)||float.IsInfinity(item.criticalDamageBonus)?0:Math.Max(0,Math.Min(.20f,item.criticalDamageBonus));
             bool old = item.balanceRevision < 1;
-            bool validOld = item.upgradeBaseInitialized && item.upgradeAnchorLevel >= 0 && item.upgradeAnchorLevel <= MaximumUpgrade &&
+            bool validOld = item.upgradeBaseInitialized && item.upgradeAnchorLevel >= 0 && item.upgradeAnchorLevel <= 100 &&
                 ValidUpgradeBasis(item.baseAttack, item.upgradeAnchorAttack, item.upgradeAnchorLevel, 1, MaximumEquipmentStat) &&
                 ValidUpgradeBasis(item.baseDefense, item.upgradeAnchorDefense, item.upgradeAnchorLevel, 1, MaximumEquipmentStat) &&
                 ValidUpgradeBasis(item.baseHealth, item.upgradeAnchorHealth, item.upgradeAnchorLevel, 2, MaximumEquipmentHealth);
             bool validNew = item.upgradeBaseInitialized && item.baseAttack >= 0 && item.baseAttack <= MaximumEquipmentStat &&
                 item.baseDefense >= 0 && item.baseDefense <= MaximumEquipmentStat && item.baseHealth >= 0 && item.baseHealth <= MaximumEquipmentHealth &&
-                item.attack == CombatBalance.UpgradeValue(item.baseAttack, item.upgradeLevel, 1, MaximumEquipmentStat) &&
-                item.defense == CombatBalance.UpgradeValue(item.baseDefense, item.upgradeLevel, 1, MaximumEquipmentStat) &&
-                item.health == CombatBalance.UpgradeValue(item.baseHealth, item.upgradeLevel, 2, MaximumEquipmentHealth);
-            if (!old && validNew) return;
+                item.attack == (migrating?CombatBalance.LegacyUpgradeValue(item.baseAttack,item.upgradeLevel,1,MaximumEquipmentStat):CombatBalance.UpgradeValue(item.baseAttack,item.upgradeLevel,1,MaximumEquipmentStat)) &&
+                item.defense == (migrating?CombatBalance.LegacyUpgradeValue(item.baseDefense,item.upgradeLevel,1,MaximumEquipmentStat):CombatBalance.UpgradeValue(item.baseDefense,item.upgradeLevel,1,MaximumEquipmentStat)) &&
+                item.health == (migrating?CombatBalance.LegacyUpgradeValue(item.baseHealth,item.upgradeLevel,2,MaximumEquipmentHealth):CombatBalance.UpgradeValue(item.baseHealth,item.upgradeLevel,2,MaximumEquipmentHealth));
+            if (!old && validNew && !migrating) return;
+            if (!old && validNew) { /* Keep verified original bases while converting the curve. */ }
+            else
             if (old && validOld) { /* Preserve the saved unenhanced item, not compounded inflation. */ }
             else
             {
-                item.baseAttack = old ? RecoverUpgradeBase(item.attack, item.upgradeLevel, 1) : RecoverLinearBase(item.attack, item.upgradeLevel, 1);
-                item.baseDefense = old ? RecoverUpgradeBase(item.defense, item.upgradeLevel, 1) : RecoverLinearBase(item.defense, item.upgradeLevel, 1);
-                item.baseHealth = old ? RecoverUpgradeBase(item.health, item.upgradeLevel, 2) : RecoverLinearBase(item.health, item.upgradeLevel, 2);
+                item.baseAttack = old ? RecoverUpgradeBase(item.attack, item.upgradeLevel, 1) : RecoverLinearBase(item.attack, item.upgradeLevel, 1,migrating);
+                item.baseDefense = old ? RecoverUpgradeBase(item.defense, item.upgradeLevel, 1) : RecoverLinearBase(item.defense, item.upgradeLevel, 1,migrating);
+                item.baseHealth = old ? RecoverUpgradeBase(item.health, item.upgradeLevel, 2) : RecoverLinearBase(item.health, item.upgradeLevel, 2,migrating);
             }
             item.upgradeBaseInitialized = true; item.balanceRevision = 1;
             item.upgradeAnchorLevel = 0;
             item.upgradeAnchorAttack = item.baseAttack; item.upgradeAnchorDefense = item.baseDefense; item.upgradeAnchorHealth = item.baseHealth;
+            if(migrating)item.upgradeLevel=CombatBalance.ConvertLegacyUpgradeRank(item.upgradeLevel);
+            item.enhancementRevision=1;
             ApplyUpgradeRank(item, item.upgradeLevel);
         }
 
-        private static int RecoverLinearBase(int value, int rank, int minimumIncrease)
+        private static int RecoverLinearBase(int value, int rank, int minimumIncrease,bool legacy=false)
         {
             int low = 0, high = value, best = 0;
             while (low <= high)
             {
                 int middle = low + (high - low) / 2;
-                if (CombatBalance.UpgradeValue(middle, rank, minimumIncrease, int.MaxValue) <= value) { best = middle; low = middle + 1; }
+                if ((legacy?CombatBalance.LegacyUpgradeValue(middle,rank,minimumIncrease,int.MaxValue):CombatBalance.UpgradeValue(middle,rank,minimumIncrease,int.MaxValue)) <= value) { best = middle; low = middle + 1; }
                 else high = middle - 1;
             }
             return best;
@@ -2851,7 +2860,7 @@ namespace Emberfall
 
         private static GameProfile CreateProfile(HeroClass heroClass)
         {
-            var profile = new GameProfile { heroClass = heroClass,chestRulesRevision=2, chapterDifficultyRewardRevision = 1, variantKnowledgeRevision = 1, fashionQualityRevision = 1 };
+            var profile = new GameProfile { chapterTierRevision=1,equipmentEnhancementRevision=1,heroClass = heroClass,chestRulesRevision=2, chapterDifficultyRewardRevision = 1, variantKnowledgeRevision = 1, fashionQualityRevision = 1 };
             SkillStockRules.Normalize(profile);profile.skillStockVersion=1;
             profile.skillRanks[0] = 1;
             for (int slot = 0; slot < 3; slot++) AddStarterItem(profile, (ItemSlot)slot);
@@ -2974,7 +2983,7 @@ namespace Emberfall
                 if (frozenRecord && !emptyChestDraw && (data == null || data.profile == null || data.profile.pendingChestDraw == null))
                     throw new ArgumentException("冻结奖励内容不是有效对象；原文件保留。");
                 frozenRecord=frozenRecord||(data!=null&&data.profile!=null&&data.profile.pendingChestDraw!=null);
-                if(data!=null&&data.format==SaveFormat&&(data.version>8||data.profile!=null&&(data.profile.dungeonRewardRevision>1||data.profile.independentTierRevision>1||data.profile.adventureRewardRevision>1||data.profile.version>1||data.profile.rewardInventoryRevision>1||data.profile.attachmentRevision>1||data.profile.growthRevision>1||data.profile.classStateRevision>1||data.profile.chestRulesRevision>3||data.profile.pendingChestRulesRevision>3||data.profile.pendingChestDraw!=null&&data.profile.pendingChestDraw.rulesRevision>3)))
+                if(data!=null&&data.format==SaveFormat&&(data.version>8||data.profile!=null&&(data.profile.dungeonRewardRevision>1||data.profile.independentTierRevision>1||data.profile.adventureRewardRevision>1||data.profile.version>1||data.profile.rewardInventoryRevision>1||data.profile.attachmentRevision>1||data.profile.equipmentEnhancementRevision>1||data.profile.chapterTierRevision>1||data.profile.growthRevision>1||data.profile.classStateRevision>1||data.profile.chestRulesRevision>3||data.profile.pendingChestRulesRevision>3||data.profile.pendingChestDraw!=null&&data.profile.pendingChestDraw.rulesRevision>3)))
                 {error="future format";return false;}
                 if (data == null || data.format != SaveFormat || (data.version != 1 && data.version != 2 && data.version != 3 && data.version != 4 && data.version != 5 && data.version != 6 && data.version != 7 && data.version != 8) || data.profile == null || data.profile.version != 1)
                 { error = frozenRecord?FrozenRewardReadFailure+" unsupported format":"unsupported format"; return false; }
@@ -3037,6 +3046,8 @@ namespace Emberfall
 
         private static int ValidateProfile(GameProfile profile)
         {
+            if(profile.equipmentEnhancementRevision>1)throw new ArgumentException("强化规则版本不受支持，原文件保留。");
+            profile.equipmentUpgradeAttempts=Math.Max(0,profile.equipmentUpgradeAttempts);
             SkillStockRules.Normalize(profile);
             NormalizeEmptyChestDraw(profile);
             int refundedRanks = 0;
@@ -3060,7 +3071,7 @@ namespace Emberfall
             profile.highestAdventureTier=Clamp(Math.Max(profile.highestAdventureTier,profile.bestFloor),0,100);
             profile.groundGold=Clamp(profile.groundGold,0,MaximumGold);profile.groundPotions=Clamp(profile.groundPotions,0,999);
             if(profile.chapterBestTiers==null||profile.chapterBestTiers.Length!=3)profile.chapterBestTiers=new int[3];
-            for(int i=0;i<3;i++)profile.chapterBestTiers[i]=Clamp(profile.chapterBestTiers[i],0,100);
+            for(int i=0;i<3;i++)profile.chapterBestTiers[i]=Math.Max(0,profile.chapterBestTiers[i]);
             if(profile.adventureBestTiers==null || profile.adventureBestTiers.Length!=5)profile.adventureBestTiers=new int[5];
             if(profile.independentTierRevision<1){
                 // Preserve access already earned under the old shared progression.
@@ -3269,10 +3280,11 @@ namespace Emberfall
         private static void InitializeSlotUpgrades(GameProfile profile)
         {
             int[] previous = profile.slotUpgradeRanks;
+            bool convert=profile.equipmentEnhancementRevision<1;
             bool migrate = !profile.slotUpgradesInitialized || previous == null || previous.Length != 3;
             int[] ranks = new int[3];
             for (int slot = 0; slot < ranks.Length; slot++)
-                ranks[slot] = previous != null && slot < previous.Length ? Clamp(previous[slot], 0, MaximumUpgrade) : 0;
+                ranks[slot] = previous != null && slot < previous.Length ? (convert?CombatBalance.ConvertLegacyUpgradeRank(previous[slot]):Clamp(previous[slot],0,MaximumUpgrade)) : 0;
             var all = new List<ItemData>(profile.inventory);
             all.AddRange(profile.pendingLoot);
             all.AddRange(profile.recoveryLoot);
@@ -3288,6 +3300,7 @@ namespace Emberfall
             }
             profile.slotUpgradeRanks = ranks;
             profile.slotUpgradesInitialized = true;
+            if(convert){profile.equipmentEnhancementRevision=1;profile.enhancementMigrationPending=true;}
             foreach (ItemData item in all)
                 ApplyUpgradeRank(item, IsEquipped(profile, item.id) ? ranks[(int)item.slot] : 0);
         }
@@ -3301,7 +3314,7 @@ namespace Emberfall
             item.criticalChance=float.IsNaN(item.criticalChance)||float.IsInfinity(item.criticalChance)?0:Math.Max(0,Math.Min(.08f,item.criticalChance));
             item.attackPercent=float.IsNaN(item.attackPercent)||float.IsInfinity(item.attackPercent)?0:Math.Max(0,Math.Min(.12f,item.attackPercent));
             item.criticalDamageBonus=float.IsNaN(item.criticalDamageBonus)||float.IsInfinity(item.criticalDamageBonus)?0:Math.Max(0,Math.Min(.20f,item.criticalDamageBonus));
-            item.upgradeLevel = Clamp(item.upgradeLevel, 0, MaximumUpgrade);
+            item.upgradeLevel = Clamp(item.upgradeLevel, 0, item.enhancementRevision<1?100:MaximumUpgrade);
             if (!Enum.IsDefined(typeof(EquipmentMechanic), item.mechanic) ||
                 (item.mechanic != EquipmentMechanic.None && BuildCatalog.MechanicSlot(item.mechanic) != item.slot)) item.mechanic = EquipmentMechanic.None;
             item.mechanicVariant = item.mechanicVariantUnlocked && BuildCatalog.HasMechanicVariant(item.mechanic) ? Clamp(item.mechanicVariant, 0, 1) : 0;

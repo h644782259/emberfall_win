@@ -3,6 +3,15 @@ namespace Emberfall
 {
     public static class EquipmentComparisonPresentation
     {
+        public static bool HasNonzeroStat(string value)
+        {
+            var numbers=System.Text.RegularExpressions.Regex.Matches(value??"",@"[+-]?\d+(?:[.,]\d+)?");
+            foreach(System.Text.RegularExpressions.Match number in numbers)
+            {
+                double parsed;if(double.TryParse(number.Value.Replace(',','.'),System.Globalization.NumberStyles.Float,System.Globalization.CultureInfo.InvariantCulture,out parsed)&&parsed!=0)return true;
+            }
+            return false;
+        }
         // Ranges that straddle the equipped value have no definite direction.
         public static int StatDirection(string candidate,string current)
         {

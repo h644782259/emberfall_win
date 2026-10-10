@@ -9,6 +9,7 @@ namespace Emberfall
         private EquipmentMechanic smithSocketPrevious;
         private Vector2 smithSocketScroll;
         private Vector2 smithDetailScroll,smithPreviewScroll;
+        private ProgressionService.AffixReforgeQuote smithAffixQuote;
         private EquipmentMechanic smithPreviewMechanic;
         private bool smithPreviewAscend;
         private void OpenGemPreview(EquipmentMechanic mechanic,bool ascend)
@@ -54,7 +55,7 @@ namespace Emberfall
         private void DrawSmithService()
         {
             var p=session.Progression;float u=MobileControls.Active?TouchRatio:1;
-            bool prior=GUI.enabled;GUI.enabled=prior&&smithPreviewMechanic==EquipmentMechanic.None&&!smithSocketPicker;
+            bool prior=GUI.enabled;GUI.enabled=prior&&smithPreviewMechanic==EquipmentMechanic.None&&!smithSocketPicker&&smithAffixQuote==null;
             var l=new SmithServiceLayout(width/u,height/u,MobileControls.IsIPad);
             blockedRects.Add(new Rect(0,0,width,height));
             Box(new Rect(8*u,4*u,width-16*u,height-8*u),jade,false);
@@ -77,7 +78,7 @@ namespace Emberfall
             if(smithCategory==1)
             {
                 DrawPhoneSocketService(body,u);
-                GUI.enabled=prior;DrawGemPreview(u);DrawSocketPicker(u);return;
+                GUI.enabled=prior;DrawGemPreview(u);DrawSocketPicker(u);DrawAffixConfirmation(u);return;
             }
             int columns=width/u>=540?3:1;
             float cardWidth=(body.width/u-(columns-1)*12)/columns;
@@ -109,12 +110,13 @@ namespace Emberfall
                     if(smithCategory==2)
                     {
                         string rerollReason=p.AffixReforgeLockReason(item.id,SmithServiceActive);
-                        Rect reroll=new Rect(8*u,tile.height-90*u,(cardWidth-48)*u,40*u);
-                        if(Button(reroll,rerollReason.Length==0?"词条重铸":rerollReason,gold,rerollReason.Length==0))Feedback(p.ReforgeAffixes(item.id,SmithServiceActive),"词条已重铸");
-                        Rect cost=new Rect(8*u,tile.height-46*u,24*u,24*u);
+                        Rect reroll=new Rect(8*u,tile.height-90*u,(cardWidth-48)*u,44*u);
+                        if(Button(reroll,"",gold,rerollReason.Length==0,rerollReason))smithAffixQuote=p.PrepareAffixReforge(item.id,SmithServiceActive);
+                        Color rerollTint=rerollReason.Length==0?gold:muted;
+                        DrawIcon(new Rect(reroll.x+10*u,reroll.center.y-12*u,24*u,24*u),UIIconAtlas.Utility("reset"),rerollTint);
+                        Rect cost=new Rect(reroll.center.x-8*u,reroll.center.y-12*u,24*u,24*u);
                         DrawIcon(cost,UIIconAtlas.Utility("gem"),GameBalance.RarityColor(Rarity.Legendary));
-                        InspectRewardItem(cost,ResourceItemPreview("affix-reforge",p.Profile.affixReforgeStones));
-                        Text(new Rect(34*u,cost.y,(cardWidth-64)*u,24*u),"×1 / "+p.Profile.affixReforgeStones+"  ·  词条可能降低",Mathf.RoundToInt(10*u),muted,false,false,TextAnchor.MiddleLeft);
+                        Text(new Rect(cost.xMax+4*u,reroll.y,reroll.xMax-cost.xMax-8*u,reroll.height),"×1",Mathf.RoundToInt(13*u),rerollTint,true,false,TextAnchor.MiddleLeft);
                         string reason=p.RefinementLockReason(item.id,SmithServiceActive);
                         float aw=Mathf.Min(180,cardWidth-32);
                         Rect action=new Rect((cardWidth-16-aw)*.5f*u,tile.height-142*u,aw*u,44*u);
@@ -148,7 +150,7 @@ namespace Emberfall
                 GUI.EndGroup();top+=cardHeights[i]+12;
             }
             EndTouchScroll();
-            GUI.enabled=prior;DrawGemPreview(u);DrawSocketPicker(u);
+            GUI.enabled=prior;DrawGemPreview(u);DrawSocketPicker(u);DrawAffixConfirmation(u);
         }
         private string PhoneGemFormDescription(MechanicAttachment gem,int variant)
         {
@@ -371,9 +373,10 @@ namespace Emberfall
                 if(draw)
                 {
                     int[] before={item.attack,item.defense,item.health},after={next.attack,next.defense,next.health};
-                    for(int stat=0;stat<3;stat++)
+                    int visible=0;for(int stat=0;stat<3;stat++)
                     {
-                        Rect row=new Rect(8*u,(y+stat*38)*u,(width-16)*u,32*u);
+                        if(before[stat]<=0&&after[stat]<=0)continue;
+                        Rect row=new Rect(8*u,(y+visible++*38)*u,(width-16)*u,32*u);
                         Fill(row,new Color(.025f,.045f,.065f,.8f));
                         Texture2D icon=stat==1?UIIconAtlas.EquipmentCardIcon(ItemSlot.Armor,item.level,item.rarity,p.Profile.heroClass):UIIconAtlas.Utility(stat==0?"attack":"potion");
                         DrawIcon(new Rect(row.x+4*u,row.y+4*u,24*u,24*u),icon,pale);
@@ -383,7 +386,8 @@ namespace Emberfall
                         Text(new Rect(row.x+32*u+col*2,row.y,col,row.height),after[stat].ToString(),Mathf.RoundToInt(12*u),after[stat]>before[stat]?jade:muted,true,false,TextAnchor.MiddleCenter);
                     }
                 }
-                y+=114;
+                if(draw&&rank<p.CurrentUpgradeLimit)Text(new Rect(8*u,(y+114)*u,(width-16)*u,24*u),"成功率 "+CombatBalance.UpgradeSuccessPercent(rank+1)+"% · 失败扣费，等级不变",Mathf.RoundToInt(11*u),muted,false,false,TextAnchor.MiddleCenter);
+                y+=142;
 
             }
             else
@@ -456,5 +460,19 @@ namespace Emberfall
             }
             return y+8;
         }
+        private void DrawAffixConfirmation(float u)
+        {
+            var quote=smithAffixQuote;if(quote==null)return;var p=session.Progression;
+            float w=Mathf.Min(440*u,width-24*u),h=210*u;Rect box=new Rect((width-w)*.5f,(height-h)*.5f,w,h);
+            blockedRects.Add(box);Fill(box,ink);Border(box,gold);
+            Text(new Rect(box.x+16*u,box.y+12*u,w-76*u,32*u),"确认词条重铸",Mathf.RoundToInt(17*u),gold,true);
+            if(PopupCloseButton(new Rect(box.xMax-48*u,box.y+8*u,44*u,36*u))){smithAffixQuote=null;return;}
+            bool fresh=quote.Owner==p&&quote.Slot==p.CurrentSlotId&&quote.Fingerprint==p.BuildStateFingerprint();
+            Text(new Rect(box.x+16*u,box.y+60*u,w-32*u,80*u),fresh?"消耗词条重铸石 ×1\n词条数值可能降低或者词条消失":"装备或材料已变化，请取消后重新确认。",Mathf.RoundToInt(15*u),pale,false,true);
+            if(Button(new Rect(box.x+16*u,box.yMax-54*u,(w-40*u)*.5f,44*u),"取消",muted)){smithAffixQuote=null;return;}
+            if(Button(new Rect(box.center.x+4*u,box.yMax-54*u,(w-40*u)*.5f,44*u),"确认重铸",gold,fresh&&p.AffixReforgeLockReason(quote.Id,SmithServiceActive).Length==0))
+            {bool saved=p.ApplyAffixReforge(quote,SmithServiceActive);Feedback(saved,"词条已重铸");if(saved)smithAffixQuote=null;}
+        }
+
     }
 }

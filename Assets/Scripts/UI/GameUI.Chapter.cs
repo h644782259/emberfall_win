@@ -16,7 +16,7 @@ namespace Emberfall
             chapterSelectionOwner=session.Progression.Profile;chapterEntryError=null;chapterScroll=Vector2.zero;chapterStoryExpanded=false;chapterRulesExpanded=false;
             if(!ChapterProgression.IsUnlocked(chapterSelectionOwner,session.SelectedChapterNode))session.SelectedChapterNode=ChapterNode.ForestCourt;
             if(!ChapterProgression.CanEnter(chapterSelectionOwner,session.SelectedChapterNode,session.SelectedChapterDifficulty))session.SelectedChapterDifficulty=ChapterDifficulty.Normal;
-            session.SelectedChapterTier=Mathf.Clamp(session.SelectedChapterTier,1,session.Progression.UnlockedChapterTier(session.SelectedChapterNode));
+            session.SelectedChapterTier=Mathf.Clamp(session.SelectedChapterTier,1,session.Progression.UnlockedChapterTier(session.SelectedChapterNode,session.SelectedChapterDifficulty));
             CancelHotbarPointer();CancelMobileScroll();panel=Panel.Chapter;session.SetUIBlocking(true);BlockUITransition();return true;
         }
         private bool SelectChapterNode(ChapterNode node)
@@ -33,7 +33,7 @@ namespace Emberfall
         private void ChangeChapterTier(int delta)
         {
             if(!ChapterSelectionIsCurrent())return;
-            session.SelectedChapterTier=Mathf.Clamp(session.SelectedChapterTier+(delta<0?-1:delta>0?1:0),1,session.Progression.UnlockedChapterTier(session.SelectedChapterNode));
+            session.SelectedChapterTier=Mathf.Clamp((int)System.Math.Max(1,System.Math.Min(int.MaxValue,(long)session.SelectedChapterTier+(delta<0?-1:delta>0?1:0))),1,session.Progression.UnlockedChapterTier(session.SelectedChapterNode,session.SelectedChapterDifficulty));
             // The stepper stays in place; only its values change, with no screen transition.
         }
         private void SetChapterLimitedHealing(bool limited)
@@ -117,13 +117,24 @@ namespace Emberfall
             float descriptionHeight=Style(Mathf.RoundToInt(14*u),false,true).CalcHeight(new GUIContent(mechanic),(w-24)*u)/u+20;
             float rewardsHeight=DrawEntryRewardPreviews(w,u,mode,session.SelectedChapterTier,true,false);
             float imageHeight=Mathf.Clamp(w*.5f,96,MobileControls.Active?160:216),descriptionY=56+imageHeight;
-            float total=descriptionY+descriptionHeight+rewardsHeight+48;
+            float total=descriptionY+descriptionHeight+rewardsHeight+148;
             chapterScroll=BeginTouchScroll("chapter-entry",body,chapterScroll,new Rect(0,0,w*u,Mathf.Max(body.height,total*u)));
             DrawChapterSymbol(new Rect(12*u,14*u,28*u,28*u),node,gold);
             Text(new Rect(50*u,8*u,(w-58)*u,30*u),ChapterDefinition.Get(node).Name,Mathf.RoundToInt(20*u),pale,true);
             DrawDungeonEntryArtwork(new Rect(12*u,44*u,(w-24)*u,imageHeight*u),5+(int)node);
             Text(new Rect(12*u,descriptionY*u,(w-24)*u,descriptionHeight*u),mechanic,Mathf.RoundToInt(14*u),muted,false,true);
             float y=descriptionY+descriptionHeight;
+            for(int d=0;d<3;d++)
+            {
+                var choice=(ChapterDifficulty)d;float tabWidth=(w-32)/3;
+                if(Button(new Rect((12+d*(tabWidth+4))*u,y*u,tabWidth*u,40*u),ChapterEntryPresentation.DifficultyName(choice),choice==session.SelectedChapterDifficulty?gold:jade,ChapterProgression.CanEnter(profile,node,choice)))SelectChapterDifficulty(choice);
+            }
+            y+=48;
+            int tier=session.SelectedChapterTier,maximum=session.Progression.UnlockedChapterTier(node,session.SelectedChapterDifficulty);
+            if(Button(new Rect(12*u,y*u,44*u,44*u),"−",jade,tier>1))ChangeChapterTier(-1);
+            Text(new Rect(64*u,y*u,(w-128)*u,44*u),"第 "+tier+" 阶 · 已解锁至 "+maximum+" 阶",Mathf.RoundToInt(13*u),pale,true,false,TextAnchor.MiddleCenter);
+            if(Button(new Rect((w-56)*u,y*u,44*u,44*u),"+",jade,tier<maximum))ChangeChapterTier(1);
+            y+=52;
             entryRewardViewport=body;entryRewardContentOrigin=new Vector2(body.x-chapterScroll.x,body.y+y*u-chapterScroll.y);
             GUI.BeginGroup(new Rect(0,y*u,w*u,rewardsHeight*u));DrawEntryRewardPreviews(w,u,mode,session.SelectedChapterTier,true,true);GUI.EndGroup();
             if(!string.IsNullOrEmpty(chapterEntryError))Text(new Rect(8*u,(y+rewardsHeight)*u,(w-16)*u,48*u),"暂时无法进入，请稍后重试。",Mathf.RoundToInt(13*u),gold,false,true);
@@ -136,7 +147,7 @@ namespace Emberfall
                 chapterSelectionOwner=session.Progression.Profile;chapterEntryError=null;chapterScroll=Vector2.zero;
                 if(!ChapterProgression.IsUnlocked(chapterSelectionOwner,session.SelectedChapterNode))session.SelectedChapterNode=ChapterNode.ForestCourt;
                 if(!ChapterProgression.CanEnter(chapterSelectionOwner,session.SelectedChapterNode,session.SelectedChapterDifficulty))session.SelectedChapterDifficulty=ChapterDifficulty.Normal;
-                session.SelectedChapterTier=Mathf.Clamp(session.SelectedChapterTier,1,session.Progression.UnlockedChapterTier(session.SelectedChapterNode));
+                session.SelectedChapterTier=Mathf.Clamp(session.SelectedChapterTier,1,session.Progression.UnlockedChapterTier(session.SelectedChapterNode,session.SelectedChapterDifficulty));
             }
             float cell=(area.width-16*u)/3;
             for(int i=0;i<3;i++)

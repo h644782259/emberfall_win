@@ -85,7 +85,7 @@ namespace Emberfall
             if(game.InDungeon)MaxHealth*=boss?1.6f:kind==EnemyKind.Guardian?1.35f:1.15f;
             damage = CombatBalance.EnemyDamage(level, challengeTier, boss);
             if(game.ChapterActive)
-            {MaxHealth*=ChapterDefinition.HealthMultiplier(game.ActiveChapterDifficulty);damage*=ChapterDefinition.DamageMultiplier(game.ActiveChapterDifficulty);}
+            {MaxHealth*=ChapterDefinition.HealthMultiplier(game.ActiveChapterDifficulty)*ChapterProgression.TierHealthMultiplier(challengeTier)/CombatBalance.TierHealthMultiplier(challengeTier);damage*=ChapterDefinition.DamageMultiplier(game.ActiveChapterDifficulty)*ChapterProgression.TierDamageMultiplier(challengeTier)/CombatBalance.TierDamageMultiplier(challengeTier);}
             Health = MaxHealth;
             speed = boss ? 2.35f : moveSpeed[(int)kind];
             transform.position = WorldTraversal.NearestWalkable(transform.position, NavigationRadius);

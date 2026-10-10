@@ -88,12 +88,14 @@ namespace Emberfall
             long stones=snapshot==null?0:snapshot.RewardRefinementStones;
             long[] amounts={coins,xp,shards,stones,settlementChest==null||settlementChest.rulesRevision>=3?0:settlementChest.threadsDelta};
             string[] labels={"金币","经验","碎片","洗练石","星纹"},icons={"coin","upgrade","shard","gem","core"};
-            int resourceCount=settlementChest==null||settlementChest.rulesRevision>=3?5:2;
-            float resourceHeight=Mathf.Min(58*u,(contentWidth-8*u*(resourceCount-1))/resourceCount);
+            var visibleResources=RunRecapPresentation.PositiveRewardIndices(amounts,settlementChest==null||settlementChest.rulesRevision>=3?5:2);
+            int resourceCount=visibleResources.Length;
+            float resourceHeight=resourceCount==0?0:Mathf.Min(58*u,(contentWidth-8*u*(resourceCount-1))/resourceCount);
             string[] resourceKeys={"gold","experience","shard","refinement","thread"};
-            for(int i=0;i<resourceCount;i++)
+            for(int visible=0;visible<resourceCount;visible++)
             {
-                Rect r=new Rect(frame.x+16*u+i*(resourceHeight+8*u),top,resourceHeight,resourceHeight);
+                int i=visibleResources[visible];
+                Rect r=new Rect(frame.x+16*u+visible*(resourceHeight+8*u),top,resourceHeight,resourceHeight);
                 var detail=ResourceItemPreview(resourceKeys[i],(int)System.Math.Min(int.MaxValue,amounts[i]));
                 if(i==1){detail.Name="经验";detail.Icon=UIIconAtlas.Utility("upgrade");detail.Description="经验\n数量  "+amounts[i];}
                 Fill(r,card);Border(r,detail.QualityColor);
@@ -101,7 +103,7 @@ namespace Emberfall
                 Text(new Rect(r.x+2*u,r.yMax-16*u,r.width-4*u,16*u),amounts[i].ToString(),Mathf.RoundToInt(11*u),pale,true,false,TextAnchor.MiddleRight);
                 InspectRewardItem(r,detail);
             }
-            top+=resourceHeight+10*u;
+            if(resourceCount>0)top+=resourceHeight+10*u;
             Rect stage=new Rect(frame.x+16*u,top,contentWidth,Mathf.Max(80*u,frame.yMax-top-12*u));
             if(p.Profile.pendingChestReveal&&settlementChest!=null)
             {
@@ -213,7 +215,7 @@ namespace Emberfall
             DrawIcon(new Rect(header.x,header.y+2*unit,iconSize*unit,iconSize*unit),UIIconAtlas.Utility(snapshot!=null&&snapshot.Won?"confirm":"skills"),accent);
             string title=snapshot==null?"战斗复盘":snapshot.Won?(snapshot.ModeName.Length>0?"挑战完成":"遗迹通关"):"本次止步";
             Text(new Rect(header.x+(iconSize+12)*unit,header.y,header.width-(iconSize+126)*unit,32*unit),title,Mathf.RoundToInt((mobile?23:28)*unit),pale,true);
-            string location=snapshot==null?"":snapshot.InDungeon?(snapshot.ModeName.Length>0?snapshot.ModeName+"  ·  ":"")+"Lv"+AdventureRewardRules.DungeonLevel(snapshot.Tier)+"  ·  "+snapshot.Wave+" / "+snapshot.TotalWaves+(snapshot.ModeName.Length>0?" 阶段":" 波"):"原野探索";
+            string location=snapshot==null?"":snapshot.InDungeon?(snapshot.ModeName.Length>0?snapshot.ModeName+"  ·  ":"")+(session.ChapterActive?"第 "+snapshot.Tier+" 阶":"Lv"+AdventureRewardRules.DungeonLevel(snapshot.Tier))+"  ·  "+snapshot.Wave+" / "+snapshot.TotalWaves+(snapshot.ModeName.Length>0?" 阶段":" 波"):"原野探索";
             Text(new Rect(header.x+(iconSize+12)*unit,header.y+34*unit,header.width-(iconSize+20)*unit,22*unit),location,Mathf.RoundToInt(13*unit),muted);
             Rule(frame.x+16*unit,frame.y+(mobile?61:78)*unit,frame.width-32*unit,accent*.5f);
             Rect viewport=RecapRect(layout.Viewport,unit);
@@ -313,14 +315,13 @@ namespace Emberfall
                 y+=layout.MetricRowsHeight(data.Metrics.Length)+18;
             }
             RecapSection("物品获取",y,w,unit);y+=28;
-            long chestGold=settlementChest==null?0:settlementChest.hasCurrencyDeltas?settlementChest.goldDelta:settlementChest.Gold;
-            long chestMaterials=settlementChest!=null&&settlementChest.hasCurrencyDeltas&&settlementChest.materialKind==RewardMaterialKind.StarAshFragment?settlementChest.materialsDelta:0;
-            long threads=settlementChest!=null&&settlementChest.hasCurrencyDeltas?settlementChest.threadsDelta:0;
-            long[] amounts={snapshot.RewardGold+chestGold,snapshot.RewardExperience,snapshot.RewardMaterials+chestMaterials,threads,session.RunPickupPotions,snapshot.RewardRefinementStones};
+            long[] amounts=RecapRewardAmounts(snapshot);
             string[] labels={"金币","经验","星烬碎片","星纹","药品","装备洗练石"};
-            for(int i=0;i<(snapshot.RewardRefinementStones>0?6:session.RunPickupPotions>0?5:4);i++)
+            var visibleRewards=RunRecapPresentation.PositiveRewardIndices(amounts);
+            for(int visible=0;visible<visibleRewards.Length;visible++)
             {
-                float cell=(w-8)*.5f;Rect tile=new Rect((i%2)*(cell+8)*unit,(y+(i/2)*76)*unit,cell*unit,68*unit);
+                int i=visibleRewards[visible];
+                float cell=(w-8)*.5f;Rect tile=new Rect((visible%2)*(cell+8)*unit,(y+(visible/2)*76)*unit,cell*unit,68*unit);
                 Fill(tile,card);
                 DrawIcon(new Rect(tile.x+10*unit,tile.y+15*unit,32*unit,32*unit),i==5?UIIconAtlas.Utility("gem"):i==4?UIIconAtlas.Utility("potion"):i==1?UIIconAtlas.Utility("upgrade"):UIIconAtlas.Reward(i==0?0:i-1),i==0?gold:i==1?jade:GameBalance.RarityColor(i==5?Rarity.Epic:i==4?Rarity.Common:Rarity.Rare));
                 Text(new Rect(tile.x+52*unit,tile.y+7*unit,tile.width-60*unit,22*unit),labels[i],Mathf.RoundToInt(13*unit),muted);
@@ -375,12 +376,19 @@ namespace Emberfall
         }
         private static float ProgressCardHeight(RunRecapSnapshot data)
         { return 24+(data.RewardDetailsUnavailable?64:0)+(data.RewardGold>0||data.RewardExperience>0||data.RewardMaterials>0?72:0)+(data.Materials>0?72:0)+(data.GoldLost>0?34:0)+(data.PendingChest||data.FirstClearChoice?28:0); }
+        private long[] RecapRewardAmounts(RunRecapSnapshot snapshot)
+        {
+            long chestGold=settlementChest==null?0:settlementChest.hasCurrencyDeltas?settlementChest.goldDelta:settlementChest.Gold;
+            long chestMaterials=settlementChest!=null&&settlementChest.hasCurrencyDeltas&&settlementChest.materialKind==RewardMaterialKind.StarAshFragment?settlementChest.materialsDelta:0;
+            long threads=settlementChest!=null&&settlementChest.hasCurrencyDeltas?settlementChest.threadsDelta:0;
+            return new long[]{snapshot.RewardGold+chestGold,snapshot.RewardExperience,snapshot.RewardMaterials+chestMaterials,threads,session.RunPickupPotions,snapshot.RewardRefinementStones};
+        }
         private float RecapContentHeight(RunRecapLayout layout,RunRecapPresentation data)
         {
             if(data==null)return 110;
             float result=data.HasFailureBanner?76:0;
             result+=28+layout.MetricRowsHeight(data.Metrics.Length)+18;
-            result+=28+(session.RunPickupPotions>0||data.Snapshot.RewardRefinementStones>0?228:152)+18;
+            result+=28+((RunRecapPresentation.PositiveRewardIndices(RecapRewardAmounts(data.Snapshot)).Length+1)/2)*76+18;
             return result+6;
         }
     }

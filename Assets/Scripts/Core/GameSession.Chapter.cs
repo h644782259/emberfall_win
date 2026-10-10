@@ -5,8 +5,12 @@ namespace Emberfall
     public sealed partial class GameSession
     {
         public ChapterNode SelectedChapterNode {get;set;}
-        public ChapterDifficulty SelectedChapterDifficulty {get{return ChapterProgression.AvailableDifficulty(Progression.Profile,SelectedChapterNode);}set{}}
-        public int SelectedChapterTier {get{return ChapterProgression.AvailableTier(Progression.Profile,SelectedChapterNode);}set{}}
+        private ChapterDifficulty selectedChapterDifficulty;
+        private readonly int[] selectedChapterTiers=new int[9];
+        public ChapterDifficulty SelectedChapterDifficulty
+        {get{return (ChapterDifficulty)Mathf.Clamp((int)selectedChapterDifficulty,0,(int)ChapterProgression.AvailableDifficulty(Progression.Profile,SelectedChapterNode));}set{selectedChapterDifficulty=value;}}
+        public int SelectedChapterTier
+        {get{int index=(int)SelectedChapterNode*3+(int)SelectedChapterDifficulty;int maximum=ChapterProgression.AvailableTier(Progression.Profile,SelectedChapterNode,SelectedChapterDifficulty);return selectedChapterTiers[index]==0?maximum:Mathf.Clamp(selectedChapterTiers[index],1,maximum);}set{selectedChapterTiers[(int)SelectedChapterNode*3+(int)SelectedChapterDifficulty]=value;}}
         public bool SelectedChapterLimitedHealing {get{return false;}set{}}
         public int SelectedChapterTactic {get;set;}=-1;
         public ChapterCombatRun ChapterRun {get;private set;}
@@ -39,7 +43,7 @@ namespace Emberfall
         {
             if(!SaveBeforeLeaving())return false;
             ChapterRunReceipt receipt;
-            if(!Progression.TryBeginChapterNode(ChapterRun.Node,ChapterProgression.LevelDifficulty(ChapterRun.Node,Progression.Profile.level),ChapterProgression.AvailableTier(Progression.Profile,ChapterRun.Node),out receipt))
+            if(!Progression.TryBeginChapterNode(ChapterRun.Node,ChapterRun.Difficulty,chapterRetryTier,out receipt))
             {Notify(Progression.LastError);return false;}
             // A new receipt invalidates all callbacks from the failed attempt. Seed and
             // the admitted tactic are frozen, independent of mutable selection controls.

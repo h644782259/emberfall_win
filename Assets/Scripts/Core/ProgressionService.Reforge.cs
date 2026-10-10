@@ -13,6 +13,18 @@ namespace Emberfall
             if(Profile.affixReforgeCount==int.MaxValue)return "重铸次数已达上限";
             return Profile.affixReforgeStones<1?"重铸石不足":string.Empty;
         }
+        public sealed class AffixReforgeQuote
+        {
+            internal ProgressionService Owner;internal string Fingerprint,Slot;
+            public string Id {get;internal set;}
+        }
+        public AffixReforgeQuote PrepareAffixReforge(string id,bool inCamp)
+        {return AffixReforgeLockReason(id,inCamp).Length>0?null:new AffixReforgeQuote{Owner=this,Slot=CurrentSlotId,Fingerprint=BuildStateFingerprint(),Id=id};}
+        public bool ApplyAffixReforge(AffixReforgeQuote quote,bool inCamp)
+        {
+            if(quote==null||quote.Owner!=this||quote.Slot!=CurrentSlotId||quote.Fingerprint!=BuildStateFingerprint())return Fail("装备或材料已变化，请重新确认。");
+            return ReforgeAffixes(quote.Id,inCamp);
+        }
         public bool ReforgeAffixes(string id,bool inCamp)
         {
             string reason=AffixReforgeLockReason(id,inCamp);if(reason.Length>0)return Fail(reason);

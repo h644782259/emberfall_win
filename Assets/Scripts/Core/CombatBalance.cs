@@ -11,8 +11,8 @@ namespace Emberfall
     {
         public const int MaximumLevel = 100;
         public const int MaximumTier = 100;
-        public const int MaximumUpgradeRank = MaximumLevel;
-        public const float UpgradePerRank = .05f;
+        public const int MaximumUpgradeRank = 20;
+        public const float UpgradePerRank = .25f;
         public const float MinimumArmorDamageMultiplier = .30f;
         public const float MinimumCombinedDamageMultiplier = .16f;
 
@@ -30,11 +30,22 @@ namespace Emberfall
         {
             if (basis <= 0 || cap <= 0) return 0;
             int safeRank = Clamp(rank, 0, MaximumUpgradeRank);
-            double linearGrowth = Math.Round((double)basis * .05d * safeRank, MidpointRounding.AwayFromZero);
-            double minimumGrowth = (double)Math.Max(0, minimumIncrease) * safeRank;
+            double linearGrowth = Math.Round((double)basis * .25d * safeRank, MidpointRounding.AwayFromZero);
+            double minimumGrowth = (double)Math.Max(0, minimumIncrease) * 5 * safeRank;
             double value = (double)basis + Math.Max(linearGrowth, minimumGrowth);
             return (int)Math.Min(cap, value);
         }
+
+        // Historical 100-rank curve is used only to recover old unenhanced bases.
+        public static int LegacyUpgradeValue(int basis,int rank,int minimumIncrease=1,int cap=1000000)
+        {
+            if(basis<=0||cap<=0)return 0;int safeRank=Clamp(rank,0,100);
+            return (int)Math.Min(cap,(double)basis+Math.Max(Math.Round((double)basis*.05d*safeRank,MidpointRounding.AwayFromZero),(double)Math.Max(0,minimumIncrease)*safeRank));
+        }
+        public static int UpgradeSuccessPercent(int targetRank)
+        {return targetRank<1||targetRank>MaximumUpgradeRank?0:95-4*(targetRank-1);}
+        public static int ConvertLegacyUpgradeRank(int rank)
+        {rank=Clamp(rank,0,100);return rank>20?rank/5:rank;}
 
         public static float RankPower(int rank)
         {

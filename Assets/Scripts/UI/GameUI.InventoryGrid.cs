@@ -297,32 +297,33 @@ namespace Emberfall
                 var p=session.Progression;var current=p.Equipped(item.slot);var next=p.PreviewEquippedItem(item);
                 Rect body=new Rect(r.x+6*u,r.y+116*u,r.width-12*u,Mathf.Max(24*u,r.height-120*u));
                 float width=body.width-18*u,labelWidth=62*u,half=(width-labelWidth-6*u)*.5f;
-                float h=222*u;
+                float[] baseline={current==null?0:current.attack,current==null?0:current.defense,current==null?0:current.health,current==null?0:current.criticalChance,current==null?0:current.criticalDamageBonus,current==null?0:current.attackPercent};
+                float[] selected={next.attack,next.defense,next.health,next.criticalChance,next.criticalDamageBonus,next.attackPercent};
+                var visible=new System.Collections.Generic.List<int>();for(int stat=0;stat<6;stat++)if(baseline[stat]>0||selected[stat]>0)visible.Add(stat);
+                float descriptionY=(58+visible.Count*28)*u,h=descriptionY+20*u;
                 for(int col=0;col<2;col++)
                 {
-                    var value=col==0?current:next;
-                    string copy=EquipmentComparisonPresentation.Description(value,p);
-                    h=Mathf.Max(h,206*u+Style(Mathf.RoundToInt(11*u),false,true).CalcHeight(new GUIContent(copy),half-12*u));
+                    var value=col==0?current:next;string copy=EquipmentComparisonPresentation.Description(value,p);
+                    h=Mathf.Max(h,descriptionY+4*u+Style(Mathf.RoundToInt(11*u),false,true).CalcHeight(new GUIContent(copy),half-12*u));
                 }
                 inventoryComparisonScroll=BeginTouchScroll("inventory-popup-comparison",body,inventoryComparisonScroll,new Rect(0,0,width,Mathf.Max(body.height,h)));
-                string[] labels={"评分","攻击","防御","生命","暴击率","暴击伤害","攻击加成"};
-                for(int row=0;row<labels.Length;row++)
-                    Text(new Rect(0,(30+row*28)*u,labelWidth,24*u),labels[row],Mathf.RoundToInt(12*u),pale,true,false,TextAnchor.MiddleLeft);
+                string[] labels={"攻击","防御","生命","暴击率","暴击伤害","攻击加成"};
+                Text(new Rect(0,30*u,labelWidth,24*u),"评分",Mathf.RoundToInt(12*u),pale,true,false,TextAnchor.MiddleLeft);
+                for(int row=0;row<visible.Count;row++)Text(new Rect(0,(58+row*28)*u,labelWidth,24*u),labels[visible[row]],Mathf.RoundToInt(12*u),pale,true,false,TextAnchor.MiddleLeft);
                 for(int col=0;col<2;col++)
                 {
                     var value=col==0?current:next;Color accent=col==0?muted:jade;float x=labelWidth+col*(half+6*u);
-                    Fill(new Rect(x,0,half,h),col==0?new Color(.045f,.075f,.095f):new Color(.035f,.105f,.12f));
-                    Fill(new Rect(x,0,half,2*u),accent);
+                    Fill(new Rect(x,0,half,h),col==0?new Color(.045f,.075f,.095f):new Color(.035f,.105f,.12f));Fill(new Rect(x,0,half,2*u),accent);
                     Text(new Rect(x+6*u,6*u,half-12*u,20*u),col==0?"当前装备":"所选装备",Mathf.RoundToInt(11*u),accent,true);
                     Text(new Rect(x+6*u,30*u,half-12*u,24*u),ProgressionService.EquipmentScore(value).ToString("0.#"),Mathf.RoundToInt(14*u),gold,true,false,TextAnchor.MiddleCenter);
-                    float[] values={value==null?0:value.attack,value==null?0:value.defense,value==null?0:value.health,value==null?0:value.criticalChance,value==null?0:value.criticalDamageBonus};
-                    float[] baseline={current==null?0:current.attack,current==null?0:current.defense,current==null?0:current.health,current==null?0:current.criticalChance,current==null?0:current.criticalDamageBonus};
-                    for(int row=0;row<5;row++)
+                    var values=col==0?baseline:selected;
+                    for(int row=0;row<visible.Count;row++)
                     {
-                        float y=(58+row*28)*u;float delta=values[row]-baseline[row];
-                        Text(new Rect(x+6*u,y,half-12*u,24*u),(row>=3?(values[row]*100).ToString("0.##")+"%":values[row].ToString("0")),Mathf.RoundToInt(14*u),col==1&&delta!=0?(delta>0?jade:new Color(1,.48f,.42f)):pale,true,false,TextAnchor.MiddleCenter);
+                        int stat=visible[row];if(values[stat]<=0)continue;
+                        float y=(58+row*28)*u,delta=values[stat]-baseline[stat];
+                        Text(new Rect(x+6*u,y,half-12*u,24*u),stat>=3?(values[stat]*100).ToString("0.##")+"%":values[stat].ToString("0"),Mathf.RoundToInt(14*u),col==1&&delta!=0?(delta>0?jade:new Color(1,.48f,.42f)):pale,true,false,TextAnchor.MiddleCenter);
                     }
-                    Text(new Rect(x+6*u,202*u,half-12*u,h-202*u),EquipmentComparisonPresentation.Description(value,p),Mathf.RoundToInt(11*u),accent,false,true);
+                    Text(new Rect(x+6*u,descriptionY,half-12*u,h-descriptionY),EquipmentComparisonPresentation.Description(value,p),Mathf.RoundToInt(11*u),accent,false,true);
                 }
                 EndTouchScroll();
             }
@@ -330,11 +331,12 @@ namespace Emberfall
         }
         private float DrawEquipmentAttributeDetails(ItemData item,float width,float u,bool draw)
         {
-            string[] labels={"攻击","防御","生命","暴击率","暴击伤害加成"};
-            string[] values={item.attack.ToString(),item.defense.ToString(),item.health.ToString(),(item.criticalChance*100).ToString("0.##")+"%",(item.criticalDamageBonus*100).ToString("0.##")+"%"};
+            string[] labels={"攻击","防御","生命","暴击率","暴击伤害加成","攻击加成"};
+            string[] values={item.attack.ToString(),item.defense.ToString(),item.health.ToString(),(item.criticalChance*100).ToString("0.##")+"%",(item.criticalDamageBonus*100).ToString("0.##")+"%",(item.attackPercent*100).ToString("0.##")+"%"};
             float y=4;
             for(int row=0;row<labels.Length;row++)
             {
+                if(!EquipmentComparisonPresentation.HasNonzeroStat(values[row]))continue;
                 if(draw)
                 {
                     if(row%2==0)Fill(new Rect(0,y*u,width*u,28*u),card);

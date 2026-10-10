@@ -36,15 +36,24 @@ namespace Emberfall
         public static bool Valid(ChapterNode node){return (int)node>=0&&(int)node<3;}
         public static int UnlockLevel(ChapterNode node){return Valid(node)?30+(int)node*10:101;}
         public static int LevelTier(int level){return Math.Max(1,Math.Min(10,level/10));}
-        public static int AvailableTier(GameProfile profile,ChapterNode node)
+        public static int AvailableTier(GameProfile profile,ChapterNode node,ChapterDifficulty difficulty=ChapterDifficulty.Normal)
         {
-            if(profile==null||!Valid(node))return 1;
-            int first=UnlockLevel(node)/10;
-            int best=profile.chapterBestTiers!=null&&profile.chapterBestTiers.Length>=(int)node+1?profile.chapterBestTiers[(int)node]:0;
-            return LevelTier(profile.level);
+            int best=CompletedTier(profile,node,difficulty);return best==int.MaxValue?int.MaxValue:best+1;
+        }
+        public static int CompletedTier(GameProfile profile,ChapterNode node,ChapterDifficulty difficulty)
+        {
+            if(profile==null||!Valid(node)||(int)difficulty<0||(int)difficulty>2)return 0;
+            int index=(int)node*3+(int)difficulty;
+            return profile.chapterDifficultyBestTiers!=null&&profile.chapterDifficultyBestTiers.Length>index?Math.Max(0,profile.chapterDifficultyBestTiers[index]):0;
         }
         public static ChapterDifficulty AvailableDifficulty(GameProfile profile,ChapterNode node)
-        {return LevelDifficulty(node,AvailableTier(profile,node)*10);}
+        {return LevelDifficulty(node,profile==null?0:profile.level);}
+        public static bool CanEnter(GameProfile profile,ChapterNode node,ChapterDifficulty difficulty,int tier)
+        {return CanEnter(profile,node,difficulty)&&tier>=1&&tier<=AvailableTier(profile,node,difficulty);}
+        public static float TierHealthMultiplier(int tier)
+        {double step=Math.Max(1,tier)-1d;return (float)(1d+.009d*step+.000035d*step*step);}
+        public static float TierDamageMultiplier(int tier)
+        {double step=Math.Max(1,tier)-1d;return (float)(1d+.014d*step+.00008d*step*step);}
         public static ChapterDifficulty LevelDifficulty(ChapterNode node,int level)
         {return (ChapterDifficulty)Math.Max(0,Math.Min(2,(level-UnlockLevel(node))/10));}
         public static bool IsUnlocked(GameProfile profile,ChapterNode node){return profile!=null&&Valid(node)&&profile.level>=UnlockLevel(node);}
@@ -90,13 +99,26 @@ namespace Emberfall
             profile.chapterDifficultyRewardRevision = Math.Max(0, Math.Min(1, profile.chapterDifficultyRewardRevision));
             profile.chapterMasteryMask&=15;
             var oldMastery=profile.chapterMasteryTiers;profile.chapterMasteryTiers=new int[4];
-            for(int i=0;i<4;i++)if((profile.chapterMasteryMask&(1<<i))!=0)profile.chapterMasteryTiers[i]=Math.Max(1,Math.Min(100,oldMastery!=null&&i<oldMastery.Length?oldMastery[i]:1));
+            for(int i=0;i<4;i++)if((profile.chapterMasteryMask&(1<<i))!=0)profile.chapterMasteryTiers[i]=Math.Max(1,oldMastery!=null&&i<oldMastery.Length?oldMastery[i]:1);
             profile.chapterRevision=Math.Max(0,Math.Min(1,profile.chapterRevision));
             var oldLevels=profile.chapterBestLevels;profile.chapterBestLevels=new int[3];
             for(int i=0;i<3;i++)profile.chapterBestLevels[i]=Math.Max(0,Math.Min(100,oldLevels!=null&&i<oldLevels.Length?oldLevels[i]:0));
             profile.chapterCompletedMask&=7;profile.chapterFirstRewardMask&=profile.chapterCompletedMask;
             var previous=profile.chapterHighestDifficulties;profile.chapterHighestDifficulties=new int[3];
             for(int i=0;i<3;i++)if((profile.chapterCompletedMask&(1<<i))!=0)profile.chapterHighestDifficulties[i]=previous!=null&&i<previous.Length&&previous[i]>=1&&previous[i]<=3?previous[i]:1;
+            if(profile.chapterTierRevision>1)throw new ArgumentException("章节阶数版本不受支持，原文件保留。");
+            var oldTiers=profile.chapterDifficultyBestTiers;profile.chapterDifficultyBestTiers=new int[9];
+            for(int i=0;i<9;i++)profile.chapterDifficultyBestTiers[i]=Math.Max(0,oldTiers!=null&&i<oldTiers.Length?oldTiers[i]:0);
+            if(profile.chapterTierRevision<1)
+            {
+                for(int node=0;node<3;node++)if((profile.chapterCompletedMask&(1<<node))!=0)
+                {
+                    int difficulty=Math.Max(0,profile.chapterHighestDifficulties[node]-1);
+                    int best=profile.chapterBestTiers!=null&&node<profile.chapterBestTiers.Length?Math.Max(1,profile.chapterBestTiers[node]):1;
+                    profile.chapterDifficultyBestTiers[node*3+difficulty]=Math.Max(profile.chapterDifficultyBestTiers[node*3+difficulty],best);
+                }
+                profile.chapterTierRevision=1;profile.chapterTierMigrationPending=true;
+            }
             profile.chapterRewardSequence=Math.Max(0,profile.chapterRewardSequence);
             Guid receipt;profile.lastChapterRewardId=Guid.TryParseExact(profile.lastChapterRewardId,"N",out receipt)?receipt.ToString("N"):null;
             profile.chapterHighestAdventureTier=Math.Max(0,Math.Min(100,profile.chapterHighestAdventureTier));

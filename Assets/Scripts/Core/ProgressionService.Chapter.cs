@@ -16,7 +16,7 @@ namespace Emberfall
         public bool TryBeginChapterNode(ChapterNode node,ChapterDifficulty difficulty,int tier,out ChapterRunReceipt receipt)
         {
             receipt=null;
-            if(!HasActiveSave||!ChapterProgression.CanEnter(Profile,node,difficulty)||tier!=ChapterProgression.AvailableTier(Profile,node)||difficulty!=ChapterProgression.AvailableDifficulty(Profile,node)||Profile.chapterRewardSequence==long.MaxValue)return Fail("人物等级不足，或章节难度已更新，请重新进入。");
+            if(!HasActiveSave||!ChapterProgression.CanEnter(Profile,node,difficulty,tier)||Profile.chapterRewardSequence==long.MaxValue)return Fail("人物等级不足或尚未解锁该阶，请先通关上一阶。");
             int materials=ChapterProgression.CompletionMaterials(Profile,node,tier);
             receipt=new ChapterRunReceipt(node,difficulty,tier,materials,Profile.chapterRewardSequence+1,SaveFilePath);
             receipt.MasteryEligible=difficulty!=ChapterDifficulty.Normal&&(Profile.chapterCompletedMask&(1<<(int)node))!=0;
@@ -33,7 +33,7 @@ namespace Emberfall
         {
             if(receipt==null||receipt.SavePath!=SaveFilePath)return Fail("章节结算已失效。");
             if(receipt.Sequence==Profile.chapterRewardSequence&&receipt.Id==Profile.lastChapterRewardId){LastError=string.Empty;return true;}
-            if(!ReferenceEquals(receipt,chapterAttempt)||receipt.Sequence!=Profile.chapterRewardSequence+1||!ChapterProgression.CanEnter(Profile,receipt.Node,receipt.Difficulty))return Fail("章节结算已失效。");
+            if(!ReferenceEquals(receipt,chapterAttempt)||receipt.Sequence!=Profile.chapterRewardSequence+1||!ChapterProgression.CanEnter(Profile,receipt.Node,receipt.Difficulty,receipt.Tier))return Fail("章节结算已失效。");
             if(chapterExperience==null||!chapterExperience.AllRegistered)return Fail("章节敌人经验登记不完整，不能结算。");
             GameProfile candidate=Snapshot();ChapterProgression.Normalize(candidate);int oldLevel=candidate.level;
             long experience=(long)candidate.xp+chapterExperience.CompletionExperience;
@@ -52,16 +52,14 @@ namespace Emberfall
             candidate.chapterHighestDifficulties[index]=Math.Max(candidate.chapterHighestDifficulties[index],(int)receipt.Difficulty+1);
             candidate.mechanicMaterials=(int)Math.Min(999999L,(long)candidate.mechanicMaterials+receipt.Materials);
             candidate.chapterBestTiers[index]=Math.Max(candidate.chapterBestTiers[index],receipt.Tier);
-            candidate.chapterBestLevels[index]=Math.Max(candidate.chapterBestLevels[index],AdventureRewardRules.DungeonLevel(receipt.Tier));
+            int difficultyIndex=index*3+(int)receipt.Difficulty;candidate.chapterDifficultyBestTiers[difficultyIndex]=Math.Max(candidate.chapterDifficultyBestTiers[difficultyIndex],receipt.Tier);
+            candidate.chapterBestLevels[index]=Math.Max(candidate.chapterBestLevels[index],chapterExperience.EntryLevel);
             if(candidate.pendingFashionChest||candidate.pendingChestReveal)return Fail("请先收下已有宝箱。");
-            NewChestQualification(candidate,receipt.Tier,Guid.NewGuid().ToString("N"));candidate.pendingChestMode=index==0?0:index==1?1:2;candidate.pendingChestGemSource=receipt.Node==ChapterNode.StarPlatform;
+            NewChestQualification(candidate,receipt.Tier,Guid.NewGuid().ToString("N"));candidate.pendingChestMode=index==0?0:index==1?1:2;candidate.pendingChestGemSource=receipt.Node==ChapterNode.StarPlatform;candidate.pendingChestChapterSource=true;
             candidate.chapterRewardSequence=receipt.Sequence;candidate.lastChapterRewardId=receipt.Id;
             if(receipt.Node==ChapterNode.StarPlatform)
             {
                 candidate.pendingFirstClearReward=!candidate.firstClearRewardClaimed;
-                if(candidate.highestAdventureTier>candidate.chapterHighestAdventureTier)candidate.chapterPriorAdventureTier=Math.Max(candidate.chapterPriorAdventureTier,candidate.highestAdventureTier);
-                candidate.chapterHighestAdventureTier=Math.Max(candidate.chapterHighestAdventureTier,receipt.Tier);
-                candidate.highestAdventureTier=Math.Max(candidate.highestAdventureTier,receipt.Tier);
             }
             var detail=CaptureRewardPresentation(receipt.Id,Profile,candidate);
             detail.FirstCompletion=(Profile.chapterCompletedMask&bit)==0;

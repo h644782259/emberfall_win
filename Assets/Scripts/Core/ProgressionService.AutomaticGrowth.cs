@@ -155,7 +155,6 @@ namespace Emberfall
         {
             int best=Math.Max(p.highestAdventureTier,p.bestFloor);
             if(p.adventureBestTiers!=null)foreach(int tier in p.adventureBestTiers)best=Math.Max(best,tier);
-            if(p.chapterBestTiers!=null)foreach(int tier in p.chapterBestTiers)best=Math.Max(best,tier);
             if(p.chapterBestLevels!=null)foreach(int level in p.chapterBestLevels)best=Math.Max(best,level/10);
             return Math.Max(0,Math.Min(10,best));
         }
@@ -167,11 +166,11 @@ namespace Emberfall
                 var node=(ChapterNode)i;int required=ChapterProgression.UnlockLevel(node);
                 if(p.level<required)
                     return new ProgressionGoalState{Identity="main/level/"+required,Title="升至 "+required+" 级 · 解锁"+ChapterDefinition.Get(node).Name,Step="挑战副本或原野敌人积累经验 · 当前 "+p.level+" 级",RequiredAdventureTier=Math.Max(1,Math.Min(10,p.level/10))};
-                return new ProgressionGoalState{Identity="main/chapter/"+i,Title="通关章节 · "+ChapterDefinition.Get(node).Name,Step=ChapterDefinition.Get(node).StoryIntro+" · 点击前往章节入口"};
+                return new ProgressionGoalState{Identity="main/chapter/"+i,Title="通关章节 · "+ChapterDefinition.Get(node).Name,Step=ChapterDefinition.Get(node).StoryIntro+""};
             }
             int best=HighestCompletedAdventureTier(p);
             if(best<10)
-                return new ProgressionGoalState{Identity="main/tier/"+(best+1),Title="通关 Lv"+AdventureRewardRules.DungeonLevel(best+1)+" 副本",RequiredAdventureTier=best+1,Step="逐级通关，推进至 Lv100 副本 · 点击前往"};
+                return new ProgressionGoalState{Identity="main/tier/"+(best+1),Title="通关 Lv"+AdventureRewardRules.DungeonLevel(best+1)+" 副本",RequiredAdventureTier=best+1,Step="逐级通关，推进至 Lv100 副本"};
             return new ProgressionGoalState{Identity="main/complete",Title="主线目标已完成",Step="重访星路章节，挑战更高难度与收藏成就",Done=true};
         }
         // Legacy callers no longer grant automatic rewards; achievements are claimed explicitly.

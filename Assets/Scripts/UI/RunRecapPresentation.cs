@@ -49,6 +49,12 @@ namespace Emberfall
     // Presentation only: no combat, rewards, save changes, or parsing of prose logs.
     public sealed class RunRecapPresentation
     {
+        public static int[] PositiveRewardIndices(long[] amounts,int limit=int.MaxValue)
+        {
+            var visible=new List<int>();if(amounts==null)return visible.ToArray();
+            for(int i=0;i<Math.Min(amounts.Length,Math.Max(0,limit));i++)if(amounts[i]>0)visible.Add(i);
+            return visible.ToArray();
+        }
         public readonly RunRecapSnapshot Snapshot;
         public readonly KeyValuePair<string,int>[] Metrics, Rewards;
         public readonly string[] ExtraActions, Mechanics, Blessings, MechanismEvidence;

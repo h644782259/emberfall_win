@@ -10,7 +10,7 @@ namespace Emberfall
             return AdventureRewardRules.MaterialsMinimum(mode,tier);
         }
         public static string RewardLine(int mode,int tier)
-        {return "宝箱随机获得一件装备、时装或一组材料 · 装备史诗起步 · 传说装备4%";}
+        {return "宝箱随机获得装备"+(AdventureRewardRules.ChestFashion(mode,false)?"、时装":"")+"或一组材料"+(AdventureRewardRules.ChestAffixReforge(mode,false)?" · 可掉词条重铸石":"")+" · 装备史诗起步 · 传说装备4%";}
         public static string GoalFit(GameProfile profile,ProgressionGoalState goal,int mode,int tier)
         {
             if(profile==null||goal==null)return "收集装备、时装与整备材料";

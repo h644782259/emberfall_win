@@ -58,7 +58,8 @@ namespace Emberfall
         }
         public sealed class MerchantPurchaseQuote
         {
-            internal ProgressionService Owner;
+            internal ProgressionService Owner;internal string Fingerprint,Slot;
+            public int Quantity {get;internal set;}
             internal int Gold,Materials,Potions;
             internal bool First;
             internal int Stones;
@@ -67,39 +68,39 @@ namespace Emberfall
             public EquipmentMechanic Mechanic {get;internal set;}
             public Rarity Rarity {get;internal set;}
         }
-        public MerchantPurchaseQuote PrepareAffixReforgePurchase(bool atMerchant)
+        public MerchantPurchaseQuote PrepareAffixReforgePurchase(bool atMerchant,int count=1,bool captureState=true)
         {
-            if(!atMerchant||IsPracticeOnly||Profile.affixReforgeStones>=999999||Profile.gold<AffixReforgeStonePrice)return null;
-            return new MerchantPurchaseQuote{Owner=this,Gold=Profile.gold,Stones=Profile.affixReforgeStones,AffixReforgeStoneCount=1};
+            if(!atMerchant||IsPracticeOnly||count<1||count>999999-Profile.affixReforgeStones||count>Profile.gold/AffixReforgeStonePrice)return null;
+            return new MerchantPurchaseQuote{Owner=this,Slot=CurrentSlotId,Fingerprint=captureState?BuildStateFingerprint():null,Quantity=count,Gold=Profile.gold,Stones=Profile.affixReforgeStones,AffixReforgeStoneCount=count};
         }
-        public MerchantPurchaseQuote PrepareRefinementPurchase(bool atMerchant,int count=1)
+        public MerchantPurchaseQuote PrepareRefinementPurchase(bool atMerchant,int count=1,bool captureState=true)
         {
-            if(!atMerchant||IsPracticeOnly||count<1||count>99||Profile.refinementStones>999999-count||Profile.gold<count*RefinementStonePrice)return null;
-            return new MerchantPurchaseQuote{Owner=this,Gold=Profile.gold,Stones=Profile.refinementStones,RefinementStoneCount=count};
+            if(!atMerchant||IsPracticeOnly||count<1||count>999999-Profile.refinementStones||count>Profile.gold/RefinementStonePrice)return null;
+            return new MerchantPurchaseQuote{Owner=this,Slot=CurrentSlotId,Fingerprint=captureState?BuildStateFingerprint():null,Quantity=count,Gold=Profile.gold,Stones=Profile.refinementStones,RefinementStoneCount=count};
         }
-        public MerchantPurchaseQuote PrepareMerchantPurchase(EquipmentMechanic mechanic,bool atMerchant,Rarity rarity=Rarity.Epic)
+        public MerchantPurchaseQuote PrepareMerchantPurchase(EquipmentMechanic mechanic,bool atMerchant,Rarity rarity=Rarity.Epic,int count=1,bool captureState=true)
         {
-            if(!atMerchant||!System.Enum.IsDefined(typeof(Rarity),rarity))return null;
+            if(IsPracticeOnly||count<1||!atMerchant||!System.Enum.IsDefined(typeof(Rarity),rarity))return null;
             bool first=Profile.pendingFirstClearReward&&!Profile.firstClearRewardClaimed;
-            if(mechanic==EquipmentMechanic.None){if(Profile.potions>=99||Profile.gold<PotionPrice)return null;}
+            if(mechanic==EquipmentMechanic.None){if(count>99-Profile.potions||count>Profile.gold/PotionPrice)return null;}
             else
             {
-                if(!System.Enum.IsDefined(typeof(EquipmentMechanic),mechanic)||!BuildCatalog.GemCompatible(mechanic,Profile.heroClass))return null;
+                if(count!=1||!System.Enum.IsDefined(typeof(EquipmentMechanic),mechanic)||!BuildCatalog.GemCompatible(mechanic,Profile.heroClass))return null;
                 var owned=Attachment(mechanic);
                 bool free=first&&rarity==Rarity.Epic;
                 if(owned!=null&&owned.rarity>=rarity&&!free)return null;
                 if(free&&owned!=null&&owned.rarity>=rarity&&Profile.mechanicMaterials>999996)return null;
                 if(!free&&Profile.mechanicMaterials<BuildCatalog.GemPrice(rarity))return null;
             }
-            return new MerchantPurchaseQuote{Owner=this,Gold=Profile.gold,Materials=Profile.mechanicMaterials,Potions=Profile.potions,First=first,Mechanic=mechanic,Rarity=rarity};
+            return new MerchantPurchaseQuote{Owner=this,Slot=CurrentSlotId,Fingerprint=captureState?BuildStateFingerprint():null,Quantity=count,Gold=Profile.gold,Materials=Profile.mechanicMaterials,Potions=Profile.potions,First=first,Mechanic=mechanic,Rarity=rarity};
         }
         public bool BuyAtMerchant(MerchantPurchaseQuote quote,bool atMerchant)
         {
-            if(!atMerchant||quote==null||quote.Owner!=this)return Fail("请在商人处核对并交易。");
+            if(!atMerchant||quote==null||quote.Owner!=this||quote.Slot!=CurrentSlotId||quote.Fingerprint!=BuildStateFingerprint())return Fail("请在商人处核对并交易。");
             if(quote.AffixReforgeStoneCount>0)
             {
-                if(quote.Gold!=Profile.gold||quote.Stones!=Profile.affixReforgeStones||PrepareAffixReforgePurchase(atMerchant)==null)return Fail("余额已变化，请重新购买");
-                var purchase=Snapshot();purchase.gold-=AffixReforgeStonePrice;purchase.affixReforgeStones++;
+                if(quote.Gold!=Profile.gold||quote.Stones!=Profile.affixReforgeStones||PrepareAffixReforgePurchase(atMerchant,quote.AffixReforgeStoneCount)==null)return Fail("余额已变化，请重新购买");
+                var purchase=Snapshot();purchase.gold-=quote.AffixReforgeStoneCount*AffixReforgeStonePrice;purchase.affixReforgeStones+=quote.AffixReforgeStoneCount;
                 return CommitCandidate(purchase,true);
             }
             if(quote.RefinementStoneCount>0)
@@ -109,9 +110,9 @@ namespace Emberfall
                 var purchase=Snapshot();purchase.gold-=quote.RefinementStoneCount*RefinementStonePrice;purchase.refinementStones+=quote.RefinementStoneCount;
                 return CommitCandidate(purchase,true);
             }
-            if(quote.Gold!=Profile.gold||quote.Materials!=Profile.mechanicMaterials||quote.Potions!=Profile.potions||quote.First!=(Profile.pendingFirstClearReward&&!Profile.firstClearRewardClaimed)||PrepareMerchantPurchase(quote.Mechanic,atMerchant,quote.Rarity)==null)
+            if(quote.Gold!=Profile.gold||quote.Materials!=Profile.mechanicMaterials||quote.Potions!=Profile.potions||quote.First!=(Profile.pendingFirstClearReward&&!Profile.firstClearRewardClaimed)||PrepareMerchantPurchase(quote.Mechanic,atMerchant,quote.Rarity,quote.Quantity)==null)
                 return Fail("余额、物品或兑换资格已变化，请重新核对；尚未扣费。");
-            if(quote.Mechanic==EquipmentMechanic.None)return BuyPotion();
+            if(quote.Mechanic==EquipmentMechanic.None){var purchase=Snapshot();purchase.gold-=quote.Quantity*PotionPrice;purchase.potions+=quote.Quantity;return CommitCandidate(purchase,true);}
             bool free=quote.First&&quote.Rarity==Rarity.Epic;
             int cost=free?0:BuildCatalog.GemPrice(quote.Rarity);
             var candidate=Snapshot();candidate.mechanicMaterials-=cost;

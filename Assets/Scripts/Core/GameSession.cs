@@ -20,7 +20,7 @@ namespace Emberfall
         public float ArenaRadius { get { return InDungeon ? 18f : 22f; } }
         public bool DungeonCleared { get; private set; }
         public int PendingLootCount { get { return pendingLoot.Count; } }
-        public string ZoneName { get { return InDungeon ? ModeName + (" · Lv"+AdventureRewardRules.DungeonLevel(DungeonTier)) : HubTravelRules.Name(CurrentHub); } }
+        public string ZoneName { get { return InDungeon ? ModeName + (ChapterActive?" · 第 "+DungeonTier+" 阶":" · Lv"+AdventureRewardRules.DungeonLevel(DungeonTier)) : HubTravelRules.Name(CurrentHub); } }
         public string Notification
         {
             get
@@ -518,9 +518,9 @@ namespace Emberfall
             RecordRoomDefeat(enemy);
             int level = Progression.Profile.level;
             int experience = boss ? 100 + level * 12 : (InDungeon ? 22 : 16) + level * 2;
-            int gold = boss ? 85 + DungeonTier * 20 : Random.Range(7, 15) + level;
+            int gold = boss ? (int)System.Math.Min(ProgressionService.MaximumGold,85L+(long)DungeonTier*20) : Random.Range(7, 15) + level;
             if(InDungeon&&!boss) { float share=Mathf.Clamp(6f/Mathf.Max(6,wavePopulation),.5f,1f);experience=Mathf.RoundToInt(experience*share);gold=Mathf.Max(1,Mathf.RoundToInt(gold*share)); }
-            if(InDungeon)gold=Mathf.RoundToInt(gold*(1f+.15f*TierRewardBand.Of(DungeonTier)));
+            if(InDungeon)gold=(int)System.Math.Min(ProgressionService.MaximumGold,(double)gold*(1d+.15d*TierRewardBand.Of(DungeonTier)));
             if(chapterKill)experience=chapterExperience;
             int potions=InDungeon&&(boss||Random.Range(0,100)<AdventureRewardRules.PotionChance(DungeonTier))?1+TierRewardBand.Of(DungeonTier)/2:0;
             if(InDungeon)

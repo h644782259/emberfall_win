@@ -4,7 +4,7 @@ namespace Emberfall
     {
         public sealed class SmithUpgradeQuote
         {
-            internal ProgressionService Owner;
+            internal ProgressionService Owner;internal int Attempt;internal string SaveSlot;
             public string ItemId {get;internal set;}
             public ItemSlot Slot {get;internal set;}
             public int PaidRank {get;internal set;}
@@ -14,11 +14,11 @@ namespace Emberfall
         {
             var item=Equipped(slot);
             if(!atSmith||item==null||SlotUpgradeRank(slot)>=CurrentUpgradeLimit||Profile.gold<UpgradeCost(item))return null;
-            return new SmithUpgradeQuote{Owner=this,ItemId=item.id,Slot=slot,PaidRank=SlotUpgradeRank(slot),GoldCost=UpgradeCost(item)};
+            return new SmithUpgradeQuote{Owner=this,Attempt=Profile.equipmentUpgradeAttempts,SaveSlot=CurrentSlotId,ItemId=item.id,Slot=slot,PaidRank=SlotUpgradeRank(slot),GoldCost=UpgradeCost(item)};
         }
         public bool UpgradeAtSmith(SmithUpgradeQuote quote,bool atSmith)
         {
-            if(!atSmith||quote==null||quote.Owner!=this)return Fail("请在铁匠处核对并强化装备。");
+            if(!atSmith||quote==null||quote.Owner!=this||quote.SaveSlot!=CurrentSlotId||quote.Attempt!=Profile.equipmentUpgradeAttempts)return Fail("请在铁匠处核对并强化装备。");
             var item=Equipped(quote.Slot);
             if(item==null||item.id!=quote.ItemId||SlotUpgradeRank(quote.Slot)!=quote.PaidRank||UpgradeCost(item)!=quote.GoldCost)
                 return Fail("装备或强化等级已变化，请重新核对；尚未扣费。");

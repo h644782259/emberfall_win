@@ -378,6 +378,10 @@ def main():
             failed = failed or not passed
         passed = run_check("fashion-refinement-supply", [[sys.executable, str(ROOT/"Tests/FashionRefinementSupplyProductionTests.py"), dotnet]], dict(env, DOTNET=dotnet), output, report)
         failed = failed or not passed
+        passed = run_check("chapter-tier-progression", [[sys.executable, str(ROOT/"Tests/ChapterTierProgressionProductionTests.py"), dotnet]], dict(env, DOTNET=dotnet), output, report)
+        failed = failed or not passed
+        passed = run_check("equipment-enhancement", [[sys.executable, str(ROOT/"Tests/EquipmentEnhancementProductionTests.py"), dotnet]], dict(env, DOTNET=dotnet), output, report)
+        failed = failed or not passed
         passed = run_check("affix-reforge", [[sys.executable, str(ROOT/"Tests/AffixReforgeProductionTests.py"), dotnet]], dict(env, DOTNET=dotnet), output, report)
         failed = failed or not passed
         passed = run_check("fashion-stat-comparison", [[sys.executable, str(ROOT/"Tests/FashionStatComparisonProductionTests.py"), dotnet]], dict(env, DOTNET=dotnet), output, report)

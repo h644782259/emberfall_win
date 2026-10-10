@@ -13,6 +13,8 @@ namespace Emberfall
         private bool suppressRewardHover,suppressInventoryHover;
         private bool CloseTopPopup()
         {
+            if(smithAffixQuote!=null){smithAffixQuote=null;BlockUITransition();return true;}
+            if(merchantQuantityKind>=0){merchantQuantityKind=-1;BlockUITransition();return true;}
             if(exitRequest.Open){exitRequest.Cancel();exitError=null;BlockUITransition();return true;}
             if(CancelSaveDeletion()||CancelActiveSaveFlow())return true;
             if(rebindingSlot>=0){rebindingSlot=-1;BlockUITransition();return true;}
@@ -37,7 +39,7 @@ namespace Emberfall
             inventoryComparisonOpen=false;inventoryFashionOpen=false;mobileInventoryDetail=false;
             ReleaseFashionSmithPreview();
             smithPreviewMechanic=EquipmentMechanic.None;smithSocketPicker=false;masteryResetConfirm=false;
-            merchantGemSaleConfirmation=EquipmentMechanic.None;
+            merchantGemSaleConfirmation=EquipmentMechanic.None;merchantQuantityKind=-1;smithAffixQuote=null;
             merchantExchangeOpen=false;inventoryHubNpc=HubNpcKind.None;
             progressionGoalsOpen=false;classSwitchOpen=false;ResetMobileSkillNavigation();
             controlsReturnPause=saveReturnPause=bindingReturnPause=travelReturnPause=false;saveSelectionFromPause=false;

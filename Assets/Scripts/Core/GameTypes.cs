@@ -335,6 +335,7 @@ namespace Emberfall
         public float criticalChance,criticalDamageBonus,attackPercent;
         public int statRollRevision;
         public int upgradeLevel;
+        public int enhancementRevision;
         public EquipmentMechanic mechanic;
         public bool locked;
         public int mechanicVariant;
@@ -478,6 +479,9 @@ namespace Emberfall
         public int chapterMasteryMask;
         public int[] chapterMasteryTiers = new int[4];
         public int chapterRevision;
+        public int chapterTierRevision;
+        public int[] chapterDifficultyBestTiers=new int[9];
+        [System.NonSerialized] internal bool chapterTierMigrationPending;
         public int chapterCompletedMask;
         public int chapterFirstRewardMask;
         // Six independent node/difficulty first rewards; revision gates legacy backfill.
@@ -499,10 +503,13 @@ namespace Emberfall
         // only the current equipped-stat cache; legacy anchors preserve item bases.
         public int[] slotUpgradeRanks = new int[3];
         public bool slotUpgradesInitialized;
+        public int equipmentEnhancementRevision, equipmentUpgradeAttempts;
+        [System.NonSerialized] internal bool enhancementMigrationPending;
         public int mechanicMaterials;
         public int affixReforgeStones,affixReforgeCount;
         public int refinementStones,refinementCount,refinementMaxCount;
         public bool pendingChestGemSource;
+        public bool pendingChestChapterSource;
         public int variantKnowledgeRevision;
         public List<EquipmentMechanic> variantKnowledge = new List<EquipmentMechanic>();
         public int materialRewardedClears;

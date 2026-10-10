@@ -61,7 +61,7 @@ namespace Emberfall
                 else if(DrawFashionServiceAction(new Rect(tile.x+8*u,tile.y+202*u,(tile.width-24*u)*.5f,48*u),false,ProgressionService.FashionUpgradeCost(fashion),upgrade!=null,upgradeReason,u))smithFashionQuote=upgrade;
                 if(DrawFashionServiceAction(new Rect(tile.center.x+4*u,tile.y+202*u,(tile.width-24*u)*.5f,48*u),true,ProgressionService.FashionDismantleValue(fashion),dismantle!=null,dismantleReason,u))smithFashionQuote=dismantle;
             }
-            if(p.Profile.fashions.Count==0)Text(new Rect(10*u,20*u,list.width-20*u,60*u),"暂无时装 · 副本宝箱可获取兵装和羽翼",Mathf.RoundToInt(14*u),muted,false,true);
+            if(p.Profile.fashions.Count==0)Text(new Rect(10*u,20*u,list.width-20*u,60*u),"暂无时装 · 回廊远征宝箱可获取兵装和羽翼",Mathf.RoundToInt(14*u),muted,false,true);
             EndTouchScroll();GUI.enabled=enabled;
             DrawFashionSmithConfirmation(u);
         }

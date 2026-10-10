@@ -29,6 +29,9 @@ namespace Emberfall
     public static class AdventureRewardRules
     {
         public const int DuplicateGemMaterials=3;
+        public static bool ChestFashion(int mode,bool chapter){return !chapter&&mode==3;}
+        // Chapter chests retain the chapter slot mapping: Forest=0, Redrock=1, StarPlatform=2.
+        public static bool ChestAffixReforge(int mode,bool chapter){return chapter?mode==1:mode==2;}
         // Keep the stored difficulty index for save compatibility; gameplay uses its fixed level.
         public static int DungeonLevel(int index){return Math.Max(1,Math.Min(10,index))*10;}
         public static int MaximumDungeonIndex(int characterLevel){return Math.Max(1,Math.Min(10,(Math.Max(1,characterLevel)+10)/10));}
