@@ -104,7 +104,7 @@ namespace Emberfall
                     Rect icon=new Rect(4*u,(y+30)*u,56*u,56*u);Color tint=GameBalance.RarityColor(reward.Rarity.Value);
                     Fill(icon,card);Border(icon,tint);DrawIcon(new Rect(icon.x+8*u,icon.y+8*u,40*u,40*u),UIIconAtlas.FashionCardIcon(reward.Slot.Value,reward.appearanceTier>=0?reward.appearanceTier:(int)reward.Rarity.Value,session.Progression.Profile.heroClass),tint);
                     Text(new Rect(72*u,(y+30)*u,(width-80)*u,h*u),name,Mathf.RoundToInt(14*u),pale,false,true);
-                    var fashionPreview=new EntryRewardPreview{Key="fashion:"+reward.id,Name=reward.Name,Rarity=reward.Rarity.Value,Tint=tint,Icon=UIIconAtlas.FashionCardIcon(reward.Slot.Value,reward.appearanceTier,session.Progression.Profile.heroClass),Description=reward.Name+"\n"+ProgressionService.FashionBonus(reward.Slot.Value,reward.Rarity.Value)};
+                    var fashionPreview=new EntryRewardPreview{Key="fashion:"+reward.id,AppearanceSlot=reward.Slot.Value,Name=reward.Name,Rarity=reward.Rarity.Value,Tint=tint,Icon=UIIconAtlas.FashionCardIcon(reward.Slot.Value,reward.appearanceTier,session.Progression.Profile.heroClass),Description=reward.Name+"\n"+ProgressionService.FashionBonus(reward.Slot.Value,reward.Rarity.Value)};
                     DrawEntryRewardIcon(icon,fashionPreview,u);InspectRewardItem(icon,fashionPreview);
                 }
                 y+=30+h+12;

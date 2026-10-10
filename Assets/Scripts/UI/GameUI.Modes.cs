@@ -28,9 +28,9 @@ namespace Emberfall
    float u=MobileControls.Active?TouchRatio:1f;
    if(!entryRewardAnchorIsRoot){Vector2 at=GUIUtility.ScreenToGUIPoint(entryRewardScreenAnchor),end=GUIUtility.ScreenToGUIPoint(entryRewardScreenEnd);entryRewardAnchor=new Rect(at.x,at.y,end.x-at.x,end.y-at.y);}
    if(!entryRewardViewport.Overlaps(entryRewardAnchor)){entryRewardPopupVisible=false;return;}
-   float w=Mathf.Min(320*u,width-24*u),textWidth=w-40*u;
-   float contentHeight=DrawEntryRewardRows(entryRewardPopup,textWidth/u,u,false)*u;
-   float comparisonHeight=entryRewardPopup.GearSlot.HasValue||entryRewardPopup.AppearanceSlot.HasValue?88*u:0;
+   float w=Mathf.Min(400*u,width-24*u),textWidth=w-40*u;
+   float contentHeight=DrawRewardDetailRows(entryRewardPopup,textWidth/u,u,false)*u;
+   float comparisonHeight=0;
    float h=Mathf.Min(contentHeight+108*u+comparisonHeight,height-24*u);
    float x=entryRewardAnchor.xMax+10*u;
    if(x+w>width-12*u)x=entryRewardAnchor.x-w-10*u;
@@ -46,19 +46,8 @@ namespace Emberfall
    foreach(string tag in tags)if(tag.Length>0)
    {float tagW=Mathf.Max(48,tag.Length*12+16)*u;Rect chip=new Rect(tagX,y+66*u,tagW,23*u);Fill(chip,new Color(entryRewardPopup.Tint.r,entryRewardPopup.Tint.g,entryRewardPopup.Tint.b,.18f));Text(chip,tag,Mathf.RoundToInt(10*u),pale,true,false,TextAnchor.MiddleCenter);tagX+=tagW+6*u;}
    if(MobileControls.Active&&PopupCloseButton(new Rect(box.xMax-44*u,y,44*u,44*u)))entryRewardSelection=null;
-   if(comparisonHeight>0)
-   {
-    Texture2D currentIcon=null;Color currentTint=muted;
-    if(entryRewardPopup.GearSlot.HasValue){var current=session.Progression.Equipped(entryRewardPopup.GearSlot.Value);if(current!=null){currentIcon=UIIconAtlas.EquipmentCardIcon(current.slot,current.level,current.rarity,session.Progression.Profile.heroClass);currentTint=GameBalance.RarityColor(current.rarity);}}
-    else {var current=session.Progression.EquippedFashion(entryRewardPopup.AppearanceSlot.Value);if(current!=null){currentIcon=UIIconAtlas.FashionCardIcon(current.slot,(int)current.AppearanceRarity,session.Progression.Profile.heroClass);currentTint=GameBalance.RarityColor(current.rarity);}}
-    for(int col=0;col<2;col++){Rect preview=new Rect(x+12*u+col*(w-24*u)*.5f,y+98*u,(w-30*u)*.5f,80*u);Fill(preview,card);
-     Text(new Rect(preview.x,preview.y,preview.width,22*u),col==0?"当前穿戴":"奖励预览",Mathf.RoundToInt(11*u),col==0?muted:jade,true,false,TextAnchor.MiddleCenter);
-     var icon=col==0?currentIcon:entryRewardPopup.Icon;if(icon!=null)DrawIcon(new Rect(preview.center.x-24*u,preview.y+26*u,48*u,48*u),icon,col==0?currentTint:entryRewardPopup.Tint);
-     else Text(new Rect(preview.x,preview.y+30*u,preview.width,32*u),"未穿戴",Mathf.RoundToInt(11*u),muted,false,false,TextAnchor.MiddleCenter);
-    }
-   }
    entryRewardPopupScroll=BeginTouchScroll("entry-reward-popup",new Rect(x+12*u,y+98*u+comparisonHeight,w-24*u,h-108*u-comparisonHeight),entryRewardPopupScroll,new Rect(0,0,textWidth,contentHeight));
-   DrawEntryRewardRows(entryRewardPopup,textWidth/u,u,true);
+   DrawRewardDetailRows(entryRewardPopup,textWidth/u,u,true);
    EndTouchScroll();
   }
   private string GemDropDescription(EquipmentMechanic gem,bool preview)
@@ -80,7 +69,7 @@ namespace Emberfall
    if(item.criticalChance>0)description+="\n暴击率  "+(item.criticalChance*100).ToString("0.##")+"%";
    if(item.criticalDamageBonus>0)description+="\n暴击伤害  "+(item.criticalDamageBonus*100).ToString("0.##")+"%";
    if(item.attackPercent>0)description+="\n攻击加成  "+(item.attackPercent*100).ToString("0.##")+"%";
-   return new EntryRewardPreview{Key="obtained:"+item.id,Name=item.name,Description=description,Rarity=item.rarity,Tint=GameBalance.RarityColor(item.rarity),Icon=UIIconAtlas.EquipmentCardIcon(item.slot,item.level,item.rarity,session.Progression.Profile.heroClass)};
+   return new EntryRewardPreview{Key="obtained:"+item.id,GearSlot=item.slot,Name=item.name,Description=description,Rarity=item.rarity,Tint=GameBalance.RarityColor(item.rarity),Icon=UIIconAtlas.EquipmentCardIcon(item.slot,item.level,item.rarity,session.Progression.Profile.heroClass)};
   }
   private string EntryRewardKind(EntryRewardPreview item)
   {return item.Key.StartsWith("fashion:")?"时装":item.Key.StartsWith("gem:")?"宝石":item.Key=="shard"||item.Key=="refinement"?"材料":item.Key=="gold"?"货币":"装备";}
@@ -116,6 +105,39 @@ namespace Emberfall
     y+=h/u+4;
    }
    return y;
+  }
+  // Retain range/affix notes in previews while using the same stat rows for actual rewards.
+  private float DrawRewardDetailRows(EntryRewardPreview item,float available,float u,bool draw)
+  {
+   if(!item.GearSlot.HasValue&&!item.AppearanceSlot.HasValue)return DrawEntryRewardRows(item,available,u,draw);
+   string current="";
+   if(item.GearSlot.HasValue){var equipped=session.Progression.Equipped(item.GearSlot.Value);if(equipped!=null)current=ActualEquipmentPreview(equipped).Description;}
+   else {var equipped=session.Progression.EquippedFashion(item.AppearanceSlot.Value);if(equipped!=null)current=ProgressionService.FashionBonus(equipped.slot,equipped.rarity);}
+   var baseline=RewardStatValues(current);var selected=RewardStatValues(item.Description);
+   foreach(var pair in baseline)if(!selected.ContainsKey(pair.Key))selected[pair.Key]=pair.Value.Contains("×")?"×100%":pair.Value.Contains("%")?"0%":"0";
+   float label=available*.32f,column=(available-label)*.5f,y=26;
+   if(draw){Text(new Rect(label*u,0,column*u,24*u),"当前穿戴",Mathf.RoundToInt(11*u),muted,true,false,TextAnchor.MiddleRight);Text(new Rect((label+column)*u,0,column*u,24*u),"所选物品",Mathf.RoundToInt(11*u),jade,true,false,TextAnchor.MiddleRight);}
+   foreach(var pair in selected)
+   {
+    string before;if(!baseline.TryGetValue(pair.Key,out before))before=pair.Value.Contains("×")?"×100%":pair.Value.Contains("%")?"0%":"0";
+    if(draw){Fill(new Rect(0,y*u,available*u,30*u),card);DrawIcon(new Rect(3*u,(y+7)*u,16*u,16*u),UIIconAtlas.Utility(pair.Key=="攻击"?"attack":pair.Key=="防御"?"defense":pair.Key=="生命"?"health":"core"),jade);
+     Text(new Rect(22*u,y*u,(label-22)*u,30*u),pair.Key,Mathf.RoundToInt(10*u),muted,false,false,TextAnchor.MiddleLeft);
+     Text(new Rect(label*u,y*u,(column-4)*u,30*u),before,Mathf.RoundToInt(11*u),muted,true,false,TextAnchor.MiddleRight);
+     Text(new Rect((label+column)*u,y*u,(column-4)*u,30*u),pair.Value,Mathf.RoundToInt(11*u),pale,true,false,TextAnchor.MiddleRight);}
+    y+=34;
+   }
+   // Preserve the uncertainty of random affixes rather than implying guaranteed rolls.
+   if(item.Description.Contains("随机附加")){if(draw)Text(new Rect(0,y*u,available*u,26*u),item.Description.Contains("至多一项")?"随机词条 · 至多一项":"随机词条 · 最多两项",Mathf.RoundToInt(11*u),muted);y+=28;}
+   return y;
+  }
+  private static System.Collections.Generic.Dictionary<string,string> RewardStatValues(string description)
+  {
+   var values=new System.Collections.Generic.Dictionary<string,string>();
+   foreach(string raw in description.Split(new[]{"\n"," · "},System.StringSplitOptions.RemoveEmptyEntries)){
+    var match=System.Text.RegularExpressions.Regex.Match(raw.Trim(),@"^(攻击加成|攻击|防御|生命|暴击率|暴击几率|暴击伤害|移动速度)[ ：]*(.+)$");
+    if(match.Success)values[match.Groups[1].Value]=match.Groups[2].Value;
+   }
+   return values;
   }
   private sealed class EntryRewardPreview
   {
@@ -193,11 +215,11 @@ namespace Emberfall
   private Rect AdventureRect(MobilePanelLayout.Area a,float u){return new Rect(a.X*u,a.Y*u,a.Width*u,a.Height*u);}
   private void DrawArenaSelection()
   {
-   float u=MobileControls.Active?TouchRatio:1f;var l=new AdventureSelectionLayout(width/u,height/u);
+   float u=MobileControls.Active?TouchRatio:1f,inset=MobileControls.Active?0:24;var l=new AdventureSelectionLayout(width/u,height/u,inset);
    blockedRects.Add(new Rect(0,0,width,height));
    Box(AdventureRect(l.Frame,u),jade,false);
-   Text(new Rect(l.X*u,l.Y*u,l.Frame.Width*u,36*u),"选择冒险",Mathf.RoundToInt(20*u),pale,true);
-   if(PopupCloseButton(new Rect((l.X+l.Frame.Width-44)*u,l.Y*u,44*u,36*u))){adventureChapterSelected=false;session.CancelDungeonSelection();BlockUITransition();return;}
+   Text(new Rect((l.X+inset)*u,(l.Y+inset)*u,(l.Frame.Width-2*inset-48)*u,36*u),"选择冒险",Mathf.RoundToInt(20*u),pale,true);
+   if(PopupCloseButton(new Rect((l.X+l.Frame.Width-44-inset)*u,(l.Y+inset)*u,44*u,36*u))){adventureChapterSelected=false;session.CancelDungeonSelection();BlockUITransition();return;}
    string[] names={"沉星遗迹","守望林庭","烬河突围","蚀星斗场","回廊远征","星路章节"};
    adventureListScroll=BeginTouchScroll("adventure-list",AdventureRect(l.List,u),adventureListScroll,new Rect(0,0,(l.List.Width-18)*u,360*u));
    for(int i=0;i<6;i++)
@@ -223,13 +245,13 @@ namespace Emberfall
    Text(new Rect(8*u,4*u,(contentWidth-12)*u,32*u),detail,Mathf.RoundToInt(18*u),pale,true);
    if(!adventureChapterSelected){entryRewardViewport=AdventureRect(l.Details,u);entryRewardContentOrigin=new Vector2(entryRewardViewport.x-adventureDetailScroll.x,entryRewardViewport.y+48*u-adventureDetailScroll.y);GUI.BeginGroup(new Rect(0,48*u,contentWidth*u,rewardHeight*u));DrawEntryRewardPreviews(contentWidth,u,mode,tier,false,true);GUI.EndGroup();}
    EndTouchScroll();
-   float x=l.X,y=l.FooterY;
+   float x=l.X+inset,y=l.FooterY;
 
    bool normal=!adventureChapterSelected;
    if(Button(new Rect((x)*u,y*u,44*u,48*u),"−",jade,normal&&tier>1))session.SelectedDungeonTier--;
    Text(new Rect((x+44)*u,y*u,80*u,48*u),"Lv"+AdventureRewardRules.DungeonLevel(tier),Mathf.RoundToInt(13*u),gold,true,false,TextAnchor.MiddleCenter);
    if(Button(new Rect((x+124)*u,y*u,44*u,48*u),"+",jade,normal&&tier<session.MaximumDungeonTier))session.SelectedDungeonTier++;
-   if(PrimaryButton(new Rect((x+176)*u,y*u,(l.Frame.Width-176)*u,48*u),"进入挑战",gold))
+   if(PrimaryButton(new Rect((x+176)*u,y*u,(l.Frame.Width-2*inset-176)*u,48*u),"进入挑战",gold))
    {session.ConfirmDungeonSelection();}
   }
   private void DrawMobileModeStatus(Rect r)

@@ -34,7 +34,8 @@ shell+=r"""
   for(int i=0;i<100;i++)CastContract(owner,game,Kind.Spirit,2,new Vector3(6,0,0),10,false);
   check(Snapshot(owner).Length==2&&!tower.IsAlive,"recasts replace same form without accumulating summons");
   var ultimate=CastContract(owner,game,Kind.Treant,3,Vector3.zero,10,false);
-  check(ultimate.RemainingLifetime==20&&!ultimate.IsPermanent,"ultimate creates a timed treant");
+  check(ultimate.RemainingLifetime==36&&CompanionRules.ContractLifetime(2,1,false)==24&&CompanionRules.ContractLifetime(2,2,false)==30,"ultimate persists for 24/30/36 seconds by rank");
+  check(ultimate.RemainingLifetime==36&&!ultimate.IsPermanent,"ultimate creates a timed treant");
   CastContract(owner,game,Kind.Wolf,2,Vector3.zero,10,true);
   check(Array.FindAll(Snapshot(owner),p=>p.Form==Kind.Wolf).Length==2,"pack mode creates two temporary wolves");
   var wolves=Array.FindAll(Snapshot(owner),p=>p.Form==Kind.Wolf);
@@ -57,8 +58,8 @@ shell+=r"""
    check(!float.IsInfinity(CompanionRules.ContractLifetime(form,rank,true)),"legacy permanent flag cannot produce infinite lifetime");
    check(!CompanionRules.PermanentPartner(true,form,false),"no permanent route");
   }
-  check(ultimate.AdvanceLifetime(0)&&ultimate.RemainingLifetime==20,"pause does not age summon");
-  check(ultimate.AdvanceLifetime(19.9f)&&!ultimate.AdvanceLifetime(.2f)&&ultimate.RemainingLifetime==0,"summon expires exactly after its timed life");
+  check(ultimate.AdvanceLifetime(0)&&ultimate.RemainingLifetime==36,"pause does not age summon");
+  check(ultimate.AdvanceLifetime(35.9f)&&!ultimate.AdvanceLifetime(.2f)&&ultimate.RemainingLifetime==0,"summon expires exactly after its timed life");
   return n;
  }
 }}

@@ -84,6 +84,7 @@ namespace Emberfall
         private Rect inventoryPopupAnchor,inventoryPopupRect;
         private string inventoryPopupItem;
         private bool inventoryPopupCompare;
+        private Vector2 inventoryDetailScroll;
         private int inventoryPopupOpened=-1,inventoryPopupDismissed=-1;
         private void PrepareInventoryPopupInput()
         {
@@ -99,7 +100,7 @@ namespace Emberfall
         }
         private void OpenInventoryPopup(string id,Rect anchor)
         {
-            inventoryPopupItem=id;inventoryPopupAnchor=anchor;inventoryPopupCompare=!id.StartsWith("@");
+            inventoryDetailScroll=Vector2.zero;inventoryPopupItem=id;inventoryPopupAnchor=anchor;inventoryPopupCompare=!id.StartsWith("@");
             inventoryComparisonOpen=true;inventoryPopupOpened=Time.frameCount;inventoryComparisonScroll=Vector2.zero;
             if(!id.StartsWith("@")){selectedItem=id;ReviewEquipment(session.Progression.Profile.inventory.Find(v=>v!=null&&v.id==id));}
             CancelMobileScroll();
@@ -182,7 +183,8 @@ namespace Emberfall
         }
         private void DrawEquipmentSheet(ItemData item,float u)
         {
-            bool compactCompare=inventoryPopupCompare&&height/u<400;
+            inventoryPopupCompare=true;
+            bool compactCompare=height/u<400;
             float sheetWidth=Mathf.Min(compactCompare?520:380,(width/u)-40),sheetHeight=Mathf.Min(480,(height/u)-32);
             Rect r=inventoryPopupRect=MobileControls.Active?new Rect((width-sheetWidth*u)*.5f,(height-sheetHeight*u)*.5f,sheetWidth*u,sheetHeight*u):DesktopInventorySheet(sheetWidth,sheetHeight);
             Fill(r,new Color(.025f,.055f,.075f,.995f));Border(r,jade);
@@ -196,30 +198,10 @@ namespace Emberfall
             float bodyY=r.y+66*u,rowHeight=(sheetHeight<360?22:28)*u;
             string[] labels={"评分","攻击","防御","生命","暴击率","暴击伤害","攻击加成"};
             float inner=r.width-24*u,statsWidth=compactCompare?(inner-12*u)*.52f:inner,labelWidth=96*u,valueWidth=(statsWidth-labelWidth)*.5f;
-            if(inventoryPopupCompare)
-            {
-                Text(new Rect(r.x+12*u+labelWidth,bodyY,valueWidth,22*u),current==null?"未穿戴":"当前穿戴",Mathf.RoundToInt(12*u),muted,true,false,TextAnchor.MiddleRight);
-                Text(new Rect(r.x+12*u+labelWidth+valueWidth,bodyY,valueWidth,22*u),"所选装备",Mathf.RoundToInt(12*u),jade,true,false,TextAnchor.MiddleRight);
-                bodyY+=22*u;
-            }
-            for(int row=0;row<7;row++)
-            {
-                float x=r.x+12*u+(inventoryPopupCompare?0:(row%2)*(inner+8*u)*.5f);
-                float y=bodyY+(inventoryPopupCompare?row:row/2)*rowHeight;
-                float cellWidth=inventoryPopupCompare?statsWidth:(inner-8*u)*.5f;
-                Fill(new Rect(x,y,cellWidth,rowHeight-u),card);
-                DrawIcon(new Rect(x+3*u,y+5*u,18*u,18*u),UIIconAtlas.Utility(row==1?"attack":row==2?"defense":row==3?"health":"core"),jade);
-                Text(new Rect(x+24*u,y,72*u,rowHeight),labels[row],Mathf.RoundToInt(11*u),pale,true,false,TextAnchor.MiddleLeft);
-                for(int col=0;col<(inventoryPopupCompare?2:1);col++)
-                {
-                    var value=inventoryPopupCompare&&col==0?current:next;
-                    float number=value==null?0:row==0?ProgressionService.EquipmentScore(value):row==1?value.attack:row==2?value.defense:row==3?value.health:row==4?value.criticalChance*100:row==5?value.criticalDamageBonus*100:value.attackPercent*100;
-                    float baseline=current==null?0:row==0?ProgressionService.EquipmentScore(current):row==1?current.attack:row==2?current.defense:row==3?current.health:row==4?current.criticalChance*100:row==5?current.criticalDamageBonus*100:current.attackPercent*100;
-                    Color valueColor=inventoryPopupCompare&&col==0?muted:number>baseline?jade:number<baseline?new Color(1,.48f,.42f):pale;
-                    float cell=inventoryPopupCompare?valueWidth:cellWidth-labelWidth;
-                    Text(new Rect(x+labelWidth+col*cell,y,cell-4*u,rowHeight),number.ToString(row>=4?"0.##":"0.#")+(row>=4?"%":""),Mathf.RoundToInt(13*u),valueColor,true,false,TextAnchor.MiddleRight);
-                }
-            }
+            var detail=ActualEquipmentPreview(next);
+            inventoryDetailScroll=BeginTouchScroll("equipment-detail",new Rect(r.x+12*u,bodyY,inner,r.yMax-bodyY-60*u),inventoryDetailScroll,new Rect(0,0,inner-8*u,DrawRewardDetailRows(detail,inner/u-8,u,false)*u));
+            DrawRewardDetailRows(detail,inner/u-8,u,true);
+            EndTouchScroll();
             float mechanismY=compactCompare?r.y+66*u:bodyY+(inventoryPopupCompare?7:4)*rowHeight+8*u;
             float mechanismX=compactCompare?r.x+24*u+statsWidth:r.x+12*u,mechanismWidth=compactCompare?inner-statsWidth-12*u:inner;
             bool worn=IsEquipped(item);float buttonWidth=r.width-24*u;
@@ -267,21 +249,11 @@ namespace Emberfall
             if(potion||fashion)Text(new Rect(r.x+8*u,r.y+42*u,r.width-16*u,22*u),potion?"恢复50%生命":"时装 · "+GameBalance.RarityName(appearance.rarity),Mathf.RoundToInt(12*u),muted);
             if(fashion)
             {
-                var current=session.Progression.EquippedFashion(appearance.slot);
-                float top=MobileControls.Active?120:76,cell=(r.width-32*u)/2;
-                for(int col=0;col<2;col++)
-                {
-                    var f=col==0?current:appearance;Rect compare=new Rect(r.x+(12+col*(cell/u+8))*u,r.y+top*u,cell,r.height-(top+12)*u);
-                    Fill(compare,card);Text(new Rect(compare.x+6*u,compare.y,compare.width-12*u,24*u),col==0?"当前穿戴":"所选时装",Mathf.RoundToInt(12*u),col==0?muted:jade,true);
-                    if(f!=null)
-                    {
-                        DrawIcon(new Rect(compare.center.x-20*u,compare.y+28*u,40*u,40*u),UIIconAtlas.FashionCardIcon(f.slot,(int)f.AppearanceRarity,session.Progression.Profile.heroClass),GameBalance.RarityColor(f.rarity));
-                        GUI.BeginGroup(new Rect(compare.x+6*u,compare.y+72*u,compare.width-12*u,compare.height-76*u));
-                        DrawEntryRewardRows(new EntryRewardPreview{Key="fashion:"+f.slot,Description="属性\n"+ProgressionService.FashionBonus(f.slot,f.rarity),Rarity=f.rarity,Tint=GameBalance.RarityColor(f.rarity)},(compare.width-12*u)/u,u,true);
-                        GUI.EndGroup();
-                    }
-                    else Text(new Rect(compare.x+6*u,compare.y+40*u,compare.width-12*u,32*u),"未穿戴",Mathf.RoundToInt(12*u),muted);
-                }
+                float statsTop=MobileControls.Active?120:76;
+                var detail=new EntryRewardPreview{Key="fashion:"+appearance.id,AppearanceSlot=appearance.slot,Description=ProgressionService.FashionBonus(appearance.slot,appearance.rarity)};
+                inventoryDetailScroll=BeginTouchScroll("fashion-detail",new Rect(r.x+12*u,r.y+statsTop*u,r.width-24*u,r.height-(statsTop+8)*u),inventoryDetailScroll,new Rect(0,0,r.width-32*u,DrawRewardDetailRows(detail,r.width/u-32,u,false)*u));
+                DrawRewardDetailRows(detail,r.width/u-32,u,true);
+                EndTouchScroll();
             }
             float actionWidth=(r.width-16*u)*.5f;
             if(potion)

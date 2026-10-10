@@ -65,7 +65,7 @@ namespace Emberfall
             if(session!=null&&(owner==null||session.Player!=owner||owner.CombatEpoch!=epoch)){Destroy(gameObject);return;}
             if(session!=null&&(session.Paused||session.BackgroundPaused))return;
             age += Time.unscaledDeltaTime;
-            float stagger=boss?.55f:0f,fallDuration=boss?1.05f:FallTime,restDuration=boss?1.4f:RestTime;
+            float stagger=boss?.25f:0f,fallDuration=boss?.8f:FallTime,restDuration=boss?.12f:RestTime;
             float fall = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((age-stagger) / fallDuration));
             visual.localRotation = Quaternion.Slerp(startRotation,
                 startRotation * Quaternion.Euler(slime ? 0f : 9f, 0f, slime ? 0f : 84f), fall);
@@ -74,7 +74,7 @@ namespace Emberfall
             Vector3 fallenScale = slime ? Vector3.Scale(startScale,
                 new Vector3(1f + .3f * fall, 1f - .55f * fall, 1f + .3f * fall)) : startScale;
             visual.localScale = fallenScale;
-            float fade = Mathf.Clamp01((age - stagger - fallDuration - restDuration) / FadeTime);
+            float fade = Mathf.Clamp01((age - stagger - fallDuration - restDuration) / (boss?.95f:FadeTime));
             if (fade > 0f)
             {
                 if (ash != null && !ash.isPlaying)

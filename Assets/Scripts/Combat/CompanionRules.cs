@@ -43,7 +43,7 @@ namespace Emberfall
         public static float AttackCoefficient(int form){return form==2?2.25f:form==3?.85f:form==1?.72f:.65f;}
         public static float AttackInterval(int form){return form==2?2.2f:form==3?1.5f:form==1?1.2f:.85f;}
         public static float ContractLifetime(int form,int rank,bool permanent)
-        {rank=Math.Max(1,Math.Min(3,rank));return (form==0?14:12)+(rank-1)*4;}
+        {rank=Math.Max(1,Math.Min(3,rank));return form==2?24+(rank-1)*6:(form==0?14:12)+(rank-1)*4;}
         public static float HealthFraction(int form, int rank, bool foundation)
         {
             rank = Math.Max(0, Math.Min(3, rank));

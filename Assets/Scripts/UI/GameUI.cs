@@ -339,7 +339,7 @@ namespace Emberfall
                 else if (session.DungeonSelectionOpen) DrawDungeonSelection();
                 else if (session.RoomBranchChoiceOpen) DrawRoomBranchChoice();
                 else if (session.RunChoices.AwaitingChoice) DrawBlessingChoice();
-                else if((session.ModeFinished||session.DungeonCleared)&&!session.FinishedResultDismissed){if(session.FinishedResultReady&&DrawStructuredRunRecap(false))CloseSettlement();}
+                else if((session.ModeFinished||session.DungeonCleared)&&!session.FinishedResultDismissed){if(session.FinishedResultReady){if(DrawStructuredRunRecap(false))CloseSettlement();}else DrawVictoryTransition();}
                 else if (DrawPresetSaleConfirmation()) {}
                 else if (panel == Panel.Inventory) DrawInventory();
                 else if (panel == Panel.Skills) DrawSkills();
@@ -828,11 +828,13 @@ namespace Emberfall
         {
             var p=session.Progression.Profile;float u=MobileControls.Active?TouchRatio:1;
             bool capped=p.level>=ProgressionService.MaximumLevel;
-            // Keep labels within the safe area; the thin rail continues to the screen edges.
-            float railY=height-24*u;
-            Rect rail=new Rect(-guiOffset.x/scale,railY,Screen.width/scale,24*u);
+            // GUI coordinates start at the safe-area top; the XP rail ends at the physical screen bottom.
+            float railHeight=12*u,railY=(Screen.height-guiOffset.y)/scale-railHeight;
+            Rect rail=new Rect(-guiOffset.x/scale,railY,Screen.width/scale,railHeight);
             Bar(rail,capped?1:p.xp/(float)GameBalance.XpToNext(p.level),gold);
-            DrawHudVital(new Rect(0,railY,width,24*u),capped?1:p.xp/(float)GameBalance.XpToNext(p.level),gold,"Lv."+p.level+"   "+(capped?"满级":p.xp+" / "+GameBalance.XpToNext(p.level)));
+            var labelStyle=new GUIStyle(Style(Mathf.RoundToInt(9*u),true,false,TextAnchor.MiddleLeft));
+            labelStyle.padding=new RectOffset(0,0,0,0);labelStyle.normal.textColor=Color.white;
+            GUI.Label(new Rect(8*u,railY,width-16*u,railHeight),"Lv."+p.level+"   "+(capped?"满级":p.xp+" / "+GameBalance.XpToNext(p.level)),labelStyle);
 
         }
         private void DrawHUD()

@@ -12,7 +12,7 @@ namespace Emberfall
         private bool leased;
         private CombatModel model;private LargeBossRig rig;private GameSession session;private PlayerController owner;
         private int epoch;private float age;private bool finalBoss;
-        private const float Duration=4.2f;
+        private const float Duration=2.5f;
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetRegistry(){live=0;active.Clear();skippedSession=null;skippedOwner=null;}
         internal static bool IsPresenting(GameSession game)

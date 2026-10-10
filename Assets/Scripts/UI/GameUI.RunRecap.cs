@@ -47,6 +47,16 @@ namespace Emberfall
             dismissedChestId=session.Progression.Profile.pendingChestQualificationId;
             panel=Panel.None;session.SetUIBlocking(false);BlockUITransition();
         }
+        private void DrawVictoryTransition()
+        {
+            float u=MobileControls.Active?TouchRatio:1;
+            Rect r=new Rect(width*.5f-160*u,height*.23f,320*u,62*u);
+            Text(new Rect(r.x,r.y,r.width,38*u),"首领已击败",Mathf.RoundToInt(24*u),gold,true,false,TextAnchor.MiddleCenter);
+            Text(new Rect(r.x,r.y+36*u,r.width,22*u),"通关奖励即将揭晓",Mathf.RoundToInt(12*u),pale,false,false,TextAnchor.MiddleCenter);
+            float pulse=.5f+.5f*Mathf.Sin(Time.unscaledTime*4);
+            Fill(new Rect(r.center.x-(60+24*pulse)*u,r.yMax,(120+48*pulse)*u,2*u),new Color(gold.r,gold.g,gold.b,.4f+.4f*pulse));
+        }
+
         private bool DrawVictorySettlement()
         {
             RefreshSettlementChest();
@@ -134,7 +144,7 @@ namespace Emberfall
             if(reward.equipmentIds!=null)foreach(string id in reward.equipmentIds)
             {var item=session.Progression.Profile.inventory.Find(v=>v!=null&&v.id==id);if(item!=null)icons.Add(ActualEquipmentPreview(item));}
             if(reward.Rarity.HasValue&&reward.Slot.HasValue)
-                icons.Add(new EntryRewardPreview{Key="fashion:"+reward.Id,Name=reward.Name,Rarity=reward.Rarity.Value,Tint=GameBalance.RarityColor(reward.Rarity.Value),Icon=UIIconAtlas.FashionCardIcon(reward.Slot.Value,(int)reward.Rarity.Value,session.Progression.Profile.heroClass),Description=ProgressionService.FashionBonus(reward.Slot.Value,reward.Rarity.Value)});
+                icons.Add(new EntryRewardPreview{Key="fashion:"+reward.Id,AppearanceSlot=reward.Slot.Value,Name=reward.Name,Rarity=reward.Rarity.Value,Tint=GameBalance.RarityColor(reward.Rarity.Value),Icon=UIIconAtlas.FashionCardIcon(reward.Slot.Value,(int)reward.Rarity.Value,session.Progression.Profile.heroClass),Description=ProgressionService.FashionBonus(reward.Slot.Value,reward.Rarity.Value)});
             if(reward.gemMechanic!=EquipmentMechanic.None)
                 icons.Add(new EntryRewardPreview{Key="gem:"+reward.Id,Name=BuildCatalog.GemName(reward.gemMechanic),Rarity=reward.gemRarity,Tint=GameBalance.RarityColor(reward.gemRarity),Icon=UIIconAtlas.Utility("gem"),Description=BuildCatalog.MechanicDescription(reward.gemMechanic)});
             if(icons.Count==0){DrawChestResourceVisuals(rewardsArea,reward);return;}
