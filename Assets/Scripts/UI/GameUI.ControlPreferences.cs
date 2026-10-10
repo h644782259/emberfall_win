@@ -71,7 +71,7 @@ namespace Emberfall
             EnsureMobileBindings();var layout=MobileControls.Layout;float u=TouchRatio;
 
             float panelWidth=Mathf.Min(880,layout.Width-24),x=(layout.Width-panelWidth)*.5f;
-            Box(TouchRect(x-4,4,panelWidth+8,layout.Height-8),jade,false);
+            Box(TouchRect(x-4,4,panelWidth+8,Mathf.Min(layout.Height,height/TouchRatio)-8),jade,false);
             Text(TouchRect(x,8,panelWidth-100,34),"技能按键配置",TouchFont(21),pale,true);
             if(QuietAction(TouchRect(x+panelWidth-96,8,96,40),"返回设置"))
             {mobileBindingEditor=false;bindingDragSource=-1;bindingDragFinger=-1000;BlockUITransition();return;}
@@ -80,14 +80,14 @@ namespace Emberfall
             for(int page=0;page<2;page++)
             {
                 float left=x+page*(pageWidth+16),top=80;
-                Fill(TouchRect(left,top,pageWidth,layout.Height-top-12),new Color(.025f,.055f,.075f,.9f));
+                Fill(TouchRect(left,top,pageWidth,Mathf.Min(layout.Height,height/TouchRatio)-top-12),new Color(.025f,.055f,.075f,.9f));
                 Text(TouchRect(left+12,top+4,pageWidth-24,26),page==0?"第一页":"第二页",TouchFont(14),jade,true);
                 // Reuse the live combat geometry so preview positions cannot drift from gameplay.
                 float minX=layout.Skills[4].X,minY=layout.SkillPage.Y,maxX=layout.Dodge.X+layout.Dodge.Width,maxY=layout.Dodge.Y+layout.Dodge.Height;
                 foreach(var skillArea in layout.Skills){minX=Mathf.Min(minX,skillArea.X);minY=Mathf.Min(minY,skillArea.Y);maxY=Mathf.Max(maxY,skillArea.Y+skillArea.Height);}
-                float previewScale=Mathf.Min((pageWidth-24)/(maxX-minX),(layout.Height-top-60)/(maxY-minY));
+                float previewScale=Mathf.Min((pageWidth-24)/(maxX-minX),(Mathf.Min(layout.Height,height/TouchRatio)-top-60)/(maxY-minY));
                 float originX=left+(pageWidth-(maxX-minX)*previewScale)*.5f;
-                float originY=top+42+(layout.Height-top-60-(maxY-minY)*previewScale)*.5f;
+                float originY=top+42+(Mathf.Min(layout.Height,height/TouchRatio)-top-60-(maxY-minY)*previewScale)*.5f;
                 for(int button=0;button<4;button++)
                 {
                     int index=page*4+button,skill=mobileBindings[index];

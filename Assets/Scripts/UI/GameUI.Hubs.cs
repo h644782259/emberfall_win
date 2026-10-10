@@ -12,9 +12,9 @@ namespace Emberfall
 
         private void OpenHubService(HubNpcKind kind)
         {
-            if(UITransitionBlocked||!HubServicesAvailable||session.InputBlocked)return;
+            if(UITransitionBlocked||!HubServicesAvailable||!CanSwitchFunction)return;
             if(kind!=HubNpcKind.Merchant&&kind!=HubNpcKind.Blacksmith)return;
-            CancelHotbarPointer();
+            PrepareFunctionSwitch();
             inventoryHubNpc = kind;
             panel=Panel.Inventory;
             hubServiceScroll=Vector2.zero;inventoryFilter=-1;mobileInventoryNpcRequest=HubNpcKind.None;
@@ -50,7 +50,8 @@ namespace Emberfall
         private void OpenTravelMap()
         {
             if (UITransitionBlocked || session == null || !session.HasStarted || session.IsDead || exitRequest.Open || saveFlow.Open) return;
-            travelReturnPause = session.Paused;
+            if(!CanSwitchFunction)return;
+            PrepareFunctionSwitch();travelReturnPause=false;
             travelError = null;travelMapTab=0;
             CancelHotbarPointer();
             panel = Panel.TravelMap;

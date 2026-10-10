@@ -12,12 +12,13 @@ namespace Emberfall
   private void BeginEntryRewardPopup()
   {
    entryRewardPopup=null;entryRewardAnchorIsRoot=false;
-   if(!MobileControls.Active||!entryRewardPopupVisible||Event.current.type!=EventType.MouseDown)return;
+   if(suppressRewardHover&&!dismissedRewardAnchor.Contains(Mouse))suppressRewardHover=false;
+   if((!MobileControls.Active&&!(entryRewardSelection??" ").StartsWith("merchant:"))||!entryRewardPopupVisible||Event.current.type!=EventType.MouseDown)return;
    Vector2 point=Event.current.mousePosition;
    if(entryRewardPopupRect.Contains(point))
    {
-    if(new Rect(entryRewardPopupRect.xMax-44*TouchRatio,entryRewardPopupRect.y,44*TouchRatio,44*TouchRatio).Contains(point))entryRewardSelection=null;
-    Event.current.Use();
+    if(new Rect(entryRewardPopupRect.xMax-44*(MobileControls.Active?TouchRatio:1),entryRewardPopupRect.y,44*(MobileControls.Active?TouchRatio:1),44*(MobileControls.Active?TouchRatio:1)).Contains(point))entryRewardSelection=null;
+    if(entryRewardSelection==null)Event.current.Use();
    }
    else if(!entryRewardAnchor.Contains(point))entryRewardSelection=null;
   }
@@ -30,14 +31,18 @@ namespace Emberfall
    if(!entryRewardViewport.Overlaps(entryRewardAnchor)){entryRewardPopupVisible=false;return;}
    float w=Mathf.Min(620*u,width-24*u),textWidth=w-40*u;
    float contentHeight=DrawRewardDetailRows(entryRewardPopup,textWidth/u,u,false)*u;
+   bool comparing=entryRewardPopup.GearSlot.HasValue||entryRewardPopup.AppearanceSlot.HasValue;
+   float headerHeight=comparing?44:98;
    float comparisonHeight=0;
-   float h=Mathf.Min(contentHeight+108*u+comparisonHeight,height-24*u);
+   float h=Mathf.Min(contentHeight+(headerHeight+10)*u+comparisonHeight,height-24*u);
    float x=entryRewardAnchor.xMax+10*u;
    if(x+w>width-12*u)x=entryRewardAnchor.x-w-10*u;
    x=Mathf.Clamp(x,12*u,Mathf.Max(12*u,width-w-12*u));
    float y=Mathf.Clamp(entryRewardAnchor.y,12*u,Mathf.Max(12*u,height-h-12*u));
    Rect box=new Rect(x,y,w,h);entryRewardPopupRect=box;blockedRects.Add(box);
    Fill(box,ink);Border(box,entryRewardPopup.Tint,2*u);
+   if(!comparing)
+   {
    DrawEntryRewardIcon(new Rect(x+12*u,y+12*u,48*u,48*u),entryRewardPopup,u);
    Text(new Rect(x+70*u,y+10*u,w-122*u,44*u),entryRewardPopup.Name,Mathf.RoundToInt(14*u),entryRewardPopup.Tint,true,true);
    string level=System.Text.RegularExpressions.Regex.Match(entryRewardPopup.Description,@"Lv\.?\d+").Value;
@@ -45,24 +50,26 @@ namespace Emberfall
    float tagX=x+12*u;
    foreach(string tag in tags)if(tag.Length>0)
    {float tagW=Mathf.Max(48,tag.Length*12+16)*u;Rect chip=new Rect(tagX,y+66*u,tagW,23*u);Fill(chip,new Color(entryRewardPopup.Tint.r,entryRewardPopup.Tint.g,entryRewardPopup.Tint.b,.18f));Text(chip,tag,Mathf.RoundToInt(10*u),pale,true,false,TextAnchor.MiddleCenter);tagX+=tagW+6*u;}
-   if(MobileControls.Active&&PopupCloseButton(new Rect(box.xMax-44*u,y,44*u,44*u)))entryRewardSelection=null;
-   entryRewardPopupScroll=BeginTouchScroll("entry-reward-popup",new Rect(x+12*u,y+98*u+comparisonHeight,w-24*u,h-108*u-comparisonHeight),entryRewardPopupScroll,new Rect(0,0,textWidth,contentHeight));
+   }
+   if((MobileControls.Active||(entryRewardSelection??" ").StartsWith("merchant:"))&&PopupCloseButton(new Rect(box.xMax-44*u,y,44*u,44*u)))entryRewardSelection=null;
+   entryRewardPopupScroll=BeginTouchScroll("entry-reward-popup",new Rect(x+12*u,y+headerHeight*u+comparisonHeight,w-24*u,h-(headerHeight+10)*u-comparisonHeight),entryRewardPopupScroll,new Rect(0,0,textWidth,contentHeight));
    DrawRewardDetailRows(entryRewardPopup,textWidth/u,u,true);
    EndTouchScroll();
   }
-  private string GemRewardDescription(EquipmentMechanic gem,Rarity rarity)
+  private string GemRewardDescription(EquipmentMechanic gem,Rarity rarity,int rank=0)
   {
-   string attribute=BuildCatalog.IsAttributeGem(gem)?BuildCatalog.GemAttributeSummary(gem,rarity,0):BuildCatalog.AttributeLabel(BuildCatalog.MechanicAttribute(gem))+" +"+(BuildCatalog.MechanicAttributeValue(gem,0)*100).ToString("0.#")+"%";
+   string attribute=BuildCatalog.IsAttributeGem(gem)?BuildCatalog.GemAttributeSummary(gem,rarity,rank):BuildCatalog.AttributeLabel(BuildCatalog.MechanicAttribute(gem))+" +"+(BuildCatalog.MechanicAttributeValue(gem,rank)*100).ToString("0.#")+"%";
    return BuildCatalog.GemName(gem)+"\n"+GameBalance.SlotName(BuildCatalog.MechanicSlot(gem))+"槽\n基础属性\n"+attribute;
   }
   private string GemDropDescription(EquipmentMechanic gem,bool preview)
   {return BuildCatalog.GemName(gem)+"\n"+GameBalance.ClassName(BuildCatalog.MechanicClass(gem))+"专用 · "+GameBalance.SlotName(BuildCatalog.MechanicSlot(gem))+"槽\n"+(preview?"通关宝箱必得整件；已拥有则转为3枚星烬碎片。\n":"")+"机制\n"+BuildCatalog.MechanicDescription(gem);}
-  private void InspectRewardItem(Rect hit,EntryRewardPreview item)
+  private void InspectRewardItem(Rect hit,EntryRewardPreview item,bool clickToInspect=false)
   {
-   if(MobileControls.Active&&GUI.Button(hit,GUIContent.none,invisibleButton)){entryRewardSelection=entryRewardSelection==item.Key?null:item.Key;entryRewardPopupScroll=Vector2.zero;}
+   if(!MobileControls.Active&&suppressRewardHover)return;
+   if((MobileControls.Active||clickToInspect)&&GUI.Button(hit,GUIContent.none,invisibleButton)){entryRewardSelection=entryRewardSelection==item.Key?null:item.Key;entryRewardPopupScroll=Vector2.zero;}
    bool hover=hit.Contains(Event.current.mousePosition)&&GUI.enabled;
    if(!MobileControls.Active&&hover)entryRewardHoverKey=item.Key;
-   if(MobileControls.Active?entryRewardSelection==item.Key:hover||entryRewardPopupVisible&&entryRewardHoverKey==item.Key&&entryRewardPopupRect.Contains(Mouse))
+   if(MobileControls.Active||clickToInspect?entryRewardSelection==item.Key:hover||entryRewardPopupVisible&&entryRewardHoverKey==item.Key&&entryRewardPopupRect.Contains(Mouse))
    {
     tooltip=null;entryRewardAnchorIsRoot=false;entryRewardViewport=new Rect(0,0,width,height);entryRewardPopup=item;
     entryRewardScreenAnchor=GUIUtility.GUIToScreenPoint(hit.position);entryRewardScreenEnd=GUIUtility.GUIToScreenPoint(new Vector2(hit.xMax,hit.yMax));
@@ -78,7 +85,7 @@ namespace Emberfall
    return new EntryRewardPreview{Key="obtained:"+item.id,Equipment=item,GearSlot=item.slot,Name=ItemTitle(item),Description=description,Rarity=item.rarity,Tint=GameBalance.RarityColor(item.rarity),Icon=UIIconAtlas.EquipmentCardIcon(item.slot,item.level,item.rarity,session.Progression.Profile.heroClass)};
   }
   private string EntryRewardKind(EntryRewardPreview item)
-  {return item.Key.StartsWith("fashion:")?"时装":item.Key.StartsWith("gem:")?"宝石":item.Key=="shard"||item.Key=="refinement"?"材料":item.Key=="gold"?"货币":"装备";}
+  {return item.Key.StartsWith("fashion:")?"时装":item.Key.Contains("gem:")?"宝石":item.Key=="shard"||item.Key=="refinement"?"材料":item.Key=="gold"?"货币":item.Key.Contains("potion")?"药剂":"装备";}
   private void DrawEntryRewardIcon(Rect icon,EntryRewardPreview item,float u)
   {
    bool fashion=item.Key.StartsWith("fashion:");
@@ -131,8 +138,29 @@ namespace Emberfall
     Fill(new Rect(x*u,0,cardWidth*u,86*u),new Color(.045f,.09f,.12f));
     Text(new Rect((x+10)*u,2*u,(cardWidth-20)*u,20*u),col==0?"当前穿戴":"所选物品",Mathf.RoundToInt(10*u),col==0?muted:jade,true);
     string name=value==null?"未穿戴":string.IsNullOrEmpty(value.Name)?"所选时装":value.Name;
+    string level=value==null?"":System.Text.RegularExpressions.Regex.Match(value.Description??"",@"Lv\.?\d+").Value;
+    if(level.Length>0)name=level+"  "+name;
     Text(new Rect((x+10)*u,24*u,(cardWidth-20)*u,32*u),name,Mathf.RoundToInt(14*u),accent,true,true);
     if(value!=null){DrawDetailTag(new Rect((x+8)*u,60*u,60*u,22*u),GameBalance.RarityName(value.Rarity),accent,u);DrawDetailTag(new Rect((x+74)*u,60*u,Mathf.Max(36,cardWidth-82)*u,22*u),item.GearSlot.HasValue?GameBalance.SlotName(item.GearSlot.Value):item.AppearanceSlot==FashionSlot.Wings?"羽翼":"兵装",jade,u);}
+   }
+   var progression=session.Progression;
+   ItemData owned=item.Equipment==null?null:progression.Profile.inventory.Find(v=>v!=null&&v.id==item.Equipment.id);
+   FashionData ownedFashion=item.AppearanceSlot.HasValue&&item.Key!=null&&item.Key.StartsWith("fashion:")?progression.Profile.fashions.Find(v=>v!=null&&"fashion:"+v.id==item.Key):null;
+   if(owned!=null||ownedFashion!=null)
+   {
+    if(draw)
+    {
+     float actionX=cardWidth+gap;bool selectedWorn=owned!=null?IsEquipped(owned):progression.EquippedFashion(ownedFashion.slot)?.id==ownedFashion.id;
+     float lockWidth=owned!=null?42:0;
+     if(owned!=null&&DrawInventoryLock(new Rect(actionX*u,y*u,36*u,36*u),owned.locked))
+      Feedback(progression.SetItemLocked(owned.id,!owned.locked),owned.locked?"已锁定":"已解锁");
+     if(InventoryPictogramAction(new Rect((actionX+lockWidth)*u,y*u,(cardWidth-lockWidth)*u,40*u),selectedWorn?"卸下":"穿戴",UIIconAtlas.Utility("confirm"),selectedWorn||owned==null||owned.level<=progression.Profile.level,selectedWorn,true))
+     {
+      bool saved=owned!=null?(selectedWorn?progression.Unequip(owned.slot):progression.Equip(owned.id)):(selectedWorn?progression.UnequipFashion(ownedFashion.slot):progression.EquipFashion(ownedFashion.id));
+      Feedback(saved,selectedWorn?"已卸下":"已穿戴");if(saved)RebuildBagItems();
+     }
+    }
+    y+=48;
    }
    for(int section=0;section<(item.GearSlot.HasValue?2:1);section++)
    {
@@ -150,16 +178,17 @@ namespace Emberfall
      if(item.GearSlot.HasValue&&(IsRandomEquipmentStat(pair.Key)?1:0)!=section)continue;
      string before;if(!baseline.TryGetValue(pair.Key,out before))before=pair.Value.Contains("×")?"×100%":pair.Value.Contains("%")?"0%":"0";
      if(draw)for(int col=0;col<2;col++){
-      float x=col*(cardWidth+gap);Fill(new Rect(x*u,y*u,cardWidth*u,48*u),card);
-      DrawIcon(new Rect((x+8)*u,(y+5)*u,16*u,16*u),UIIconAtlas.Utility(pair.Key=="攻击"?"attack":pair.Key=="防御"?"defense":pair.Key=="生命"?"health":"core"),jade);
-      Text(new Rect((x+30)*u,y*u,(cardWidth-38)*u,24*u),pair.Key,Mathf.RoundToInt(11*u),muted,true,false,TextAnchor.MiddleLeft);
+      float x=col*(cardWidth+gap);Fill(new Rect(x*u,y*u,cardWidth*u,34*u),card);
+      DrawIcon(new Rect((x+8)*u,(y+9)*u,16*u,16*u),UIIconAtlas.Utility(pair.Key=="攻击"?"attack":pair.Key=="防御"?"defense":pair.Key=="生命"?"health":"core"),jade);
+      Text(new Rect((x+30)*u,y*u,Mathf.Min(72,cardWidth*.28f)*u,34*u),pair.Key,Mathf.RoundToInt(11*u),muted,true,false,TextAnchor.MiddleLeft);
       int bonus=EquipmentStatBonus(col==0?currentEquipment:item.Equipment,pair.Key),oldBonus=EquipmentStatBonus(currentEquipment,pair.Key);
       bool bonusVisible=bonus>0||col==1&&oldBonus>0;
-      float valueWidth=bonusVisible?(cardWidth-16)*.56f:cardWidth-16;
-      DrawComparedValue(new Rect((x+8)*u,(y+22)*u,valueWidth*u,24*u),col==0?before:pair.Value,col==0?0:EquipmentComparisonPresentation.StatDirection(pair.Value,before),u,false);
-      if(bonusVisible)DrawComparedValue(new Rect((x+8+valueWidth)*u,(y+22)*u,(cardWidth-16-valueWidth)*u,24*u),"+"+bonus,col==0?0:bonus.CompareTo(oldBonus),u,true);
+      float valueX=34+Mathf.Min(72,cardWidth*.28f),room=cardWidth-valueX-6;
+      float valueWidth=bonusVisible?room*.56f:room;
+      DrawComparedValue(new Rect((x+valueX)*u,y*u,valueWidth*u,34*u),col==0?before:pair.Value,col==0?0:EquipmentComparisonPresentation.StatDirection(pair.Value,before),u,false);
+      if(bonusVisible)DrawComparedValue(new Rect((x+valueX+valueWidth)*u,y*u,(room-valueWidth)*u,34*u),"+"+bonus,col==0?0:bonus.CompareTo(oldBonus),u,true);
      }
-     y+=52;
+     y+=38;
     }
    }
    if(item.Description.Contains("随机附加")){if(draw)Text(new Rect((cardWidth+gap)*u,y*u,cardWidth*u,26*u),item.Description.Contains("至多一项")?"随机词条 · 至多一项":"随机词条 · 最多两项",Mathf.RoundToInt(11*u),muted);y+=28;}
@@ -253,7 +282,7 @@ namespace Emberfall
       Rect rootHit=new Rect(entryRewardContentOrigin.x+hit.x,entryRewardContentOrigin.y+hit.y,hit.width,hit.height);
       bool hover=entryRewardViewport.Contains(Mouse)&&rootHit.Contains(Mouse)&&GUI.enabled;
       if(!MobileControls.Active&&hover)entryRewardHoverKey=item.Key;
-      bool show=MobileControls.Active?entryRewardSelection==item.Key:hover||entryRewardPopupVisible&&entryRewardHoverKey==item.Key&&entryRewardPopupRect.Contains(Mouse);
+      bool show=!suppressRewardHover&&(MobileControls.Active?entryRewardSelection==item.Key:hover||entryRewardPopupVisible&&entryRewardHoverKey==item.Key&&entryRewardPopupRect.Contains(Mouse));
       if(show)
       {
        entryRewardPopup=item;entryRewardAnchorIsRoot=true;

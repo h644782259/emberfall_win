@@ -185,6 +185,7 @@ namespace Emberfall
             ReconcileProgressionGoalSurface();
             bool gameplayBackAllowed=GameplayBackAllowed;
             if(Input.GetKeyDown(KeyCode.Escape))backConsumedFrame=Time.frameCount;
+            if(Input.GetKeyDown(KeyCode.Escape)&&CloseTopPopup())return;
             if(session.RoomBranchChoiceOpen&&!session.Paused){if(Input.GetKeyDown(KeyCode.Escape)){session.CancelRoomBranchChoice();BlockUITransition();}return;}
             if(exitRequest.Open){if(Input.GetKeyDown(KeyCode.Escape)){exitRequest.Cancel();exitError=null;BlockUITransition();}return;}
             if(mobileCastFinger!=-1000&&(session.InputBlocked||panel!=Panel.None))CancelMobileCast();
@@ -240,35 +241,12 @@ namespace Emberfall
                 else if (panel == Panel.Chests) { session.SetPaused(false); ClosePanel(); BlockUITransition(); }
                 else if (panel != Panel.None) ClosePanel();
                 else session.SetPaused(!session.Paused);
-            }
-            if (session.Paused || session.DungeonSelectionOpen || session.RunChoices.AwaitingChoice) return;
-            if(Input.GetKeyDown(KeyCode.M)&&!UITransitionBlocked)
-            {
-                if(panel==Panel.TravelMap)CloseTravelMap();
-                else if(panel==Panel.None)OpenTravelMap();
                 return;
             }
-            if (!MobileControls.Active && !UITransitionBlocked && !saveFlow.Open)
-            {
-                if (Input.GetKeyDown(KeyCode.J))
-                {
-                    if (progressionGoalsOpen) ClosePanel();
-                    else if (panel == Panel.None && !session.InputBlocked) OpenProgressionGoals();
-                    return;
-                }
-                if (Input.GetKeyDown(KeyCode.P) || Input.GetKeyDown(KeyCode.O))
-                {
-                    bool merchant = Input.GetKeyDown(KeyCode.P);
-                    if (panel == Panel.Inventory && inventoryHubNpc == (merchant ? HubNpcKind.Merchant : HubNpcKind.Blacksmith)) ClosePanel();
-                    else if (panel == Panel.None) OpenHubService(merchant ? HubNpcKind.Merchant : HubNpcKind.Blacksmith);
-                    return;
-                }
-            }
-            if (panel == Panel.Controls || panel == Panel.SaveLocation || panel == Panel.Bindings || panel == Panel.PotionAssignment || panel == Panel.Chests || panel == Panel.Camp || panel == Panel.TravelMap || panel == Panel.Notice || panel == Panel.Chapter) return;
-            if (Input.GetKeyDown(KeyCode.I)) TogglePanel(Panel.Inventory);
-            if (Input.GetKeyDown(KeyCode.K)) TogglePanel(Panel.Skills);
-        }
+            if(HandleFunctionShortcut())return;
 
+
+        }
         private void OnDestroy()
         {
             ReleaseLootNotices();
@@ -303,7 +281,13 @@ namespace Emberfall
             GUI.enabled = !session.BackgroundPaused && !LifecycleTouchBlocked && MerchantServiceLayout.StablePanelEvent(UITransitionBlocked,true,Event.current.type==EventType.Repaint||Event.current.type==EventType.Layout);
             blockedRects.Clear();
             tooltip = null;tooltipAnchorText=null;tooltipKey=null;
+            float functionFullHeight=height;
+            bool functionDock=CanSwitchFunction&&(panel!=Panel.None||session.Paused);
+            float functionReserve=functionDock?52*(MobileControls.Active?TouchRatio:1):0;
+            bool rewardOverlayEnabled=GUI.enabled;
+            bool rewardOverlayPointer=entryRewardPopupVisible&&entryRewardPopupRect.Contains(Mouse);
             BeginEntryRewardPopup();
+            if(rewardOverlayPointer)GUI.enabled=false;
             if(exitRequest.Open)
             {
                 ClearRewardMoment();DrawExitConfirmation();GUI.matrix=oldMatrix;GUI.color=oldColor;GUI.contentColor=oldContentColor;GUI.enabled=oldEnabled;return;
@@ -329,6 +313,7 @@ namespace Emberfall
                 DrawHUD();
                 DrawDungeonExitButton();
                 GUI.enabled = priorEnabled;
+                height=functionFullHeight-functionReserve;
                 if (panel == Panel.None && !session.Paused && !session.IsDead) DrawTargetingHint();
                 if (session.Paused) DrawPause();
                 else if(PauseUtilityVisible)
@@ -366,7 +351,10 @@ namespace Emberfall
             }
             if(panel==Panel.Skills||MobileControls.Active&&panel==Panel.Inventory&&inventoryComparisonOpen)tooltip=null;
             DrawTooltip();
+            GUI.enabled=rewardOverlayEnabled;
             DrawEntryRewardPopup();
+            height=functionFullHeight;
+            if(functionDock)DrawFunctionSwitcher(functionFullHeight,functionReserve);
             DrawExitConfirmation();
             GUI.matrix = oldMatrix;
             GUI.color = oldColor;
@@ -1837,16 +1825,16 @@ namespace Emberfall
 
         private void TogglePanel(Panel value)
         {
-            if (session == null || !session.HasStarted || session.IsDead || session.Paused) return;
-            inventoryHubNpc=HubNpcKind.None;merchantExchangeOpen=false;
-            panel = panel == value ? Panel.None : value;
+            if(!CanSwitchFunction)return;
+            bool same=panel==value&&!MerchantServiceActive&&!SmithServiceActive&&!session.Paused;
+            PrepareFunctionSwitch();panel=same?Panel.None:value;
             if(panel==Panel.Skills){skillSection=0;ResetMobileSkillNavigation();}
-            session.SetUIBlocking(panel != Panel.None);
+            session.SetUIBlocking(panel!=Panel.None);BlockUITransition();
         }
 
         private void ClosePanel()
         {
-            masteryResetConfirm=false;merchantGemSaleConfirmation=EquipmentMechanic.None;
+            if(CloseTopPopup())return;
             if(SmithServiceActive&&smithPreviewMechanic!=EquipmentMechanic.None){smithPreviewMechanic=EquipmentMechanic.None;return;}
             if(presetSaleOpen){CancelPresetSale();return;}
             if(MerchantServiceActive||SmithServiceActive){inventoryHubNpc=HubNpcKind.None;merchantExchangeOpen=false;panel=Panel.None;session.SetUIBlocking(false);BlockUITransition();return;}

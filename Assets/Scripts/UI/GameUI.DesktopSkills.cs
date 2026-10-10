@@ -40,9 +40,14 @@ namespace Emberfall
             float statsY=descriptionHeight+10,prerequisiteY=statsY+73;
             float evolutionY=prerequisiteY+prerequisiteHeight+10;
             float evolutionCardHeight=(scaleLine?78:60)+evolutionHeight+9;
-            Rect viewport=new Rect(r.x+18,r.y+80,550,245);
-            desktopDetailScroll=BeginTouchScroll("desktop-skill-detail",viewport,desktopDetailScroll,
-                new Rect(0,0,532,Mathf.Max(viewport.height,evolutionY+evolutionCardHeight+6)));
+            string lockReason=rank>=3?"":session.Progression.SkillLockReason(skill);
+            float reasonHeight=string.IsNullOrEmpty(lockReason)?0:32;
+            float contentHeight=evolutionY+evolutionCardHeight+6;
+            float footerHeight=reasonHeight+(passive?0:112);
+            Rect viewport=new Rect(r.x+18,r.y+80,550,Mathf.Max(80,r.height-90-footerHeight));
+            bool detailOverflow=contentHeight>viewport.height+.5f;
+            if(detailOverflow)desktopDetailScroll=BeginTouchScroll("desktop-skill-detail",viewport,desktopDetailScroll,new Rect(0,0,532,contentHeight));
+            else{desktopDetailScroll=Vector2.zero;GUI.BeginGroup(viewport);}
             Text(new Rect(0,0,530,descriptionHeight),description,13,muted,false,true);
             string[] labels = { "当前冷却", "资源消耗" };
             string[] values = { passive ? "自动生效" : skill==SkillStockRules.Skill(p.heroClass)?"储存2次 · "+SkillStockRules.Seconds(p.heroClass)+"秒/次":GameBalance.EffectiveCooldown(p.heroClass, skill, rank).ToString("0.#") + " 秒", passive || GameBalance.SkillEnergyCost(p.heroClass, skill) == 0 ? "无需能量" : GameBalance.SkillEnergyCost(p.heroClass, skill).ToString("0") + " " + GameBalance.EnergyName(p.heroClass) };
@@ -69,19 +74,20 @@ namespace Emberfall
                     Text(new Rect(evolution.x+9,evolution.y+59,154,16),"阶级系数 "+(100+(stage-1)*30)+"% · 范围 "+Mathf.RoundToInt(GameBalance.SkillRangeMultiplier(stage)*100)+"%",10,jade);
                 Text(new Rect(evolution.x+9,evolution.y+(scaleLine?78:60),154,evolutionHeight),evolutions[stage-1],scaleLine?10:11,scaleLine?muted:jade,false,true);
             }
-            EndTouchScroll();
+            if(detailOverflow)EndTouchScroll();else GUI.EndGroup();
+            float footerY=viewport.y+Mathf.Min(contentHeight,viewport.height)+4;
             float actionX = r.x + 18;
-            Text(new Rect(actionX,r.y+341,530,40),rank>=3?"":session.Progression.SkillLockReason(skill),14,gold,true);
+            if(reasonHeight>0)Text(new Rect(actionX,footerY,530,reasonHeight),lockReason,14,gold,true);
             if (passive) return;
             if(MobileControls.Active)return;
-            Rect loadoutHeading = new Rect(actionX, r.y + 397, 365, 21);
+            Rect loadoutHeading = new Rect(actionX, footerY+reasonHeight, 365, 21);
             Text(loadoutHeading, "十格快捷栏", 12, jade, true);
             if (loadoutHeading.Contains(Mouse)) tooltip = "“+” 配置到槽位，“×” 卸下。\n升级保留快捷栏位置，冷却按技能保留。";
             for (int slot = 0; slot < GameBalance.HotbarSize; slot++)
             {
                 int equipped = LearnedSkillAtSlot(p, slot);
                 bool current = equipped == skill;
-                Rect target = new Rect(actionX + (slot % 5) * 112, r.y + 424 + (slot / 5) * 40, 102, 36);
+                Rect target = new Rect(actionX + (slot % 5) * 112, footerY+reasonHeight+27 + (slot / 5) * 40, 102, 36);
                 string key = GameBalance.KeyName(p.hotbarKeys[slot]);
                 detailSlots[slot] = target;
                 string hint = key + " · " + SlotSkillName(p, slot) + "\n" + (rank == 0 ? "先学习这项技能。" : current ? "点击从此槽卸下；不会清除技能冷却。" : "将" + GameBalance.SkillName(p.heroClass, skill) + "配置到此槽。") + "\n拖动已配置技能可移动或交换，拖到栏外取消。";

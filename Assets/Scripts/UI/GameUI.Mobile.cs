@@ -334,7 +334,7 @@ namespace Emberfall
             float panelWidth=Mathf.Min(720,layout.Width-24),x=(layout.Width-panelWidth)*.5f,y=12;
             float titleWidth=panelWidth-52;
             float headerHeight=Mathf.Max(44,Style(TouchFont(23),true).CalcHeight(new GUIContent("设置"),titleWidth*TouchRatio)/TouchRatio+8);
-            Box(TouchRect(x-4,4,panelWidth+8,layout.Height-8),jade,false);
+            Box(TouchRect(x-4,4,panelWidth+8,Mathf.Min(layout.Height,height/TouchRatio)-8),jade,false);
             Text(TouchRect(x,y,titleWidth,headerHeight), "设置", TouchFont(23), pale, true);
             Rect close=TouchRect(x+panelWidth-44,y,44,44);
 
@@ -342,8 +342,8 @@ namespace Emberfall
             string[] tabs = { "冒险", "声音与画面", "按键设置", "存档" };
             int[] tabOrder={0,3,1,2};
             float sidebarWidth=120,bodyY=y+headerHeight+8;
-            float bodyHeight=Mathf.Max(48,layout.Height-bodyY-72);
-            if(PrimaryButton(TouchRect(x+136,layout.Height-60,panelWidth-136,48),"保存并退出",gold))RequestExit(true);
+            float bodyHeight=Mathf.Max(48,Mathf.Min(layout.Height,height/TouchRatio)-bodyY-72);
+            if(PrimaryButton(TouchRect(x+136,Mathf.Min(layout.Height,height/TouchRatio)-60,panelWidth-136,48),"保存并退出",gold))RequestExit(true);
             Fill(TouchRect(x,bodyY,sidebarWidth,bodyHeight),new Color(.025f,.05f,.065f,.65f));
             for (int i=0;i<tabs.Length;i++)
                 if (PauseSidebarTab(TouchRect(x,bodyY+i*52,sidebarWidth,48),tabs[tabOrder[i]],mobilePausePage==tabOrder[i],TouchRatio) && mobilePausePage!=tabOrder[i])

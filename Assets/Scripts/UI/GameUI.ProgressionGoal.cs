@@ -45,6 +45,7 @@ namespace Emberfall
         private string progressionGoalCharacter;
         private void OpenProgressionGoals()
         {
+            if(!CanSwitchFunction)return;PrepareFunctionSwitch();
             panel=Panel.Camp;session.SetUIBlocking(true);
             progressionGoalsOpen=true;progressionGoalOwner=session.Progression;
             progressionGoalCharacter=session.Progression.CurrentSlotId;progressionGoalScroll=progressionGoalHeaderScroll=Vector2.zero;

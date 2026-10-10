@@ -4,7 +4,7 @@ namespace Emberfall
 {
     public partial class ProgressionService
     {
-        public const int AttachmentUpgradeCost=6,MaximumAttachmentRank=9;
+        public const int AttachmentUpgradeCost=6,MaximumAttachmentRank=9,MaximumMountedGemsPerSlot=3;
         public MechanicAttachment Attachment(EquipmentMechanic mechanic)
         {if(Profile.attachments!=null)foreach(var a in Profile.attachments)if(a!=null&&a.mechanic==mechanic)return a;return null;}
         public int AttachmentVariant(EquipmentMechanic mechanic)
@@ -100,6 +100,10 @@ namespace Emberfall
                 a.variant=a.variantUnlocked?Clamp(a.variant,0,1):0;
                 if(a.variantUnlocked&&!profile.variantKnowledge.Contains(a.mechanic))profile.variantKnowledge.Add(a.mechanic);
             }
+            // Retain existing selections; excess legacy mounts remain owned, only unequipped.
+            var mountedPerSlot=new int[3];
+            foreach(var a in result)if(a.mounted&&BuildCatalog.GemCompatible(a.mechanic,profile.heroClass))
+                if(++mountedPerSlot[(int)BuildCatalog.MechanicSlot(a.mechanic)]>MaximumMountedGemsPerSlot)a.mounted=false;
             profile.attachmentRevision=1;
             if(profile.growthRevision<1){profile.automaticGrowth=profile.progressionGoal==ProgressionGoalKind.None;profile.growthRevision=1;}
             foreach(var a in result)if(!profile.discoveredMechanics.Contains(a.mechanic))profile.discoveredMechanics.Add(a.mechanic);
@@ -108,12 +112,21 @@ namespace Emberfall
             profile.growthRewardReceipts.RemoveAll(x=>string.IsNullOrEmpty(x)||x.Length>120||!receipts.Add(x));
             if(profile.growthRewardReceipts.Count>512)throw new ArgumentException("成长奖励记录超出安全容量，原文件保留。");
         }
+        public string AttachmentMountLock(EquipmentMechanic mechanic,bool inCamp)
+        {
+            var gem=Attachment(mechanic);
+            if(!inCamp||gem==null||!BuildCatalog.GemCompatible(mechanic,Profile.heroClass))return "请在营地操作本职业宝石。";
+            if(gem.mounted)return "";
+            int count=0;
+            foreach(var other in Profile.attachments)
+                if(other.mounted&&BuildCatalog.GemCompatible(other.mechanic,Profile.heroClass)&&BuildCatalog.MechanicSlot(other.mechanic)==BuildCatalog.MechanicSlot(mechanic))count++;
+            return count>=MaximumMountedGemsPerSlot?"该部位已镶嵌3颗宝石，请先卸下一颗。":"";
+        }
         public bool SetAttachmentMounted(EquipmentMechanic mechanic,bool mounted,bool inCamp)
         {
             var a=Attachment(mechanic);if(!inCamp||a==null||!BuildCatalog.GemCompatible(mechanic,Profile.heroClass))return Fail("请在营地操作本职业宝石。");
+            if(mounted){string reason=AttachmentMountLock(mechanic,inCamp);if(reason.Length>0)return Fail(reason);}
             var candidate=Snapshot();
-            if(mounted)foreach(var other in candidate.attachments)
-                if(BuildCatalog.GemCompatible(other.mechanic,Profile.heroClass)&&BuildCatalog.MechanicSlot(other.mechanic)==BuildCatalog.MechanicSlot(mechanic))other.mounted=false;
             candidate.attachments.Find(x=>x.mechanic==mechanic).mounted=mounted;return CommitCandidate(candidate,true);
         }
         private bool GrantAttachment(EquipmentMechanic mechanic,bool first)

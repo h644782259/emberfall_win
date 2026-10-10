@@ -16,7 +16,7 @@ namespace Emberfall
         private Vector2 mobilePanelSize;
         private MobilePanelLayout MobilePanelGeometry()
         {
-            var battle=MobileControls.Layout;var size=new Vector2(battle.Width,battle.Height);
+            var battle=MobileControls.Layout;var size=new Vector2(battle.Width,Mathf.Min(battle.Height,height/TouchRatio));
             if(mobilePanelLayout==null||size!=mobilePanelSize){mobilePanelLayout=new MobilePanelLayout(size.x,size.y);mobilePanelSize=size;}
             return mobilePanelLayout;
         }

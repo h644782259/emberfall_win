@@ -110,6 +110,8 @@ namespace Emberfall
         private bool DesktopInventoryGesture(Rect local,Rect anchor,string id)
         {
             if(MobileControls.Active)return false;
+            if(suppressInventoryHover){if(dismissedInventoryAnchor.Contains(Mouse))return false;suppressInventoryHover=false;}
+            if(!GUI.enabled)return false;
             if(local.Contains(Event.current.mousePosition)&&Event.current.type==EventType.Repaint)
             {
                 if(!inventoryComparisonOpen||inventoryPopupItem!=id)OpenInventoryPopup(id,anchor);
@@ -190,27 +192,16 @@ namespace Emberfall
             Rect r=inventoryPopupRect=MobileControls.Active?new Rect((width-sheetWidth*u)*.5f,(height-sheetHeight*u)*.5f,sheetWidth*u,sheetHeight*u):DesktopInventorySheet(sheetWidth,sheetHeight);
             Fill(r,new Color(.025f,.055f,.075f,.995f));Border(r,jade);
             bool prior=GUI.enabled;GUI.enabled=prior&&Time.frameCount!=inventoryPopupOpened;
-            Text(new Rect(r.x+12*u,r.y+4*u,46*u,36*u),"Lv"+item.level,Mathf.RoundToInt(13*u),item.level>session.Progression.Profile.level?new Color(1f,.35f,.3f):gold,true,false,TextAnchor.MiddleLeft);
-            Text(new Rect(r.x+60*u,r.y+4*u,r.width-140*u,36*u),ItemTitle(next),Mathf.RoundToInt(15*u),pale,true,false,TextAnchor.MiddleLeft);
-            if(DrawInventoryLock(new Rect(r.xMax-80*u,r.y+4*u,36*u,36*u),item.locked))session.Progression.SetItemLocked(item.id,!item.locked);
-            DrawDetailTag(new Rect(r.x+12*u,r.y+40*u,70*u,22*u),GameBalance.RarityName(item.rarity),GameBalance.RarityColor(item.rarity),u);
-            DrawDetailTag(new Rect(r.x+90*u,r.y+40*u,70*u,22*u),GameBalance.SlotName(item.slot),jade,u);
             if(PopupCloseButton(new Rect(r.xMax-44*u,r.y,44*u,44*u))){inventoryComparisonOpen=false;GUI.enabled=prior;return;}
-            float bodyY=r.y+66*u,rowHeight=(sheetHeight<360?22:28)*u;
+            float bodyY=r.y+44*u,rowHeight=(sheetHeight<360?22:28)*u;
             string[] labels={"评分","攻击","防御","生命","暴击率","暴击伤害","攻击加成"};
             float inner=r.width-24*u,statsWidth=compactCompare?(inner-12*u)*.52f:inner,labelWidth=96*u,valueWidth=(statsWidth-labelWidth)*.5f;
             var detail=ActualEquipmentPreview(next);
-            inventoryDetailScroll=BeginTouchScroll("equipment-detail",new Rect(r.x+12*u,bodyY,inner,r.yMax-bodyY-60*u),inventoryDetailScroll,new Rect(0,0,inner-8*u,DrawRewardDetailRows(detail,inner/u-8,u,false)*u));
+            inventoryDetailScroll=BeginTouchScroll("equipment-detail",new Rect(r.x+12*u,bodyY,inner,r.yMax-bodyY-12*u),inventoryDetailScroll,new Rect(0,0,inner-8*u,DrawRewardDetailRows(detail,inner/u-8,u,false)*u));
             DrawRewardDetailRows(detail,inner/u-8,u,true);
             EndTouchScroll();
             float mechanismY=compactCompare?r.y+66*u:bodyY+(inventoryPopupCompare?7:4)*rowHeight+8*u;
             float mechanismX=compactCompare?r.x+24*u+statsWidth:r.x+12*u,mechanismWidth=compactCompare?inner-statsWidth-12*u:inner;
-            bool worn=IsEquipped(item);float buttonWidth=r.width-24*u;
-            if(MobileControls.Active&&InventoryPictogramAction(new Rect(r.x+12*u,r.yMax-52*u,buttonWidth,44*u),worn?"脱下":"穿戴",UIIconAtlas.Utility("confirm"),worn||item.level<=p.Profile.level,worn,true))
-            {
-                bool saved=worn?p.Unequip(item.slot):p.Equip(item.id);MobileInventoryResult(saved,worn?"装备已脱下":"装备已穿戴");
-                inventoryPopupOpened=Time.frameCount;if(saved){inventoryComparisonOpen=false;CancelMobileScroll();}
-            }
             GUI.enabled=prior;
         }
 
@@ -227,9 +218,9 @@ namespace Emberfall
             if(fashion){float fw=Mathf.Min(420*u,width-24*u),fh=Mathf.Min(320*u,height-24*u);r=inventoryPopupRect=MobileControls.Active?new Rect((width-fw)*.5f,(height-fh)*.5f,fw,fh):DesktopInventorySheet(fw,fh);}
             Fill(r,new Color(.025f,.055f,.075f,.99f));Border(r,jade);
             bool prior=GUI.enabled;GUI.enabled=prior&&Time.frameCount!=inventoryPopupOpened;
-            if(potion||fashion)
+            if(potion)
                 Text(new Rect(r.x+8*u,r.y+4*u,r.width-56*u,36*u),potion?"生命药剂 × "+session.Progression.Profile.potions:ProgressionService.FashionName(appearance.slot,appearance.AppearanceRarity,session.Progression.Profile.heroClass),Mathf.RoundToInt(14*u),pale,true,true);
-            else
+            else if(!fashion)
             {
                 Color rarity=GameBalance.RarityColor(item.rarity);
                 float rowY=r.y+4*u,rowHeight=36*u;
@@ -247,10 +238,10 @@ namespace Emberfall
             }
 
             if(PopupCloseButton(new Rect(r.xMax-44*u,r.y,44*u,44*u))){inventoryComparisonOpen=false;BlockUITransition();}
-            if(potion||fashion)Text(new Rect(r.x+8*u,r.y+42*u,r.width-16*u,22*u),potion?"恢复50%生命":"时装 · "+GameBalance.RarityName(appearance.rarity),Mathf.RoundToInt(12*u),muted);
+            if(potion)Text(new Rect(r.x+8*u,r.y+42*u,r.width-16*u,22*u),potion?"恢复50%生命":"时装 · "+GameBalance.RarityName(appearance.rarity),Mathf.RoundToInt(12*u),muted);
             if(fashion)
             {
-                float statsTop=MobileControls.Active?120:76;
+                float statsTop=44;
                 var detail=new EntryRewardPreview{Key="fashion:"+appearance.id,Name=appearance.name,Rarity=appearance.rarity,AppearanceSlot=appearance.slot,Description=ProgressionService.FashionBonus(appearance.slot,appearance.rarity)};
                 inventoryDetailScroll=BeginTouchScroll("fashion-detail",new Rect(r.x+12*u,r.y+statsTop*u,r.width-24*u,r.height-(statsTop+8)*u),inventoryDetailScroll,new Rect(0,0,r.width-32*u,DrawRewardDetailRows(detail,r.width/u-32,u,false)*u));
                 DrawRewardDetailRows(detail,r.width/u-32,u,true);
@@ -262,13 +253,7 @@ namespace Emberfall
                 bool usable=session.Progression.Profile.potions>0&&session.Player!=null&&session.Player.Health<session.Player.MaxHealth-.5f;
                 if(InventoryPictogramAction(new Rect(r.x+8*u,r.y+68*u,r.width-16*u,44*u),"使用",UIIconAtlas.Utility("potion"),usable,false,true)){session.DrinkPotion();inventoryPopupOpened=Time.frameCount;}
             }
-            else if(fashion)
-            {
-                var current=session.Progression.EquippedFashion(appearance.slot);bool worn=current!=null&&current.id==appearance.id;
-                if(MobileControls.Active&&InventoryPictogramAction(new Rect(r.x+8*u,r.y+68*u,r.width-16*u,44*u),worn?"卸下":"穿戴",UIIconAtlas.FashionCardIcon(appearance.slot,(int)appearance.AppearanceRarity,session.Progression.Profile.heroClass),true,worn,true))
-                {MobileFashionResult(worn?session.Progression.UnequipFashion(appearance.slot):session.Progression.EquipFashion(appearance.id),worn?"已卸下外观":"外观已穿戴");inventoryPopupOpened=Time.frameCount;}
-            }
-            else
+            else if(!fashion)
             {
                 bool worn=IsEquipped(item);
                 if(InventoryPictogramAction(new Rect(r.x+6*u,r.y+68*u,actionWidth,44*u),worn?"脱下":"穿戴",UIIconAtlas.EquipmentCardIcon(item.slot,item.level,item.rarity,session.Progression.Profile.heroClass),worn||item.level<=session.Progression.Profile.level,worn,true))

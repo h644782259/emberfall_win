@@ -248,6 +248,8 @@ def main():
             'using System; internal static class Program { static void Main(string[] args) { Console.WriteLine(WorldLootReceiptTests.Run(args[0])); } }'))
         checks.append(("build-presets", [ROOT/"Assets/Scripts/Core/GameTypes.cs", ROOT/"Assets/Scripts/Core/ProgressionService.cs", ROOT/"Tests/ProgressionTests.cs", ROOT/"Tests/BuildPresetTests.cs"],
             'using System; internal static class Program { static void Main(string[] args) { Console.WriteLine(BuildPresetTests.Run(args[0])); } }'))
+        checks.append(("triple-gem-sockets", [ROOT/"Assets/Scripts/Core/GameTypes.cs", ROOT/"Assets/Scripts/Core/ProgressionService.cs", ROOT/"Tests/ProgressionTests.cs", ROOT/"Tests/TripleGemSocketTests.cs"],
+            'using System; internal static class Program { static void Main(string[] args) { Console.WriteLine(TripleGemSocketTests.Run(args[0])); } }'))
         checks.append(("legendary-equipment-pity", [ROOT/"Assets/Scripts/Core/GameTypes.cs", ROOT/"Assets/Scripts/Core/ProgressionService.cs", ROOT/"Tests/ProgressionTests.cs", ROOT/"Tests/LegendaryEquipmentPityTests.cs"],
             'using System; internal static class Program { static void Main(string[] args) { Console.WriteLine(LegendaryEquipmentPityTests.Run(args[0])); } }'))
         checks.append(("adventure-progression", [ROOT/"Assets/Scripts/Core/GameTypes.cs", ROOT/"Assets/Scripts/Core/ProgressionService.cs", ROOT/"Tests/ProgressionTests.cs", ROOT/"Tests/AdventureProgressionTests.cs"],

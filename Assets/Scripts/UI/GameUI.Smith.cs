@@ -108,7 +108,7 @@ namespace Emberfall
                         Rect action=new Rect((cardWidth-16-actionWidth)*.5f*u,y*u,actionWidth*u,44*u);
                         Color accent=quote!=null?gold:muted;
                         Fill(action,new Color(accent.r,accent.g,accent.b,.13f));Border(action,new Color(accent.r,accent.g,accent.b,.55f));
-                        if(QuietAction(action,"",quote!=null))Feedback(p.UpgradeAtSmith(quote,SmithServiceActive),"部位强化已保存，换装自动继承");
+                        if(QuietAction(action,"",quote!=null)&&!p.UpgradeAtSmith(quote,SmithServiceActive))Feedback(false,p.LastError);
                         if(capped)Text(action,"已满级",Mathf.RoundToInt(14*u),gold,true,false,TextAnchor.MiddleCenter);
                         else DrawIcon(new Rect(action.x+10*u,action.y+11*u,22*u,22*u),UIIconAtlas.Utility("upgrade"),accent);
                         if(!capped)
@@ -149,44 +149,59 @@ namespace Emberfall
             var selected=p.Equipped((ItemSlot)smithSelectedSlot);
             if(selected==null){Text(detail,"未穿戴",Mathf.RoundToInt(14*u),muted,false,false,TextAnchor.MiddleCenter);return;}
             GUI.BeginGroup(detail);
-            float w=detail.width/u,h=detail.height/u,left=Mathf.Min(166,w*.37f),right=w-left-16;
+            u=Mathf.Min(u,detail.height/320f);
+            float w=detail.width/u,h=detail.height/u,left=Mathf.Min(190,w*.37f),right=w-left-16;
             Text(new Rect(8*u,2*u,(w-16)*u,22*u),selected.name,Mathf.RoundToInt(12*u),gold,true);
-            MechanicAttachment gem=null;
-            foreach(var mechanic in BuildCatalog.GemsFor(p.Profile.heroClass)){var value=p.Attachment(mechanic);if(value!=null&&value.mounted&&BuildCatalog.MechanicSlot(mechanic)==selected.slot){gem=value;break;}}
-            float size=Mathf.Min(54,Mathf.Max(36,h*.25f));Rect socket=new Rect((left-size)*.5f*u,28*u,size*u,size*u);
-            Fill(socket,card);Border(socket,gem==null?jade:GameBalance.RarityColor(gem.rarity),2);
-            if(gem==null)Text(socket,"+",Mathf.RoundToInt(25*u),jade,false,false,TextAnchor.MiddleCenter);
-            else DrawIcon(socket,UIIconAtlas.Utility("gem"),GameBalance.RarityColor(gem.rarity));
-            if(QuietAction(socket,"",SmithServiceActive)){smithSocketPicker=true;smithSocketScroll=Vector2.zero;}
-            if(gem!=null)
+            var gems=new System.Collections.Generic.List<MechanicAttachment>();
+            foreach(var mechanic in BuildCatalog.GemsFor(p.Profile.heroClass)){var value=p.Attachment(mechanic);if(value!=null&&value.mounted&&BuildCatalog.MechanicSlot(mechanic)==selected.slot)gems.Add(value);}
+            float rowHeight=(h-32)/3,formWidth=(right-8)*.5f;
+            for(int variant=0;variant<2;variant++)
             {
-                float actionY=30+size+20,buttonWidth=(left-18)*.5f;
-                Text(new Rect(0,(28+size)*u,left*u,20*u),gem.upgradeRank+"阶 · 升华 "+gem.ascensionRank,Mathf.RoundToInt(11*u),gold,true,false,TextAnchor.MiddleCenter);
+                Rect column=new Rect((left+8+variant*(formWidth+8))*u,28*u,formWidth*u,(h-36)*u);
+                Fill(column,new Color(.035f,.075f,.10f));Border(column,jade*.4f);
+            }
+            for(int index=0;index<ProgressionService.MaximumMountedGemsPerSlot;index++)
+            {
+                var gem=index<gems.Count?gems[index]:null;float top=28+index*rowHeight;
+                float size=Mathf.Clamp(rowHeight-64,28,44);Rect socket=new Rect(8*u,(top+4)*u,size*u,size*u);
+                Fill(socket,card);Border(socket,gem==null?jade:GameBalance.RarityColor(gem.rarity),2);
+                if(gem==null)Text(socket,"+",Mathf.RoundToInt(24*u),jade,false,false,TextAnchor.MiddleCenter);
+                else DrawIcon(socket,UIIconAtlas.Utility("gem"),GameBalance.RarityColor(gem.rarity));
+                if(QuietAction(socket,"",SmithServiceActive)){smithSocketPicker=true;smithSocketScroll=Vector2.zero;}
+                if(gem==null)
+                {
+                    Text(new Rect((size+14)*u,(top+4)*u,(left-size-18)*u,36*u),"宝石槽 "+(index+1),Mathf.RoundToInt(11*u),muted,false,true);
+                    for(int variant=0;variant<2;variant++)Text(new Rect((left+16+variant*(formWidth+8))*u,(top+8)*u,(formWidth-16)*u,(rowHeight-16)*u),"未镶嵌",Mathf.RoundToInt(11*u),muted,false,false,TextAnchor.MiddleCenter);
+                    continue;
+                }
+                Text(new Rect((size+14)*u,(top+2)*u,(left-size-18)*u,22*u),BuildCatalog.GemName(gem.mechanic),Mathf.RoundToInt(11*u),GameBalance.RarityColor(gem.rarity),true);
+                Text(new Rect((size+14)*u,(top+24)*u,(left-size-18)*u,20*u),gem.upgradeRank+"阶 · 升华"+gem.ascensionRank,Mathf.RoundToInt(10*u),gold,true);
+                float actionY=top+Mathf.Max(size+8,46),buttonWidth=(left-18)*.5f;
                 for(int action=0;action<2;action++)
                 {
                     bool ascend=action==0;string reason=ascend?p.AttachmentAscensionLock(gem.mechanic,SmithServiceActive):p.AttachmentUpgradeLock(gem.mechanic,SmithServiceActive);
-                    if(Button(new Rect((6+action*(buttonWidth+6))*u,actionY*u,buttonWidth*u,36*u),ascend?(gem.ascensionRank>=3?"已满":"升华"):(gem.upgradeRank>=9?"已满阶":"升阶"),ascend?gold:jade,reason.Length==0))OpenGemPreview(gem.mechanic,ascend);
+                    if(Button(new Rect((6+action*(buttonWidth+6))*u,actionY*u,buttonWidth*u,28*u),ascend?(gem.ascensionRank>=3?"已满":"升华"):(gem.upgradeRank>=9?"已满阶":"升阶"),ascend?gold:jade,reason.Length==0,reason))OpenGemPreview(gem.mechanic,ascend);
                 }
-                string lockHint=gem.ascensionRank>=3?"升华已满":gem.upgradeRank<(gem.ascensionRank+1)*3?"升至"+((gem.ascensionRank+1)*3)+"阶可升华":p.Profile.mechanicMaterials<ProgressionService.AscensionCost?"需24碎片":"";
-                Text(new Rect(4*u,(actionY+38)*u,(left-8)*u,20*u),lockHint,Mathf.RoundToInt(10*u),muted,false,false,TextAnchor.MiddleCenter);
-                string attribute=BuildCatalog.IsAttributeGem(gem.mechanic)?BuildCatalog.GemAttributeSummary(gem.mechanic,gem.rarity,gem.upgradeRank):BuildCatalog.AttributeLabel(BuildCatalog.MechanicAttribute(gem.mechanic))+" +"+(BuildCatalog.MechanicAttributeValue(gem.mechanic,gem.upgradeRank)*100).ToString("0.#")+"%";
-                Text(new Rect(4*u,(h-24)*u,(left-8)*u,22*u),attribute,Mathf.RoundToInt(10*u),jade,true,false,TextAnchor.MiddleCenter);
-                float cardHeight=h-38,formWidth=(right-8)*.5f;
+                string hint=gem.ascensionRank>=3?"升华已满":gem.upgradeRank<(gem.ascensionRank+1)*3?"升至"+((gem.ascensionRank+1)*3)+"阶可升华":p.Profile.mechanicMaterials<ProgressionService.AscensionCost?"升华需24碎片":"";
+                if(rowHeight>=100)Text(new Rect(6*u,(actionY+30)*u,(left-12)*u,18*u),hint,Mathf.RoundToInt(9*u),muted,false,false,TextAnchor.MiddleCenter);
+                if(rowHeight>=128)
+                {
+                    string attribute=BuildCatalog.IsAttributeGem(gem.mechanic)?BuildCatalog.GemAttributeSummary(gem.mechanic,gem.rarity,gem.upgradeRank):BuildCatalog.AttributeLabel(BuildCatalog.MechanicAttribute(gem.mechanic))+" +"+(BuildCatalog.MechanicAttributeValue(gem.mechanic,gem.upgradeRank)*100).ToString("0.#")+"%";
+                    Text(new Rect(6*u,(actionY+50)*u,(left-12)*u,20*u),attribute,Mathf.RoundToInt(10*u),jade,true,false,TextAnchor.MiddleCenter);
+                }
                 for(int variant=0;variant<2;variant++)
                 {
-                    Rect option=new Rect((left+8+variant*(formWidth+8))*u,28*u,formWidth*u,cardHeight*u);
-                    bool active=gem.variantUnlocked&&gem.variant==variant;Fill(option,active?new Color(.055f,.19f,.18f):card);Border(option,active?gold:muted);
-                    bool roomy=option.width>=180*u;
-                    DrawIcon(new Rect(option.x+8*u,option.y+8*u,20*u,20*u),UIIconAtlas.Utility(variant==0?"core":"attack"),active?gold:jade);
-                    Text(new Rect(option.x+34*u,option.y+3*u,option.width-42*u,30*u),SmithVariantName(gem.mechanic,variant),Mathf.RoundToInt((roomy?15:11)*u),active?gold:pale,true,false,TextAnchor.MiddleLeft);
-                    Fill(new Rect(option.x+8*u,option.y+36*u,option.width-16*u,u),new Color(jade.r,jade.g,jade.b,.25f));
-                    string formText=PhoneGemFormDescription(gem,variant);Rect copy=new Rect(option.x+10*u,option.y+44*u,option.width-20*u,option.height-52*u);
-                    int font=Mathf.RoundToInt((roomy?14:10)*u);while(font>Mathf.RoundToInt(9*u)&&Style(font,false,true).CalcHeight(new GUIContent(formText),copy.width)>copy.height)font--;
-                    Text(copy,formText,font,pale,false,true);
+                    Rect option=new Rect((left+12+variant*(formWidth+8))*u,(top+3)*u,(formWidth-8)*u,(rowHeight-8)*u);
+                    bool active=gem.variantUnlocked&&gem.variant==variant;Fill(option,active?new Color(.055f,.19f,.18f):card);Border(option,active?gold:muted*.4f);
+                    DrawIcon(new Rect(option.x+5*u,option.y+5*u,16*u,16*u),UIIconAtlas.Utility(active?"confirm":variant==0?"core":"attack"),active?gold:jade);
+                    Text(new Rect(option.x+25*u,option.y+2*u,option.width-30*u,22*u),SmithVariantName(gem.mechanic,variant),Mathf.RoundToInt(11*u),active?gold:pale,true,false,TextAnchor.MiddleLeft);
+                    string formText=gem.variantUnlocked?PhoneGemFormDescription(gem,variant):"升华后解锁 · "+PhoneGemFormDescription(gem,variant);
+                    Rect copy=new Rect(option.x+6*u,option.y+27*u,option.width-12*u,option.height-31*u);
+                    int font=Mathf.RoundToInt(12*u);while(font>Mathf.RoundToInt(9*u)&&Style(font,false,true).CalcHeight(new GUIContent(formText),copy.width)>copy.height)font--;
+                    Text(copy,formText,font,gem.variantUnlocked?pale:muted,false,true);
                     if(QuietAction(option,"",!active&&gem.variantUnlocked&&SmithServiceActive))SelectSmithVariant(gem.mechanic,variant);
                 }
             }
-            else Text(new Rect((left+8)*u,28*u,right*u,(h-34)*u),"点击宝石槽选择宝石",Mathf.RoundToInt(13*u),muted,false,false,TextAnchor.MiddleCenter);
             GUI.EndGroup();
         }
         private void DrawGemUpgradeComparison(ref float y,float width,float u,MechanicAttachment gem,bool ascend,bool draw)
@@ -266,7 +281,8 @@ namespace Emberfall
                 DrawIcon(new Rect(tile.center.x-24*u,tile.y+12*u,48*u,48*u),UIIconAtlas.Utility("gem"),GameBalance.RarityColor(a.rarity));
                 Text(new Rect(tile.x+6*u,tile.y+65*u,tile.width-12*u,28*u),BuildCatalog.GemName(a.mechanic),Mathf.RoundToInt(13*u),pale,true,false,TextAnchor.MiddleCenter);
                 Text(new Rect(tile.x,tile.y+94*u,tile.width,30*u),BuildCatalog.IsAttributeGem(a.mechanic)?BuildCatalog.GemAttributeSummary(a.mechanic,a.rarity,a.upgradeRank):a.mounted?"已镶嵌":"阶数 "+a.upgradeRank,Mathf.RoundToInt(10*u),a.mounted?jade:muted,false,true,TextAnchor.MiddleCenter);
-                if(Button(new Rect(tile.x+8*u,tile.y+124*u,tile.width-16*u,36*u),a.mounted?"卸下":"镶嵌",jade,SmithServiceActive))
+                string mountReason=p.AttachmentMountLock(a.mechanic,SmithServiceActive);
+                if(Button(new Rect(tile.x+8*u,tile.y+124*u,tile.width-16*u,36*u),a.mounted?"卸下":mountReason.Length>0?"槽位已满":"镶嵌",jade,SmithServiceActive&&mountReason.Length==0,mountReason))
                 {if(p.SetAttachmentMounted(a.mechanic,!a.mounted,SmithServiceActive)){Feedback(true,"宝石已更新");smithSocketPicker=false;}else Feedback(false,p.LastError);}
             }
             EndTouchScroll();

@@ -43,12 +43,14 @@ namespace Emberfall
             Rect r=TouchRect(listArea.XMax+12,listArea.Y,layout.Body.Width-leftWidth-12,bodyHeight);
             Fill(r,new Color(.025f,.055f,.075f,.99f));Border(r,jade*.5f);
             Text(new Rect(r.x+10*u,r.y+4*u,r.width-20*u,36*u),GameBalance.SkillName(profile.heroClass,selectedSkill),TouchFont(16),pale,true,false,TextAnchor.MiddleLeft);
-            Rect detailArea=new Rect(r.x+6*u,r.y+44*u,r.width-12*u,Mathf.Max(32*u,r.height-100*u));float detailWidth=detailArea.width/u-16;
-            float detailHeight=DrawMobileSkillDescription(detailWidth,false);
-            mobileSkillDetailScroll=BeginTouchScroll("mobile-skill-detail",detailArea,mobileSkillDetailScroll,new Rect(0,0,detailWidth*u,Mathf.Max(detailArea.height,detailHeight*u)));
-            DrawMobileSkillDescription(detailWidth,true);EndTouchScroll();
             int rank = progression.Profile.skillRanks[selectedSkill];
             string reason = rank >= 3 ? "" : progression.SkillLockReason(selectedSkill);
+            Rect detailArea=new Rect(r.x+6*u,r.y+44*u,r.width-12*u,Mathf.Max(32*u,r.height-(string.IsNullOrEmpty(reason)?52:100)*u));float detailWidth=detailArea.width/u-16;
+            float detailHeight=DrawMobileSkillDescription(detailWidth,false);
+            bool detailOverflow=detailHeight*u>detailArea.height+.5f;
+            if(detailOverflow)mobileSkillDetailScroll=BeginTouchScroll("mobile-skill-detail",detailArea,mobileSkillDetailScroll,new Rect(0,0,detailWidth*u,detailHeight*u));
+            else{mobileSkillDetailScroll=Vector2.zero;GUI.BeginGroup(detailArea);}
+            DrawMobileSkillDescription(detailWidth,true);if(detailOverflow)EndTouchScroll();else GUI.EndGroup();
             Text(new Rect(r.x+8*u,r.yMax-48*u,r.width-16*u,40*u),reason,TouchFont(14),gold,true,false,TextAnchor.MiddleCenter);
 
         }

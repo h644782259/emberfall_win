@@ -1528,12 +1528,13 @@ namespace Emberfall
                 if (!GameBalance.IsBindableKey(key) || !keys.Add(key)) return "方案快捷键无效或重复。";
             if(preset.mountedAttachments!=null)
             {
-                if(preset.mountedAttachments.Length>BuildCatalog.MechanicsFor(Profile.heroClass).Length||preset.attachmentVariants==null||preset.attachmentVariants.Length!=preset.mountedAttachments.Length)return "方案宝石数据无效。";
-                var mounted=new HashSet<EquipmentMechanic>();
+                if(preset.mountedAttachments.Length>MaximumMountedGemsPerSlot*3||preset.attachmentVariants==null||preset.attachmentVariants.Length!=preset.mountedAttachments.Length)return "方案宝石数据无效。";
+                var mounted=new HashSet<EquipmentMechanic>();var slotCounts=new int[3];
                 for(int i=0;i<preset.mountedAttachments.Length;i++)
                 {
                     var mechanic=preset.mountedAttachments[i];var attachment=Attachment(mechanic);int variant=preset.attachmentVariants[i];
                     if(!mounted.Add(mechanic)||!BuildCatalog.GemCompatible(mechanic,Profile.heroClass)||attachment==null||variant<0||variant>1||variant==1&&!attachment.variantUnlocked)return "方案宝石缺失、重复或变体尚未解锁。";
+                    if(++slotCounts[(int)BuildCatalog.MechanicSlot(mechanic)]>MaximumMountedGemsPerSlot)return "方案中每个部位最多镶嵌3颗宝石。";
                 }
             }
             if(preset.equipmentVariants!=null && preset.equipmentVariants.Length!=3)return "方案变体数据无效。";
