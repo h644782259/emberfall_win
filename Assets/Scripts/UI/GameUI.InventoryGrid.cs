@@ -218,7 +218,7 @@ namespace Emberfall
             inventoryDetailScroll=BeginTouchScroll("equipment-detail",new Rect(r.x+12*u,bodyY,inner,r.yMax-bodyY-12*u),inventoryDetailScroll,new Rect(0,0,inner-8*u,DrawRewardDetailRows(detail,inner/u-8,u,false)*u));
             DrawRewardDetailRows(detail,inner/u-8,u,true);
             EndTouchScroll();
-            if(MobileControls.Active&&PopupCloseButton(new Rect(r.xMax-22*u,r.y,22*u,22*u))){inventoryComparisonOpen=false;GUI.enabled=prior;return;}
+            if(MobileControls.Active&&PopupCloseButton(new Rect(r.xMax-68*u,r.y+4*u,44*u,44*u))){inventoryComparisonOpen=false;GUI.enabled=prior;return;}
             float mechanismY=compactCompare?r.y+66*u:bodyY+(inventoryPopupCompare?7:4)*rowHeight+8*u;
             float mechanismX=compactCompare?r.x+24*u+statsWidth:r.x+12*u,mechanismWidth=compactCompare?inner-statsWidth-12*u:inner;
             GUI.enabled=prior;

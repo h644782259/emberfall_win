@@ -4,6 +4,13 @@ namespace Emberfall
     public sealed partial class GameUI
     {
         private int smithCategory,smithSelectedSlot;
+        private string smithUpgradeNotice,smithUpgradeNoticeItem,smithUpgradeNoticeSlot;
+        private ProgressionService smithUpgradeNoticeOwner;
+        private float smithUpgradeNoticeUntil;
+        private bool smithUpgradeNoticeSuccess;
+        private bool HasSmithUpgradeNotice(ItemData item,ProgressionService owner)
+        {return item!=null&&smithUpgradeNoticeOwner==owner&&smithUpgradeNoticeSlot==owner.CurrentSlotId&&smithUpgradeNoticeItem==item.id&&Time.unscaledTime<smithUpgradeNoticeUntil;}
+
         private readonly System.Collections.Generic.Dictionary<string,Vector2> smithVariantScroll=new System.Collections.Generic.Dictionary<string,Vector2>();
         private bool smithSocketPicker;
         private EquipmentMechanic smithSocketPrevious;
@@ -86,7 +93,7 @@ namespace Emberfall
             for(int i=0;i<3;i++)
             {
                 var gear=p.Equipped((ItemSlot)i);
-                cardHeights[i]=gear==null?180:DrawSmithDetail(gear,cardWidth-16,u,false)+(smithCategory==0?62:0)+16;
+                cardHeights[i]=gear==null?180:DrawSmithDetail(gear,cardWidth-16,u,false)+(smithCategory==0?(HasSmithUpgradeNotice(gear,p)?(MobileControls.Active?94:106):(MobileControls.Active?50:62)):0)+16;
                 rowHeight=Mathf.Max(rowHeight,cardHeights[i]);
             }
             float contentHeight=columns==3?rowHeight:cardHeights[0]+cardHeights[1]+cardHeights[2]+24;
@@ -110,16 +117,16 @@ namespace Emberfall
                     if(smithCategory==2)
                     {
                         string rerollReason=p.AffixReforgeLockReason(item.id,SmithServiceActive);
-                        Rect reroll=new Rect(8*u,tile.height-90*u,(cardWidth-48)*u,44*u);
-                        if(Button(reroll,"",gold,rerollReason.Length==0,rerollReason))smithAffixQuote=p.PrepareAffixReforge(item.id,SmithServiceActive);
-                        Color rerollTint=rerollReason.Length==0?gold:muted;
-                        DrawIcon(new Rect(reroll.x+10*u,reroll.center.y-12*u,24*u,24*u),UIIconAtlas.Utility("reset"),rerollTint);
-                        Rect cost=new Rect(reroll.center.x-8*u,reroll.center.y-12*u,24*u,24*u);
-                        DrawIcon(cost,UIIconAtlas.Utility("gem"),GameBalance.RarityColor(Rarity.Legendary));
-                        Text(new Rect(cost.xMax+4*u,reroll.y,reroll.xMax-cost.xMax-8*u,reroll.height),"×1",Mathf.RoundToInt(13*u),rerollTint,true,false,TextAnchor.MiddleLeft);
+                        float aw=Mathf.Min(MobileControls.Active?148:180,cardWidth-32),buttonHeight=MobileControls.Active?36:44;
+                        Rect reroll=new Rect((cardWidth-16-aw)*.5f*u,tile.height-(MobileControls.Active?74:90)*u,aw*u,buttonHeight*u);
+                        if(PrimaryButton(reroll,"",gold,rerollReason.Length==0,rerollReason))smithAffixQuote=p.PrepareAffixReforge(item.id,SmithServiceActive);
+                        Color rerollTint=rerollReason.Length==0?new Color(.065f,.05f,.025f):muted;
+                        Text(new Rect(reroll.x+8*u,reroll.y,reroll.width-68*u,reroll.height),"词条重铸",Mathf.RoundToInt(15*u),rerollTint,true,false,TextAnchor.MiddleCenter);
+                        Rect cost=new Rect(reroll.xMax-60*u,reroll.center.y-10*u,20*u,20*u);
+                        DrawIcon(cost,UIIconAtlas.Utility("gem"),rerollTint);
+                        Text(new Rect(cost.xMax+4*u,reroll.y,32*u,reroll.height),"×1",Mathf.RoundToInt(13*u),rerollTint,true,false,TextAnchor.MiddleLeft);
                         string reason=p.RefinementLockReason(item.id,SmithServiceActive);
-                        float aw=Mathf.Min(180,cardWidth-32);
-                        Rect action=new Rect((cardWidth-16-aw)*.5f*u,tile.height-142*u,aw*u,44*u);
+                        Rect action=new Rect((cardWidth-16-aw)*.5f*u,tile.height-(MobileControls.Active?116:142)*u,aw*u,buttonHeight*u);
                         if(reason=="数值已满")DrawSmithMaxBadge(action,"数值已满",u);
                         else
                         {
@@ -134,16 +141,26 @@ namespace Emberfall
                         var quote=p.PrepareSmithUpgrade(slot,SmithServiceActive);
                         int cost=p.UpgradeCost(item);bool capped=p.SlotUpgradeRank(slot)>=p.CurrentUpgradeLimit;
                         float actionWidth=Mathf.Min(148,cardWidth-32);
-                        Rect action=new Rect((cardWidth-16-actionWidth)*.5f*u,y*u,actionWidth*u,44*u);
+                        Rect action=new Rect((cardWidth-16-actionWidth)*.5f*u,y*u,actionWidth*u,(MobileControls.Active?36:44)*u);
                         Color accent=capped||quote!=null?gold:muted;
                         Fill(action,new Color(accent.r,accent.g,accent.b,.13f));Border(action,new Color(accent.r,accent.g,accent.b,.55f));
-                        if(!capped&&QuietAction(action,"",quote!=null)&&!p.UpgradeAtSmith(quote,SmithServiceActive))Feedback(false,p.LastError);
+                        if(!capped&&QuietAction(action,"",quote!=null))
+                        {
+                            int attempts=p.Profile.equipmentUpgradeAttempts;
+                            bool success=p.UpgradeAtSmith(quote,SmithServiceActive);
+                            bool paid=p.Profile.equipmentUpgradeAttempts>attempts;
+                            smithUpgradeNotice=success?"强化成功 · +"+p.SlotUpgradeRank(slot)+"\n已消耗 "+cost+" 金币":paid?"强化失败 · 等级保持 +"+p.SlotUpgradeRank(slot)+"\n已消耗 "+cost+" 金币":p.LastError;
+                            smithUpgradeNoticeOwner=p;smithUpgradeNoticeSlot=p.CurrentSlotId;smithUpgradeNoticeItem=item.id;
+                            smithUpgradeNoticeSuccess=success;smithUpgradeNoticeUntil=Time.unscaledTime+5;
+                            Feedback(success,smithUpgradeNotice.Replace("\n"," · "));
+                        }
+                        if(HasSmithUpgradeNotice(item,p))Text(new Rect(8*u,action.yMax+4*u,(cardWidth-32)*u,40*u),smithUpgradeNotice,Mathf.RoundToInt(12*u),smithUpgradeNoticeSuccess?jade:new Color(1,.48f,.4f),true,true,TextAnchor.MiddleCenter);
                         if(capped)DrawSmithMaxBadge(action,"已满级",u);
                         else DrawIcon(new Rect(action.x+10*u,action.y+11*u,22*u,22*u),UIIconAtlas.Utility("upgrade"),accent);
                         if(!capped)
                         {
                             DrawIcon(new Rect(action.x+42*u,action.y+13*u,18*u,18*u),UIIconAtlas.Utility("coin"),gold);
-                            Text(new Rect(action.x+66*u,action.y,action.width-72*u,44*u),cost.ToString(),Mathf.RoundToInt(12*u),p.Profile.gold>=cost?accent:new Color(.98f,.28f,.24f),true,false,TextAnchor.MiddleLeft);
+                            Text(new Rect(action.x+66*u,action.y,action.width-72*u,action.height),cost.ToString(),Mathf.RoundToInt(12*u),p.Profile.gold>=cost?accent:new Color(.98f,.28f,.24f),true,false,TextAnchor.MiddleLeft);
                         }
                     }
                 }
@@ -323,7 +340,7 @@ namespace Emberfall
         private float DrawSmithDetail(ItemData item,float width,float u,bool draw)
         {
             var p=session.Progression;float y=8;
-            if(smithCategory==0){if(draw)DrawIcon(new Rect((width-64)*.5f*u,y*u,64*u,64*u),UIIconAtlas.EquipmentCardIcon(item.slot,item.level,item.rarity,session.Progression.Profile.heroClass),GameBalance.RarityColor(item.rarity));y+=72;}
+            if(smithCategory==0){float iconSize=MobileControls.Active?32:64;if(draw)DrawIcon(new Rect((width-iconSize)*.5f*u,y*u,iconSize*u,iconSize*u),UIIconAtlas.EquipmentCardIcon(item.slot,item.level,item.rarity,session.Progression.Profile.heroClass),GameBalance.RarityColor(item.rarity));y+=iconSize+8;}
             GoalParagraph(ref y,width,u,item.name,15,gold,true,draw);
             if(draw)
             {
@@ -357,27 +374,29 @@ namespace Emberfall
                         bool full=values[stat]>=maxima[stat]-.000001f;
                         Color tint=Color.Lerp(new Color(.24f,.62f,.82f),new Color(.35f,.88f,.64f),Mathf.Clamp01(progress/.8f));
                         if(progress>.8f)tint=Color.Lerp(tint,gold,(progress-.8f)/.2f);
-                        Rect row=new Rect(8*u,y*u,(width-16)*u,48*u);Fill(row,card);
+                        Rect row=new Rect(8*u,y*u,(width-16)*u,(MobileControls.Active?40:48)*u);Fill(row,card);
                         Text(new Rect(row.x+6*u,row.y,row.width*.28f,28*u),labels[stat],Mathf.RoundToInt(12*u),muted);
                         Text(new Rect(row.x+row.width*.28f,row.y,row.width*.7f,28*u),current[stat]+" / "+limits[stat]+(full?"  满":""),Mathf.RoundToInt(12*u),tint,true,false,TextAnchor.MiddleRight);
                         Rect track=new Rect(row.x+6*u,row.y+33*u,row.width-12*u,7*u);Fill(track,new Color(.025f,.045f,.06f));
                         Fill(new Rect(track.x,track.y,track.width*progress,track.height),tint);
                         if(full)Border(track,new Color(1,.9f,.55f),u);
-                    }y+=52;
+                    }y+=MobileControls.Active?44:52;
                 }
 
-                y+=128;
+                y+=MobileControls.Active?104:128;
             }
             else if(smithCategory==0)
             {
                 int rank=p.SlotUpgradeRank(item.slot);var next=p.PreviewUpgrade(item,Mathf.Max(rank,Mathf.Min(rank+1,p.CurrentUpgradeLimit)));
+                int[] before={item.attack,item.defense,item.health},after={next.attack,next.defense,next.health};
+                int visibleStats=0;for(int stat=0;stat<3;stat++)if(before[stat]>0||after[stat]>0)visibleStats++;
+                float statStep=MobileControls.Active?32:38,statHeight=MobileControls.Active?28:32;
                 if(draw)
                 {
-                    int[] before={item.attack,item.defense,item.health},after={next.attack,next.defense,next.health};
                     int visible=0;for(int stat=0;stat<3;stat++)
                     {
                         if(before[stat]<=0&&after[stat]<=0)continue;
-                        Rect row=new Rect(8*u,(y+visible++*38)*u,(width-16)*u,32*u);
+                        Rect row=new Rect(8*u,(y+visible++*statStep)*u,(width-16)*u,statHeight*u);
                         Fill(row,new Color(.025f,.045f,.065f,.8f));
                         Texture2D icon=stat==1?UIIconAtlas.EquipmentCardIcon(ItemSlot.Armor,item.level,item.rarity,p.Profile.heroClass):UIIconAtlas.Utility(stat==0?"attack":"potion");
                         DrawIcon(new Rect(row.x+4*u,row.y+4*u,24*u,24*u),icon,pale);
@@ -387,8 +406,7 @@ namespace Emberfall
                         Text(new Rect(row.x+32*u+col*2,row.y,col,row.height),after[stat].ToString(),Mathf.RoundToInt(12*u),after[stat]>before[stat]?jade:muted,true,false,TextAnchor.MiddleCenter);
                     }
                 }
-                if(draw&&rank<p.CurrentUpgradeLimit)Text(new Rect(8*u,(y+114)*u,(width-16)*u,24*u),"成功率 "+CombatBalance.UpgradeSuccessPercent(rank+1)+"% · 失败扣费，等级不变",Mathf.RoundToInt(11*u),muted,false,false,TextAnchor.MiddleCenter);
-                y+=142;
+                y+=MobileControls.Active?visibleStats*statStep+6:114;
 
             }
             else

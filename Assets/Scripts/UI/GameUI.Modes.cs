@@ -17,7 +17,8 @@ namespace Emberfall
    Vector2 point=Event.current.mousePosition;
    if(entryRewardPopupRect.Contains(point))
    {
-    if(new Rect(entryRewardPopupRect.xMax-22*(MobileControls.Active?TouchRatio:1),entryRewardPopupRect.y,22*(MobileControls.Active?TouchRatio:1),22*(MobileControls.Active?TouchRatio:1)).Contains(point))entryRewardSelection=null;
+    float closeUnit=MobileControls.Active?TouchRatio:1;bool compactClose=entryRewardPopup!=null&&CompactRewardItem(entryRewardPopup);
+    if(new Rect(entryRewardPopupRect.xMax-(compactClose?48:44)*closeUnit,entryRewardPopupRect.y+(compactClose?4:0)*closeUnit,44*closeUnit,44*closeUnit).Contains(point))entryRewardSelection=null;
     if(entryRewardSelection==null)Event.current.Use();
    }
    else if(!entryRewardAnchor.Contains(point))entryRewardSelection=null;
@@ -45,10 +46,13 @@ namespace Emberfall
    if(compact)
    {
     var quantity=System.Text.RegularExpressions.Regex.Match(entryRewardPopup.Description??"",@"数量[ ：]*(.+)");
-    Text(new Rect(x+w-120*u,y+4*u,94*u,20*u),"数量："+(quantity.Success?quantity.Groups[1].Value:entryRewardPopup.Quantity.ToString()),Mathf.RoundToInt(11*u),pale,true,false,TextAnchor.MiddleRight);
-    DrawIcon(new Rect(x+10*u,y+27*u,32*u,32*u),entryRewardPopup.Icon,entryRewardPopup.QualityColor);
-    Text(new Rect(x+50*u,y+24*u,w-66*u,24*u),entryRewardPopup.Name,Mathf.RoundToInt(13*u),pale,true,false,TextAnchor.MiddleLeft);
-    DrawDetailTag(new Rect(x+50*u,y+48*u,62*u,21*u),GameBalance.RarityName(entryRewardPopup.Rarity),entryRewardPopup.QualityColor,u);
+    string quantityText="数量："+(quantity.Success?quantity.Groups[1].Value:entryRewardPopup.Quantity.ToString());
+    float quantityWidth=Mathf.Min(90*u,Style(Mathf.RoundToInt(11*u),true).CalcSize(new GUIContent(quantityText)).x+8*u);
+    float quantityX=box.xMax-52*u-quantityWidth;
+    Text(new Rect(x+8*u,y+4*u,Mathf.Max(0,quantityX-x-12*u),44*u),entryRewardPopup.Name,Mathf.RoundToInt(13*u),pale,true,false,TextAnchor.MiddleLeft);
+    Text(new Rect(quantityX,y+4*u,quantityWidth,44*u),quantityText,Mathf.RoundToInt(11*u),pale,true,false,TextAnchor.MiddleRight);
+    DrawIcon(new Rect(x+10*u,y+46*u,22*u,22*u),entryRewardPopup.Icon,entryRewardPopup.QualityColor);
+    DrawDetailTag(new Rect(x+40*u,y+46*u,62*u,21*u),GameBalance.RarityName(entryRewardPopup.Rarity),entryRewardPopup.QualityColor,u);
    }
    else if(!comparing)
    {
@@ -60,10 +64,10 @@ namespace Emberfall
    foreach(string tag in tags)if(tag.Length>0)
    {float tagW=Mathf.Max(48,tag.Length*12+16)*u;Rect chip=new Rect(tagX,y+66*u,tagW,23*u);Fill(chip,new Color(entryRewardPopup.QualityColor.r,entryRewardPopup.QualityColor.g,entryRewardPopup.QualityColor.b,.18f));Text(chip,tag,Mathf.RoundToInt(10*u),pale,true,false,TextAnchor.MiddleCenter);tagX+=tagW+6*u;}
    }
-   entryRewardPopupScroll=BeginTouchScroll("entry-reward-popup",new Rect(x+12*u,y+headerHeight*u+comparisonHeight,w-24*u,h-(headerHeight+10)*u-comparisonHeight),entryRewardPopupScroll,new Rect(0,0,textWidth,contentHeight));
+   entryRewardPopupScroll=BeginTouchScroll("entry-reward-popup",new Rect(x+12*u,y+headerHeight*u+comparisonHeight,w-24*u,h-(headerHeight+10)*u-comparisonHeight),entryRewardPopupScroll,new Rect(0,0,textWidth,contentHeight),showScrollbar:false);
    DrawRewardDetailRows(entryRewardPopup,textWidth/u,u,true);
    EndTouchScroll();
-   if((MobileControls.Active||(entryRewardSelection??" ").StartsWith("merchant:"))&&PopupCloseButton(new Rect(box.xMax-22*u,y,22*u,22*u)))entryRewardSelection=null;
+   if((MobileControls.Active||(entryRewardSelection??" ").StartsWith("merchant:"))&&PopupCloseButton(new Rect(box.xMax-(compact?48:44)*u,y+(compact?4:0)*u,44*u,44*u)))entryRewardSelection=null;
   }
   private string GemRewardDescription(EquipmentMechanic gem,Rarity rarity,int rank=0)
   {
@@ -165,7 +169,7 @@ namespace Emberfall
     string name=value==null?"未穿戴":string.IsNullOrEmpty(value.Name)?"所选时装":value.Name;
     string level=value==null?"":System.Text.RegularExpressions.Regex.Match(value.Description??"",@"Lv\.?\d+").Value;
     if(level.Length>0)name=level+"  "+name;
-    Text(new Rect((x+10)*u,24*u,(cardWidth-20)*u,32*u),name,Mathf.RoundToInt(14*u),accent,true,true);
+    Text(new Rect((x+10)*u,24*u,(cardWidth-20-(MobileControls.Active&&item.AllowActions&&col==1?44:0))*u,32*u),name,Mathf.RoundToInt(14*u),accent,true,true);
     if(value!=null){DrawDetailTag(new Rect((x+8)*u,60*u,60*u,22*u),GameBalance.RarityName(value.Rarity),accent,u);DrawDetailTag(new Rect((x+74)*u,60*u,Mathf.Max(36,cardWidth-82)*u,22*u),item.GearSlot.HasValue?GameBalance.SlotName(item.GearSlot.Value):item.AppearanceSlot==FashionSlot.Wings?"羽翼":"兵装",jade,u);}
    }
    FashionData ownedFashion=item.AppearanceSlot.HasValue&&item.Key!=null&&item.Key.StartsWith("fashion:")?progression.Profile.fashions.Find(v=>v!=null&&"fashion:"+v.id==item.Key):null;

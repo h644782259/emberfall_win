@@ -73,7 +73,7 @@ namespace Emberfall
             Box(BuildPlanRect(l.Frame,u),jade,false);
             Text(BuildPlanRect(l.Header,u),"成就",Mathf.RoundToInt(21*u),pale,true);
             int available=session.Progression.ClaimableAchievements;
-            if(PrimaryButton(new Rect((l.Frame.X+l.Frame.Width-222)*u,(l.Frame.Y+12)*u,154*u,32*u),"一键领取"+(available>0?" · "+available:""),gold,available>0))Feedback(session.Progression.ClaimAllAchievements(),"成就奖励已领取");
+            if(DrawButton(new Rect((l.Frame.X+l.Frame.Width-222)*u,(l.Frame.Y+12)*u,154*u,32*u),"一键领取"+(available>0?" · "+available:""),ButtonRole.Primary,available>0,fontSize:Mathf.RoundToInt(15*u)))Feedback(session.Progression.ClaimAllAchievements(),"成就奖励已领取");
             DrawAchievements(BuildPlanRect(l.Body,u),u);
             if(PopupCloseButton(new Rect((l.Frame.X+l.Frame.Width-52)*u,(l.Frame.Y+12)*u,40*u,32*u)))CloseProgressionGoalSurface();
             return true;

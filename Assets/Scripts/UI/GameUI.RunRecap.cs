@@ -288,7 +288,7 @@ namespace Emberfall
         }
         private void DrawRecapCards(RunRecapLayout layout,RunRecapPresentation data,float unit,float top=0)
         {
-            float y=top,w=layout.ContentWidth;
+            float y=top,w=layout.ContentWidth;bool compact=layout.Mobile;
             RunRecapSnapshot snapshot=data.Snapshot;
             if(data.HasFailureBanner)
             {
@@ -304,13 +304,13 @@ namespace Emberfall
                 {
                     var metric=data.Metrics[i];Rect r=RecapRect(layout.Metric(i,y),unit);
                     Fill(r,card);Fill(new Rect(r.x,r.y,3*unit,r.height),jade*.7f);
-                    DrawIcon(new Rect(r.xMax-38*unit,r.y+13*unit,25*unit,25*unit),UIIconAtlas.Utility(RunRecapPresentation.IconFor(metric.Key)),jade);
-                    int numberSize=Mathf.RoundToInt(34*unit);
+                    DrawIcon(new Rect(r.xMax-(compact?24:38)*unit,r.y+(compact?7:13)*unit,(compact?16:25)*unit,(compact?16:25)*unit),UIIconAtlas.Utility(RunRecapPresentation.IconFor(metric.Key)),jade);
+                    int numberSize=Mathf.RoundToInt((compact?21:34)*unit);
                     string value=metric.Value.ToString("N0");
                     float measured=Style(numberSize,true).CalcSize(new GUIContent(value)).x;
-                    if(measured>r.width-48*unit)numberSize=Mathf.Max(Mathf.RoundToInt(20*unit),Mathf.FloorToInt(numberSize*(r.width-48*unit)/measured));
-                    Text(new Rect(r.x+14*unit,r.y+6*unit,r.width-48*unit,44*unit),value,numberSize,pale,true);
-                    Text(new Rect(r.x+14*unit,r.y+57*unit,r.width-25*unit,22*unit),metric.Key,Mathf.RoundToInt(14*unit),muted);
+                    if(measured>r.width-(compact?32:48)*unit)numberSize=Mathf.Max(Mathf.RoundToInt((compact?14:20)*unit),Mathf.FloorToInt(numberSize*(r.width-(compact?32:48)*unit)/measured));
+                    Text(new Rect(r.x+(compact?8:14)*unit,r.y+(compact?4:6)*unit,r.width-(compact?32:48)*unit,(compact?27:44)*unit),value,numberSize,pale,true);
+                    Text(new Rect(r.x+(compact?8:14)*unit,r.y+(compact?31:57)*unit,r.width-(compact?12:25)*unit,(compact?20:22)*unit),metric.Key,Mathf.RoundToInt((compact?11:14)*unit),muted);
                 }
                 y+=layout.MetricRowsHeight(data.Metrics.Length)+18;
             }
@@ -321,11 +321,11 @@ namespace Emberfall
             for(int visible=0;visible<visibleRewards.Length;visible++)
             {
                 int i=visibleRewards[visible];
-                float cell=(w-8)*.5f;Rect tile=new Rect((visible%2)*(cell+8)*unit,(y+(visible/2)*76)*unit,cell*unit,68*unit);
+                int columns=RecapRewardColumns(layout);float step=compact?52:76,cell=(w-(columns-1)*8)/columns;Rect tile=new Rect((visible%columns)*(cell+8)*unit,(y+(visible/columns)*step)*unit,cell*unit,(compact?44:68)*unit);
                 Fill(tile,card);
-                DrawIcon(new Rect(tile.x+10*unit,tile.y+15*unit,32*unit,32*unit),i==5?UIIconAtlas.Utility("gem"):i==4?UIIconAtlas.Utility("potion"):i==1?UIIconAtlas.Utility("upgrade"):UIIconAtlas.Reward(i==0?0:i-1),i==0?gold:i==1?jade:GameBalance.RarityColor(i==5?Rarity.Epic:i==4?Rarity.Common:Rarity.Rare));
-                Text(new Rect(tile.x+52*unit,tile.y+7*unit,tile.width-60*unit,22*unit),labels[i],Mathf.RoundToInt(13*unit),muted);
-                Text(new Rect(tile.x+52*unit,tile.y+29*unit,tile.width-60*unit,30*unit),"+"+amounts[i].ToString("N0"),Mathf.RoundToInt(21*unit),pale,true);
+                DrawIcon(new Rect(tile.x+8*unit,tile.y+(compact?10:15)*unit,(compact?24:32)*unit,(compact?24:32)*unit),i==5?UIIconAtlas.Utility("gem"):i==4?UIIconAtlas.Utility("potion"):i==1?UIIconAtlas.Utility("upgrade"):UIIconAtlas.Reward(i==0?0:i-1),i==0?gold:i==1?jade:GameBalance.RarityColor(i==5?Rarity.Epic:i==4?Rarity.Common:Rarity.Rare));
+                Text(new Rect(tile.x+(compact?38:52)*unit,tile.y+(compact?2:7)*unit,tile.width-(compact?42:60)*unit,20*unit),labels[i],Mathf.RoundToInt((compact?11:13)*unit),muted);
+                Text(new Rect(tile.x+(compact?38:52)*unit,tile.y+(compact?20:29)*unit,tile.width-(compact?42:60)*unit,(compact?22:30)*unit),"+"+amounts[i].ToString("N0"),Mathf.RoundToInt((compact?15:21)*unit),pale,true);
             }
 
         }
@@ -383,12 +383,15 @@ namespace Emberfall
             long threads=settlementChest!=null&&settlementChest.hasCurrencyDeltas?settlementChest.threadsDelta:0;
             return new long[]{snapshot.RewardGold+chestGold,snapshot.RewardExperience,snapshot.RewardMaterials+chestMaterials,threads,session.RunPickupPotions,snapshot.RewardRefinementStones};
         }
+        private static int RecapRewardColumns(RunRecapLayout layout)
+        {return layout.Mobile?(layout.ContentWidth>=600?4:layout.ContentWidth>=400?3:2):2;}
         private float RecapContentHeight(RunRecapLayout layout,RunRecapPresentation data)
         {
             if(data==null)return 110;
             float result=data.HasFailureBanner?76:0;
             result+=28+layout.MetricRowsHeight(data.Metrics.Length)+18;
-            result+=28+((RunRecapPresentation.PositiveRewardIndices(RecapRewardAmounts(data.Snapshot)).Length+1)/2)*76+18;
+            int columns=RecapRewardColumns(layout);
+            result+=28+((RunRecapPresentation.PositiveRewardIndices(RecapRewardAmounts(data.Snapshot)).Length+columns-1)/columns)*(layout.Mobile?52:76)+18;
             return result+6;
         }
     }

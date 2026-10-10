@@ -143,9 +143,11 @@ namespace Emberfall
         }
         public readonly Area Frame,Header,Viewport,Primary;
         public readonly int Columns;
-        public readonly float Gap=12,MetricHeight=88,ContentWidth;
+        public readonly float Gap,MetricHeight,ContentWidth;
+        public readonly bool Mobile;
         public RunRecapLayout(float width,float height,bool mobile)
         {
+            Mobile=mobile;Gap=mobile?8:12;MetricHeight=mobile?52:88;
             width=Math.Max(280,width);height=Math.Max(220,height);
             float margin=mobile?8:20,frameWidth=Math.Min(mobile?920:960,width-margin*2),frameHeight=Math.Min(mobile?720:656,height-margin*2);
             float x=(width-frameWidth)*.5f,y=(height-frameHeight)*.5f,padding=mobile?16:24;
@@ -155,7 +157,7 @@ namespace Emberfall
             Viewport=new Area(x+padding,y+headerHeight,frameWidth-padding*2,frameHeight-headerHeight-footerHeight);
             Primary=new Area(x+padding,y+frameHeight-footerHeight+10,frameWidth-padding*2,mobile?44:46);
             ContentWidth=Viewport.Width-14;
-            Columns=ContentWidth>=700?4:ContentWidth>=470?3:2;
+            Columns=mobile?(ContentWidth>=600?5:ContentWidth>=400?3:2):ContentWidth>=700?4:ContentWidth>=470?3:2;
         }
         public Area Metric(int index,float y)
         {

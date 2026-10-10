@@ -38,7 +38,7 @@ namespace Emberfall
             {
                 var bulk=p.PrepareMerchantBulkSale(MerchantServiceActive);
                 Text(BuildPlanRect(l.Info,u),bulk==null?"暂无可一键出售的装备":"未锁定且评分更低 · "+bulk.Count+"件 · +"+bulk.Gold+"金币",Mathf.RoundToInt(12*u),muted,false,true);
-                if(PrimaryButton(BuildPlanRect(l.Action,u),"一键出售",gold,bulk!=null&&Time.unscaledTime>=merchantActionUntil)&&StartMerchantAction())
+                if(DrawButton(BuildPlanRect(l.Action,u),"一键出售",ButtonRole.Primary,bulk!=null&&Time.unscaledTime>=merchantActionUntil,fontSize:Mathf.RoundToInt(15*u))&&StartMerchantAction())
                 {bool sold=p.SellAtMerchant(bulk,MerchantServiceActive);Feedback(sold,"已出售 "+bulk.Count+" 件 · +"+bulk.Gold+" 金币");if(sold){RebuildBagItems();ResolveSelectedItem();}}
             }
             var mechanics=BuildCatalog.GemsFor(p.Profile.heroClass);
@@ -96,12 +96,12 @@ namespace Emberfall
                     Rect gemIcon=new Rect(tile.center.x-23*u,tile.y+6*u,46*u,46*u);
                     DrawIcon(gemIcon,UIIconAtlas.Utility("gem"),tint);
                     if(gem.mounted)DrawWornIconBadge(gemIcon,u,"已镶嵌");
-                    Text(new Rect(tile.x+6*u,tile.y+54*u,tile.width-12*u,28*u),BuildCatalog.GemName(gem.mechanic),Mathf.RoundToInt(11*u),pale,false,true,TextAnchor.MiddleCenter);
-                    DrawPrice(new Rect(tile.x+8*u,tile.y+80*u,tile.width-16*u,20*u),p.GemSellValue(gem.mechanic),true,u);
-                    InspectRewardItem(new Rect(tile.x,tile.y,tile.width,100*u),new EntryRewardPreview{Key="merchant:gem:sale:"+gem.mechanic,Name=BuildCatalog.GemName(gem.mechanic),Rarity=gem.rarity,Tint=tint,Icon=UIIconAtlas.Utility("gem"),Description=GemRewardDescription(gem.mechanic,gem.rarity,gem.upgradeRank)},true);
+                    Text(new Rect(tile.x+6*u,tile.y+52*u,tile.width-12*u,30*u),BuildCatalog.GemName(gem.mechanic),Mathf.RoundToInt(11*u),pale,false,true,TextAnchor.MiddleCenter);
+                    DrawPrice(new Rect(tile.x+8*u,tile.y+77*u,tile.width-16*u,20*u),p.GemSellValue(gem.mechanic),true,u);
+                    InspectRewardItem(new Rect(tile.x,tile.y,tile.width,96*u),new EntryRewardPreview{Key="merchant:gem:sale:"+gem.mechanic,Name=BuildCatalog.GemName(gem.mechanic),Rarity=gem.rarity,Tint=tint,Icon=UIIconAtlas.Utility("gem"),Description=GemRewardDescription(gem.mechanic,gem.rarity,gem.upgradeRank)},true);
                     string reason=p.GemSaleLock(gem.mechanic,MerchantServiceActive);
                     bool confirming=merchantGemSaleConfirmation==gem.mechanic;
-                    if(PrimaryButton(new Rect(tile.x+6*u,tile.y+104*u,tile.width-12*u,40*u),reason.Length>0?reason:confirming?"确认出售":"出售",gold,reason.Length==0)&&StartMerchantAction())
+                    if(DrawButton(new Rect(tile.x+6*u,tile.y+100*u,tile.width-12*u,44*u),reason.Length>0?reason:confirming?"确认出售":"出售",ButtonRole.Primary,reason.Length==0,fontSize:Mathf.RoundToInt(15*u))&&StartMerchantAction())
                     {if(confirming){Feedback(p.SellGem(gem.mechanic,MerchantServiceActive),"宝石已出售");merchantGemSaleConfirmation=EquipmentMechanic.None;}else merchantGemSaleConfirmation=gem.mechanic;}
                     continue;
                 }
@@ -112,13 +112,14 @@ namespace Emberfall
                 bool first=p.Profile.pendingFirstClearReward&&!p.Profile.firstClearRewardClaimed&&mechanic!=EquipmentMechanic.None&&merchantGemRarity==Rarity.Epic;
                 int price=item!=null?p.SellValue(item):mechanic==EquipmentMechanic.None?ProgressionService.PotionPrice:first?0:BuildCatalog.GemPrice(merchantGemRarity);
                 string caption=item!=null?item.name:mechanic==EquipmentMechanic.None?"生命药剂":BuildCatalog.GemName(mechanic);
-                DrawIcon(new Rect(tile.center.x-23*u,tile.y+6*u,46*u,46*u),item!=null?UIIconAtlas.EquipmentCardIcon(item.slot,item.level,item.rarity,session.Progression.Profile.heroClass):UIIconAtlas.Utility(mechanic==EquipmentMechanic.None?"potion":"gem"),item!=null?GameBalance.RarityColor(item.rarity):merchantMode==1?GameBalance.RarityColor(merchantGemRarity):Color.white);
+                DrawIcon(new Rect(tile.center.x-23*u,tile.y+(merchantMode==1?26:6)*u,46*u,46*u),item!=null?UIIconAtlas.EquipmentCardIcon(item.slot,item.level,item.rarity,session.Progression.Profile.heroClass):UIIconAtlas.Utility(mechanic==EquipmentMechanic.None?"potion":"gem"),item!=null?GameBalance.RarityColor(item.rarity):merchantMode==1?GameBalance.RarityColor(merchantGemRarity):Color.white);
                 if(item!=null&&IsEquipped(item))DrawWornIconBadge(new Rect(tile.center.x-23*u,tile.y+6*u,46*u,46*u),u,"已穿戴");
-                Text(new Rect(tile.x+6*u,tile.y+52*u,tile.width-12*u,30*u),caption,Mathf.RoundToInt(11*u),pale,false,true,TextAnchor.MiddleCenter);
+                Text(new Rect(tile.x+6*u,tile.y+(merchantMode==1?74:52)*u,tile.width-12*u,(merchantMode==1?24:30)*u),caption,Mathf.RoundToInt(11*u),pale,false,true,TextAnchor.MiddleCenter);
                 if(merchantMode==1)
                 {
                     string stats=BuildCatalog.IsAttributeGem(mechanic)?BuildCatalog.GemAttributeSummary(mechanic,merchantGemRarity,p.Attachment(mechanic)?.upgradeRank??0):BuildCatalog.AttributeLabel(BuildCatalog.MechanicAttribute(mechanic))+" +"+(BuildCatalog.MechanicAttributeValue(mechanic,p.Attachment(mechanic)?.upgradeRank??0)*100).ToString("0.#")+"%";
-                    Text(new Rect(tile.x+6*u,tile.y+82*u,tile.width-12*u,18*u),GameBalance.SlotName(BuildCatalog.MechanicSlot(mechanic))+" · "+GameBalance.RarityName(merchantGemRarity),Mathf.RoundToInt(11*u),GameBalance.RarityColor(merchantGemRarity),true,false,TextAnchor.MiddleCenter);
+                    DrawDetailTag(new Rect(tile.x+4*u,tile.y+4*u,38*u,18*u),GameBalance.SlotName(BuildCatalog.MechanicSlot(mechanic)),jade,u);
+                    DrawDetailTag(new Rect(tile.xMax-42*u,tile.y+4*u,38*u,18*u),GameBalance.RarityName(merchantGemRarity),GameBalance.RarityColor(merchantGemRarity),u);
                     Text(new Rect(tile.x+6*u,tile.y+100*u,tile.width-12*u,30*u),stats,Mathf.RoundToInt(11*u),jade,true,true,TextAnchor.MiddleCenter);
                 }
                 DrawPriceTint(new Rect(tile.x+8*u,tile.y+(merchantMode==1?131:77)*u,tile.width-16*u,20*u),price,merchantMode==1,u,item!=null||quote!=null?gold:new Color(.98f,.28f,.24f));
@@ -131,7 +132,7 @@ namespace Emberfall
                 {
                     Rect sell=new Rect(tile.x+6*u,tile.y+100*u,tile.width-12*u,44*u);
                     bool canSell=CanSellMerchantEquipment(item);string sellCaption=canSell?"出售":item.locked?"已锁定":IsEquipped(item)?"当前穿戴":"无法出售";
-                    if(PrimaryButton(sell,sellCaption,gold,canSell&&Time.unscaledTime>=merchantActionUntil)&&StartMerchantAction())
+                    if(DrawButton(sell,sellCaption,ButtonRole.Primary,canSell&&Time.unscaledTime>=merchantActionUntil,fontSize:Mathf.RoundToInt(15*u))&&StartMerchantAction())
                     {string id=item.id;RebuildBagItems();SellInventoryItem(id);}
                 }
                 else

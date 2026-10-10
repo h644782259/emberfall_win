@@ -6,7 +6,7 @@ namespace Emberfall
   private readonly TouchScrollGesture touchScroll=new TouchScrollGesture();
   private string touchScrollOwner;private Panel touchScrollPanel;private int touchScrollFrame=-1,touchScrollSuppressed=-1;
   private bool scrollPriorEnabled;
-  private Vector2 BeginTouchScroll(string owner,Rect viewport,Vector2 position,Rect content,bool horizontal=false,bool vertical=true)
+  private Vector2 BeginTouchScroll(string owner,Rect viewport,Vector2 position,Rect content,bool horizontal=false,bool vertical=true,bool showScrollbar=true)
   {
    scrollPriorEnabled=GUI.enabled;
    if(MobileControls.Active)
@@ -35,7 +35,7 @@ namespace Emberfall
     }
    }
    bool overflow=vertical&&content.height>viewport.height+.5f;
-   return GUI.BeginScrollView(viewport,position,content,horizontal,false,GUIStyle.none,overflow?scrollBar:GUIStyle.none);
+   return GUI.BeginScrollView(viewport,position,content,horizontal,false,GUIStyle.none,overflow&&showScrollbar?scrollBar:GUIStyle.none);
   }
   private void EndTouchScroll(){GUI.EndScrollView();GUI.enabled=scrollPriorEnabled;}
   private void ReconcileMobileScroll()

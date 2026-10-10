@@ -113,19 +113,19 @@ namespace Emberfall
         }
         private float DrawSkillDevelopmentContent(float width,float u,bool draw)
         {
-            var p=session.Progression;float y=8;
+            var p=session.Progression;bool compact=MobileControls.Active;float y=compact?4:8;
             if(masteryNoticeSlot!=p.CurrentSlotId){masteryNoticeSlot=p.CurrentSlotId;masteryChangeNotice=null;masteryChangedNode=-1;}
             selectedMastery=Mathf.Clamp(selectedMastery,0,3);
             if(draw)
             {
-                Text(new Rect(4*u,y*u,(width-132)*u,44*u),"可用精通点 "+p.Profile.skillPoints,Mathf.RoundToInt(16*u),gold,true);
+                Text(new Rect(4*u,y*u,(width-132)*u,44*u),"可用精通点 "+p.Profile.skillPoints,Mathf.RoundToInt((compact?13:16)*u),gold,true);
                 if(Button(new Rect((width-128)*u,y*u,124*u,44*u),"重置精通",jade))masteryResetConfirm=true;
             }
-            y+=52;
-            int columns=width>=760?4:2,cap=ProgressionService.MasteryCap(p.Profile.level);
+            y+=compact?44:52;
+            int columns=compact||width>=760?4:2,cap=ProgressionService.MasteryCap(p.Profile.level);
             float tileWidth=(width-(columns-1)*10)/columns,coreHeight=0;
-            for(int i=0;i<4;i++)coreHeight=Mathf.Max(coreHeight,Style(Mathf.RoundToInt(12*u),false,true).CalcHeight(new GUIContent(MasteryCoreText((MasteryType)i)),(tileWidth-24)*u)/u);
-            float tileHeight=228+coreHeight;
+            for(int i=0;i<4;i++)coreHeight=Mathf.Max(coreHeight,Style(Mathf.RoundToInt((compact?11:12)*u),false,true).CalcHeight(new GUIContent(MasteryCoreText((MasteryType)i)),(tileWidth-(compact?16:24))*u)/u);
+            float tileHeight=(compact?188:228)+coreHeight;
             for(int i=0;i<4;i++)
             {
                 var mastery=(MasteryType)i;int rank=p.Profile.masteryRanks[i];
@@ -134,23 +134,23 @@ namespace Emberfall
                 if(!draw)continue;
                 bool selected=selectedMastery==i,flashing=masteryChangedNode==i&&Time.unscaledTime-masteryChangedAt<1.2f;
                 Fill(tile,flashing?new Color(.07f,.23f,.17f):card);Border(tile,p.HasMasteryCore(mastery)?gold:jade*.4f);
-                DrawIcon(new Rect(tile.x+10*u,tile.y+10*u,28*u,28*u),UIIconAtlas.Mastery(mastery),pale);
-                Text(new Rect(tile.x+46*u,tile.y+8*u,tile.width-54*u,28*u),BuildCatalog.MasteryName(mastery),Mathf.RoundToInt(14*u),pale,true);
-                Text(new Rect(tile.x+12*u,tile.y+42*u,tile.width-24*u,22*u),"已投入 "+rank+" 点"+(p.HasMasteryCore(mastery)?" · 核心":""),Mathf.RoundToInt(12*u),muted);
-                Text(new Rect(tile.x+12*u,tile.y+68*u,tile.width-24*u,24*u),"当前  "+MasteryBonusText(i,rank),Mathf.RoundToInt(13*u),pale,true);
-                Text(new Rect(tile.x+12*u,tile.y+94*u,tile.width-24*u,24*u),rank<cap?"下一点  "+MasteryBonusText(i,rank+1):cap==0?"Lv"+MasteryProgressionRules.FirstUnlockLevel+" 解锁":"已达当前等级上限",Mathf.RoundToInt(12*u),rank<cap?jade:muted);
-                if(GUI.Button(new Rect(tile.x,tile.y,tile.width,124*u),GUIContent.none,invisibleButton))selectedMastery=i;
+                DrawIcon(new Rect(tile.x+(compact?8:10)*u,tile.y+8*u,(compact?22:28)*u,(compact?22:28)*u),UIIconAtlas.Mastery(mastery),pale);
+                Text(new Rect(tile.x+(compact?36:46)*u,tile.y+(compact?4:8)*u,tile.width-(compact?44:54)*u,28*u),BuildCatalog.MasteryName(mastery),Mathf.RoundToInt((compact?12:14)*u),pale,true);
+                Text(new Rect(tile.x+12*u,tile.y+(compact?32:42)*u,tile.width-24*u,22*u),"已投入 "+rank+" 点"+(p.HasMasteryCore(mastery)?" · 核心":""),Mathf.RoundToInt(12*u),muted);
+                Text(new Rect(tile.x+12*u,tile.y+(compact?52:68)*u,tile.width-24*u,24*u),"当前  "+MasteryBonusText(i,rank),Mathf.RoundToInt(13*u),pale,true);
+                Text(new Rect(tile.x+12*u,tile.y+(compact?74:94)*u,tile.width-24*u,24*u),rank<cap?"下一点  "+MasteryBonusText(i,rank+1):cap==0?"Lv"+MasteryProgressionRules.FirstUnlockLevel+" 解锁":"已达当前等级上限",Mathf.RoundToInt(12*u),rank<cap?jade:muted);
+                if(GUI.Button(new Rect(tile.x,tile.y,tile.width,(compact?92:124)*u),GUIContent.none,invisibleButton))selectedMastery=i;
                 string action=learnable?"+ 1点":cap==0?"尚未解锁":rank>=cap?"当前已满":"精通点不足";
-                if(PrimaryButton(new Rect(tile.x+10*u,tile.y+128*u,tile.width-20*u,36*u),action,jade,learnable))
+                if(PrimaryButton(new Rect(tile.x+10*u,tile.y+(compact?96:128)*u,tile.width-20*u,36*u),action,jade,learnable))
                 {
                     selectedMastery=i;bool saved=p.LearnMastery(mastery);
                     masteryChangeNotice=saved?BuildCatalog.MasteryName(mastery)+"："+MasteryBonusText(i,rank)+" → "+MasteryBonusText(i,p.Profile.masteryRanks[i])+"（消耗 1 精通点）":p.LastError;
                     if(saved){masteryChangedNode=i;masteryChangedAt=Time.unscaledTime;}
                 }
                 bool active=p.HasMasteryCore(mastery);
-                Text(new Rect(tile.x+12*u,tile.y+176*u,tile.width-24*u,coreHeight*u),MasteryCoreText(mastery),Mathf.RoundToInt(12*u),active?gold:pale,false,true);
+                Text(new Rect(tile.x+(compact?8:12)*u,tile.y+(compact?140:176)*u,tile.width-(compact?16:24)*u,coreHeight*u),MasteryCoreText(mastery),Mathf.RoundToInt((compact?11:12)*u),active?gold:pale,false,true);
                 string coreAction=active?"✓ 核心已启用":rank<MasteryCoreRules.InitialInvestment?"投入 "+MasteryCoreRules.InitialInvestment+" 点解锁":"启用核心";
-                if(Button(new Rect(tile.x+10*u,tile.yMax-44*u,tile.width-20*u,36*u),coreAction,active?gold:jade,session.IsInCamp&&rank>=MasteryCoreRules.InitialInvestment&&!active))
+                if(Button(new Rect(tile.x+10*u,tile.yMax-(compact?40:44)*u,tile.width-20*u,36*u),coreAction,active?gold:jade,session.IsInCamp&&rank>=MasteryCoreRules.InitialInvestment&&!active))
                 {bool saved=p.SelectMasteryCore(mastery,true);masteryChangeNotice=saved?"已启用 "+BuildCatalog.MasteryName(mastery)+"核心":p.LastError;}
             }
             y+=((4+columns-1)/columns)*(tileHeight+10);
