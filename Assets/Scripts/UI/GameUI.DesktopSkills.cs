@@ -44,14 +44,14 @@ namespace Emberfall
             desktopDetailScroll=BeginTouchScroll("desktop-skill-detail",viewport,desktopDetailScroll,
                 new Rect(0,0,532,Mathf.Max(viewport.height,evolutionY+evolutionCardHeight+6)));
             Text(new Rect(0,0,530,descriptionHeight),description,13,muted,false,true);
-            string[] labels = { "当前冷却", "资源消耗", "初习解锁", "进阶成长" };
-            string[] values = { passive ? "自动生效" : skill==SkillStockRules.Skill(p.heroClass)?"储存2次 · "+SkillStockRules.Seconds(p.heroClass)+"秒/次":GameBalance.EffectiveCooldown(p.heroClass, skill, rank).ToString("0.#") + " 秒", passive || GameBalance.SkillEnergyCost(p.heroClass, skill) == 0 ? "无需能量" : GameBalance.SkillEnergyCost(p.heroClass, skill).ToString("0") + " " + GameBalance.EnergyName(p.heroClass), "Lv." + GameBalance.SkillRequiredLevels[skill], "强化 → 觉醒" };
-            for (int i = 0; i < 4; i++)
+            string[] labels = { "当前冷却", "资源消耗" };
+            string[] values = { passive ? "自动生效" : skill==SkillStockRules.Skill(p.heroClass)?"储存2次 · "+SkillStockRules.Seconds(p.heroClass)+"秒/次":GameBalance.EffectiveCooldown(p.heroClass, skill, rank).ToString("0.#") + " 秒", passive || GameBalance.SkillEnergyCost(p.heroClass, skill) == 0 ? "无需能量" : GameBalance.SkillEnergyCost(p.heroClass, skill).ToString("0") + " " + GameBalance.EnergyName(p.heroClass) };
+            for (int i = 0; i < labels.Length; i++)
             {
-                Rect stat = new Rect(i*134,statsY,128,43);
+                Rect stat = new Rect(i*269,statsY,261,43);
                 Fill(stat, new Color(.035f, .075f, .11f));
-                Text(new Rect(stat.x + 9, stat.y + 4, 110, 14), labels[i], 10, muted);
-                Text(new Rect(stat.x + 9, stat.y + 23, 110, 18), values[i], 12, i == 1 ? jade : pale, true);
+                Text(new Rect(stat.x + 9, stat.y + 4, 243, 14), labels[i], 10, muted);
+                Text(new Rect(stat.x + 9, stat.y + 23, 243, 18), values[i], 12, i == 1 ? jade : pale, true);
             }
             Text(new Rect(0,statsY+53,530,18),"成长方式",11,jade,true);
             Text(new Rect(0,prerequisiteY,530,prerequisiteHeight),prerequisite,12,session.Progression.PrerequisitesMet(skill)?pale:gold,false,true);
@@ -64,7 +64,7 @@ namespace Emberfall
                 if(current)Fill(new Rect(evolution.x,evolution.y,3,evolution.height),gold);
                 Text(new Rect(evolution.x+9,evolution.y+7,65,20),GameBalance.SkillRankName(stage),14,stage<=rank?gold:pale,true);
                 SkillStateTag(new Rect(evolution.x+9,evolution.y+31,60,22),"Lv."+GameBalance.SkillRankRequiredLevel(skill,stage),muted,10);
-                if(current)SkillStateTag(new Rect(evolution.xMax-68,evolution.y+7,60,22),"✓ 当前",gold,11);
+                if(current)DrawIcon(new Rect(evolution.xMax-30,evolution.y+7,22,22),UIIconAtlas.Utility("confirm"),gold);
                 if(scaleLine)
                     Text(new Rect(evolution.x+9,evolution.y+59,154,16),"阶级系数 "+(100+(stage-1)*30)+"% · 范围 "+Mathf.RoundToInt(GameBalance.SkillRangeMultiplier(stage)*100)+"%",10,jade);
                 Text(new Rect(evolution.x+9,evolution.y+(scaleLine?78:60),154,evolutionHeight),evolutions[stage-1],scaleLine?10:11,scaleLine?muted:jade,false,true);

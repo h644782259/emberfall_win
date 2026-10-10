@@ -113,7 +113,7 @@ namespace Emberfall
                     if(stage==rank){Border(header,gold);Fill(new Rect(header.x,header.y,3*TouchRatio,header.height),gold);}
                     Text(TouchRect(14,y,48,30),GameBalance.SkillRankName(stage),TouchFont(14),stage<=rank?jade:pale,true);
                     SkillStateTag(TouchRect(66,y+4,52,22),"Lv."+GameBalance.SkillRankRequiredLevel(skill,stage),muted,TouchFont(10));
-                    if(stage==rank)SkillStateTag(TouchRect(width-70,y+4,54,22),"✓ 当前",gold,TouchFont(10));
+                    if(stage==rank)DrawIcon(TouchRect(width-42,y+4,22,22),UIIconAtlas.Utility("confirm"),gold);
                 }
                 y+=38;
                 string evolution = skill == 2 && p.heroClass != HeroClass.Summoner ? SkillBudgetHint(p.heroClass, skill, stage) : GameBalance.SkillEvolution(p.heroClass, skill, stage);

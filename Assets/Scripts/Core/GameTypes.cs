@@ -452,6 +452,7 @@ namespace Emberfall
         public int highestAdventureTier;
         public int[] adventureBestTiers = new int[5];
         public int adventureRewardRevision;
+        public int legendaryEquipmentMisses;
         public int independentTierRevision;
         public bool pendingAdventureChest;
         public int pendingChestMode = -1;

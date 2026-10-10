@@ -5,6 +5,7 @@ namespace Emberfall
     // damage when the rider circles, stops or doubles back over the same enemy.
     internal sealed class FlameRide : MonoBehaviour
     {
+        private const float BurnRadius=2.2f;
         private PlayerController owner;
         private GameSession session;
         private int epoch,castId;
@@ -43,14 +44,14 @@ namespace Emberfall
                 nextTick=age+SkillDamageBudgets.FlameRideInterval;
                 footprints[cursor]=owner.transform.position;cursor=(cursor+1)%footprints.Length;
                 footprintCount=Mathf.Min(footprints.Length,footprintCount+1);
-                CombatFx.Ring(owner.transform.position,1.4f,new Color(1f,.4f,.1f),1.5f,.18f);
+                CombatFx.Ring(owner.transform.position,BurnRadius,new Color(1f,.4f,.1f),1.5f,.18f);
                 for(int i=session.Enemies.Count-1;i>=0&&Current;i--)
                 {
                     var enemy=session.Enemies[i];if(enemy==null||enemy.IsDead)continue;
                     for(int p=0;p<footprintCount;p++)
                     {
                         Vector3 delta=CombatFx.Flat(enemy.transform.position-footprints[p]);
-                        float radius=1.4f+(enemy.IsBoss?.85f:.4f)+enemy.HitFootprintBonus;
+                        float radius=BurnRadius+(enemy.IsBoss?.85f:.4f)+enemy.HitFootprintBonus;
                         if(delta.sqrMagnitude>radius*radius||!CombatSight.Area(footprints[p],enemy.transform.position))continue;
                         owner.RegisterSkillHit(castId);
                         enemy.TakeDamage(attack*SkillDamageBudgets.FlameRideTick,delta.normalized,0,0,practiceCastId:castId);

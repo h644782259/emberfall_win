@@ -227,6 +227,19 @@ namespace Emberfall
             ink.Line(39,19,52,10,6);ink.Line(52,10,57,25,6);
             texture=ink.Finish("Curved equipment upgrade arrow");cache[key]=texture;return texture;
         }
+        public static Texture2D StatTrendArrow(bool up)
+        {
+            int key=up?-5090:-5091;Texture2D texture;if(cache.TryGetValue(key,out texture))return texture;
+            var ink=new Icon(Color.white);float px=12,py=up?51:13;
+            for(int step=1;step<=24;step++)
+            {
+                float t=step/24f,x=12+36*t,y=51-38*t*t;
+                if(!up)y=64-y;ink.Line(px,py,x,y,5);px=x;py=y;
+            }
+            ink.Line(33,up?17:47,48,up?13:51,5);
+            ink.Line(48,up?13:51,52,up?28:36,5);
+            texture=ink.Finish(up?"Attribute increase":"Attribute decrease");cache[key]=texture;return texture;
+        }
         public static Texture2D EquipmentLock(bool locked)
         {
             int key=locked?-4010:-4011;Texture2D texture;if(cache.TryGetValue(key,out texture))return texture;

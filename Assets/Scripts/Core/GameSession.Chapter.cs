@@ -34,10 +34,12 @@ namespace Emberfall
         private RunBlessing? chapterRetryTactic;
         public bool CanRetryChapter {get{return HasStarted&&InDungeon&&ChapterFinished&&ChapterRun.Failed&&Player!=null&&chapterReceipt!=null&&chapterReceipt.SavePath==Progression.SaveFilePath&&!enteringChapter&&!changingZone&&lastChapterRetryFrame!=Time.frameCount;}}
         public bool RetryFailedChapter()
+        {return CanRetryChapter&&RestartChapterAttempt();}
+        private bool RestartChapterAttempt()
         {
-            if(!CanRetryChapter||!SaveBeforeLeaving())return false;
+            if(!SaveBeforeLeaving())return false;
             ChapterRunReceipt receipt;
-            if(!Progression.TryBeginChapterNode(ChapterRun.Node,ChapterProgression.LevelDifficulty(ChapterRun.Node,Progression.Profile.level),ChapterProgression.AvailableTier(Progression.Profile,SelectedChapterNode),out receipt))
+            if(!Progression.TryBeginChapterNode(ChapterRun.Node,ChapterProgression.LevelDifficulty(ChapterRun.Node,Progression.Profile.level),ChapterProgression.AvailableTier(Progression.Profile,ChapterRun.Node),out receipt))
             {Notify(Progression.LastError);return false;}
             // A new receipt invalidates all callbacks from the failed attempt. Seed and
             // the admitted tactic are frozen, independent of mutable selection controls.

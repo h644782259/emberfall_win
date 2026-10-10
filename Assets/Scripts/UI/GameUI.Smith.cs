@@ -4,6 +4,7 @@ namespace Emberfall
     public sealed partial class GameUI
     {
         private int smithCategory,smithSelectedSlot;
+        private readonly System.Collections.Generic.Dictionary<string,Vector2> smithVariantScroll=new System.Collections.Generic.Dictionary<string,Vector2>();
         private bool smithSocketPicker;
         private Vector2 smithSocketScroll;
         private Vector2 smithDetailScroll,smithPreviewScroll;
@@ -44,8 +45,13 @@ namespace Emberfall
             var l=new SmithServiceLayout(width/u,height/u,MobileControls.IsIPad);
             blockedRects.Add(new Rect(0,0,width,height));
             Box(new Rect(8*u,4*u,width-16*u,height-8*u),jade,false);
-            Text(new Rect(16*u,10*u,width-360*u,36*u),"铁匠",Mathf.RoundToInt(22*u),gold,true);
-            DrawServiceBalances(new Rect(width-296*u,12*u,224*u,28*u),u);
+            Text(new Rect(16*u,10*u,width-432*u,36*u),"铁匠",Mathf.RoundToInt(22*u),gold,true);
+            DrawServiceBalances(new Rect(width-416*u,12*u,224*u,28*u),u);
+            Rect stones=new Rect(width-184*u,12*u,112*u,28*u);
+            Color stoneTint=GameBalance.RarityColor(Rarity.Epic);
+            Fill(stones,new Color(.14f,.115f,.055f,.55f));Border(stones,new Color(stoneTint.r,stoneTint.g,stoneTint.b,.25f));
+            DrawIcon(new Rect(stones.x+4*u,stones.center.y-9*u,18*u,18*u),UIIconAtlas.Utility("gem"),stoneTint);
+            Text(new Rect(stones.x+27*u,stones.y,stones.width-31*u,stones.height),p.Profile.refinementStones.ToString(),Mathf.RoundToInt(13*u),pale,true,false,TextAnchor.MiddleLeft);
             if(PopupCloseButton(new Rect(width-56*u,10*u,42*u,36*u))){smithPreviewMechanic=EquipmentMechanic.None;GUI.enabled=prior;ClosePanel();return;}
             smithCategory=Mathf.Clamp(smithCategory,0,2);
             string[] categories={"强化","镶嵌","洗练"};
@@ -358,8 +364,7 @@ namespace Emberfall
                         bool compact=MobileControls.Active&&!MobileControls.IsIPad;
                         bool stackedVariants=width<420&&!compact;
                         float variantWidth=stackedVariants?width-16:width/2-16;
-                        float variantTextHeight=Mathf.Max(Style(Mathf.RoundToInt(12*u),false,true).CalcHeight(new GUIContent(SmithVariantDescription(mounted.mechanic,0)),(variantWidth-20)*u),Style(Mathf.RoundToInt(12*u),false,true).CalcHeight(new GUIContent(SmithVariantDescription(mounted.mechanic,1)),(variantWidth-20)*u))/u;
-                        float variantHeight=(compact?72:92)+variantTextHeight;
+                        float variantHeight=220,variantTextHeight=variantHeight-92;
                         if(draw)for(int variant=0;variant<2;variant++)
                         {
                             Rect option=new Rect((stackedVariants?8:8+variant*(width/2))*u,(y+(stackedVariants?variant*(variantHeight+8):0))*u,variantWidth*u,variantHeight*u);
@@ -368,7 +373,13 @@ namespace Emberfall
                             DrawIcon(new Rect(option.x+10*u,option.y+12*u,36*u,36*u),UIIconAtlas.Utility(variant==0?"core":"attack"),selected?jade:pale);
                             Text(new Rect(option.x+50*u,option.y,option.width-54*u,56*u),SmithVariantName(mounted.mechanic,variant),Mathf.RoundToInt(12*u),pale,true,false,TextAnchor.MiddleLeft);
                             DrawIcon(new Rect(option.xMax-18*u,option.y,18*u,18*u),UIIconAtlas.Utility(selected?"confirm":mounted.variantUnlocked?"help":"lock"),selected?jade:gold);
-                            Text(new Rect(option.x+10*u,option.y+(compact?40:56)*u,option.width-20*u,variantTextHeight*u),SmithVariantDescription(mounted.mechanic,variant),Mathf.RoundToInt(12*u),pale,false,true);
+                            string scrollKey="smith-form-"+mounted.mechanic+"-"+variant,description=SmithVariantDescription(mounted.mechanic,variant);
+                            Vector2 offset;smithVariantScroll.TryGetValue(scrollKey,out offset);
+                            Rect descriptionArea=new Rect(option.x+10*u,option.y+56*u,option.width-20*u,variantTextHeight*u);
+                            float textWidth=descriptionArea.width-16*u,textHeight=Style(Mathf.RoundToInt(12*u),false,true).CalcHeight(new GUIContent(description),textWidth);
+                            smithVariantScroll[scrollKey]=BeginTouchScroll(scrollKey,descriptionArea,offset,new Rect(0,0,textWidth,Mathf.Max(descriptionArea.height,textHeight)));
+                            Text(new Rect(0,0,textWidth,textHeight),description,Mathf.RoundToInt(12*u),pale,false,true);
+                            EndTouchScroll();
                             Text(new Rect(option.x+10*u,option.yMax-28*u,option.width-20*u,24*u),selected?"当前形态":mounted.variantUnlocked?"点击切换":"3阶首次升华解锁",Mathf.RoundToInt(12*u),selected?jade:gold,true);
                             if(QuietAction(option,"",!selected&&mounted.variantUnlocked&&SmithServiceActive)){SelectSmithVariant(mounted.mechanic,variant);}
                         }

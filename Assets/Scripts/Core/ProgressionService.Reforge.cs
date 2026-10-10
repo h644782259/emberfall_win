@@ -6,6 +6,15 @@ namespace Emberfall
 
         public static int ChapterRefinementStones(ChapterNode node,int tier)
         {return node==ChapterNode.Redrock?3+Math.Max(1,Math.Min(10,tier))/3:1;}
+        public static int ChapterRefinementStonesMinimum(ChapterNode node,int tier)
+        {return Math.Max(1,ChapterRefinementStones(node,tier)-1);}
+        public static int ChapterRefinementStonesMaximum(ChapterNode node,int tier)
+        {return ChapterRefinementStones(node,tier)+1;}
+        public static int RollChapterRefinementStones(ChapterNode node,int tier,string receipt)
+        {
+            int seed=23;unchecked{foreach(char c in receipt??"")seed=seed*31+c;}
+            return new Random(seed).Next(ChapterRefinementStonesMinimum(node,tier),ChapterRefinementStonesMaximum(node,tier)+1);
+        }
         public ItemData PreviewRefinementLimit(string id)
         {
             var item=FindItem(id);if(item==null)return null;

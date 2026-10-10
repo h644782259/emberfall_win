@@ -87,7 +87,7 @@ namespace Emberfall
                 if(draw)
                 {
                     var gem=reward.gemMechanic;Rect slot=new Rect(4*u,(y+28)*u,56*u,56*u);
-                    var preview=new EntryRewardPreview{Key="gem:"+reward.id,Name=BuildCatalog.GemName(gem),Rarity=reward.gemRarity,Tint=GameBalance.RarityColor(reward.gemRarity),Icon=UIIconAtlas.Utility("gem"),Description=GameBalance.RarityName(reward.gemRarity)+"\n"+BuildCatalog.MechanicDescription(gem)};
+                    var preview=new EntryRewardPreview{Key="gem:"+reward.id,Name=BuildCatalog.GemName(gem),Rarity=reward.gemRarity,Tint=GameBalance.RarityColor(reward.gemRarity),Icon=UIIconAtlas.Utility("gem"),Description=GemRewardDescription(gem,reward.gemRarity)};
                     Text(new Rect(4*u,y*u,(width-8)*u,24*u),"副本专属宝石",Mathf.RoundToInt(15*u),gold,true);
                     DrawEntryRewardIcon(slot,preview,u);InspectRewardItem(slot,preview);
                     Text(new Rect(72*u,(y+30)*u,(width-80)*u,54*u),preview.Name+"\n"+(reward.duplicateGem?"已拥有 · 转为3碎片":"整件宝石 · 可到铁匠镶嵌"),Mathf.RoundToInt(13*u),pale,false,true);

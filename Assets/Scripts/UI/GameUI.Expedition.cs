@@ -101,18 +101,28 @@ namespace Emberfall
             Rect r=new Rect(width-244*u,Mathf.Clamp(height*.46f,30*u,height-90*u),208*u,54*u);
             var previous=GUI.matrix;
             GUIUtility.RotateAroundPivot(-7,r.center);
-            Fill(new Rect(r.x+44*u,r.yMax-5*u,108*u,3*u),gold);
             var style=new GUIStyle(Style(Mathf.RoundToInt(30*u),true,false));
             style.fontStyle=FontStyle.BoldAndItalic;style.alignment=TextAnchor.MiddleRight;
             style.padding=new RectOffset(0,Mathf.RoundToInt(8*u),0,0);
-            string combo="×"+count;
+            string combo="连击 x"+count;
             while(style.fontSize>Mathf.RoundToInt(12*u)&&style.CalcSize(new GUIContent(combo)).x>r.width-16*u)style.fontSize--;
             style.clipping=TextClipping.Clip;
             style.normal.textColor=new Color(.12f,.05f,.015f,.95f);
             GUI.Label(new Rect(r.x+2*u,r.y+2*u,r.width,r.height),combo,style);
             style.normal.textColor=gold;GUI.Label(r,combo,style);
-            Text(new Rect(r.x,r.y-14*u,r.width,20*u),"连 击",Mathf.RoundToInt(12*u),pale,true,false,TextAnchor.MiddleRight);
             GUI.matrix=previous;
+        }
+
+        private void DrawDungeonExitButton()
+        {
+            if(!session.InDungeon||session.IsDead||session.Paused||panel!=Panel.None)return;
+            float u=MobileControls.Active?TouchRatio:1f;
+            Rect exit=new Rect(width*.5f-56*u,6*u,112*u,40*u);
+            blockedRects.Add(exit);
+            if(Button(exit,"退出副本",jade,!session.InCombat,"脱离战斗后可退出副本"))
+            {
+                session.ReturnToCamp();BlockUITransition();
+            }
         }
 
         public void OpenDungeonExit()
@@ -128,6 +138,13 @@ namespace Emberfall
             if(PopupCloseButton(new Rect(w.xMax-54*u,w.y+12*u,44*u,44*u))){ClosePanel();return;}
             float x=w.x+24*u,y=w.y+106*u,bw=(w.width-56*u)*.5f;
 
+            if(Button(new Rect(x,y,w.width-48*u,44*u),"再次挑战当前副本",gold,session.CanRepeatCurrentDungeon))
+            {
+                session.SetUIBlocking(false);
+                if(session.RepeatCurrentDungeon())panel=Panel.None;else session.SetUIBlocking(true);
+                BlockUITransition();return;
+            }
+            y+=54*u;
             if(Button(new Rect(x,y,bw,44*u),"挑战下一阶",gold,session.CanChallengeNextTier))
             {
                 session.SetUIBlocking(false);
@@ -146,11 +163,11 @@ namespace Emberfall
         private void DrawExpeditionHUD()
         {
             if(session.NearDungeonReturn){Rect exit=new Rect((width-240)*.5f,height-225,240,48);blockedRects.Add(exit);if(Button(exit,"传送点 [E]",gold))OpenDungeonExit();}
-            else if(session.NearChapterExit){Rect next=new Rect((width-300)*.5f,height-225,300,48);blockedRects.Add(next);if(Button(next,"沿星路前进",gold))session.EnterNextChapterRoom();}
-            else if(session.NearRoomExit){Rect next=new Rect((width-300)*.5f,height-225,300,48);blockedRects.Add(next);if(Button(next,"北门已开启 · 进入下一间",gold))session.EnterNextRoom();}
+            else if(session.NearChapterExit){Rect next=new Rect((width-300)*.5f,height-225,300,48);blockedRects.Add(next);if(Button(next,"沿星路前进 [T]",gold))session.EnterNextChapterRoom();}
+            else if(session.NearRoomExit){Rect next=new Rect((width-300)*.5f,height-225,300,48);blockedRects.Add(next);if(Button(next,"进入下一间 [T]",gold))session.EnterNextRoom();}
             if(session.SideEventAvailable)
             { Rect r=new Rect((width-410)*.5f,height-260,410,48);blockedRects.Add(r);
-              if(Button(r,"开启晶核挑战 [E] · 2名守卫",gold,true,"额外一名遗迹守卫与一名魔灵；全部击败才获得1碎片和补给。未完成可放弃，不阻挡已开启的北门。"))session.StartSideEvent(); }
+              if(Button(r,"开启晶核挑战 [E] · 2名守卫",gold,true,"额外一名遗迹守卫与一名魔灵；全部击败才获得1碎片和补给。"))session.StartSideEvent(); }
 
             DrawSystemLog();
         }

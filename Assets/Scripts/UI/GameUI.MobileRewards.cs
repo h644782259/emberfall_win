@@ -77,7 +77,7 @@ namespace Emberfall
             for(int choice=0;choice<3;choice++)
             {
                 Rect cardRect=TouchRect(4+choice*(cell+8),errors,cell,cardHeight);DrawSingleChestCard(cardRect,TouchRatio);
-                if(Button(TouchRect(8+choice*(cell+8),errors+cardHeight-60,cell-8,48),locked==choice?"继续开启":"宝箱 "+(choice+1),gold,!chestOpening&&(locked<0||locked==choice)&&session.Progression.Profile.pendingFashionChest))selected=choice;
+                if(ChestOpenButton(InteractiveChestArt(cardRect,TouchRatio),TouchRatio,!chestOpening&&(locked<0||locked==choice)&&session.Progression.Profile.pendingFashionChest))selected=choice;
             }
             EndTouchScroll();if(selected<0)return false;
             chestOpening=true;string result;
@@ -85,7 +85,7 @@ namespace Emberfall
             if(result==null){chestOpening=false;mobileChestError=session.Progression.LastError;mobileChestScroll=Vector2.zero;Feedback(false,"宝箱暂时无法开启");}
             else
             {
-                chestRevealOrigin=ChestChoiceArt(TouchRect(layout.Body.X+8,layout.Body.Y+errors-mobileChestScroll.y/TouchRatio,bodyWidth-16,cardHeight),TouchRatio);
+                chestRevealOrigin=InteractiveChestArt(TouchRect(layout.Body.X+4+selected*(cell+8),layout.Body.Y+errors-mobileChestScroll.y/TouchRatio,cell,cardHeight),TouchRatio);
                 revealedChest=selected;chestRevealResult=result;chestRevealedAt=Time.unscaledTime;chestDetails=false;rewardSoundPlayed=false;
                 chestReceiptId=session.Progression.LastChestReward.Id;mobileChestError=null;mobileChestScroll=mobileChestArtScroll=Vector2.zero;GameAudio.Play(SoundCue.Cast);
             }

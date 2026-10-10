@@ -6,8 +6,21 @@ namespace Emberfall
         private void DrawSingleChestCard(Rect r,float unit)
         {
             Fill(r,new Color(.055f,.08f,.11f));Border(r,gold);
-            DrawRewardChest(ChestChoiceArt(r,unit),false,1,0);
             Text(new Rect(r.x+12*unit,r.y+8*unit,r.width-24*unit,24*unit),"通关宝箱",Mathf.RoundToInt(16*unit),pale,true);
+        }
+        private Rect InteractiveChestArt(Rect r,float unit)
+        {return new Rect(r.x+10*unit,r.y+36*unit,r.width-20*unit,Mathf.Max(24*unit,r.height-48*unit));}
+        private bool ChestOpenButton(Rect area,float unit,bool enabled)
+        {
+            float side=Mathf.Min(area.width,area.height);
+            Rect hit=new Rect(area.center.x-side*.5f,area.center.y-side*.5f,side,side);
+            bool previous=GUI.enabled;GUI.enabled=previous&&enabled;
+            bool hover=GUI.enabled&&!MobileControls.Active&&hit.Contains(Event.current.mousePosition);
+            Rect art=hit;
+            if(hover){Fill(hit,new Color(gold.r,gold.g,gold.b,.12f));Border(hit,new Color(gold.r,gold.g,gold.b,.7f),2*unit);art=new Rect(hit.x-side*.025f,hit.y-side*.025f,side*1.05f,side*1.05f);}
+            DrawRewardChest(art,false,GUI.enabled?1f:.35f,0);
+            bool clicked=GUI.Button(hit,GUIContent.none,invisibleButton);
+            GUI.enabled=previous;return clicked;
         }
         private Color ChestChoiceAccent(int choice)
         {return choice==0?new Color(.91f,.62f,.36f):choice==1?new Color(.48f,.81f,.94f):gold;}

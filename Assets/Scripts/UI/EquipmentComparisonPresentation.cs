@@ -3,6 +3,19 @@ namespace Emberfall
 {
     public static class EquipmentComparisonPresentation
     {
+        // Ranges that straddle the equipped value have no definite direction.
+        public static int StatDirection(string candidate,string current)
+        {
+            var values=System.Text.RegularExpressions.Regex.Matches(candidate??"",@"[+-]?\d+(?:[.,]\d+)?");
+            var baseline=System.Text.RegularExpressions.Regex.Match(current??"",@"[+-]?\d+(?:[.,]\d+)?");
+            if(values.Count==0||!baseline.Success)return 0;
+            double oldValue,low,high;
+            var culture=System.Globalization.CultureInfo.InvariantCulture;
+            if(!double.TryParse(baseline.Value.Replace(',','.'),System.Globalization.NumberStyles.Float,culture,out oldValue)||!double.TryParse(values[0].Value.Replace(',','.'),System.Globalization.NumberStyles.Float,culture,out low))return 0;
+            high=low;
+            if(values.Count>1&&!double.TryParse(values[1].Value.Replace(',','.'),System.Globalization.NumberStyles.Float,culture,out high))return 0;
+            return Math.Min(low,high)>oldValue?1:Math.Max(low,high)<oldValue?-1:0;
+        }
         public static EquipmentMechanic ActiveMechanic(ItemData item, HeroClass hero)
         {
             if(item==null || item.mechanic==EquipmentMechanic.None || !Enum.IsDefined(typeof(EquipmentMechanic),item.mechanic))return EquipmentMechanic.None;

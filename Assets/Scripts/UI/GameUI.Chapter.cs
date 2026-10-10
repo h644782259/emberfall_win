@@ -116,13 +116,14 @@ namespace Emberfall
             string mechanic=ChapterDefinition.Get(node).Mechanic+"\n"+ChapterDefinition.DifficultyMechanic(node,session.SelectedChapterDifficulty);
             float descriptionHeight=Style(Mathf.RoundToInt(14*u),false,true).CalcHeight(new GUIContent(mechanic),(w-24)*u)/u+20;
             float rewardsHeight=DrawEntryRewardPreviews(w,u,mode,session.SelectedChapterTier,true,false);
-            float total=132+descriptionHeight+rewardsHeight;
+            float imageHeight=Mathf.Clamp(w*.5f,96,MobileControls.Active?160:216),descriptionY=56+imageHeight;
+            float total=descriptionY+descriptionHeight+rewardsHeight+48;
             chapterScroll=BeginTouchScroll("chapter-entry",body,chapterScroll,new Rect(0,0,w*u,Mathf.Max(body.height,total*u)));
             DrawChapterSymbol(new Rect(12*u,14*u,28*u,28*u),node,gold);
             Text(new Rect(50*u,8*u,(w-58)*u,30*u),ChapterDefinition.Get(node).Name,Mathf.RoundToInt(20*u),pale,true);
-            Text(new Rect(12*u,50*u,(w-24)*u,30*u),"",Mathf.RoundToInt(14*u),gold,true);
-            Text(new Rect(12*u,84*u,(w-24)*u,descriptionHeight*u),mechanic,Mathf.RoundToInt(14*u),muted,false,true);
-            float y=84+descriptionHeight;
+            DrawDungeonEntryArtwork(new Rect(12*u,44*u,(w-24)*u,imageHeight*u),5+(int)node);
+            Text(new Rect(12*u,descriptionY*u,(w-24)*u,descriptionHeight*u),mechanic,Mathf.RoundToInt(14*u),muted,false,true);
+            float y=descriptionY+descriptionHeight;
             entryRewardViewport=body;entryRewardContentOrigin=new Vector2(body.x-chapterScroll.x,body.y+y*u-chapterScroll.y);
             GUI.BeginGroup(new Rect(0,y*u,w*u,rewardsHeight*u));DrawEntryRewardPreviews(w,u,mode,session.SelectedChapterTier,true,true);GUI.EndGroup();
             if(!string.IsNullOrEmpty(chapterEntryError))Text(new Rect(8*u,(y+rewardsHeight)*u,(w-16)*u,48*u),"暂时无法进入，请稍后重试。",Mathf.RoundToInt(13*u),gold,false,true);

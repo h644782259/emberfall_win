@@ -1782,7 +1782,7 @@ namespace Emberfall
         public string ActiveDungeonChestRules {
             get {if(!Profile.pendingAdventureChest)return DungeonChestRules(Profile.pendingChestTier,LastChestReward);
                 int mode=Profile.pendingChestMode,tier=Profile.pendingChestTier;
-                return AdventureRewardRules.EquipmentSummary(mode,tier)+"\n装备 × "+AdventureRewardRules.EquipmentCount(mode,tier)+" · 等级匹配角色\n星烬碎片 × "+AdventureRewardRules.Materials(mode,tier)+"\n"+
+                return AdventureRewardRules.EquipmentSummary(mode,tier)+"\n装备 × "+AdventureRewardRules.EquipmentCount(mode,tier)+" · 等级匹配角色\n星烬碎片 × "+AdventureRewardRules.MaterialsMinimum(mode,tier)+"～"+AdventureRewardRules.MaterialsMaximum(mode,tier)+"\n"+
                 (mode==-1?"时装：稀有保底 · 史诗 "+AdventureRewardRules.UpgradeChance(-1,tier)+"% · 传说 "+AdventureRewardRules.LegendaryChance(tier)+"%\n":"")+"金币随阶数增长 · 开箱保存后入背包";
             }
         }
@@ -1821,7 +1821,7 @@ namespace Emberfall
             if(slotRoll<0||slotRoll>1||goldRoll<0||goldRoll>40)throw new ArgumentOutOfRangeException("roll");
             Rarity? rarity=!profile.pendingAdventureChest||profile.pendingChestMode==-1?RollFashionRarity(qualityRoll):null;int gold=TierRewardRules.ChestGoldMinimum(profile.pendingChestTier)+goldRoll;
             var roll=new ChestReward{rulesRevision=2,rewardKind=ChestRewardKind.SingleChest,id=id,choice=-1,gold=protectLegacy?gold*3/2:gold,
-                rarityIndex=rarity.HasValue?(int)rarity.Value:-1,materialKind=RewardMaterialKind.StarAshFragment,materials=profile.pendingAdventureChest?AdventureRewardRules.Materials(profile.pendingChestMode,profile.pendingChestTier):1,legacyGoldProtection=protectLegacy};
+                rarityIndex=rarity.HasValue?(int)rarity.Value:-1,materialKind=RewardMaterialKind.StarAshFragment,materials=profile.pendingAdventureChest?AdventureRewardRules.ChestMaterials(profile.pendingChestMode,profile.pendingChestTier,id):1,legacyGoldProtection=protectLegacy};
             if(rarity.HasValue)
             {
                 bool weapon=profile.fashions.Exists(x=>x.slot==FashionSlot.Weapon&&x.AppearanceRarity==rarity.Value);
@@ -2176,13 +2176,17 @@ namespace Emberfall
             // Receipt-derived rolls and IDs stay identical across failed writes/retries.
             byte[] seed=Guid.ParseExact(receipt,"N").ToByteArray();uint hash=2166136261;
             foreach(byte value in seed)hash=unchecked((hash^value)*16777619);
+            bool foundLegendary=false;int misses=Clamp(candidate.legendaryEquipmentMisses,0,AdventureRewardRules.LegendaryPityChests-1);
             for(int i=0;i<count;i++)
             {
                 hash=unchecked((hash^(uint)(mode+2+i))*16777619);
                 var item=new ItemData{id=receipt+"-clear-"+i,slot=AdventureRewardRules.EquipmentSlot(mode,i),rarity=AdventureRewardRules.EquipmentRarity(mode,tier,(int)(hash%100)),level=AdventureRewardRules.DungeonLevel(tier)};
+                if(i==count-1&&!foundLegendary&&misses>=AdventureRewardRules.LegendaryPityChests-1)item.rarity=Rarity.Legendary;
+                foundLegendary|=item.rarity==Rarity.Legendary;
                 item.name=new[]{"旅者","苍蓝","星辉","烬王"}[(int)item.rarity]+ItemBaseName(item.slot,candidate.heroClass);
                 SetRolledStats(item);EnsureUpgradeBasis(item);candidate.inventory.Add(item);
             }
+            candidate.legendaryEquipmentMisses=foundLegendary?0:misses+1;
             return true;
         }
 
@@ -3102,6 +3106,7 @@ namespace Emberfall
             if (!Enum.IsDefined(typeof(HeroClass), profile.heroClass)) profile.heroClass = HeroClass.Vanguard;
             profile.version = 1;
             ChapterProgression.Normalize(profile);
+            profile.legendaryEquipmentMisses=Clamp(profile.legendaryEquipmentMisses,0,AdventureRewardRules.LegendaryPityChests-1);
             profile.level = Clamp(profile.level, 1, MaximumLevel);
             profile.xp = profile.level >= MaximumLevel ? 0 : Clamp(profile.xp, 0, GameBalance.XpToNext(profile.level) - 1);
             profile.gold = Clamp(profile.gold, 0, MaximumGold);

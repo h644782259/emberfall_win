@@ -68,16 +68,17 @@ namespace Emberfall
             Text(new Rect(frame.x+16*u,frame.y+8*u,fw-80*u,32*u),session.LastRunRecap!=null&&!session.LastRunRecap.Won?"挑战结束":"结算与奖励",Mathf.RoundToInt(22*u),gold,true);
             var snapshot=session.LastRunRecap;
             var data=snapshot==null?null:new RunRecapPresentation(snapshot);
-            float contentWidth=fw-32*u,top=frame.y+48*u,metricHeight=48*u;
+            bool spacious=fh>=460*u;
+            float contentWidth=fw-32*u,top=frame.y+48*u,metricHeight=(spacious?80:48)*u;
             if(data!=null)
             {
                 float cw=(contentWidth-16*u)/5;
                 for(int i=0;i<data.Metrics.Length&&i<5;i++)
                 {
                     var metric=data.Metrics[i];Rect tile=new Rect(frame.x+16*u+i*(cw+4*u),top,cw,metricHeight);
-                    Fill(tile,card);DrawIcon(new Rect(tile.x+5*u,tile.y+6*u,16*u,16*u),UIIconAtlas.Utility(RunRecapPresentation.IconFor(metric.Key)),jade);
-                    Text(new Rect(tile.x+23*u,tile.y+2*u,tile.width-26*u,23*u),metric.Value.ToString("N0"),Mathf.RoundToInt(15*u),pale,true,false,TextAnchor.MiddleRight);
-                    Text(new Rect(tile.x+3*u,tile.y+26*u,tile.width-6*u,18*u),metric.Key,Mathf.RoundToInt(10*u),muted,false,false,TextAnchor.MiddleCenter);
+                    Fill(tile,card);DrawIcon(new Rect(tile.x+5*u,tile.y+6*u,(spacious?24:16)*u,(spacious?24:16)*u),UIIconAtlas.Utility(RunRecapPresentation.IconFor(metric.Key)),jade);
+                    Text(new Rect(tile.x+(spacious?34:23)*u,tile.y+2*u,tile.width-(spacious?38:26)*u,(spacious?43:23)*u),metric.Value.ToString("N0"),Mathf.RoundToInt((spacious?24:15)*u),pale,true,false,TextAnchor.MiddleRight);
+                    Text(new Rect(tile.x+3*u,tile.y+(spacious?50:26)*u,tile.width-6*u,22*u),metric.Key,Mathf.RoundToInt((spacious?13:10)*u),muted,false,false,TextAnchor.MiddleCenter);
                 }
             }
             top+=metricHeight+6*u;
@@ -87,14 +88,18 @@ namespace Emberfall
             long stones=snapshot==null?0:snapshot.RewardRefinementStones;
             long[] amounts={coins,xp,shards,stones,settlementChest==null?0:settlementChest.threadsDelta};
             string[] labels={"金币","经验","碎片","洗练石","星纹"},icons={"coin","upgrade","shard","gem","core"};
-            float rw=contentWidth/5;
+            float rw=contentWidth/5,resourceHeight=(spacious?68:40)*u;
             for(int i=0;i<5;i++)
             {
-                Rect r=new Rect(frame.x+16*u+i*rw,top,rw-4*u,32*u);
-                DrawIcon(new Rect(r.x,r.y+6*u,20*u,20*u),UIIconAtlas.Utility(icons[i]),i==0?gold:jade);
-                Text(new Rect(r.x+24*u,r.y,r.width-24*u,32*u),labels[i]+" +"+amounts[i],Mathf.RoundToInt(11*u),pale,true,false,TextAnchor.MiddleLeft);
+                Rect r=new Rect(frame.x+16*u+i*rw,top,rw-4*u,resourceHeight);
+                Fill(r,new Color(.055f,.095f,.12f));
+                float iconSize=(spacious?32:20)*u;
+                DrawIcon(new Rect(r.x+5*u,r.center.y-iconSize*.5f,iconSize,iconSize),UIIconAtlas.Utility(icons[i]),i==0?gold:jade);
+                float textX=r.x+iconSize+10*u,textWidth=r.xMax-textX-4*u;
+                Text(new Rect(textX,r.y+3*u,textWidth,resourceHeight*.42f),labels[i],Mathf.RoundToInt((spacious?12:9)*u),muted,false,false,TextAnchor.MiddleLeft);
+                Text(new Rect(textX,r.y+resourceHeight*.43f,textWidth,resourceHeight*.52f),"+"+amounts[i],Mathf.RoundToInt((spacious?19:12)*u),pale,true,false,TextAnchor.MiddleLeft);
             }
-            top+=38*u;
+            top+=resourceHeight+10*u;
             Rect stage=new Rect(frame.x+16*u,top,contentWidth,Mathf.Max(80*u,frame.yMax-top-12*u));
             if(p.Profile.pendingChestReveal&&settlementChest!=null)
             {
@@ -109,9 +114,8 @@ namespace Emberfall
                 for(int i=0;i<3;i++)
                 {
                     Rect tile=new Rect(stage.x+i*(cw+8*u),stage.y+28*u,cw,stage.height-28*u);
-                    Rect art=new Rect(tile.x+4*u,tile.y,tile.width-8*u,Mathf.Max(36*u,tile.height-44*u));
-                    DrawRewardChest(art,false,1,0);
-                    if(Button(new Rect(tile.x+4*u,tile.yMax-40*u,tile.width-8*u,36*u),locked==i?"继续开启":"开启",gold,locked<0||locked==i))
+                    Rect art=new Rect(tile.x+4*u,tile.y,tile.width-8*u,Mathf.Max(36*u,tile.height));
+                    if(ChestOpenButton(art,u,locked<0||locked==i))
                     {chestRevealOrigin=art;CollectSettlementRewards(i);}
                 }
             }
@@ -128,7 +132,7 @@ namespace Emberfall
         {
             bool animating=chestReceiptId==reward.Id&&!ChestAnimationDone;
             float progress=animating?ChestRevealPresentation.Progress(Time.unscaledTime-chestRevealedAt,ChestDuration):1;
-            float badgeSize=Mathf.Min(112*u,Mathf.Min(stage.height,stage.width*.2f));
+            float badgeSize=Mathf.Min(180*u,Mathf.Min(stage.height*.8f,stage.width*.24f));
             Rect badge=new Rect(stage.x,stage.center.y-badgeSize*.5f,badgeSize,badgeSize);
             float heroSize=Mathf.Min(stage.height,stage.width*.52f);
             Rect hero=new Rect(stage.center.x-heroSize*.5f,stage.center.y-heroSize*.5f,heroSize,heroSize);
@@ -146,19 +150,28 @@ namespace Emberfall
             if(reward.Rarity.HasValue&&reward.Slot.HasValue)
                 icons.Add(new EntryRewardPreview{Key="fashion:"+reward.Id,AppearanceSlot=reward.Slot.Value,Name=reward.Name,Rarity=reward.Rarity.Value,Tint=GameBalance.RarityColor(reward.Rarity.Value),Icon=UIIconAtlas.FashionCardIcon(reward.Slot.Value,(int)reward.Rarity.Value,session.Progression.Profile.heroClass),Description=ProgressionService.FashionBonus(reward.Slot.Value,reward.Rarity.Value)});
             if(reward.gemMechanic!=EquipmentMechanic.None)
-                icons.Add(new EntryRewardPreview{Key="gem:"+reward.Id,Name=BuildCatalog.GemName(reward.gemMechanic),Rarity=reward.gemRarity,Tint=GameBalance.RarityColor(reward.gemRarity),Icon=UIIconAtlas.Utility("gem"),Description=BuildCatalog.MechanicDescription(reward.gemMechanic)});
+                icons.Add(new EntryRewardPreview{Key="gem:"+reward.Id,Name=BuildCatalog.GemName(reward.gemMechanic),Rarity=reward.gemRarity,Tint=GameBalance.RarityColor(reward.gemRarity),Icon=UIIconAtlas.Utility("gem"),Description=GemRewardDescription(reward.gemMechanic,reward.gemRarity)});
             if(icons.Count==0){DrawChestResourceVisuals(rewardsArea,reward);return;}
-            float cell=Mathf.Min(82*u,Mathf.Max(36*u,rewardsArea.height-12*u)),gap=10*u;
-            int cols=Mathf.Max(1,Mathf.FloorToInt((rewardsArea.width+gap)/(cell+gap))),rows=(icons.Count+cols-1)/cols;
-            if(rows*(cell+gap)>rewardsArea.height){cell=Mathf.Max(24*u,Mathf.Min(cell,(rewardsArea.height-gap*(rows-1))/rows));cols=Mathf.Max(1,Mathf.FloorToInt((rewardsArea.width+gap)/(cell+gap)));rows=(icons.Count+cols-1)/cols;}
-            float top=rewardsArea.center.y-(rows*cell+(rows-1)*gap)*.5f;
+            float gap=12*u,caption=rewardsArea.height>=180*u?30*u:0,cell=0;int cols=1,rows=icons.Count;
+            for(int candidate=1;candidate<=icons.Count;candidate++)
+            {
+                int candidateRows=(icons.Count+candidate-1)/candidate;
+                float size=Mathf.Min(180*u,Mathf.Min((rewardsArea.width-gap*(candidate-1))/candidate,(rewardsArea.height-gap*(candidateRows-1))/candidateRows-caption));
+                if(size>cell){cell=size;cols=candidate;rows=candidateRows;}
+            }
+            cell=Mathf.Max(1,cell);
+            float top=rewardsArea.center.y-(rows*(cell+caption)+(rows-1)*gap)*.5f;
             for(int i=0;i<icons.Count;i++)
             {
                 float reveal=animating?Mathf.Clamp01((progress-.55f-i*.035f)/.16f):1;
                 if(reveal<=0)continue;
-                Rect icon=new Rect(rewardsArea.x+(i%cols)*(cell+gap),top+(i/cols)*(cell+gap),cell,cell);
+                int rowCount=Mathf.Min(cols,icons.Count-(i/cols)*cols);
+                float rowLeft=rewardsArea.center.x-(rowCount*cell+(rowCount-1)*gap)*.5f;
+                Rect icon=new Rect(rowLeft+(i%cols)*(cell+gap),top+(i/cols)*(cell+caption+gap),cell,cell);
                 Color before=GUI.color;GUI.color=new Color(before.r,before.g,before.b,before.a*reveal);
-                DrawEntryRewardIcon(icon,icons[i],u);GUI.color=before;
+                DrawEntryRewardIcon(icon,icons[i],u);
+                if(caption>0)Text(new Rect(icon.x,icon.yMax+4*u,icon.width,caption-4*u),icons[i].Name,Mathf.RoundToInt(12*u),icons[i].Tint,true,true,TextAnchor.MiddleCenter);
+                GUI.color=before;
                 InspectRewardItem(icon,icons[i]);
             }
 
@@ -225,8 +238,8 @@ namespace Emberfall
                 for(int choice=0;choice<3;choice++)
                 {
                     Rect tile=new Rect((choice*(cell+8)+4)*unit,y+32*unit,cell*unit,136*unit);
-                    Fill(tile,card);Border(tile,locked==choice?gold:jade);DrawRewardChest(new Rect(tile.x+8*unit,tile.y+4*unit,tile.width-16*unit,76*unit),false,1,0);
-                    if(Button(new Rect(tile.x+4*unit,tile.yMax-48*unit,tile.width-8*unit,44*unit),locked==choice?"继续开启":"宝箱 "+(choice+1),gold,locked<0||locked==choice))CollectSettlementRewards(choice);
+                    Fill(tile,card);Border(tile,locked==choice?gold:jade);
+                    if(ChestOpenButton(new Rect(tile.x+8*unit,tile.y+4*unit,tile.width-16*unit,tile.height-8*unit),unit,locked<0||locked==choice))CollectSettlementRewards(choice);
                 }
             }
             EndTouchScroll();

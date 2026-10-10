@@ -42,7 +42,8 @@ namespace Emberfall
         public static int EquipmentCount(int mode,int tier){return EquipmentCount(mode)+TierRewardBand.Of(tier)/2;}
         public static int EnemyEquipmentChance(bool boss,bool elite){return boss?100:elite?35:8;}
         public static int PotionChance(int tier){return 12+3*TierRewardBand.Of(tier);}
-        public static int LegendaryChance(int tier){return 1+TierRewardBand.Of(tier)/2;}
+        public const int LegendaryPityChests=30;
+        public static int LegendaryChance(int tier){return 4;}
         private static void Validate(int mode){if(mode < -1 || mode > 3)throw new ArgumentOutOfRangeException(nameof(mode));}
         public static ItemSlot EquipmentSlot(int mode,int index)
         {Validate(mode);if(index<0||index>=8)throw new ArgumentOutOfRangeException(nameof(index));return mode==0?ItemSlot.Armor:mode==1?ItemSlot.Relic:mode==3?(index%2==0?ItemSlot.Armor:ItemSlot.Relic):ItemSlot.Weapon;}
@@ -50,6 +51,13 @@ namespace Emberfall
         public static int UpgradeChance(int mode,int tier){Validate(mode);return mode==2?10+2*TierRewardBand.Of(tier):6+2*TierRewardBand.Of(tier);}
         public static Rarity EquipmentRarity(int mode,int tier,int roll)
         {return roll<LegendaryChance(tier)?Rarity.Legendary:roll<LegendaryChance(tier)+UpgradeChance(mode,tier)?Rarity.Epic:MinimumRarity(mode);}
+        public static int MaterialsMinimum(int mode,int tier){return Math.Max(1,Materials(mode,tier)-2);}
+        public static int MaterialsMaximum(int mode,int tier){return Materials(mode,tier)+2;}
+        public static int ChestMaterials(int mode,int tier,string id)
+        {
+            int seed=17;unchecked{foreach(char c in id??"")seed=seed*31+c;}
+            return new Random(seed).Next(MaterialsMinimum(mode,tier),MaterialsMaximum(mode,tier)+1);
+        }
         public static int Materials(int mode,int tier){Validate(mode);return (mode==0||mode==1?5:mode==3?4:3)+TierRewardBand.Of(tier);}
         public static int Gold(int mode,int tier,bool riskContract)
         {Validate(mode);tier=TierRewardBand.Clamp(tier);int value=mode==-1?120+tier*30:mode==0?110+tier*20:mode==1?100+tier*25:mode==2?180+tier*40:200+tier*35;return riskContract?(int)Math.Round(value*1.3f):value;}

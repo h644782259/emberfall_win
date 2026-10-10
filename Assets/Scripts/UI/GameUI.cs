@@ -327,6 +327,7 @@ namespace Emberfall
                 bool priorEnabled = GUI.enabled;
                 GUI.enabled = priorEnabled && panel == Panel.None && !session.InputBlocked;
                 DrawHUD();
+                DrawDungeonExitButton();
                 GUI.enabled = priorEnabled;
                 if (panel == Panel.None && !session.Paused && !session.IsDead) DrawTargetingHint();
                 if (session.Paused) DrawPause();
@@ -867,7 +868,9 @@ namespace Emberfall
                 : p.skillRanks[0] == 0 ? "可用精通点 " + p.skillPoints + " · K"
                 : "收集装备，进入传送门 · T";
             if(session.ChapterActive){objectiveText=ChapterDefinition.Get(session.ActiveChapterNode).Name;objectiveProgress=session.ChapterObjectiveStatus;}
-            string growthTitle,growthDetail;if(!session.ChapterActive&&TryGrowthHudHint(out growthTitle,out growthDetail)){objectiveText=growthTitle;objectiveProgress=growthDetail;}
+            string growthTitle,growthDetail;bool hasGrowth=TryGrowthHudHint(out growthTitle,out growthDetail);
+            if(!session.ChapterActive&&hasGrowth){objectiveText=growthTitle;objectiveProgress=growthDetail;}
+            bool showObjective=session.InDungeon||session.ChapterActive||session.SpecialAdventure||hasGrowth||p.level<2||p.skillRanks[0]==0;
             var chapterFirstSeal=session.ChapterSealView(0);
             var roomFirstSeal=session.ChapterActive?null:session.RoomSealView(0);
             if(chapterFirstSeal!=null&&session.ChapterRun.DoorUnlocked)objectiveText="双印完成 · 前往出口";
@@ -883,6 +886,8 @@ namespace Emberfall
             string chargeText="治疗充能  "+session.HealingCharges+" / 3";
             float chargeHeight=showCharge?Mathf.Max(23,Style(17,true,true).CalcHeight(new GUIContent(chargeText),255)):0;
             var measured=new ObjectiveCardLayout(17,bodyHeight,progressHeight,chargeHeight);
+            if(showObjective)
+            {
             Rect objective=new Rect(16,116,282,measured.Height);blockedRects.Add(objective);Box(objective,jade,false);
             Fill(new Rect(objective.x,objective.y,3,objective.height),jade);
             Text(new Rect(objective.x+13,objective.y+measured.HeadingY,255,17),"当前目标",11,jade,true);
@@ -891,6 +896,7 @@ namespace Emberfall
             else if(showRoomSeals)DrawRoomSeals(new Rect(objective.x+13,objective.y+measured.ProgressY,255,66),1,false,roomFirstSeal,session.RoomSealView(1),session.RoomObjectiveView);
             else Text(new Rect(objective.x+13,objective.y+measured.ProgressY,255,progressHeight),progressText,12,muted,false,true);
             if(showCharge)Text(new Rect(objective.x+13,objective.y+measured.ChargeY,255,chargeHeight),chargeText,17,gold,true,true);
+            }
             DrawMinimap();
             DrawHotbar();
             DrawCompanionCommands();

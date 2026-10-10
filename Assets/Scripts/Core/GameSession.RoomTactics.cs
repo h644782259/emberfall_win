@@ -143,7 +143,7 @@ namespace Emberfall
             if(RoomChainRun!=null&&RoomChainRun.Room.Index==0&&RunChoices.CompletedWave==0&&Player!=null)
                 pendingRoomChoice.Request(RoomChainRun.Room,Player.CombatEpoch,Time.frameCount);
             if(roomExitMarker!=null)roomExitMarker.SetActive(true);
-            Notify(pendingRoomChoice.Pending?"首房完成 · 选择本局打法":"目标完成 · 北门已开；撤离会放弃剩余敌人的击杀收益");
+            Notify(pendingRoomChoice.Pending?"首房完成 · 选择本局打法":"目标完成 · 北门已开");
         }
     }
 }
