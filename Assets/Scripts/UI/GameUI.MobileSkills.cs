@@ -45,7 +45,10 @@ namespace Emberfall
             if(RouteSkillReturnAvailable&&NavigationButton(MobilePanelRect(layout.FooterButton(0,1)),"返回职业路线",jade)){ClosePanel();BlockUITransition();return;}
             Rect r=TouchRect(listArea.XMax+12,listArea.Y,layout.Body.Width-leftWidth-12,bodyHeight);
             Surface(r,new Color(.012f,.024f,.038f,.99f));SurfaceFrame(r,new Color(jade.r,jade.g,jade.b,.28f));
-            Text(new Rect(r.x+10*u,r.y+4*u,r.width-20*u,36*u),GameBalance.SkillName(profile.heroClass,selectedSkill),TouchFont(16),pale,true,false,TextAnchor.MiddleLeft);
+            float tagsWidth=132*u;
+            Text(new Rect(r.x+10*u,r.y+4*u,r.width-tagsWidth-26*u,36*u),GameBalance.SkillName(profile.heroClass,selectedSkill),TouchFont(16),pale,true,false,TextAnchor.MiddleLeft);
+            SkillStateTag(new Rect(r.xMax-tagsWidth-10*u,r.y+10*u,56*u,24*u),GameBalance.IsPassive(selectedSkill)?"被动":"主动",jade,TouchFont(12));
+            SkillStateTag(new Rect(r.xMax-82*u,r.y+10*u,72*u,24*u),GameBalance.CategoryName(GameBalance.GetSkillCategory(profile.heroClass,selectedSkill)),gold,TouchFont(12));
             int rank = progression.Profile.skillRanks[selectedSkill];
             string reason = rank >= 3 ? "" : progression.SkillLockReason(selectedSkill);
             Rect detailArea=new Rect(r.x+6*u,r.y+44*u,r.width-12*u,Mathf.Max(32*u,r.height-(string.IsNullOrEmpty(reason)?52:100)*u));float detailWidth=detailArea.width/u-16;
@@ -112,12 +115,6 @@ namespace Emberfall
             float y = 8;
             if (!string.IsNullOrEmpty(mobileSkillStatus))
                 MobileSkillParagraph(ref y, width, mobileSkillStatus, 14, mobileSkillStatusFailed ? gold : jade, true, draw);
-            if(draw)
-            {
-                SkillStateTag(TouchRect(8,y,56,24),GameBalance.IsPassive(skill)?"被动":"主动",jade,TouchFont(12));
-                SkillStateTag(TouchRect(72,y,72,24),GameBalance.CategoryName(GameBalance.GetSkillCategory(p.heroClass,skill)),gold,TouchFont(12));
-            }
-            y+=34;
             string description=BuildCatalog.VenomSkillOverride(p,skill,rank);
             if(description.Length==0)description=GameBalance.SkillDescription(p.heroClass,skill);
             // The initial rank already contains the base description. Show only a distinct summary.

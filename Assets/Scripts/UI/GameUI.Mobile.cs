@@ -119,7 +119,7 @@ namespace Emberfall
                 if(MobileIcon(l.Shop,"shop",gold))OpenHubService(HubNpcKind.Merchant);
                 if(MobileIcon(l.Smith,"smith",jade))OpenHubService(HubNpcKind.Blacksmith);
             }
-            Rect map=TouchRect(l.Map);blockedRects.Add(map);Box(map,jade,false);DrawMinimapTerrain(map);
+            Rect map=TouchRect(l.Map);blockedRects.Add(map);DrawMinimapTerrain(map);
             if(!session.InDungeon){MapDot(map,new Vector3(0,0,11),jade,4*TouchRatio);for(int npc=0;npc<3;npc++)MapDot(map,GameSession.HubNpcPosition(npc),gold,3*TouchRatio);}
             else if(session.DungeonReturnAvailable)MapDot(map,session.DungeonReturnPosition,jade,4*TouchRatio);
             if(session.Player!=null)MapDot(map,session.Player.transform.position,jade,4*TouchRatio);
@@ -183,7 +183,7 @@ namespace Emberfall
                 Texture2D skillArt=UIIconAtlas.SkillGlyph(p.heroClass,skill,48);
                 float iconSize=Mathf.Min(r.width,r.height)*1f*(pressed?.95f:1f);
                 Rect icon=new Rect(r.center.x-iconSize*.5f,r.center.y-iconSize*.5f,iconSize,iconSize);
-                // Floating transparent glyph: the entire identity carries availability.
+                // Solid backing keeps the identity readable against bright terrain.
                 Color skillColor=UIIconAtlas.SkillColor(p.heroClass,skill);
                 Color tint=ready?(pressed?Color.Lerp(skillColor,Color.white,.25f):skillColor):new Color(.38f,.42f,.46f,.58f);
                 DrawRecoveringSkill(icon,skillArt,ready?Color.Lerp(tint,Color.white,.25f):skillColor,skill,ready);
@@ -204,7 +204,7 @@ namespace Emberfall
         }
         private void DrawMobileControlSurface(Rect r,bool ready,bool pressed)
         {
-            DrawIcon(r,UIIconAtlas.ControlDisc(),new Color(.035f,.065f,.09f,pressed&&ready?.36f:.24f));
+            DrawIcon(r,UIIconAtlas.ControlDisc(),new Color(.025f,.045f,.065f,pressed&&ready?.98f:.92f));
             if(ready)DrawIcon(r,UIIconAtlas.ControlRing(true),new Color(.32f,.88f,1f,.12f));
             DrawIcon(r,UIIconAtlas.ControlRing(),ready?new Color(.35f,1f,.76f,.85f):new Color(.8f,.88f,.94f,.48f));
         }
@@ -212,9 +212,8 @@ namespace Emberfall
         {
             float hp=session.Player==null?0:session.Player.Health,max=session.Player==null?1:session.Player.MaxHealth;
             blockedRects.Add(TouchRect(layout.PlayerStatus));
-            Bar(TouchRect(layout.PlayerHealth),hp/Mathf.Max(1,max),new Color(.20f,.95f,.30f));
-            Text(TouchRect(layout.PlayerHealth),Mathf.CeilToInt(hp)+" / "+Mathf.CeilToInt(max),TouchFont(MobileControls.IsIPad?11:9),pale,true,false,TextAnchor.MiddleCenter);
-            DrawHudVital(TouchRect(layout.PlayerEnergy),session.Player==null?0:session.Player.Energy/Mathf.Max(1,session.Player.MaxEnergy),new Color(.35f,.63f,1),session.Player==null?"0 / 100":Mathf.FloorToInt(session.Player.Energy)+" / "+Mathf.RoundToInt(session.Player.MaxEnergy));
+            DrawHudVital(TouchRect(layout.PlayerHealth),hp/Mathf.Max(1,max),new Color(.035f,.30f,.14f),Mathf.CeilToInt(hp)+" / "+Mathf.CeilToInt(max));
+            DrawHudVital(TouchRect(layout.PlayerEnergy),session.Player==null?0:session.Player.Energy/Mathf.Max(1,session.Player.MaxEnergy),new Color(.045f,.20f,.40f),session.Player==null?"0 / 100":Mathf.FloorToInt(session.Player.Energy)+" / "+Mathf.RoundToInt(session.Player.MaxEnergy));
         }
         // Objective text is informational; touching it must not open travel or click through.
         private void DrawMobileObjectiveText(Rect bounds,ref float y,string value,int size,Color tint,bool bold=false,bool locate=false)
@@ -342,7 +341,13 @@ namespace Emberfall
             float sidebarWidth=120,bodyY=y+headerHeight+8;
             float bodyHeight=Mathf.Max(48,Mathf.Min(layout.Height,height/TouchRatio)-bodyY-72);
             float footerY=Mathf.Min(layout.Height,height/TouchRatio)-60,exitButtonWidth=panelWidth-136;
-            if(PrimaryButton(TouchRect(x+136,footerY,exitButtonWidth,48),"保存并返回主菜单",jade))RequestExit(true);
+            if(session.InDungeon)
+            {
+                float actionWidth=(exitButtonWidth-8)*.5f;
+                DrawPauseDungeonExitButton(TouchRect(x+136,footerY,actionWidth,48));
+                if(PrimaryButton(TouchRect(x+144+actionWidth,footerY,actionWidth,48),"保存并返回主菜单",jade))RequestExit(true);
+            }
+            else if(PrimaryButton(TouchRect(x+136,footerY,exitButtonWidth,48),"保存并返回主菜单",jade))RequestExit(true);
             Fill(TouchRect(x,bodyY,sidebarWidth,bodyHeight),new Color(.025f,.05f,.065f,.65f));
             for (int i=0;i<tabs.Length;i++)
                 if (PauseSidebarTab(TouchRect(x,bodyY+i*52,sidebarWidth,48),tabs[tabOrder[i]],mobilePausePage==tabOrder[i],TouchRatio) && mobilePausePage!=tabOrder[i])

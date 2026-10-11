@@ -27,12 +27,12 @@ namespace Emberfall.Editor
         {
             if(EditorApplication.isPlayingOrWillChangePlaymode)throw new InvalidOperationException("Stop Play Mode before previewing.");
             if(!Application.isBatchMode&&UnityEngine.SceneManagement.SceneManager.GetActiveScene().isDirty)throw new InvalidOperationException("Save the current scene first.");
-            string output=Path.GetFullPath(Path.Combine(Application.dataPath,"../ArtSource/Review/EnemySkills-20261010"));
+            string output=Path.GetFullPath(Path.Combine(Application.dataPath,"../ArtSource/Review/EnemySkills-20261011"));
             Directory.CreateDirectory(Path.Combine(output,"IsolatedSave"));
             SessionState.SetString(Key+"Output",output);SessionState.SetString(Key+"PreviousSave",SessionState.GetString(SaveKey,""));
             SessionState.SetFloat(Key+"PreviousEffects",EffectPreferences.EffectsScale);
             SessionState.SetString(SaveKey,Path.Combine(output,"IsolatedSave"));SessionState.SetBool(Key+"Active",true);
-            EditorSceneManager.OpenScene("Assets/Scenes/Main.unity",OpenSceneMode.Single);EditorApplication.isPlaying=true;
+            EditorSceneManager.OpenScene("Assets/Scenes/Main.unity",OpenSceneMode.Single);EditorApplication.isPaused=false;EditorApplication.isPlaying=true;
         }
         static void Log(string condition,string stack,LogType type)
         {if(SessionState.GetBool(Key+"Active",false)&&(type==LogType.Exception||type==LogType.Error)){errors++;rows.Add("ERROR "+condition+"\n"+stack);}}
@@ -43,7 +43,7 @@ namespace Emberfall.Editor
             if(GameSession.Instance==null||GameSession.Instance.Progression==null)return;
             try
             {
-                if(routine==null){Application.runInBackground=true;previousCaptureDelta=Time.captureDeltaTime;Time.captureDeltaTime=1f/60f;routine=Review();}
+                if(routine==null){Application.runInBackground=true;previousCaptureDelta=Time.captureDeltaTime;Time.captureDeltaTime=1f/20f;routine=Review();}
                 if(Time.time<waitUntil)return;
                 if(!routine.MoveNext()){Finish(errors==0?0:1);return;}
                 waitUntil=Time.time+(routine.Current is float delay?delay:0);
@@ -61,7 +61,7 @@ namespace Emberfall.Editor
                 EffectPreferences.EffectsScale=reduced?.4f:1;
                 UnityEngine.Random.InitState(711);game.StartNew(HeroClass.Vanguard);
                 CombatReviewBuildSetup.Apply(game.Progression,new CombatReviewConfiguration{id="enemy-vfx",hero=HeroClass.Vanguard,level=100,skillRanks=new[]{3,3,3,3,3,3,3,3,3,3}},Path.Combine(output,"IsolatedSave"));
-                var player=game.Player;player.RefreshStats(true);player.enabled=false;game.SetPaused(false);
+                var player=game.Player;player.RefreshStats(true);player.enabled=false;game.SetPaused(false);game.SetUIBlocking(false);var ui=game.GetComponent<GameUI>();if(ui!=null)ui.enabled=false;
                 foreach(var old in game.Enemies)if(old!=null){old.gameObject.SetActive(false);UnityEngine.Object.Destroy(old.gameObject);}game.Enemies.Clear();
                 typeof(GameSession).GetField("respawnTimer",Private).SetValue(game,100000f);
                 player.Teleport(WorldTraversal.NearestWalkable(new Vector3(5,0,5),.45f));typeof(PlayerController).GetProperty("Health").SetValue(player,1000000f);

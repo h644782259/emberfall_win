@@ -1,0 +1,3 @@
+Built-in imagegen, generated 2026-10-11. Source: exec-6af62f67-6dcc-4de5-a9ff-874a1f36d1d6.png.
+Asset: Assets/Resources/WorldArt/ActorMaterialAtlas.png.
+Prompt: production 3D character material albedo atlas for fantasy action RPG. Exactly four aligned equal seamless quadrants filling the image: top-left neutral gray tightly woven wool, top-right neutral silver forged steel with brushed scratches and minute hammered irregularities, bottom-left neutral warm gray-brown weathered leather, bottom-right pale peach skin with subtle pores and freckle mottling. Flat orthographic diffuse scans, evenly lit, no specular highlights, shadows, seams, vignettes, objects, text or borders. Restrained painterly realism; avoid toy plastic and cartoon geometry.

@@ -7,9 +7,9 @@ namespace Emberfall
         static void BuildMeadowDetail(Transform parent,WorldResources resources)
         {
             var vertices=new List<Vector3>();var triangles=new List<int>();var random=new System.Random(83723);
-            for(int i=0;i<240;i++)
+            for(int i=0;i<520;i++)
             {
-                Vector3 p=new Vector3((float)random.NextDouble()*40-20,.035f,(float)random.NextDouble()*38-19);
+                Vector3 p=new Vector3((float)random.NextDouble()*62-31,.035f,(float)random.NextDouble()*62-31);
                 if(Mathf.Abs(p.x)<4||p.z>6&&p.x>-7||!WorldTraversal.IsWalkable(p,.3f))continue;
                 for(int blade=0;blade<4;blade++)
                 {
@@ -29,11 +29,25 @@ namespace Emberfall
             var texture=Resources.Load<Texture2D>("WorldArt/GroundMeadow");
             if(texture==null||!material.HasProperty("_ColorTexture"))return;
             material.mainTexture=texture;material.SetFloat("_ColorTexture",.85f);material.SetFloat("_GrainScale",.4f);
+            if(material.HasProperty("_AtlasRegion"))material.SetVector("_AtlasRegion",new Vector4(1,1,0,0));
         }
+        private sealed class GroundSubdivision { public List<Vector3> Vertices; public List<int> Triangles; }
+        private static readonly Dictionary<string,GroundSubdivision> groundSubdivisions=new Dictionary<string,GroundSubdivision>();
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetGroundSubdivisions(){groundSubdivisions.Clear();}
         static void SubdivideGround(ref List<Vector3> vertices,ref List<int> triangles)
         {
+            // Keep CPU geometry only; each world still owns and releases its GPU mesh.
+            var keyBuilder=new System.Text.StringBuilder();
+            foreach(var v in vertices)
+            {keyBuilder.Append(v.x.ToString("R",System.Globalization.CultureInfo.InvariantCulture)).Append(',').Append(v.y.ToString("R",System.Globalization.CultureInfo.InvariantCulture)).Append(',').Append(v.z.ToString("R",System.Globalization.CultureInfo.InvariantCulture)).Append(';');}
+            foreach(var index in triangles)keyBuilder.Append(index).Append(',');
+            string key=keyBuilder.ToString();GroundSubdivision cached;
+            if(groundSubdivisions.TryGetValue(key,out cached)){vertices=cached.Vertices;triangles=cached.Triangles;return;}
             var result=new List<Vector3>();var indices=new List<int>();
             for(int i=0;i<triangles.Count;i+=3)Split(vertices[triangles[i]],vertices[triangles[i+1]],vertices[triangles[i+2]],0,result,indices);
+            if(groundSubdivisions.Count>=96)groundSubdivisions.Clear();
+            groundSubdivisions.Add(key,new GroundSubdivision{Vertices=result,Triangles=indices});
             vertices=result;triangles=indices;
         }
         static void Split(Vector3 a,Vector3 b,Vector3 c,int depth,List<Vector3> vertices,List<int> triangles)

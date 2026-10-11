@@ -21,7 +21,7 @@ assert 'ModeRun!=rewardRun||Progression!=progression||progression.CurrentSlotId!
 assert 'candidate.lastModeRewardDetails=CaptureRewardPresentation(receipt,Profile,candidate);' in service
 assert 'RewardExperienceTotal(after)-RewardExperienceTotal(before)' in service
 settlement=service[service.index('public bool TryGrantModeReward('):service.index('public void GrantEnemyKillReward(')]
-assert settlement.index('candidate.lastModeRewardDetails=') < settlement.index('CommitCandidate(candidate)') < settlement.index('RaiseLeveledUp(level)')
+assert settlement.index('candidate.lastModeRewardDetails=') < settlement.index('CommitCandidate(candidate,completeDungeon:true)') < settlement.index('RaiseLeveledUp(level)')
 assert m.index('ModeRun!=rewardRun||Progression!=progression||progression.CurrentSlotId!=rewardSlot') < m.index('if(saved){ApplyRewardPresentation(receipt);')
 assert 'if(!SaveBeforeLeaving())return false;' in r and r.index('if(!SaveBeforeLeaving())return false;')<r.index('RoomChainRun.Next(true,false)')
 assert 'TrySettleRoomReward' in r and 'roomEnemies.TryGetValue' in r
@@ -37,7 +37,9 @@ scrolls=list((root/'Assets/Scripts/UI').glob('*.cs'))
 assert all('GUI.BeginScrollView' not in p.read_text() for p in scrolls if p.name!='GameUI.TouchScroll.cs')
 assert 'new Area[10]' in read('Assets/Scripts/UI/MobileControlLayout.cs')
 uiroot=read('Assets/Scripts/UI/GameUI.cs')
-assert uiroot.index('if (session.Paused) DrawPause();')<uiroot.index('else if(session.ModeFinished)')
-assert '菜单 / 存档' in read('Assets/Scripts/UI/GameUI.RunRecap.cs')
+assert uiroot.index('if (session.Paused) DrawPause();')<uiroot.index('else if((session.ModeFinished||session.DungeonCleared)')
+recap=read('Assets/Scripts/UI/GameUI.RunRecap.cs')
+assert 'private void CloseSettlement()' in recap and 'session.DismissFinishedResult()' in recap
+assert 'PopupCloseButton' in recap
 assert 'NearbyHubNpc!=HubNpcKind.None' in read('Assets/Scripts/Core/GameSession.Expedition.cs')
 print('PASS: adventure/room entry, cooldown, portal, reward, scroll and terminal-damage source contracts (not Unity execution)')

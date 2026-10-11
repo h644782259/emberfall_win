@@ -166,7 +166,7 @@ namespace Emberfall
             return obj.transform;
         }
 
-        public void TakeDamage(float amount, Vector3 direction, float knockback = 0f, float stun = 0f, bool impact = true, bool critical = false, System.Action<float> actualHealthLoss = null, int practiceCastId = 0)
+        public void TakeDamage(float amount, Vector3 direction, float knockback = 0f, float stun = 0f, bool impact = true, bool critical = false, System.Action<float> actualHealthLoss = null, int practiceCastId = 0, Vector3? contactPoint = null)
         {
             if (session == null || !AdventureResultPolicy.AcceptsDamage(session.HasStarted,session.CombatEnded) || IsDead || amount <= 0 || float.IsNaN(amount) || float.IsInfinity(amount)) return;
             amount *= session.RoomSupportMultiplier(this)*session.ChapterSupportMultiplier(this);
@@ -205,7 +205,10 @@ namespace Emberfall
             float grantedStun = controlPolicy.ApplyStun(stun);
             stunTime = Mathf.Max(stunTime, grantedStun);
             if (grantedStun > 0 && stun >= .45f) CancelAttack(true);
-            session.SpawnCombatDamage(transform.position+Vector3.up*(IsBoss?3.6f:1.9f),Mathf.CeilToInt(amount).ToString(),critical);
+            // Use the confirmed world contact, captured before later recoil/turning.
+            Vector3 contact=contactPoint.HasValue&&FinitePoint(contactPoint.Value)?contactPoint.Value:
+                transform.position+Vector3.up*(IsBoss?2f:Kind==EnemyKind.Slime?.65f:1.25f)-CombatFx.Flat(direction).normalized*.25f;
+            session.SpawnCombatDamage(contact,Mathf.CeilToInt(amount).ToString(),critical);
             if (Health <= 0 && !deathReported)
             {
                 if (CombatReviewEvents.Enabled) CombatReviewEvents.Emit("enemydeath","0",CombatReviewObjectId.Get(this));

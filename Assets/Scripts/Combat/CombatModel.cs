@@ -46,7 +46,7 @@ namespace Emberfall
         private bool isolatedPreview;
         private float previewTime;
         private float recoilStarted = -10f, recoilStrength;
-        private Vector3 recoilDirection;
+        private Vector3 recoilDirection,recoilOffset,recoilVelocity;
         private EnemyController enemyOwner;
         private Quaternion bodyRestRotation = Quaternion.identity;
         private bool dying;
@@ -79,15 +79,23 @@ namespace Emberfall
             recoilStarted = Time.time;
             recoilStrength = Mathf.Clamp(strength, .35f, 1.6f);
             recoilDirection = transform.parent.InverseTransformDirection(worldDirection.normalized);
+            recoilVelocity=Vector3.ClampMagnitude(recoilVelocity+recoilDirection*recoilStrength*3.2f,4.5f);
         }
 
         private void ApplyRecoil()
         {
-            float age = Time.time - recoilStarted;
-            float recovery = Mathf.Clamp01(1f - age / .22f);
-            float impulse = recovery * recovery * recoilStrength;
-            transform.localPosition += recoilDirection * (.12f * impulse);
-            if (body != null) body.localRotation *= Quaternion.Euler(recoilDirection.z * 9f * impulse, 0, -recoilDirection.x * 9f * impulse);
+            // A damped spring absorbs the hit, overshoots gently, then settles.
+            float dt=Mathf.Min(Time.deltaTime,.033f);
+            recoilVelocity+=(-recoilOffset*95f-recoilVelocity*15f)*dt;
+            recoilOffset=Vector3.ClampMagnitude(recoilOffset+recoilVelocity*dt,.3f);
+            transform.localPosition+=recoilOffset;
+            if(body!=null)body.localRotation*=Quaternion.Euler(recoilOffset.z*65,0,-recoilOffset.x*65);
+            if(articulatedEnemy&&spine!=null)
+            {
+                spine.localRotation*=Quaternion.Euler(recoilOffset.z*35,0,-recoilOffset.x*35);
+                if(headRig!=null)headRig.localRotation*=Quaternion.Euler(-recoilOffset.z*22,0,recoilOffset.x*22);
+                if(leftArm!=null)leftArm.localRotation*=Quaternion.Euler(-recoilOffset.z*18,0,recoilOffset.x*12);
+            }
         }
 
         private void LateUpdate()
@@ -116,6 +124,7 @@ namespace Emberfall
             model.EnhanceHero(hero);
             if (hero == HeroClass.Summoner) model.SummonerCrown();
             model.BuildClassCostume();
+            model.RefineHumanoid();
             model.CaptureBaseCostume();
             model.ApplyWeaponArt(null);
             model.ConfigureBlenderPilot();
@@ -415,6 +424,7 @@ namespace Emberfall
             model.BuildEnemy(kind, boss);
             model.EnhanceEnemy(kind, boss);
             EnemySilhouetteArt.ApplyEnemy(model);
+            model.RefineArmorGeometry();
             return model;
         }
 
@@ -512,10 +522,12 @@ namespace Emberfall
             Material material;
             SurfaceKey key = new SurfaceKey(color, surface);
             if (palette.TryGetValue(key, out material)) return material;
-            Shader shader = Shader.Find("Standard");
+            Shader shader = ActorSurfaceMaterial.ShaderFor(surface);
+            if(shader==null)shader=Shader.Find("Standard");
             if (shader == null) shader = Shader.Find("Sprites/Default");
             material = new Material(shader) { color = color };
             ProceduralVisuals.ApplySurface(material, surface);
+            ActorSurfaceMaterial.Apply(material,surface,color);
             palette.Add(key, material);
             return material;
         }
@@ -525,6 +537,7 @@ namespace Emberfall
             GameObject obj = ProceduralVisuals.Create(name, shape, Mat(color, surface ?? ProceduralVisuals.SurfaceFor(name)));
             AuthoredActorMeshes.Apply(obj,meshModule ?? name,shape);
             ActorSilhouetteF1.Apply(obj,name,treantCompanion);
+            ActorAnatomy.Apply(obj,name,treantCompanion);
             obj.transform.SetParent(parent == null ? transform : parent, false);
             obj.transform.localPosition = position;
             obj.transform.localScale = size;
@@ -816,6 +829,7 @@ namespace Emberfall
             Part("Forearm Bracer", PrimitiveType.Capsule, new Vector3(0, -.1f, 0), new Vector3(.245f, .14f, .25f), cuff, elbow);
             Part("Cuff Trim", PrimitiveType.Cylinder, new Vector3(0, -.18f, 0), new Vector3(.25f, .026f, .25f),
                 new Color(.83f, .66f, .3f), elbow);
+            if(!treantCompanion)ActorAnatomy.Sleeve(arm,elbow);
             return elbow;
         }
 
@@ -828,6 +842,7 @@ namespace Emberfall
             leg.Find("Boot").SetParent(knee, true);
             Part("Shin Guard", PrimitiveType.Capsule, new Vector3(0, -.11f, .015f), new Vector3(.25f, .17f, .26f), greave, knee);
             Part("Knee Guard", PrimitiveType.Sphere, new Vector3(0, 0, .105f), new Vector3(.27f, .25f, .16f), greave, knee);
+            if(!treantCompanion)ActorAnatomy.Trousers(leg,knee);
             return knee;
         }
 
@@ -879,6 +894,7 @@ namespace Emberfall
         {
             if (!isHero) return;
             if (actionDuration > 0 && actionAge < actionDuration || recoveryAge < .12f) BeginVisualRecovery(false);
+            if(!basic)performanceRemaining=0;
             weaponActionId++;
             pilotCharging=false;
             actionSkill = skill;
@@ -893,7 +909,7 @@ namespace Emberfall
         }
 
         public bool BasicActionBlocked { get { return BasicActionTimeline.BlocksBasic(actionBasic, actionAge, actionDuration); } }
-        public void CancelAction() { BeginVisualRecovery(); weaponActionId++; actionAge = actionDuration = 0; }
+        public void CancelAction() { performanceRemaining=0;BeginVisualRecovery(); weaponActionId++; actionAge = actionDuration = 0; }
 
         public void ReleaseCharge(int skill)
         {
@@ -927,8 +943,11 @@ namespace Emberfall
             if (actionDuration > 0 && Time.frameCount != actionStartedFrame) actionAge = Mathf.Min(actionAge + dt, actionDuration);
             float t = actionDuration > 0 ? actionAge / actionDuration : 1f;
             bool acting = t < 1f;
-            if (!(acting && actionBasic && actionSkill == -2) && !(isolatedPreview && actionSkill == -3))
-            { if (SampleBlenderPilot(acting,t,hurt)) return; }
+            bool performing=SampleSkillPerformance(ref t,ref acting,dt);
+            bool sampleBasic=actionBasic&&!performing;int poseSkill=performing?performanceSkill:actionSkill;
+            if (!(acting && sampleBasic && poseSkill == -2) && !(isolatedPreview && poseSkill == -3))
+            { if (!performing&&SampleBlenderPilot(acting,t,hurt)) return;
+              if(performing)SetBlenderPilotVisible(false); }
             else SetBlenderPilotVisible(false);
             float stride = Mathf.Sin(gaitPhase) * speed;
             float lift = Mathf.Abs(Mathf.Sin(gaitPhase));
@@ -958,7 +977,7 @@ namespace Emberfall
                 swordRig.localRotation = Quaternion.Euler(24f, 0, -8f);
                 if (acting)
                 {
-                    bool overhead = !actionBasic && (actionSkill == 2 || actionSkill == 7 || actionSkill == 9);
+                    bool overhead = !sampleBasic && (poseSkill == 2 || poseSkill == 7 || poseSkill == 9);
                     float direction = WeaponSwingSide;
                     spine.localRotation *= Pose(Vector3.zero, new Vector3(-8, direction * -29f, -7),
                         new Vector3(overhead ? 21f : 10f, direction * 34f, 9), t);
@@ -969,7 +988,7 @@ namespace Emberfall
                     swordRig.localRotation = Pose(new Vector3(24, 0, -8), new Vector3(-32, 0, -18), new Vector3(65, 0, 10), t);
                     leftArm.localRotation = Pose(new Vector3(-10, 0, -8), new Vector3(-47, 0, -19), new Vector3(-34, 0, -22), t);
                     leftElbow.localRotation = Quaternion.Euler(-35f, 0, 0);
-                    if(actionBasic && actionSkill == -2)
+                    if(sampleBasic && poseSkill == -2)
                     {
                         spine.localRotation = Pose(Vector3.zero,new Vector3(-5,-12,0),new Vector3(9,0,0),t);
                         rightArm.localRotation = Pose(idleR,new Vector3(-60,-8,12),new Vector3(-92,0,4),t);
@@ -982,7 +1001,7 @@ namespace Emberfall
             else if (heroClass == HeroClass.Arcanist || heroClass == HeroClass.Summoner)
             {
                 staffRig.localRotation = Quaternion.Euler(12, 0, -12);
-                if(acting&&!actionBasic)ApplyCasterSkillPose(t);
+                if(acting&&!sampleBasic)ApplyCasterSkillPose(t,poseSkill);
                 else if (acting)
                 {
                     spine.localRotation *= Pose(Vector3.zero, new Vector3(-9, -13, -3), new Vector3(14, 16, 3), t);
@@ -998,7 +1017,7 @@ namespace Emberfall
             }
             else
             {
-                float draw = acting && actionBasic ? BasicActionTimeline.BowDraw(t) : acting ? (t < .32f ? Mathf.SmoothStep(0, 1, t / .32f) :
+                float draw = acting && sampleBasic ? BasicActionTimeline.BowDraw(t) : acting ? (t < .32f ? Mathf.SmoothStep(0, 1, t / .32f) :
                     t < .48f ? 1f - Mathf.SmoothStep(0, 1, (t - .32f) / .16f) : 0) : 0;
                 float ready = acting ? Mathf.Min(1f, Mathf.Min(t / .16f, (1 - t) / .28f)) : .3f;
                 spine.localRotation *= Quaternion.Euler(0, -13f * ready, -3f * ready);
@@ -1013,7 +1032,7 @@ namespace Emberfall
                 Vector3 stringHand = Vector3.Lerp(new Vector3(.30f, .04f, .22f),
                     spine.InverseTransformPoint(bowRig.TransformPoint(nock)), ready);
                 AimArm(rightArm, rightElbow, stringHand, new Vector3(1, -.2f, -.2f));
-                arrowRig.gameObject.SetActive(actionBasic ? BasicActionTimeline.ArrowVisible(t, acting) : !acting || t < .44f || t > .83f);
+                arrowRig.gameObject.SetActive(sampleBasic ? BasicActionTimeline.ArrowVisible(t, acting) : !acting || t < .44f || t > .83f);
             }
             ApplyAuthoredVanguardPose(acting,t,hurt);
             ApplyVisualRecovery(dt);
@@ -1179,6 +1198,7 @@ namespace Emberfall
             leftElbow = ArticulateArm(leftArm,metal); rightElbow = ArticulateArm(rightArm,metal);
             leftKnee = ArticulateLeg(leftLeg,metal); rightKnee = ArticulateLeg(rightLeg,metal);
             articulatedEnemy = true;
+            RefineHumanoid();
         }
 
         public void Animate(float speed, float attack, bool hurt)
@@ -1258,6 +1278,7 @@ namespace Emberfall
                 else if(rightArm!=null) rightArm.localRotation=Quaternion.Euler(attack>0?-75f+attack*160f:walk*.6f,attack>0?-40f:0,8f);
                 transform.localPosition=Vector3.up*(Mathf.Abs(stride)*.028f*smoothedSpeed);
             }
+            if(articulatedEnemy)ApplyAnatomicalGait(enemyActionPhase!=EnemyPosePhase.Idle);
             if(decoration!=null) decoration.Rotate(0,dt*65f,0,Space.Self);
             ApplyRecoil();
             ApplyCompanionPose();

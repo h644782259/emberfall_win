@@ -84,13 +84,15 @@ namespace Emberfall
             Rect viewport=new Rect(area.x,area.y,area.width,Mathf.Max(64*u,area.height-(equipmentSize+8)*u));
             HandleWearRotation(viewport);
             // Fit the complete silhouette, including worn weapons and wings, in any aspect ratio.
-            wearModel.SetEquipmentFraming(false,false);wearModel.SetCenterOnAvatar(false);
+            wearModel.SetEquipmentFraming(false,false);wearModel.SetCenterOnAvatar(true);
             wearModel.SetComposition(CollectionPreviewComposition.Full);wearModel.SetYaw(wearPreviewYaw);
             wearModel.SetViewport(viewport.width*Mathf.Abs(GUI.matrix.m00),viewport.height*Mathf.Abs(GUI.matrix.m11),MobileControls.Active);
             Texture current=wearModel.RenderSafe(p.Profile.heroClass,p.Equipped(ItemSlot.Weapon),p.Equipped(ItemSlot.Armor),p.Equipped(ItemSlot.Relic),p.EquippedFashion(FashionSlot.Wings),p.EquippedFashion(FashionSlot.Weapon));
             if(current!=null)GUI.DrawTexture(viewport,current,ScaleMode.ScaleToFit,false);
             else Text(viewport,wearModel.LastError==null?"角色预览正在恢复":"预览暂不可用，其他操作可继续",Mathf.RoundToInt(11*u),muted,false,true);
-            if(!MobileControls.Active)Text(new Rect(viewport.x+6*u,viewport.y+4*u,90*u,24*u),"Lv."+p.Profile.level,Mathf.RoundToInt(15*u),gold,true);
+            Rect levelBadge=new Rect(viewport.x+6*u,viewport.y+6*u,76*u,26*u);
+            Fill(levelBadge,new Color(.02f,.035f,.055f,.98f));Border(levelBadge,new Color(.45f,.56f,.64f));
+            Text(levelBadge,"Lv."+p.Profile.level,Mathf.RoundToInt(14*u),pale,true,false,TextAnchor.MiddleCenter);
             if(fashion){DrawFashionWearSlots(area,u);return;}
             for(int slot=0;slot<3;slot++)
             {

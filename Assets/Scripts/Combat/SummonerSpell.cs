@@ -19,12 +19,14 @@ namespace Emberfall
             int propCast=castId==0?player.NewCastId():castId;
             float range = GameBalance.SkillRangeMultiplier(rank);
             Color color = GameBalance.ClassColor(HeroClass.Summoner);
+            if(skill==7)SkillPerformanceVfx.Sustain(player,target,4.4f*range,SummonerDamageRules.MarkFinisherTime,SkillPerformanceBody.Gravity);
             if (skill == 2 || skill == 4 || skill == 6 || skill == 9)
             {
                 var form = skill == 2 ? SummonedCompanion.Kind.Wolf : skill == 4 ? SummonedCompanion.Kind.Spirit : skill == 6 ? SummonedCompanion.Kind.Wisp : SummonedCompanion.Kind.Treant;
                 Vector3 position = CombatSight.GroundPoint(player.transform.position,target);
                 SummonedCompanion partner = SummonedCompanion.CastContract(player, game, form, rank, position, damage,
                     game.Progression.Profile.summonerRoute == SummonerRoute.Pack, preserveTargetPoint ? commandTarget : commandTarget != null ? commandTarget : player.AimTarget, preserveTargetPoint);
+                if (partner != null) SkillPerformanceVfx.Sustain(player,partner.transform.position,1.8f,1.8f,SkillPerformanceBody.Spirit);
                 if (partner != null) FilledSkillVfx.Impact(player,partner.transform.position,1.8f,FilledVfxKind.Summon,color,CombatVisualPriority.ActionBody);
             }
             else if (skill == 0)

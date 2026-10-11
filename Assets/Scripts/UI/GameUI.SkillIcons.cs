@@ -13,7 +13,7 @@ namespace Emberfall
             // One identity-colored inner frame; no common green/blue outer rim.
             if(MobileControls.Active)
             {
-                DrawIcon(rect,UIIconAtlas.ControlDisc(),new Color(.02f,.035f,.05f,.3f));
+                DrawIcon(rect,UIIconAtlas.ControlDisc(),new Color(.02f,.035f,.05f,.94f));
                 Color frame=UIIconAtlas.SkillColor(session.Progression.Profile.heroClass,skill);
                 if(ready)DrawIcon(rect,UIIconAtlas.ControlRing(true),new Color(frame.r,frame.g,frame.b,.2f));
                 DrawIcon(rect,UIIconAtlas.ControlRing(),new Color(frame.r,frame.g,frame.b,ready?.9f:.45f));
@@ -21,18 +21,29 @@ namespace Emberfall
             if(remaining>.01f&&period>0)
             {
                 float fill=1-Mathf.Clamp01(remaining/period),filled=rect.height*fill;
-                DrawIcon(rect,AuthoredIconArt.Cooldown(icon),new Color(.28f,.32f,.37f,.65f));
+                DrawIcon(rect,AuthoredIconArt.Cooldown(icon),new Color(.13f,.16f,.20f,.9f));
                 if(filled>0)
                 {
                     GUI.BeginGroup(new Rect(rect.x,rect.yMax-filled,rect.width,filled));
-                    DrawIcon(new Rect(0,filled-rect.height,rect.width,rect.height),icon,tint);
+                    DrawIcon(new Rect(0,filled-rect.height,rect.width,rect.height),icon,Color.white);
                     GUI.EndGroup();
+                    // Clip the moving boundary to the circular backing.
+                    float edge=Mathf.Max(1,rect.width*.035f);
+                    GUI.BeginGroup(new Rect(rect.x,rect.yMax-filled,rect.width,Mathf.Min(edge,filled)));
+                    DrawIcon(new Rect(0,filled-rect.height,rect.width,rect.height),UIIconAtlas.ControlDisc(),new Color(.72f,.94f,1f));
+                    GUI.EndGroup();
+                }
+                if(MobileControls.Active)
+                {
+                    Rect track=new Rect(rect.x+rect.width*.2f,rect.yMax-rect.height*.18f,rect.width*.6f,Mathf.Max(2,rect.height*.06f));
+                    Fill(track,new Color(.01f,.02f,.035f));
+                    Fill(new Rect(track.x,track.y,track.width*fill,track.height),new Color(.48f,.86f,1f));
                 }
             }
             else
             {
                 // Fully restored material colors provide the ready highlight.
-                DrawIcon(rect,ready?icon:AuthoredIconArt.Cooldown(icon),ready?Color.white:new Color(.38f,.42f,.46f,.65f));
+                DrawIcon(rect,ready?icon:AuthoredIconArt.Cooldown(icon),ready?Color.white:new Color(.62f,.67f,.73f,.85f));
             }
         }
 

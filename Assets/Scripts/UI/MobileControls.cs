@@ -271,12 +271,12 @@ namespace Emberfall
         private void ActionCircle(Rect rect,string icon,bool ready)
         {
             float opacity=EffectPreferences.TouchOpacity;
-            GUI.color=new Color(.75f,.87f,.92f,.045f*opacity);GUI.DrawTexture(rect,UIIconAtlas.ControlDisc(),ScaleMode.ScaleToFit,true);
+            GUI.color=new Color(.025f,.045f,.065f,.94f*opacity);GUI.DrawTexture(rect,UIIconAtlas.ControlDisc(),ScaleMode.ScaleToFit,true);
             if(ready){GUI.color=new Color(.32f,.88f,1f,.12f*opacity);GUI.DrawTexture(rect,UIIconAtlas.ControlRing(true),ScaleMode.ScaleToFit,true);}
-            GUI.color=ready?new Color(.35f,1f,.76f,.85f*opacity):new Color(.8f,.88f,.94f,.48f*opacity);
+            GUI.color=ready?new Color(.35f,1f,.76f,.85f*opacity):new Color(.65f,.76f,.84f,.8f*opacity);
             GUI.DrawTexture(rect,UIIconAtlas.ControlRing(),ScaleMode.ScaleToFit,true);
-            GUI.color=ready?new Color(1,1,1,opacity):new Color(.38f,.42f,.46f,.58f*opacity);
-            float size=rect.width*.66f;GUI.DrawTexture(new Rect(rect.center.x-size*.5f,rect.center.y-size*.5f,size,size),(icon=="attack"?AuthoredIconArt.BasicAttack(session.Progression.Profile.heroClass):UIIconAtlas.Utility(icon)),ScaleMode.ScaleToFit,true);GUI.color=Color.white;
+            GUI.color=ready?new Color(1,1,1,opacity):new Color(.72f,.77f,.82f,.85f*opacity);
+            float size=rect.width*.84f;GUI.DrawTexture(new Rect(rect.center.x-size*.5f,rect.center.y-size*.5f,size,size),(icon=="attack"?AuthoredIconArt.BasicAttack(session.Progression.Profile.heroClass):UIIconAtlas.Utility(icon)),ScaleMode.ScaleToFit,true);GUI.color=Color.white;
         }
         private Rect PotionVisualRect()
         { return VisualRect(Potion); }

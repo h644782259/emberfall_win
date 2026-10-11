@@ -119,16 +119,14 @@ namespace Emberfall
             GUI.matrix=previous;
         }
 
-        private void DrawDungeonExitButton()
+        private void DrawPauseDungeonExitButton(Rect exit)
         {
-            if(!session.InDungeon||session.IsDead||session.Paused||panel!=Panel.None)return;
-            float u=MobileControls.Active?TouchRatio:1f;
-            float exitY=MobileControls.Active?MobileControls.Layout.EncounterText.Y+MobileControls.Layout.EncounterText.Height+14:72;
-            Rect exit=new Rect(width-128*u,exitY*u,112*u,40*u);
-            blockedRects.Add(exit);
-            if(Button(exit,"退出副本",jade,!session.InCombat,"脱离战斗后可退出副本"))
+            if(!session.InDungeon||!session.Paused||session.IsDead)return;
+            if(DangerButton(exit,"退出副本",gold,!session.InCombat,"脱离战斗后可退出副本"))
             {
-                session.ReturnToCamp();BlockUITransition();
+                session.ReturnToCamp();
+                if(!session.InDungeon){session.SetPaused(false);panel=Panel.None;session.SetUIBlocking(false);}
+                BlockUITransition();
             }
         }
 

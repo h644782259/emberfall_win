@@ -145,7 +145,7 @@ namespace Emberfall
   }
   private float DrawRewardDetailRows(EntryRewardPreview item,float available,float u,bool draw)
   {
-   if(CompactRewardItem(item)){if(draw)Text(new Rect(0,0,available*u,44*u),ResourceDescription(item.Key),Mathf.RoundToInt(12*u),muted,false,true);return 44;}
+   if(CompactRewardItem(item)){if(draw)Text(new Rect(0,0,available*u,44*u),ResourceDescription(item.Key),Mathf.RoundToInt(12*u),new Color(.78f,.84f,.9f),false,true);return 44;}
    if(!item.GearSlot.HasValue&&!item.AppearanceSlot.HasValue)return DrawEntryRewardRows(item,available,u,draw);
    string current="";ItemData currentEquipment=null;
    if(item.GearSlot.HasValue){var equipped=session.Progression.Equipped(item.GearSlot.Value);if(equipped!=null){var preview=ActualEquipmentPreview(equipped);current=preview.Description;currentEquipment=preview.Equipment;}}
@@ -164,12 +164,12 @@ namespace Emberfall
    if(draw)for(int col=firstColumn;col<2;col++)
    {
     var value=col==0?worn:item;float x=(col-firstColumn)*(cardWidth+gap);Color accent=value==null?muted:GameBalance.RarityColor(value.Rarity);
-    Fill(new Rect(x*u,0,cardWidth*u,86*u),new Color(.045f,.09f,.12f));
-    Text(new Rect((x+10)*u,2*u,(cardWidth-20)*u,20*u),col==0||selectedWorn?"当前穿戴":"所选物品",Mathf.RoundToInt(10*u),col==0?muted:jade,true);
+    Fill(new Rect(x*u,0,cardWidth*u,86*u),new Color(.02f,.035f,.055f));
+    Text(new Rect((x+10)*u,2*u,(cardWidth-20)*u,20*u),col==0||selectedWorn?"已穿戴":"所选物品",Mathf.RoundToInt(12*u),col==0?pale:jade,true);
     string name=value==null?"未穿戴":string.IsNullOrEmpty(value.Name)?"所选时装":value.Name;
     string level=value==null?"":System.Text.RegularExpressions.Regex.Match(value.Description??"",@"Lv\.?\d+").Value;
     if(level.Length>0)name=level+"  "+name;
-    Text(new Rect((x+10)*u,24*u,(cardWidth-20-(MobileControls.Active&&item.AllowActions&&col==1?44:0))*u,32*u),name,Mathf.RoundToInt(14*u),accent,true,true);
+    Text(new Rect((x+10)*u,24*u,(cardWidth-20-(MobileControls.Active&&item.AllowActions&&col==1?44:0))*u,32*u),name,Mathf.RoundToInt(15*u),pale,true,true);
     if(value!=null){DrawDetailTag(new Rect((x+8)*u,60*u,60*u,22*u),GameBalance.RarityName(value.Rarity),accent,u);DrawDetailTag(new Rect((x+74)*u,60*u,Mathf.Max(36,cardWidth-82)*u,22*u),item.GearSlot.HasValue?GameBalance.SlotName(item.GearSlot.Value):item.AppearanceSlot==FashionSlot.Wings?"羽翼":"兵装",jade,u);}
    }
    FashionData ownedFashion=item.AppearanceSlot.HasValue&&item.Key!=null&&item.Key.StartsWith("fashion:")?progression.Profile.fashions.Find(v=>v!=null&&"fashion:"+v.id==item.Key):null;
@@ -231,7 +231,7 @@ namespace Emberfall
    return y;
   }
   private void DrawDetailTag(Rect r,string label,Color tint,float u)
-  {Fill(r,new Color(tint.r,tint.g,tint.b,.15f));Border(r,new Color(tint.r,tint.g,tint.b,.3f));Text(r,label,Mathf.RoundToInt(10*u),tint,true,false,TextAnchor.MiddleCenter);}
+  {Fill(r,new Color(.02f,.035f,.055f,1));Border(r,new Color(tint.r,tint.g,tint.b,.85f));Text(r,label,Mathf.RoundToInt(12*u),Color.Lerp(tint,Color.white,.78f),true,false,TextAnchor.MiddleCenter);}
   private void DrawComparedValue(Rect r,string value,int direction,float u,bool enhancement)
   {
    Color tint=direction>0?new Color(.3f,.94f,.55f):direction<0?new Color(1f,.38f,.36f):enhancement?gold:pale;

@@ -25,7 +25,7 @@ namespace Emberfall
         internal static void EnemyRelease(EnemyController enemy,Vector3 at,float radius,bool slam,bool slime)
         {
             int count=EffectPreferences.ReducedEffects?3:slam?8:5;
-            var fx=Create(enemy,at,slam?.65f:.4f,count,slime);if(fx==null)return;
+            var fx=Create(enemy,at,slam?1.1f:.75f,count,slime);if(fx==null)return;
             Mesh shard=AuthoredSpellBases.Load(slime?"Flame":"Crystal"),baseMesh=AuthoredSpellBases.Load("Rupture");
             for(int i=0;i<count;i++)
             {
@@ -34,6 +34,7 @@ namespace Emberfall
                 Vector3 scale=i==0&&!slime?new Vector3(radius*.6f,.25f,radius*.6f):slime?new Vector3(.26f,.65f+.1f*i,.26f):new Vector3(.2f,(slam?1.25f:.65f)+.12f*i,.22f);
                 fx.Add(i,i==0&&!slime?baseMesh:shard,offset+Vector3.up*.06f,scale,Quaternion.Euler(0,i*57,0),true);
             }
+            ElementalCombatVfx.Burst(GameSession.Instance.Player,at,radius,slime?ElementalCombatVfx.Element.Poison:ElementalCombatVfx.Element.Fire);
             fx.Present(0);
         }
         internal static void ChargeRelease(EnemyController enemy,float duration)

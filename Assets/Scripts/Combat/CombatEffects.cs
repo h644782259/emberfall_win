@@ -430,7 +430,7 @@ namespace Emberfall
                     float healthBefore = enemy.Health;
                     if (LockedImpactMarkPolicy.ShouldApply(impactMarkTarget, enemy, !enemy.IsDead, impact.Amount, impactMarkStrength) && enemy.StatusEffects != null)
                         enemy.StatusEffects.Mark(4f, impactMarkStrength);
-                    if(impact.Amount>0){if(!basicAttack&&companionSource==null)owner.RegisterSkillHit(castId);enemy.TakeDamage(owner.ResolveSkillImpact(enemy, skillIndex, castId, impact.Amount, impact.IsCritical, impact.CriticalMultiplier), direction, .18f, critical:impact.IsCritical,practiceCastId:!basicAttack&&companionSource==null?castId:0);}
+                    if(impact.Amount>0){if(!basicAttack&&companionSource==null)owner.RegisterSkillHit(castId);enemy.TakeDamage(owner.ResolveSkillImpact(enemy, skillIndex, castId, impact.Amount, impact.IsCritical, impact.CriticalMultiplier), direction, .18f, critical:impact.IsCritical,practiceCastId:!basicAttack&&companionSource==null?castId:0,contactPoint:owner.EnemyBodyPoint(enemy)-CombatFx.Flat(direction).normalized*.25f);}
                     if(concentrated&&enemy.Health<healthBefore)VenomSkillVfx.Contact(owner,owner.EnemyBodyPoint(enemy),false);
                     if (CombatReviewEvents.Enabled) CombatReviewEvents.Emit("projectilehit",CombatReviewObjectId.Get(owner),CombatReviewObjectId.Get(enemy),Mathf.Max(0,healthBefore-enemy.Health),skillIndex,CombatReviewObjectId.Get(this).ToString());
                     if (companionSource != null) {companionSource.OnConfirmedHit(enemy);companionSource.RecordEmpoweredHit(enemy,Mathf.Max(0,healthBefore-enemy.Health),empoweredCompanionShot);}
@@ -507,6 +507,7 @@ namespace Emberfall
         private GameObject marker, fallingOrb, trapCore;
         private Material orbMaterial;
         private bool fireVisual, poisonVisual, lightningVisual, solidImpactSpawned;
+        private SkillPerformanceVfx performance;private CombatModel performanceModel;
         private SkillVisualRecipe visualRecipe;
         private FilledSkillVfx.ArrowBatchHandle arrowRainVisual;
         private readonly ScheduledImpactBatch<EnemyController> pendingTickTargets = new ScheduledImpactBatch<EnemyController>();
@@ -532,6 +533,13 @@ namespace Emberfall
             area.fireVisual = visual == SkillVisualRecipe.Fire;
             area.poisonVisual = visual == SkillVisualRecipe.Poison;
             area.lightningVisual = visual == SkillVisualRecipe.Lightning;
+            area.performanceModel=player.GetComponentInChildren<CombatModel>();
+            if(activeTime>=1.2f)
+            {
+                var body=followPlayer&&player.HeroClass==HeroClass.Vanguard?SkillPerformanceBody.Tornado:visual==SkillVisualRecipe.ArrowRain?SkillPerformanceBody.ArrowVolley:visual==SkillVisualRecipe.Poison?SkillPerformanceBody.Poison:visual==SkillVisualRecipe.Lightning?SkillPerformanceBody.Lightning:visual==SkillVisualRecipe.Ice?SkillPerformanceBody.Frost:visual==SkillVisualRecipe.Fire?SkillPerformanceBody.Fire:SkillPerformanceBody.Spirit;
+                area.performance=SkillPerformanceVfx.Sustain(player,at,size,startup+activeTime+.1f,body,obj.transform);
+                if(area.performance!=null&&(body==SkillPerformanceBody.ArrowVolley||body==SkillPerformanceBody.Meteor))area.performance.PrepareBeat(at,Mathf.Max(.15f,startup));
+            }
             if(visual==SkillVisualRecipe.Neutral && player.HeroClass==HeroClass.Ranger && statusSkill==1 && startup>0)
                 area.trapCore=AuthoredTrapVisual.Create(obj.transform,tint,size);
             if (fallingMeteor)
@@ -587,6 +595,8 @@ namespace Emberfall
                 {
                     if (ScheduledTickWindow.Collect(ref nextTick, age, delay + duration, interval, 1) == 0) break;
                     pendingTickTargets.Begin(session.Enemies, true);
+                    if(performance!=null){performance.Beat();if(nextTick<=delay+duration+.0001f)performance.PrepareBeat(transform.position,interval);}
+                    if(performanceModel!=null)performanceModel.SkillPerformanceBeat(-1,castId);
                     if(visualRecipe==SkillVisualRecipe.ArrowRain&&!arrowVisualEmitted)
                     {
                         arrowVisualEmitted=true;
@@ -671,7 +681,7 @@ namespace Emberfall
         }
 
         private void Retire() { pendingTickTargets.Clear(); Destroy(gameObject); }
-        private void OnDisable() { arrowRainVisual.Retire();arrowRainVisual=default;castReceipt?.Release();castReceipt=null;pendingTickTargets.Clear(); }
+        private void OnDisable() { if(performance!=null){performance.Retire();performance=null;}arrowRainVisual.Retire();arrowRainVisual=default;castReceipt?.Release();castReceipt=null;pendingTickTargets.Clear(); }
 
         private void OnDestroy()
         {

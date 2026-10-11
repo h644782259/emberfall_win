@@ -18,7 +18,7 @@ class Program{static int n;static void C(bool b,string s){n++;if(!b)throw new Ex
  p.Profile.level=unlock;C(ChapterProgression.IsUnlocked(p.Profile,chapter),"chapter opens exactly at 30/40/50 without old chain gating");
  C(ChapterProgression.LevelTier(unlock+9)==unlock/10&&ChapterProgression.LevelTier(unlock+10)==unlock/10+1,"ten-level band boundaries");
  ChapterRunReceipt receipt;C(!p.TryBeginChapterNode(chapter,ChapterDifficulty.Normal,1,out receipt),"manual obsolete tier is rejected");
- C(p.TryBeginChapterNode(chapter,ChapterProgression.LevelDifficulty(chapter,p.Profile.level),ChapterProgression.LevelTier(p.Profile.level),out receipt),"level-derived entry accepted");
+ C(p.TryBeginChapterNode(chapter,ChapterProgression.LevelDifficulty(chapter,p.Profile.level),1,out receipt),"newly unlocked chapter admits its first Heroic tier");
  C(ProgressionService.Achievements.Single(a=>a.Id=="chapter-unlock/"+node).Progress(p.Profile)==unlock,"unlock achievement follows same gate");
  C(ProgressionService.Achievements.Single(a=>a.Id=="chapter-band/"+node+"/"+unlock).Progress(p.Profile)==0,"old manual tiers do not fabricate level clears");
  p.Profile.chapterBestLevels[node]=unlock;C(ProgressionService.Achievements.Single(a=>a.Id=="chapter-band/"+node+"/"+unlock).Progress(p.Profile)==unlock,"level-clear achievement reads actual new records");
@@ -50,8 +50,8 @@ class Program{static int n;static void C(bool b,string s){n++;if(!b)throw new Ex
  var dungeon=new ProgressionService(Path.Combine(args[0],"chapter-drops"));dungeon.NewGame(HeroClass.Arcanist);dungeon.Profile.level=60;dungeon.Save();
  for(int node=0;node<3;node++){
  ChapterRunReceipt receipt;var chapter=(ChapterNode)node;C(dungeon.TryBeginChapterNode(chapter,ChapterProgression.AvailableDifficulty(dungeon.Profile,chapter),ChapterProgression.AvailableTier(dungeon.Profile,chapter),out receipt),"chapter begins");
- for(int room=0;room<(node==2?1:2);room++)for(int enemy=0;enemy<(node==2?3:6);enemy++)C(dungeon.RegisterChapterEnemy(receipt,room,enemy,node==2&&enemy==0),"register actual room enemy");
- int stones=dungeon.Profile.refinementStones;C(dungeon.TryCompleteChapterNode(receipt),"complete actual chapter");int awardedStones=dungeon.Profile.refinementStones-stones;C(awardedStones==0,"chapter stone reward within preview range");C(dungeon.TryCompleteChapterNode(receipt)&&dungeon.Profile.refinementStones-stones==awardedStones,"repeat settlement cannot duplicate stones");C(dungeon.OpenDungeonChest()!=null,"open chapter chest");var chest=dungeon.LastChestReward;C(node==2?chest.gemMechanic!=EquipmentMechanic.None&&chest.gemRarity>=Rarity.Epic:chest.gemMechanic==EquipmentMechanic.None,"gem exclusive chapter and minimum epic");dungeon.AcknowledgeChestReward();
+ for(int room=0;room<(node==2?1:2);room++)for(int enemy=0;enemy<(node==2?7:10);enemy++)C(dungeon.RegisterChapterEnemy(receipt,room,enemy,node==2&&enemy==0),"register actual room enemy");
+ int stones=dungeon.Profile.refinementStones;C(dungeon.TryCompleteChapterNode(receipt),"complete actual chapter");int awardedStones=dungeon.Profile.refinementStones-stones;C(awardedStones==0,"chapter stone reward within preview range");C(dungeon.TryCompleteChapterNode(receipt)&&dungeon.Profile.refinementStones-stones==awardedStones,"repeat settlement cannot duplicate stones");C(dungeon.OpenDungeonChest()!=null,"open chapter chest");var chest=dungeon.LastChestReward;C(chest.primaryCount>0,"chapter chest grants one item or material stack");C(chest.gemMechanic==EquipmentMechanic.None||(node==2&&chest.gemRarity>=Rarity.Epic),"only star chapter can roll epic-or-better gem");dungeon.AcknowledgeChestReward();
  }
  for(int i=0;i<100;i++)C(dungeon.RollLoot(60,true,6).mechanic==EquipmentMechanic.None,"ordinary enemy drop cannot bypass exclusive gem source");
 
@@ -63,7 +63,7 @@ class Program{static int n;static void C(bool b,string s){n++;if(!b)throw new Ex
  statsService.Profile.attachments.Clear();var gem=new MechanicAttachment{id="attribute-test",mechanic=(EquipmentMechanic)((int)EquipmentMechanic.WeaponPower+i),rarity=Rarity.Epic,mounted=true,ascensionRank=0};statsService.Profile.attachments.Add(gem);var v=statsService.GetStats();
  bool changed=i==0?v.Damage>plain.Damage:i==1?v.CritChance>plain.CritChance:i==2?v.CritDamageBonus>plain.CritDamageBonus:i==3?v.MaxHealth>plain.MaxHealth:i==4?v.Armor>plain.Armor:i==5?v.DamageReduction>plain.DamageReduction:i==6?v.EnergyRecovery>plain.EnergyRecovery:i==7?v.CooldownReduction>plain.CooldownReduction:v.MoveSpeed>plain.MoveSpeed;
  C(changed,"each equipment gem grants its advertised stat");gem.mounted=false;v=statsService.GetStats();C(v.Damage==plain.Damage&&v.CritChance==plain.CritChance&&v.MaxHealth==plain.MaxHealth&&v.MoveSpeed==plain.MoveSpeed&&v.EnergyRecovery==plain.EnergyRecovery&&v.CooldownReduction==plain.CooldownReduction&&v.DamageReduction==plain.DamageReduction,"unmounted gem grants nothing");
- gem.mounted=true;gem.ascensionRank=3;v=statsService.GetStats();C(i<3?v.GemHealthyDamage>.14f:i<6?v.GemLowHealthGuard>.14f:v.GemLowEnergyRecovery>.59f,"ascension improves slot-specific conditional mechanic");
+ gem.mounted=true;gem.ascensionRank=1;var initial=statsService.GetStats();gem.ascensionRank=3;v=statsService.GetStats();C(i==2?v.CritDamageBonus>initial.CritDamageBonus:i<3?v.GemHealthyDamage>initial.GemHealthyDamage:i<6?v.GemLowHealthGuard>initial.GemLowHealthGuard:v.GemLowEnergyRecovery==0,"ascension improves slot-specific conditional mechanic");
  }
  statsService.Profile.attachments.Clear();statsService.Profile.attachments.Add(new MechanicAttachment{id="off-class",mechanic=EquipmentMechanic.CinderTrail,mounted=true,upgradeRank=9,ascensionRank=3});C(statsService.GetStats().Damage==plain.Damage,"off-class gem inactive");
 
@@ -83,10 +83,10 @@ class Program{static int n;static void C(bool b,string s){n++;if(!b)throw new Ex
  var firstAttribute=new ProgressionService(Path.Combine(args[0],"first-attribute"));firstAttribute.NewGame(HeroClass.Ranger);firstAttribute.Profile.clearedRuns=1;firstAttribute.Profile.pendingFirstClearReward=true;firstAttribute.Save();
  var attributeQuote=firstAttribute.PrepareMerchantPurchase(EquipmentMechanic.WeaponPower,true,Rarity.Epic);C(attributeQuote!=null&&firstAttribute.BuyAtMerchant(attributeQuote,true)&&firstAttribute.Attachment(EquipmentMechanic.WeaponPower).rarity==Rarity.Epic&&firstAttribute.Profile.firstClearRewardClaimed,"attribute gem can be selected as first-clear reward");
  int zeroGold=firstAttribute.Profile.gold,zeroMaterials=firstAttribute.Profile.mechanicMaterials;
- C(firstAttribute.GemSellValue(EquipmentMechanic.WeaponPower)==0&&firstAttribute.SellGem(EquipmentMechanic.WeaponPower,true)&&firstAttribute.Profile.gold==zeroGold&&firstAttribute.Profile.mechanicMaterials==zeroMaterials,"uninvested gem returns no currency");
+ C(firstAttribute.GemSellValue(EquipmentMechanic.WeaponPower)==BuildCatalog.GemPrice(Rarity.Epic)/2&&firstAttribute.SellGem(EquipmentMechanic.WeaponPower,true)&&firstAttribute.Profile.gold==zeroGold&&firstAttribute.Profile.mechanicMaterials==zeroMaterials+BuildCatalog.GemPrice(Rarity.Epic)/2&&firstAttribute.Attachment(EquipmentMechanic.WeaponPower)==null,"uninvested gem refunds half rarity price exactly once");
  trade.Attachment(EquipmentMechanic.CinderTrail).mounted=true;C(!trade.SellGem(EquipmentMechanic.CinderTrail,true),"mounted gems protected from sale");trade.Attachment(EquipmentMechanic.CinderTrail).mounted=false;
  var legacy=trade.Equipped(ItemSlot.Weapon);legacy.mechanic=EquipmentMechanic.CinderTrail;trade.Save();trade.Attachment(EquipmentMechanic.CinderTrail).mounted=false;trade.Save();
- C(trade.GemSellValue(EquipmentMechanic.CinderTrail)==trade.Attachment(EquipmentMechanic.CinderTrail).upgradeRank*ProgressionService.AttachmentUpgradeCost+Math.Max(0,trade.Attachment(EquipmentMechanic.CinderTrail).ascensionRank)*ProgressionService.AscensionCost,"refund equals rank and ascension investment");
+ C(trade.GemSellValue(EquipmentMechanic.CinderTrail)==BuildCatalog.GemPrice(trade.Attachment(EquipmentMechanic.CinderTrail).rarity)/2+trade.Attachment(EquipmentMechanic.CinderTrail).upgradeRank*ProgressionService.AttachmentUpgradeCost+Math.Max(0,trade.Attachment(EquipmentMechanic.CinderTrail).ascensionRank)*ProgressionService.AscensionCost,"refund equals half rarity price plus rank and ascension investment");
  int uncappedMaterials=trade.Profile.mechanicMaterials;trade.Profile.mechanicMaterials=999999;C(!trade.SellGem(EquipmentMechanic.CinderTrail,true)&&trade.Attachment(EquipmentMechanic.CinderTrail)!=null,"material cap cannot destroy gem");trade.Profile.mechanicMaterials=uncappedMaterials;
  int saleMaterials=trade.Profile.mechanicMaterials;int saleGold=trade.Profile.gold,saleValue=trade.GemSellValue(EquipmentMechanic.CinderTrail);Directory.CreateDirectory(trade.SaveFilePath+".tmp");
  C(!trade.SellGem(EquipmentMechanic.CinderTrail,true)&&trade.Attachment(EquipmentMechanic.CinderTrail)!=null&&trade.Profile.gold==saleGold&&trade.Profile.mechanicMaterials==saleMaterials,"failed sale keeps gem and balance");Directory.Delete(trade.SaveFilePath+".tmp");
@@ -108,21 +108,24 @@ class Program{static int n;static void C(bool b,string s){n++;if(!b)throw new Ex
    C(BuildCatalog.GemFormDescription(mechanic,0,asc)!=BuildCatalog.GemFormDescription(mechanic,1,asc),"form descriptions have distinct effects");
    if(BuildCatalog.IsAttributeGem(mechanic)){
     var stats=form.GetStats();var slot=BuildCatalog.MechanicSlot(mechanic);
-    C(slot==ItemSlot.Weapon?stats.GemLowHealthDamage>0&&stats.GemHealthyDamage==0:slot==ItemSlot.Armor?stats.GemHealthyGuard>0&&stats.GemLowHealthGuard==0:stats.GemHighEnergyRecovery>0&&stats.GemLowEnergyRecovery==0,"B selects distinct runtime trigger");
+    C(mechanic==EquipmentMechanic.WeaponRuin?stats.CritDamageBonus>0:slot==ItemSlot.Weapon?stats.GemLowHealthDamage>0&&stats.GemHealthyDamage==0:slot==ItemSlot.Armor?stats.GemHealthyGuard>0&&stats.GemLowHealthGuard==0:stats.GemHighEnergyRecovery==0&&stats.GemLowEnergyRecovery==0,"B selects distinct runtime trigger");
    }else C(form.HasMechanic(mechanic),"ascended mechanism active");
    C(form.ToggleAttachmentVariant(mechanic,true)&&form.Attachment(mechanic).variant==0,"switch back A free");
   }
   var loaded=new ProgressionService(Path.Combine(args[0],"forms-"+hero+"-"+mechanic));C(loaded.LoadSlot(form.CurrentSlotId)&&loaded.Attachment(mechanic).ascensionRank==3&&loaded.Attachment(mechanic).variantUnlocked,"all gem forms survive reload");
  }
- var levels=new GameProfile{level=100,chapterBestTiers=new int[3]};
+ var levels=new GameProfile{level=100,chapterBestTiers=new int[3],chapterDifficultyBestTiers=new int[9]};
  for(int node=0;node<3;node++){
-  var chapter=(ChapterNode)node;int first=ChapterProgression.UnlockLevel(chapter)/10;
-  C(ChapterProgression.AvailableTier(levels,chapter)==10,"chapter difficulty follows character level without prior clears");
-  levels.chapterBestTiers[node]=first;C(ChapterProgression.AvailableTier(levels,chapter)==10,"chapter clear does not lower level-derived difficulty");
-  levels.level=first*10;C(ChapterProgression.AvailableTier(levels,chapter)==first,"character level still limits selection");levels.level=100;
+  var chapter=(ChapterNode)node;int unlock=ChapterProgression.UnlockLevel(chapter);
+  C(ChapterProgression.AvailableTier(levels,chapter)==1,"new chapter starts at tier1 even at level100");
+  levels.chapterDifficultyBestTiers[node*3+2]=3;
+  C(ChapterProgression.AvailableTier(levels,chapter)==4,"Heroic clear unlocks exactly the next tier");
+  C(!ChapterProgression.CanEnter(levels,chapter,ChapterDifficulty.Heroic,5),"cannot skip uncleared chapter tier");
+  levels.level=unlock-1;C(!ChapterProgression.CanEnter(levels,chapter,ChapterDifficulty.Heroic,4),"level gate still applies to unlocked tier");
+  levels.level=unlock;C(ChapterProgression.CanEnter(levels,chapter,ChapterDifficulty.Heroic,4),"level gate and saved clear admit next tier");levels.level=100;
  }
  var goalService=new ProgressionService(Path.Combine(args[0],"finished-goal"));goalService.NewGame(HeroClass.Vanguard);goalService.Profile.automaticGrowth=true;goalService.Profile.classTutorialCompleted=true;goalService.Profile.attachments.Add(new MechanicAttachment{id="goal-gem",mechanic=EquipmentMechanic.ReturningBlade,upgradeRank=3,ascensionRank=1,variantUnlocked=true});goalService.Profile.chapterBestLevels[0]=100;
- C(goalService.SelectedProgressionGoal().RequiredAdventureTier==0&&goalService.SelectedProgressionGoal().Title=="成长目标已完成","Lv100 chapter clear advances goal without obsolete reward receipt");
+ C(!goalService.SelectedProgressionGoal().Done,"high level alone cannot bypass chapter completion");goalService.Profile.chapterCompletedMask=7;C(goalService.SelectedProgressionGoal().Done&&goalService.SelectedProgressionGoal().Title=="主线目标已完成","chapter completion and Lv100 clear complete main goal");
  goalService.Profile.chapterBestLevels[0]=0;goalService.Profile.adventureBestTiers[2]=10;C(goalService.SelectedProgressionGoal().RequiredAdventureTier==0,"independent dungeon record counts for goal");
  goalService.Save();var goalReload=new ProgressionService(Path.Combine(args[0],"finished-goal"));C(goalReload.LoadSlot(goalService.CurrentSlotId)&&goalReload.SelectedProgressionGoal().RequiredAdventureTier==0,"completed goal stays complete after reload");
  for(int hero=0;hero<4;hero++)C(GameBalance.SkillEnergyCost((HeroClass)hero,9)==0,"all ultimate skills cost zero energy");

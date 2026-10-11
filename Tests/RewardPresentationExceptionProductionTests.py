@@ -34,7 +34,7 @@ ChapterResultSnapshot CaptureChapterResult(bool failed,string reason)=>new Chapt
 public bool Settle(string kind)=>kind=="dungeon"?TrySettleDungeonReward():kind=="room"?TrySettleRoomReward():kind=="arena"?TrySettleArenaReward():TrySettleChapterReward();
 public static long Earned(GameProfile p)=>TotalEarnedExperience(p);
 '''+methods+('public string ReadDisplay()=>RewardPresentationText("回执");' if 'private string RewardPresentationText(' in mode else 'public string ReadDisplay()=>LastRunSummary;')+'}}'
-core=['SafeSaveFlow','GameTypes','ProgressionService','ProgressionService.Attachments','ProgressionService.AutomaticGrowth','ProgressionService.Reforge','ReforgeQuote','ProgressionService.Chapter','ChapterProgression','ChapterResultSnapshot','RoomTactics','CombatBalance','HubTravelRules','MasteryCoreRuntime','CastFirstHitReceipt','TierRewardRules','TierRewardBand','ProgressionGoalState','ExpeditionModeState']
+core=['SafeSaveFlow','GameTypes','ProgressionService','ProgressionService.Attachments','ProgressionService.AutomaticGrowth','ProgressionService.Trading','ProgressionService.Reforge','ReforgeQuote','ProgressionService.Chapter','ChapterProgression','ChapterResultSnapshot','RoomTactics','CombatBalance','HubTravelRules','MasteryCoreRuntime','CastFirstHitReceipt','TierRewardRules','TierRewardBand','ProgressionGoalState','ExpeditionModeState']
 with tempfile.TemporaryDirectory(prefix='reward-presentation-') as folder:
  p=Path(folder)
  for name in core:(p/(name+'.cs')).write_text(read('Assets/Scripts/Core/'+name+'.cs'))

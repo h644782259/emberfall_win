@@ -96,9 +96,9 @@ namespace Emberfall
             float commandLift=Width<700?22:0;
             FocusCommand=new Area(204,Height-170-commandLift,48,48);RecallCommand=new Area(204,Height-120-commandLift,48,48);
             float phoneHealthWidth=Math.Min(160,Math.Max(80,Math.Min(Attack.X-58,Skills[0].X-8)-(Width*.5f-80)));
-            PlayerStatus=new Area(Width*.5f-(ipad?112:80),Height-(ipad?58:54),ipad?234:phoneHealthWidth+50,ipad?36:27);
-            PlayerHealth=new Area(PlayerStatus.X,PlayerStatus.Y,ipad?184:phoneHealthWidth,ipad?16:12);
-            PlayerEnergy=new Area(PlayerStatus.X,PlayerStatus.Y+(ipad?20:15),ipad?184:phoneHealthWidth,ipad?16:12);Map=new Area(12,12,ipad?158.4f:88,ipad?122.4f:68);
+            PlayerStatus=new Area(Width*.5f-(ipad?112:80),Height-(ipad?58:63),ipad?234:phoneHealthWidth+50,36);
+            PlayerHealth=new Area(PlayerStatus.X,PlayerStatus.Y,ipad?184:phoneHealthWidth,16);
+            PlayerEnergy=new Area(PlayerStatus.X,PlayerStatus.Y+20,ipad?184:phoneHealthWidth,16);Map=new Area(12,12,ipad?158.4f:88,ipad?122.4f:68);
             // Reserve the bottom XP rail even on devices with no bottom safe-area inset.
             Potion=new Area(Potion.X,Math.Min(Potion.Y,Height-20-Potion.Height),Potion.Width,Potion.Height);
             AdventureStatus=new Area(12,ipad?140.4f:86,188,76);

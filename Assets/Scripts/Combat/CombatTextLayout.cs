@@ -18,7 +18,7 @@ namespace Emberfall
             // Above and to either side of the silhouette; spacing derives from
             // the complete measured glyph box, including the peak critical pop.
             float side=slot%2==0?-1:1;
-            return new Box(x+side*(width*.5f+pad)-width*.5f,y+14+(slot/2)*(height+pad),width,height);
+            return slot==0?new Box(x-width*.5f,y+4,width,height):new Box(x+side*(width*.5f+pad)-width*.5f,y+4+((slot+1)/2)*(height+pad),width,height);
         }
         public static bool Fits(Box box,float width,float height)
         {return box.X>=0&&box.Y>=0&&box.X+box.Width<=width&&box.Y+box.Height<=height;}

@@ -18,7 +18,7 @@ public static class EncounterPlanTests
         {
             foreach (int tier in new[] { 1, 3, 11, 1000 })
             {
-                for (int wave = 1; wave <= 3; wave++)
+                for (int wave = 1; wave <= EncounterPlan.FinalWave; wave++)
                 {
                     for (int layout = 0; layout < 4; layout++)
                     {
@@ -45,14 +45,14 @@ public static class EncounterPlanTests
                                 Check(dx * dx + dz * dz >= minimum * minimum - .001f, "spawn positions do not stack and keep boss clearance");
                             }
                         Check(types.Count == 4, "each wave mixes all four enemy families");
-                        if (wave < 3)
+                        if (wave < EncounterPlan.FinalWave)
                         {
-                            Check(plan.Count >= 16 && plan.Count <= EncounterPlan.MaximumWavePopulation && bosses == 0, "ordinary waves scale within 16–24 total enemies, with bounded reinforcements");
+                            Check(plan.Count >= 26 && plan.Count <= EncounterPlan.MaximumWavePopulation && bosses == 0, "ordinary waves scale within 26–32 total enemies, with bounded reinforcements");
                             Check(plan.Exists(value => value.Kind == EnemyKind.Guardian && !value.Boss), "ordinary mixed waves include a real non-boss guardian");
                         }
                         else
                         {
-                            Check(plan.Count >= 9 && plan.Count <= 11 && bosses == 1, "final wave has exactly one boss and 3–5 escorts");
+                            Check(plan.Count >= 15 && plan.Count <= 17 && bosses == 1, "final wave has exactly one boss and 14–16 escorts");
                             finalCounts.Add(plan.Count);
                         }
                     }
@@ -60,7 +60,7 @@ public static class EncounterPlanTests
             }
             List<EncounterSpawn> wide = EncounterPlan.Create(1, 1, 0, seed);
             List<EncounterSpawn> narrow = EncounterPlan.Create(1, 1, 1, seed);
-            Check(wide.Count >= 16 && wide.Count <= 19, "first wide wave includes 16–19 enemies across reinforcement groups");
+            Check(wide.Count >= 26 && wide.Count <= 29, "first wide wave includes 26–29 enemies across reinforcement groups");
             lowCounts.Add(wide.Count);
             Check(!Same(wide, narrow), "environment layout changes the encounter");
             Check(!Same(wide, EncounterPlan.Create(1, 1, 0, seed + 1)), "changing seed changes positions or composition");
@@ -74,7 +74,7 @@ public static class EncounterPlanTests
         Check(compositions.Count >= 12, "tactical archetypes produce varied group compositions");
         Check(narrowDistance / narrowMonsters > wideDistance / wideMonsters + .5, "narrow environments emphasize separated side flanks rather than central clustering");
         Check(Same(EncounterPlan.Create(int.MinValue, int.MinValue, int.MinValue, int.MinValue), EncounterPlan.Create(1, 1, 0, int.MinValue)), "negative boundary input normalizes safely");
-        Check(Same(EncounterPlan.Create(int.MaxValue, int.MaxValue, int.MaxValue, int.MaxValue), EncounterPlan.Create(1000, 3, 3, int.MaxValue)), "positive boundary input is capped without overflow");
+        Check(Same(EncounterPlan.Create(int.MaxValue, int.MaxValue, int.MaxValue, int.MaxValue), EncounterPlan.Create(1000, EncounterPlan.FinalWave, 3, int.MaxValue)), "positive boundary input is capped without overflow");
         return "PASS: " + assertions + " seeded encounter budget, composition, spacing and environment assertions.";
     }
 

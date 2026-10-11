@@ -21,6 +21,7 @@ namespace Emberfall
         private FilledSkillVfx.ArrowBatchHandle arrowBatch;
         private bool restrictedHealing;
         private AdvancedSkillVfx healingAura,ultimateField;
+        private SkillPerformanceVfx performance;private CombatModel performanceModel;
 
         public static void Spawn(PlayerController hero, GameSession game, int index, int skillRank, Vector3 aim, Vector3 direction, CombatDamage strength, Color tint, int castId = 0)
         {
@@ -40,6 +41,18 @@ namespace Emberfall
             steps=SkillDamageBudgets.AdvancedSteps(heroClass,skill,rank);
             interval=SkillDamageBudgets.AdvancedInterval(heroClass,skill);
             nextEvent=SkillDamageBudgets.AdvancedFirstEvent(heroClass,skill);
+            performanceModel=owner.GetComponentInChildren<CombatModel>();
+            float visibleTime=nextEvent+(steps-1)*interval+.4f;
+            if(heroClass==HeroClass.Arcanist&&(skill==7||skill==9))
+            {
+                performance=SkillPerformanceVfx.Sustain(owner,target,(skill==7?4.8f:5.5f)*range,visibleTime,skill==7?SkillPerformanceBody.Gravity:SkillPerformanceBody.Meteor);
+                if(performance!=null&&skill==9)performance.PrepareBeat(target,nextEvent);
+            }
+            if(heroClass==HeroClass.Ranger&&skill==9)
+            {
+                performance=SkillPerformanceVfx.Sustain(owner,target,SkillDamageBudgets.RangerUltimateRadius*range,visibleTime,SkillPerformanceBody.ArrowVolley);
+                if(performance!=null)performance.PrepareBeat(target+Circle(0,SkillDamageBudgets.RangerUltimateOrbit*range),nextEvent);
+            }
             if(skill==6&&heroClass==HeroClass.Vanguard)
             {
                 owner.HealingProtection(rank);
@@ -80,6 +93,8 @@ namespace Emberfall
                 else if (heroClass == HeroClass.Vanguard) Vanguard();
                 else if (heroClass == HeroClass.Arcanist) Arcanist();
                 else Ranger();
+                if(performanceModel!=null)performanceModel.SkillPerformanceBeat(skill,castId);
+                if(performance!=null){performance.Beat();if(skill==9&&step<steps-1)performance.PrepareBeat(heroClass==HeroClass.Ranger&&step<steps-2?target+Circle((step+1)*2.4f,SkillDamageBudgets.RangerUltimateOrbit*range):target,interval);}
                 step++; nextEvent += interval;
                 }
                 finally { CombatImpactBatch.EndAction(); }
@@ -115,6 +130,7 @@ namespace Emberfall
                     Vector3 tangent = Vector3.Cross(Vector3.up,forward);
                     AdvancedSkillVfx.Beam(owner,fault-tangent*2.7f*range,fault+tangent*2.7f*range,new Color(1f,.65f,.23f),.65f,.28f);
                     AdvancedSkillVfx.FallingBlade(owner,fault,color,.5f);
+                    SkillPerformanceVfx.Sustain(owner,fault,2.6f*range,.9f,SkillPerformanceBody.Fault);
                     owner.HitArea(fault,2.6f*range,damage*SkillDamageBudgets.AdvancedImpact(heroClass,skill,rank,step),.7f,.5f,castId:castId);
                     LaunchArea(fault, 2.6f * range, .6f + rank * .12f, 1f + rank * .2f);
                     if (rank==3 && step==steps-1) Burst(fault,4f*range,damage*SkillDamageBudgets.AdvancedAuxiliary(heroClass,skill,rank),color,3,SkillVisualRecipe.Steel);
@@ -168,8 +184,9 @@ namespace Emberfall
                     if(step<steps-1)
                     {
                         Vector3 axis = Circle(step*.65f,6f*range);
-                        AdvancedSkillVfx.Beam(owner,target-axis+Vector3.up,target+axis+Vector3.up,element,.65f,.34f);
-                        AdvancedSkillVfx.Beam(owner,target+Vector3.up*10f,target,element,.65f,.24f);
+                        Color ribbon=element;ribbon.a=.22f;
+                        AdvancedSkillVfx.Beam(owner,target-axis+Vector3.up,target+axis+Vector3.up,ribbon,.65f,.34f);
+                        AdvancedSkillVfx.Beam(owner,target+Vector3.up*10f,target,ribbon,.65f,.24f);
                         FilledSkillVfx.Impact(owner,target,GameBalance.ArcanistPulseRadius*range,SkillVisualRecipes.Filled(SkillVisualRecipes.Ultimate(owner.Specialization,step,false)),element,CombatVisualPriority.ActionBody,elementalist:true);
                         owner.ElementalAdvancedArea(target,GameBalance.ArcanistPulseRadius*range,damage*SkillDamageBudgets.AdvancedImpact(heroClass,skill,rank,step),castId,false);
                     }
@@ -260,6 +277,7 @@ namespace Emberfall
                 owner.ApplySpellDodgeBoon(nearest);
                 nearest.TakeDamage(damage.Amount*SkillDamageBudgets.AdvancedImpact(heroClass,skill,rank,step),forward,.05f,.35f+rank*.15f, critical:damage.IsCritical,practiceCastId:castId);
                 if(nearest.Health<endpointHealth) {
+                ChainElectrifiedVisual.Attach(owner,nearest);
                 if(!FilledSkillVfx.IdentityContact(owner,position,Vector3.forward,.85f,new Color(.7f,.85f,1f),2,CombatVisualPriority.RealContact)) AdvancedSkillVfx.Beam(owner,previous+Vector3.up*1.1f,position+Vector3.up*1.1f,new Color(.7f,.85f,1f),.55f,.17f);
                 }
                 if(rank==3) owner.HitArea(position,1.8f*range,damage*SkillDamageBudgets.AdvancedAuxiliary(heroClass,skill,rank),0,.1f,castId:castId);
@@ -330,7 +348,7 @@ namespace Emberfall
 
         private void OnDestroy(){OnDisable();}
         private void OnDisable()
-        {if(ultimateField!=null){ultimateField.Stop();ultimateField=null;}castReceipt?.Release();castReceipt=null;if(healingAura!=null){healingAura.Stop();healingAura=null;}if(step<steps&&arrowBatch.IsValid)arrowBatch.Retire();}
+        {if(performance!=null){performance.Retire();performance=null;}if(ultimateField!=null){ultimateField.Stop();ultimateField=null;}castReceipt?.Release();castReceipt=null;if(healingAura!=null){healingAura.Stop();healingAura=null;}if(step<steps&&arrowBatch.IsValid)arrowBatch.Retire();}
         private Vector3 Clamp(Vector3 point) { return CombatSight.GroundPoint(origin,Vector3.ClampMagnitude(CombatFx.Flat(point),session.ArenaRadius-.7f)); }
         private static Vector3 Circle(float angle,float radius) { return new Vector3(Mathf.Cos(angle),0,Mathf.Sin(angle))*radius; }
     }

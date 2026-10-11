@@ -74,7 +74,7 @@ namespace Emberfall
         public void Play(CollectionPreviewAction action){motion.Play(action);state.Invalidate();}
 
         public void Rotate(float degrees){SetYaw(state.Yaw+degrees);}
-        public void SetYaw(float degrees){float old=state.Yaw;state.SetYaw(degrees);if(old!=state.Yaw)framingDirty=true;}
+        public void SetYaw(float degrees){float old=state.Yaw;state.SetYaw(degrees);if(old!=state.Yaw&&!centerOnAvatar)framingDirty=true;}
         public void SetComposition(CollectionPreviewComposition value)
         {if(((int)value<0||(int)value>2)||composition==value)return;composition=value;framingDirty=true;state.SetYaw(CollectionPreviewFraming.DefaultYaw(value));state.Invalidate();}
         public void SetViewport(float pixelWidth,float pixelHeight,bool mobile)
@@ -206,6 +206,7 @@ namespace Emberfall
                 // Keep the body centered even when a weapon or an attack pose extends sideways.
                 Vector3 center=bounds.center;float bodyX=avatar.transform.position.x;
                 Vector3 size=bounds.size;size.x+=2*Mathf.Abs(center.x-bodyX);center.x=bodyX;
+                size.z+=2*Mathf.Abs(center.z-avatar.transform.position.z);center.z=avatar.transform.position.z;
                 bounds=new Bounds(center,size);
             }
             camera.aspect=(float)texture.width/texture.height;

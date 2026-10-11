@@ -25,7 +25,7 @@ namespace Emberfall
         public static float SurfaceHeight(Vector3 point,float radius=.45f)
         {
             float height=WorldTerrain.Height(point);
-            foreach(var o in obstacles)if(ContainsTop(o,point,radius))height=Mathf.Max(height,o.Height);
+            foreach(var o in obstacles)if(ContainsTop(o,point,radius))height=Mathf.Max(height,WorldTerrain.Height(point)+o.Height);
             return height;
         }
         private static bool ClearAtHeight(Vector3 point,float radius,float height)
@@ -33,7 +33,7 @@ namespace Emberfall
             if(!Finite(point.x)||!Finite(point.z)||!Finite(height)||CombatFx.Flat(point).magnitude>arena-radius)return false;
             foreach(var o in obstacles)
             {
-                if(o.Height>0&&height>=o.Height-.015f)continue;
+                if(o.Height>0&&height>=WorldTerrain.Height(point)+o.Height-.015f)continue;
                 Vector2 d=new Vector2(point.x-o.Center.x,point.z-o.Center.y);
                 if(o.Radius>0){float clearance=o.Height>0?Mathf.Min(radius,.12f):radius;if(d.sqrMagnitude<(o.Radius+clearance)*(o.Radius+clearance))return false;}
                 else {var nearest=new Vector2(Mathf.Max(0,Mathf.Abs(d.x)-o.Half.x),Mathf.Max(0,Mathf.Abs(d.y)-o.Half.y));if(nearest.sqrMagnitude<=radius*radius)return false;}
@@ -76,13 +76,13 @@ namespace Emberfall
             float height=WorldTerrain.Height(point);
             foreach(var o in obstacles)
             {
-                if(o.Height<=0||o.Height>ceiling+.035f)continue;
+                if(o.Height<=0||WorldTerrain.Height(point)+o.Height>ceiling+.035f)continue;
                 Vector2 d=new Vector2(point.x-o.Center.x,point.z-o.Center.y);
                 float clearance=o.Radius>0?Mathf.Min(radius,.12f):radius;
                 bool overlap;
                 if(o.Radius>0)overlap=d.sqrMagnitude<(o.Radius+clearance)*(o.Radius+clearance);
                 else {var nearest=new Vector2(Mathf.Max(0,Mathf.Abs(d.x)-o.Half.x),Mathf.Max(0,Mathf.Abs(d.y)-o.Half.y));overlap=nearest.sqrMagnitude<=radius*radius;}
-                if(overlap)height=Mathf.Max(height,o.Height);
+                if(overlap)height=Mathf.Max(height,WorldTerrain.Height(point)+o.Height);
             }
             return height;
         }

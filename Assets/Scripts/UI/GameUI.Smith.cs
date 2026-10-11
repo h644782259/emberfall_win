@@ -117,24 +117,14 @@ namespace Emberfall
                     if(smithCategory==2)
                     {
                         string rerollReason=p.AffixReforgeLockReason(item.id,SmithServiceActive);
-                        float aw=Mathf.Min(MobileControls.Active?148:180,cardWidth-32),buttonHeight=MobileControls.Active?36:44;
-                        Rect reroll=new Rect((cardWidth-16-aw)*.5f*u,tile.height-(MobileControls.Active?74:90)*u,aw*u,buttonHeight*u);
-                        if(PrimaryButton(reroll,"",gold,rerollReason.Length==0,rerollReason))smithAffixQuote=p.PrepareAffixReforge(item.id,SmithServiceActive);
-                        Color rerollTint=rerollReason.Length==0?new Color(.065f,.05f,.025f):muted;
-                        Text(new Rect(reroll.x+8*u,reroll.y,reroll.width-68*u,reroll.height),"词条重铸",Mathf.RoundToInt(15*u),rerollTint,true,false,TextAnchor.MiddleCenter);
-                        Rect cost=new Rect(reroll.xMax-60*u,reroll.center.y-10*u,20*u,20*u);
-                        DrawIcon(cost,UIIconAtlas.Utility("gem"),rerollTint);
-                        Text(new Rect(cost.xMax+4*u,reroll.y,32*u,reroll.height),"×1",Mathf.RoundToInt(13*u),rerollTint,true,false,TextAnchor.MiddleLeft);
                         string reason=p.RefinementLockReason(item.id,SmithServiceActive);
-                        Rect action=new Rect((cardWidth-16-aw)*.5f*u,tile.height-(MobileControls.Active?116:142)*u,aw*u,buttonHeight*u);
-                        if(reason=="数值已满")DrawSmithMaxBadge(action,"数值已满",u);
-                        else
-                        {
-                        if(Button(action,"",gold,reason.Length==0))Feedback(p.RefineEquipment(item.id,SmithServiceActive),"洗练已保存");
-                        Text(new Rect(action.x+8*u,action.y,action.width*.5f,action.height),reason=="数值已满"?"数值已满":"洗练",Mathf.RoundToInt(13*u),reason.Length==0?gold:muted,true,false,TextAnchor.MiddleLeft);
-                        DrawIcon(new Rect(action.xMax-66*u,action.y+12*u,20*u,20*u),UIIconAtlas.Utility("gem"),GameBalance.RarityColor(Rarity.Epic));
-                        Text(new Rect(action.xMax-42*u,action.y,38*u,action.height),"×1",Mathf.RoundToInt(12*u),p.Profile.refinementStones>0?gold:new Color(1,.3f,.25f),true,false,TextAnchor.MiddleLeft);
-                        }
+                        float aw=(cardWidth-28)*.5f,buttonHeight=44;
+                        Rect action=new Rect(4*u,tile.height-68*u,aw*u,buttonHeight*u);
+                        Rect reroll=new Rect(action.xMax+4*u,action.y,aw*u,buttonHeight*u);
+                        if(SmithMaterialAction(action,reason=="数值已满"?"已满":"洗练",GameBalance.RarityColor(Rarity.Epic),u,reason.Length==0,reason))
+                            Feedback(p.RefineEquipment(item.id,SmithServiceActive),"洗练已保存");
+                        if(SmithMaterialAction(reroll,"词条重铸",GameBalance.RarityColor(Rarity.Rare),u,rerollReason.Length==0,rerollReason))
+                            smithAffixQuote=p.PrepareAffixReforge(item.id,SmithServiceActive);
                     }
                     if(smithCategory==0)
                     {
@@ -338,6 +328,16 @@ namespace Emberfall
             }
             EndTouchScroll();
         }
+        private bool SmithMaterialAction(Rect r,string caption,Color materialTint,float u,bool enabled,string reason)
+        {
+            bool clicked=DrawButton(r,"",ButtonRole.Action,enabled,reason);
+            Color textColor=enabled?pale:muted;
+            float iconSize=14*u,costWidth=36*u;
+            Text(new Rect(r.x+4*u,r.y,r.width-costWidth-8*u,r.height),caption,Mathf.RoundToInt(11*u),textColor,true,false,TextAnchor.MiddleCenter);
+            DrawIcon(new Rect(r.xMax-costWidth,r.center.y-iconSize*.5f,iconSize,iconSize),UIIconAtlas.Utility("gem"),materialTint);
+            Text(new Rect(r.xMax-costWidth+iconSize,r.y,costWidth-iconSize-3*u,r.height),"×1",Mathf.RoundToInt(10*u),textColor,true,false,TextAnchor.MiddleCenter);
+            return clicked;
+        }
         private float DrawSmithDetail(ItemData item,float width,float u,bool draw)
         {
             var p=session.Progression;float y=8;
@@ -375,16 +375,20 @@ namespace Emberfall
                         bool full=values[stat]>=maxima[stat]-.000001f;
                         Color tint=Color.Lerp(new Color(.24f,.62f,.82f),new Color(.35f,.88f,.64f),Mathf.Clamp01(progress/.8f));
                         if(progress>.8f)tint=Color.Lerp(tint,gold,(progress-.8f)/.2f);
-                        Rect row=new Rect(8*u,y*u,(width-16)*u,(MobileControls.Active?40:48)*u);Fill(row,card);
-                        Text(new Rect(row.x+6*u,row.y,row.width*.28f,28*u),labels[stat],Mathf.RoundToInt(12*u),muted);
-                        Text(new Rect(row.x+row.width*.28f,row.y,row.width*.7f,28*u),current[stat]+" / "+limits[stat]+(full?"  满":""),Mathf.RoundToInt(12*u),tint,true,false,TextAnchor.MiddleRight);
-                        Rect track=new Rect(row.x+6*u,row.y+33*u,row.width-12*u,7*u);Fill(track,new Color(.025f,.045f,.06f));
+                        Rect row=new Rect(8*u,y*u,(width-16)*u,28*u);
+                        float labelWidth=48*u;
+                        Text(new Rect(row.x,row.y,labelWidth,row.height),labels[stat],Mathf.RoundToInt(11*u),pale);
+                        Rect track=new Rect(row.x+labelWidth+4*u,row.y+2*u,row.width-labelWidth-4*u,24*u);
+                        Fill(track,new Color(.025f,.045f,.06f));
                         Fill(new Rect(track.x,track.y,track.width*progress,track.height),tint);
-                        if(full)Border(track,new Color(1,.9f,.55f),u);
-                    }y+=MobileControls.Active?44:52;
+                        Border(track,full?gold:jade*.4f,u);
+                        // A dark inset keeps light values readable over every fill amount.
+                        Rect value=new Rect(track.x+2*u,track.y+2*u,track.width-4*u,track.height-4*u);
+                        Fill(value,new Color(.012f,.025f,.035f,.84f));
+                        Text(value,current[stat]+" / "+limits[stat]+(full?" 满":""),Mathf.RoundToInt(11*u),pale,true,false,TextAnchor.MiddleCenter);
+                    }y+=32;
                 }
-
-                y+=MobileControls.Active?104:128;
+                y+=76;
             }
             else if(smithCategory==0)
             {

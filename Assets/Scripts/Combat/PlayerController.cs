@@ -1408,6 +1408,7 @@ namespace Emberfall
             Color color = GameBalance.ClassColor(HeroClass);
             // Mobile elementalist ultimate originates at the player on release, even after moving during charge.
             Vector3 target = IsMobileSelfCenteredSkill(slot)?transform.position:ResolveSkillGroundTarget(executingChargedSkill ? charge.TargetPoint : aimPoint,range,executingChargedSkill);
+            SkillCastConduit.Begin(this,model,slot,rank,castId);
             ApplyRelicProc(relicGems.SkillCast(slot),target);
             if(IsDead||session.CombatEnded)return;
             if (HeroClass == HeroClass.Summoner)

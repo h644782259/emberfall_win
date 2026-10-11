@@ -258,7 +258,7 @@ namespace Emberfall
             ReleaseTitleBackdrop();
             ReleaseChestTextures();
             ReleaseCollectionPreview();
-            if(terrainMap!=null)Destroy(terrainMap);
+            ReleaseTerrainMaps();
             if (thumbTexture != null) Destroy(thumbTexture);
             if (trackTexture != null) Destroy(trackTexture);
             for (int i = 0; i < crestTextures.Length; i++) if (crestTextures[i] != null) Destroy(crestTextures[i]);
@@ -315,7 +315,6 @@ namespace Emberfall
                 bool priorEnabled = GUI.enabled;
                 GUI.enabled = priorEnabled && panel == Panel.None && !session.InputBlocked;
                 DrawHUD();
-                DrawDungeonExitButton();
                 GUI.enabled = priorEnabled;
                 if (panel == Panel.None && !session.Paused && !session.IsDead) DrawTargetingHint();
                 if (session.Paused) DrawPause();
@@ -804,11 +803,18 @@ namespace Emberfall
 
         private void DrawHudVital(Rect rect,float fraction,Color tint,string label)
         {
-            Bar(rect,fraction,tint);
-            var textStyle=new GUIStyle(Style(12,true,false,TextAnchor.MiddleCenter));
-            textStyle.fontSize=Mathf.Min(Mathf.RoundToInt(rect.height*.58f),textStyle.fontSize);
-            textStyle.padding=new RectOffset(0,0,0,0);textStyle.normal.textColor=Color.white;
-            GUI.Label(rect,label,textStyle);
+            Fill(rect,new Color(.012f,.025f,.04f,1));
+            Color fill=Color.Lerp(new Color(.012f,.025f,.04f),tint,.72f);fill.a=1;
+            float inset=Mathf.Max(1,rect.height*.06f);
+            Fill(new Rect(rect.x+inset,rect.y+inset,(rect.width-2*inset)*Mathf.Clamp01(fraction),rect.height-2*inset),fill);
+            Border(rect,new Color(.40f,.53f,.61f),inset);
+            var textStyle=Style(MobileControls.Active?TouchFont(11):12,true,false,TextAnchor.MiddleCenter);
+            Color prior=textStyle.normal.textColor;
+            textStyle.normal.textColor=new Color(0,0,0,1);
+            float stroke=MobileControls.Active?TouchRatio:1;
+            GUI.Label(new Rect(rect.x+stroke,rect.y+stroke,rect.width,rect.height),label,textStyle);
+            textStyle.normal.textColor=Color.white;GUI.Label(rect,label,textStyle);
+            textStyle.normal.textColor=prior;
         }
         private void DrawScreenExperience()
         {
@@ -979,11 +985,12 @@ namespace Emberfall
 
         private void MapDot(Rect map, Vector3 position, Color color, float size)
         {
+            map=new Rect(map.x+3,map.y+3,map.width-6,map.height-6);
             float radius = Mathf.Max(1f, session.ArenaRadius);
             float x = map.x + map.width * Mathf.InverseLerp(-radius, radius, position.x);
             float y = map.yMax - map.height * Mathf.InverseLerp(-radius, radius, position.z);
-            Fill(new Rect(x - size * .5f - 1, y - size * .5f - 1, size + 2, size + 2), ink);
-            Fill(new Rect(x - size * .5f, y - size * .5f, size, size), color);
+            DrawMapMarker(new Rect(x-size*.5f-1,y-size*.5f-1,size+2,size+2),ink);
+            DrawMapMarker(new Rect(x-size*.5f,y-size*.5f,size,size),color);
         }
 
         private void DrawDungeonStatus()
@@ -1639,9 +1646,11 @@ namespace Emberfall
             for (int i = 0; i < tabs.Length; i++)
                 if (PauseSidebarTab(new Rect(w.x+24,w.y+110+i*54,152,48), tabs[tabOrder[i]], desktopPauseTab == tabOrder[i],1) && desktopPauseTab != tabOrder[i])
                 { desktopPauseTab = tabOrder[i]; }
-            float exitButtonWidth=(536-12)*.5f;
-            if(PrimaryButton(new Rect(w.x+212,w.yMax-70,exitButtonWidth,48),"保存并返回主菜单",jade))RequestExit(true);
-            if(PrimaryButton(new Rect(w.x+224+exitButtonWidth,w.yMax-70,exitButtonWidth,48),"保存并退出",gold))RequestExit(false);
+            int exitCount=session.InDungeon?3:2;float exitButtonWidth=(536-12*(exitCount-1))/exitCount;
+            if(session.InDungeon)DrawPauseDungeonExitButton(new Rect(w.x+212,w.yMax-70,exitButtonWidth,48));
+            float exitStart=w.x+212+(session.InDungeon?exitButtonWidth+12:0);
+            if(PrimaryButton(new Rect(exitStart,w.yMax-70,exitButtonWidth,48),session.InDungeon?"返回主菜单":"保存并返回主菜单",jade))RequestExit(true);
+            if(PrimaryButton(new Rect(exitStart+12+exitButtonWidth,w.yMax-70,exitButtonWidth,48),"保存并退出",gold))RequestExit(false);
             if(desktopPauseTab==0)
             {
                 if(PrimaryButton(new Rect(w.x+212,w.y+210,536,48),"保存",gold))RequestManualSave();

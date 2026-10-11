@@ -63,3 +63,10 @@ __pycache__/
 /Docs/Validation/WorldArt/**/*.txt
 /Docs/Validation/WorldArt/**/*.json
 /ArtSource/Review/
+
+# Generated validation captures and local review output.
+/Docs/Validation/**/*.png
+/Docs/Validation/**/*.mp4
+/Docs/Validation/**/*.log
+/Docs/Validation/**/*.json
+/Docs/Validation/**/*.txt

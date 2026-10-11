@@ -19,13 +19,51 @@ namespace Emberfall
         private static float arena = 22;
         private static int revision;
         public static int Revision {get{return revision;}}
+        private static int mapKeyRevision = int.MinValue;
+        private static string mapKey;
+        // Revision is an invalidation signal, not a map identity: a rebuilt camp
+        // has the same navigation geometry despite receiving a new revision.
+        public static string NavigationMapKey
+        {
+            get
+            {
+                if(mapKeyRevision==revision)return mapKey;
+                var key=new System.Text.StringBuilder();
+                AppendMapValue(key,arena);
+                if(river!=null){AppendMapValue(key,riverHalfWidth);AppendMapValue(key,bridge.xMin);AppendMapValue(key,bridge.yMin);AppendMapValue(key,bridge.xMax);AppendMapValue(key,bridge.yMax);}
+                key.Append('|').Append(river==null?0:river.Length);
+                if(river!=null)foreach(var point in river){AppendMapValue(key,point.x);AppendMapValue(key,point.z);}
+                key.Append('|').Append(obstacles.Count);
+                foreach(var obstacle in obstacles)
+                {AppendMapValue(key,obstacle.Center.x);AppendMapValue(key,obstacle.Center.y);AppendMapValue(key,obstacle.Half.x);AppendMapValue(key,obstacle.Half.y);AppendMapValue(key,obstacle.Radius);}
+                mapKey=key.ToString();mapKeyRevision=revision;return mapKey;
+            }
+        }
+        private static void AppendMapValue(System.Text.StringBuilder key,float value)
+        {key.Append(';').Append(value.ToString("R",System.Globalization.CultureInfo.InvariantCulture));}
+        // One solid/river traversal per pixel instead of up to three traversals.
+        public static int MapSurface(Vector3 point,float radius=.16f)
+        {
+            if(!ClearOfSolids(point,radius))return 0;
+            Vector2 p=new Vector2(point.x,point.z);
+            if(river==null||(p.x>=bridge.xMin+radius&&p.x<=bridge.xMax-radius&&p.y>=bridge.yMin&&p.y<=bridge.yMax))return 1;
+            for(int i=1;i<river.Length;i++)if(CombatFx.SegmentDistance(point,river[i-1],river[i])<riverHalfWidth+radius)return 2;
+            return 1;
+        }
         private const float Cell = .7f;
-        private const int Side = 67;
-        private const float GridOrigin = -23.1f;
+        private const int Side = 103;
+        private const float GridOrigin = -35.7f;
         public static void Reset(ZoneKind zone)
         {
             WorldTerrain.Configure(zone,-1);
             obstacles.Clear(); grids.Clear(); river = null; arena = zone == ZoneKind.Dungeon ? 18 : 22; revision++;
+        }
+        public static float ArenaRadius { get { return arena; } }
+        public static void SetArenaRadius(float radius)
+        {
+            if(!Finite(radius)||radius<18||radius>34)return;
+            if(arena==radius)return;
+            arena=radius;grids.Clear();revision++;
         }
         public static void AddCircle(Vector3 center, float radius)
         {
@@ -418,9 +456,12 @@ namespace Emberfall
     {
         public static bool ReliefEnabled=true;
         public static bool Enabled { get; private set; }
-        public static void Configure(ZoneKind zone,int hub)
+        public static bool Dungeon { get; private set; }
+        public static float Radius { get; private set; } = 18;
+        public static void Configure(ZoneKind zone,int hub,float radius=18)
         {
-            Enabled=ReliefEnabled&&zone==ZoneKind.Wilderness&&hub==0;
+            Enabled=ReliefEnabled&&(zone==ZoneKind.Dungeon||hub==0);
+            Dungeon=zone==ZoneKind.Dungeon;Radius=radius;
         }
         static float Hill(float x,float z,float cx,float cz,float radius,float height)
         {
@@ -430,7 +471,18 @@ namespace Emberfall
         public static float Height(Vector3 p)
         {
             if(!Enabled)return 0;
-            return Hill(p.x,p.z,-13,-11,7,1.25f)+Hill(p.x,p.z,16,1,5.5f,.85f)+Hill(p.x,p.z,-17,13,5,1.05f);
+            if(Dungeon)
+            {
+                float side=Mathf.Clamp01((Mathf.Abs(p.x)-3)/3);side=side*side*(3-2*side);
+                float crossing=Mathf.Clamp01((Mathf.Abs(p.z)-3.3f)/2);crossing=crossing*crossing*(3-2*crossing);
+                return side*crossing*(Hill(p.x,p.z,-Radius*.52f,-Radius*.38f,Radius*.42f,2.4f)+
+                    Hill(p.x,p.z,Radius*.48f,Radius*.42f,Radius*.40f,2.1f)+
+                    Hill(p.x,p.z,-Radius*.46f,Radius*.50f,Radius*.34f,1.4f)+
+                    Hill(p.x,p.z,Radius*.55f,-Radius*.40f,Radius*.35f,1.3f));
+            }
+            return Hill(p.x,p.z,-13,-11,7,2f)+Hill(p.x,p.z,16,1,5.5f,.85f)+Hill(p.x,p.z,-17,13,5,1.4f)+Hill(p.x,p.z,-20,-2,5,1.1f)+
+                Hill(p.x,p.z,-24,-18,7.5f,3.1f)+Hill(p.x,p.z,23,13,8,2.6f)+
+                Hill(p.x,p.z,-9,25,7,2.8f)+Hill(p.x,p.z,11,26,6.5f,1.8f)+Hill(p.x,p.z,27,-15,5,1.9f);
         }
         public static Vector3 Ground(Vector3 p,float clearance=0)
         {p.y=WorldTraversal.SurfaceHeight(p,.04f)+clearance;return p;}

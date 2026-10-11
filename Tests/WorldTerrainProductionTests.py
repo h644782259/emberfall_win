@@ -37,7 +37,15 @@ static void Main(){
  foreach(var point in boundary)Check(Math.Abs(point.y-WorldTraversal.SurfaceHeight(point)-.12f)<.001,"skill boundary follows slope");
  WorldTraversal.AddBox(new Vector3(15,0,2),new Vector2(2,1));
  Check(!WorldTraversal.HasGroundPath(start,new Vector3(15,0,4)),"slope preserves cover");
- WorldTraversal.Reset(ZoneKind.Dungeon);Check(WorldTerrain.Height(new Vector3(16,0,1))==0,"room switch clears terrain");
+ WorldTraversal.SetArenaRadius(32);Check(WorldTraversal.CanReach(new Vector3(0,0,-10),new Vector3(28,0,12)),"expanded camp outer route reachable");
+ Check(WorldTerrain.Height(new Vector3(-24,0,-18))>3,"outer camp ridge has stronger relief");
+ WorldTraversal.Reset(ZoneKind.Dungeon);WorldTraversal.SetArenaRadius(28);WorldTerrain.Configure(ZoneKind.Dungeon,0,28);
+ Check(WorldTerrain.Height(new Vector3(0,0,-16))==0&&WorldTerrain.Height(new Vector3(9,0,0))==0,"dungeon return and crossing datum remain flat");
+ Check(WorldTerrain.Height(new Vector3(-14,0,-11))>2,"expanded dungeon archive ridge rises");
+ player=WorldTraversal.NearestWalkable(new Vector3(-14,0,-14));monster=player;fall=0;
+ for(int i=0;i<180;i++){player=WorldTraversal.MovePlayer(player,new Vector3(0,0,.045f),1f/60,ref fall);monster=WorldTraversal.Move(monster,new Vector3(0,0,.045f),.65f);Check(Math.Abs(player.y-WorldTerrain.Height(player))<.001,"dungeon player ground contact");Check(Math.Abs(monster.y-WorldTerrain.Height(monster))<.001,"dungeon monster ground contact");}
+ CombatSight.FillAreaBoundary(boundary,player,3);foreach(var point in boundary)Check(Math.Abs(point.y-WorldTraversal.SurfaceHeight(point)-.12f)<.001,"dungeon skill boundary conforms to relief");
+ WorldTraversal.Reset(ZoneKind.Dungeon);
  WorldTraversal.AddPlatform(Vector3.zero,new Vector2(2.2f,1.8f),.65f);
  Check(WorldTraversal.TryResolvePlatformJump(new Vector3(0,0,-2.0f),new Vector3(0,0,1),2.5f,.45f,out target)&&target.y==.65f,"original raised platform remains reachable");
  Console.WriteLine(n+" production terrain, movement and skill contact assertions passed");}}

@@ -24,6 +24,7 @@ namespace Emberfall
         private void DrawMerchantService()
         {
             var p=session.Progression;float u=MobileControls.Active?TouchRatio:1;
+            HandleMerchantQuantityPointer(u);
             bool prior=GUI.enabled;GUI.enabled=prior&&merchantQuantityKind<0;
             var l=new MerchantServiceLayout(width/u,height/u,MobileControls.IsIPad);
             blockedRects.Add(new Rect(0,0,width,height));
@@ -101,7 +102,7 @@ namespace Emberfall
                     InspectRewardItem(new Rect(tile.x,tile.y,tile.width,96*u),new EntryRewardPreview{Key="merchant:gem:sale:"+gem.mechanic,Name=BuildCatalog.GemName(gem.mechanic),Rarity=gem.rarity,Tint=tint,Icon=UIIconAtlas.Utility("gem"),Description=GemRewardDescription(gem.mechanic,gem.rarity,gem.upgradeRank)},true);
                     string reason=p.GemSaleLock(gem.mechanic,MerchantServiceActive);
                     bool confirming=merchantGemSaleConfirmation==gem.mechanic;
-                    if(DrawButton(new Rect(tile.x+6*u,tile.y+100*u,tile.width-12*u,44*u),reason.Length>0?reason:confirming?"确认出售":"出售",ButtonRole.Primary,reason.Length==0,fontSize:Mathf.RoundToInt(15*u))&&StartMerchantAction())
+                    if(DrawButton(new Rect(tile.x+6*u,tile.y+100*u,tile.width-12*u,44*u),reason.Length>0?(gem.mounted?"已镶嵌":reason):confirming?"确认出售":"出售",ButtonRole.Primary,reason.Length==0,fontSize:Mathf.RoundToInt(15*u))&&StartMerchantAction())
                     {if(confirming){Feedback(p.SellGem(gem.mechanic,MerchantServiceActive),"宝石已出售");merchantGemSaleConfirmation=EquipmentMechanic.None;}else merchantGemSaleConfirmation=gem.mechanic;}
                     continue;
                 }
@@ -131,7 +132,7 @@ namespace Emberfall
                 if(item!=null)
                 {
                     Rect sell=new Rect(tile.x+6*u,tile.y+100*u,tile.width-12*u,44*u);
-                    bool canSell=CanSellMerchantEquipment(item);string sellCaption=canSell?"出售":item.locked?"已锁定":IsEquipped(item)?"当前穿戴":"无法出售";
+                    bool canSell=CanSellMerchantEquipment(item);string sellCaption=canSell?"出售":item.locked?"已锁定":IsEquipped(item)?"已穿戴":"无法出售";
                     if(DrawButton(sell,sellCaption,ButtonRole.Primary,canSell&&Time.unscaledTime>=merchantActionUntil,fontSize:Mathf.RoundToInt(15*u))&&StartMerchantAction())
                     {string id=item.id;RebuildBagItems();SellInventoryItem(id);}
                 }
@@ -168,24 +169,52 @@ namespace Emberfall
             merchantQuantity=1;merchantQuantityText="1";merchantQuantitySlot=session.Progression.CurrentSlotId;merchantQuantityOwner=session.Progression;merchantQuantityFingerprint=merchantQuantityOwner.BuildStateFingerprint();
             entryRewardSelection=entryRewardHoverKey=null;entryRewardPopupVisible=false;
         }
+        private int MerchantQuantityMaximum()
+        {
+            var p=session.Progression;
+            return Mathf.Max(1,merchantQuantityKind==0?Mathf.Min(99-p.Profile.potions,p.Profile.gold/ProgressionService.PotionPrice):
+                merchantQuantityKind==1?Mathf.Min(999999-p.Profile.refinementStones,p.Profile.gold/ProgressionService.RefinementStonePrice):
+                merchantQuantityKind==2?Mathf.Min(999999-p.Profile.affixReforgeStones,p.Profile.gold/ProgressionService.AffixReforgeStonePrice):1);
+        }
+        private Rect MerchantQuantityBox(float u)
+        {float w=Mathf.Min(420*u,width-24*u),h=260*u;return new Rect((width-w)*.5f,(height-h)*.5f,w,h);}
+        private void SetMerchantQuantity(int value)
+        {
+            merchantQuantity=Mathf.Clamp(value,1,MerchantQuantityMaximum());merchantQuantityText=merchantQuantity.ToString();
+            GUI.FocusControl(null);GUIUtility.keyboardControl=0;
+        }
+        private void HandleMerchantQuantityPointer(float u)
+        {
+            // Claim the overlay press before the underlying shop scroll view sees it.
+            var e=Event.current;
+            if(merchantQuantityKind<0||!GUI.enabled||e.type!=EventType.MouseDown||e.button!=0)return;
+            Rect box=MerchantQuantityBox(u);float y=box.y+66*u;Vector2 pointer=e.mousePosition;
+            if(new Rect(box.x+16*u,y,44*u,44*u).Contains(pointer))SetMerchantQuantity(merchantQuantity-1);
+            else if(new Rect(box.xMax-60*u,y,44*u,44*u).Contains(pointer))SetMerchantQuantity(merchantQuantity+1);
+            else if(new Rect(box.x+16*u,y+52*u,80*u,36*u).Contains(pointer))SetMerchantQuantity(MerchantQuantityMaximum());
+            else return;
+            GUIUtility.hotControl=0;e.Use();
+        }
         private void DrawMerchantQuantity(float u)
         {
             if(merchantQuantityKind<0)return;var p=session.Progression;
             bool fresh=p==merchantQuantityOwner&&p.CurrentSlotId==merchantQuantitySlot&&p.BuildStateFingerprint()==merchantQuantityFingerprint;
-            int maximum=merchantQuantityKind==0?Mathf.Min(99-p.Profile.potions,p.Profile.gold/ProgressionService.PotionPrice):
-                merchantQuantityKind==1?Mathf.Min(999999-p.Profile.refinementStones,p.Profile.gold/ProgressionService.RefinementStonePrice):
-                merchantQuantityKind==2?Mathf.Min(999999-p.Profile.affixReforgeStones,p.Profile.gold/ProgressionService.AffixReforgeStonePrice):1;
-            maximum=Mathf.Max(1,maximum);
-            float w=Mathf.Min(420*u,width-24*u),h=260*u;Rect box=new Rect((width-w)*.5f,(height-h)*.5f,w,h);
+            int maximum=MerchantQuantityMaximum();
+            Rect box=MerchantQuantityBox(u);float w=box.width;
             blockedRects.Add(box);Fill(box,ink);Border(box,gold);
             Text(new Rect(box.x+16*u,box.y+12*u,w-76*u,32*u),merchantQuantityName,Mathf.RoundToInt(17*u),gold,true);
             if(PopupCloseButton(new Rect(box.xMax-48*u,box.y+8*u,44*u,36*u))){merchantQuantityKind=-1;return;}
             float rowY=box.y+66*u;
-            if(Button(new Rect(box.x+16*u,rowY,44*u,44*u),"−",jade,merchantQuantity>1)){merchantQuantity--;merchantQuantityText=merchantQuantity.ToString();}
-            merchantQuantityText=GUI.TextField(new Rect(box.x+68*u,rowY,w-136*u,44*u),merchantQuantityText,7);
+            if(Button(new Rect(box.x+16*u,rowY,44*u,44*u),"−",jade,merchantQuantity>1))SetMerchantQuantity(merchantQuantity-1);
+            Rect number=new Rect(box.x+68*u,rowY,w-136*u,44*u);
+            Surface(number,new Color(.008f,.018f,.028f));SurfaceFrame(number,jade*.4f);
+            var numberStyle=new GUIStyle(Style(Mathf.RoundToInt(24*u),true,false));
+            numberStyle.alignment=TextAnchor.MiddleCenter;numberStyle.normal.textColor=pale;
+            numberStyle.padding=new RectOffset(4,4,0,0);
+            merchantQuantityText=GUI.TextField(number,merchantQuantityText,7,numberStyle);
             int parsed;bool validInput=int.TryParse(merchantQuantityText,out parsed)&&parsed>=1&&parsed<=maximum;if(validInput)merchantQuantity=parsed;
-            if(Button(new Rect(box.xMax-60*u,rowY,44*u,44*u),"+",jade,merchantQuantity<maximum)){merchantQuantity++;merchantQuantityText=merchantQuantity.ToString();}
-            if(Button(new Rect(box.x+16*u,rowY+52*u,80*u,36*u),"最大",jade)){merchantQuantity=maximum;merchantQuantityText=maximum.ToString();}
+            if(Button(new Rect(box.xMax-60*u,rowY,44*u,44*u),"+",jade,merchantQuantity<maximum))SetMerchantQuantity(merchantQuantity+1);
+            if(Button(new Rect(box.x+16*u,rowY+52*u,80*u,36*u),"最大",jade))SetMerchantQuantity(maximum);
             Text(new Rect(box.x+104*u,rowY+52*u,w-120*u,36*u),"数量 "+merchantQuantity+" / "+maximum,Mathf.RoundToInt(13*u),pale,false,false,TextAnchor.MiddleRight);
             validInput=int.TryParse(merchantQuantityText,out parsed)&&parsed>=1&&parsed<=maximum;
             var quote=!fresh||!validInput?null:merchantQuantityKind==2?p.PrepareAffixReforgePurchase(MerchantServiceActive,merchantQuantity):merchantQuantityKind==1?p.PrepareRefinementPurchase(MerchantServiceActive,merchantQuantity):p.PrepareMerchantPurchase(merchantQuantityMechanic,MerchantServiceActive,merchantQuantityRarity,merchantQuantity);

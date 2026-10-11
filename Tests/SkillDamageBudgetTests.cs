@@ -57,6 +57,23 @@ public static class SkillDamageBudgetTests
    Check(Near(SkillDamageBudgets.FlameRideTick/SkillDamageBudgets.FlameRideInterval,1.3f),"nonstacking flame ride active DPS");
   }
   for(int rank=1;rank<=3;rank++){int steps=SkillDamageBudgets.AdvancedSteps(HeroClass.Ranger,9,rank);float budget=0;for(int hit=0;hit<steps;hit++)budget+=SkillDamageBudgets.AdvancedImpact(HeroClass.Ranger,9,rank,hit);Check(budget>=((steps-1)*1.35f+8.5f)*1.4f,"ranger ultimate gains at least forty percent damage at every rank");}
+  // Longer choreography must redistribute time, never increase the committed hit budget.
+  float[,] priorUltimate={{19f,21.2f,23.4f},{20f,22.2f,24.4f},{28f,30f,32f}};
+  int heroIndex=0;
+  foreach(HeroClass hero in new[]{HeroClass.Vanguard,HeroClass.Arcanist,HeroClass.Ranger})
+  {
+   for(int rank=1;rank<=3;rank++)
+   {
+    int beats=SkillDamageBudgets.AdvancedSteps(hero,9,rank);float total=0;
+    for(int beat=0;beat<beats;beat++)total+=SkillDamageBudgets.AdvancedImpact(hero,9,rank,beat);
+    Check(Near(total,priorUltimate[heroIndex,rank-1]),"extended ultimate preserves every rank's prior total");
+    float span=SkillDamageBudgets.AdvancedFirstEvent(hero,9)+(beats-1)*SkillDamageBudgets.AdvancedInterval(hero,9);
+    Check(span>=2.5f,"ultimate stages remain perceptible rather than compressed into one burst");
+   }
+   heroIndex++;
+  }
+  Check(SkillDamageBudgets.AdvancedSteps(HeroClass.Arcanist,4,3)==1,"chain remains a fast release with a separate electric after-current");
+  Check(SkillDamageBudgets.AdvancedFirstEvent(HeroClass.Arcanist,7)+(SkillDamageBudgets.AdvancedSteps(HeroClass.Arcanist,7,3)-1)*SkillDamageBudgets.AdvancedInterval(HeroClass.Arcanist,7)>=6,"black hole sustains pull for a readable duration");
   return "PASS: "+checks+" per-skill coefficient and shared-volley budget assertions";
  }
 }

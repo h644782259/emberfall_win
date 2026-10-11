@@ -16,8 +16,8 @@ namespace Emberfall
         public bool IsDead { get; private set; }
         public int DungeonWave { get; private set; }
         public int DungeonTier { get; private set; } = 1;
-        public int TotalWaves { get { return ChapterActive?ChapterDefinition.RoomCount(ActiveChapterNode):RoomChainRun!=null?5:3; } }
-        public float ArenaRadius { get { return InDungeon ? 18f : 22f; } }
+        public int TotalWaves { get { return ChapterActive?ChapterDefinition.RoomCount(ActiveChapterNode):RoomChainRun!=null?5:ModeRun!=null?3:EncounterPlan.FinalWave; } }
+        public float ArenaRadius { get { return InDungeon?DungeonLayout<2?28f:18f:CurrentHub==0?32f:22f; } }
         public bool DungeonCleared { get; private set; }
         public int PendingLootCount { get { return pendingLoot.Count; } }
         public string ZoneName { get { return InDungeon ? ModeName + (ChapterActive?(ActiveChapterDifficulty==ChapterDifficulty.Heroic?" · 第 "+DungeonTier+" 阶":""):" · Lv"+AdventureRewardRules.DungeonLevel(DungeonTier)) : HubTravelRules.Name(CurrentHub); } }
@@ -63,6 +63,7 @@ namespace Emberfall
         private readonly SaveLifecycleGate lifecycleSave=new SaveLifecycleGate();
         private float portalHintTimer;
         private Coroutine waveRoutine;
+        private Coroutine wildernessPopulationRoutine;
         private readonly List<GameObject> transientObjects = new List<GameObject>();
         private sealed class PendingLoot
         {
@@ -226,7 +227,7 @@ namespace Emberfall
             Paused = true;
             uiBlocking = true;
             changingZone = true;
-            StopAllCoroutines(); waveRoutine = null;
+            StopAllCoroutines(); waveRoutine = null; wildernessPopulationRoutine = null;
             foreach (PendingLoot loot in pendingLoot.Values)
                 if (loot.Pickup != null) loot.Pickup.Retire();
             pendingLoot.Clear(); collectedGroundLoot.Clear();
@@ -298,10 +299,10 @@ namespace Emberfall
             if (!InDungeon && CurrentHub==0)
             {
                 respawnTimer -= Time.deltaTime;
-                if (respawnTimer <= 0 && Enemies.Count < Mathf.Min(22,14+Progression.Profile.level/8))
+                if (respawnTimer <= 0 && Enemies.Count < Mathf.Min(36,26+Progression.Profile.level/8))
                 {
                     SpawnWildernessEnemy();
-                    respawnTimer = 4f;
+                    respawnTimer = 1.8f;
                 }
                 portalHintTimer -= Time.deltaTime;
                 if (!MobileControls.Active && NearPortal() && portalHintTimer <= 0) { Notify("沉星遗迹传送门 · 按 T 开始副本挑战"); portalHintTimer = 16f; }
@@ -428,14 +429,29 @@ namespace Emberfall
             }
             else
             {
-                if(CurrentHub==0)for (int i = 0; i < Mathf.Min(20,12+Progression.Profile.level/8); i++) SpawnWildernessEnemy();
-                respawnTimer = 8;
+                if(CurrentHub==0)wildernessPopulationRoutine=StartCoroutine(PopulateWilderness(world,Mathf.Min(32,24+Progression.Profile.level/8)));
+                respawnTimer = 2.5f;
             }
             changingZone = false;
             // Reset removed terminal chapter/mode gates. Reconcile only after the
             // saved transition and new world are complete, preserving every other pause gate.
             UpdateTimeScale();
             return true;
+        }
+
+        private System.Collections.IEnumerator PopulateWilderness(GameObject owner,int count)
+        {
+            // Safe spawn runs navigation searches. Let the new world and its map
+            // render first, then populate distant creatures one per frame.
+            yield return null;
+            for(int i=0;i<count*3&&Enemies.Count<count;i++)
+            {
+                while((Paused||uiBlocking||PracticeActive||pauseState.BackgroundPaused)&&world==owner&&HasStarted&&!InDungeon)yield return null;
+                if(world!=owner||!HasStarted||InDungeon||CurrentHub!=0)break;
+                SpawnWildernessEnemy();
+                yield return null;
+            }
+            wildernessPopulationRoutine=null;
         }
 
         private void SpawnWildernessEnemy()
@@ -446,7 +462,8 @@ namespace Emberfall
             if (pendingLoot.Count > 0) return;
             for(int attempt=0;attempt<20;attempt++)
             {
-                Vector3 desired=new Vector3(Random.Range(-16f,16f),0,Random.Range(-3f,16f));
+                Vector3 desired=new Vector3(Random.Range(-28f,28f),0,Random.Range(-21f,28f));
+                if(desired.z<-8&&Mathf.Abs(desired.x)<10)continue;
                 Vector3 position;
                 if(!TrySafeSpawn(desired,.6f,8f,out position))continue;
                 EnemyKind kind=position.z>7&&Progression.Profile.level>=3?(Random.value<.4f?EnemyKind.Guardian:EnemyKind.Wisp):
@@ -486,7 +503,8 @@ namespace Emberfall
                 if(reservedPosition.HasValue&&Vector3.Distance(candidate,reservedPosition.Value)<reservedClearance)continue;
                 // This deliberately requires a clear traversable approach; it rejects
                 // unreachable river banks and sealed pockets, not just visible ground.
-                if(WorldTraversal.FindPath(candidate,InDungeon?Vector3.zero:new Vector3(0,0,-10),radius).Count==0)continue;
+                Vector3 approach=InDungeon?Vector3.zero:new Vector3(0,0,-10);
+                if(!WorldTraversal.HasGroundPath(candidate,approach,radius)&&WorldTraversal.FindPath(candidate,approach,radius).Count==0)continue;
                 bool crowded=false;
                 foreach(EnemyController enemy in Enemies)if(enemy!=null&&!enemy.IsDead&&Vector3.Distance(candidate,enemy.transform.position)<radius+enemy.NavigationRadius+1.1f){crowded=true;break;}
                 if(crowded)continue;
@@ -659,7 +677,7 @@ namespace Emberfall
             if (!alreadySaved && !SaveBeforeLeaving()) return false;
             SuspendInputs();
             StopAllCoroutines();
-            waveRoutine = null;
+            waveRoutine = null; wildernessPopulationRoutine = null;
             HasStarted = false;
             Paused = false;
             uiBlocking = false;

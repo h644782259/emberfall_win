@@ -15,11 +15,11 @@ namespace Emberfall
     public static class EncounterPlan
     {
         public const int MaximumSimultaneous = 14;
-        public const int MaximumWavePopulation = 24;
-        public const int FinalWave = 3;
+        public const int MaximumWavePopulation = 32;
+        public const int FinalWave = 5;
         public const float MinimumSpacing = 1.8f;
         public const float EntranceExclusion = 7f;
-        public const float SpawnRadius = 15f;
+        public const float SpawnRadius = 24f;
 
         private struct Generator
         {
@@ -53,12 +53,12 @@ namespace Emberfall
             bool narrow = (layout & 1) != 0;
             bool final = wave == FinalWave;
             int tierBonus = Math.Min(5, (tier - 1) / 2);
-            int ordinary = final ? 8 + random.Next(3)
-                : Math.Max(16, Math.Min(MaximumWavePopulation, 16 + random.Next(4) + tierBonus + (wave > 1 ? 1 : 0) - (narrow ? 1 : 0)));
+            int ordinary = final ? 14 + random.Next(3)
+                : Math.Max(26, Math.Min(MaximumWavePopulation, 26 + random.Next(4) + tierBonus + (wave > 1 ? 1 : 0) - (narrow ? 1 : 0)));
             var result = new List<EncounterSpawn>(ordinary + (final ? 1 : 0));
             if (final)
             {
-                float bossX = random.Range(-2.2f, 2.2f), bossZ = random.Range(7.2f, 9.3f);
+                float bossX = random.Range(-2.2f, 2.2f), bossZ = random.Range(15.2f, 18.3f);
                 result.Add(new EncounterSpawn { Kind = EnemyKind.Guardian, X = bossX, Z = bossZ, Boss = true });
             }
             int group = 0, inGroup = 0, groupSize = 0;
@@ -73,13 +73,14 @@ namespace Emberfall
                 }
                 float anchorX, anchorZ;
                 Anchor(archetype, group - 1, narrow, final, mirror, out anchorX, out anchorZ);
+                anchorX*=1.65f;anchorZ*=1.65f;
                 EnemyKind kind;
                 if (final && index < 3) kind = new[] { EnemyKind.Goblin, EnemyKind.Wisp, EnemyKind.Slime }[index];
                 else if (!final && index < 4) kind = new[] { EnemyKind.Guardian, EnemyKind.Wisp, EnemyKind.Goblin, EnemyKind.Slime }[index];
                 else kind = RollKind(archetype, ref random);
                 float x = 0, z = 0;
                 bool found = false;
-                float spread = narrow ? 1.55f : 2.75f;
+                float spread = narrow ? 2.2f : 4.0f;
                 for (int attempt = 0; attempt < 64; attempt++)
                 {
                     x = anchorX + random.Range(-spread, spread);
@@ -90,12 +91,12 @@ namespace Emberfall
                 {
                     // A finite lattice is a deterministic safety net, not a discarded
                     // monster or an overlap. Its 2.25m cells exceed our separation bound.
-                    int offset = random.Next(130);
-                    for (int cell = 0; cell < 130; cell++)
+                    int offset = random.Next(221);
+                    for (int cell = 0; cell < 221; cell++)
                     {
-                        int candidate = (cell + offset) % 130;
-                        x = (candidate % 13 - 6) * 2.25f;
-                        z = -3f + (candidate / 13) * 1.8f;
+                        int candidate = (cell + offset) % 221;
+                        x = (candidate % 17 - 8) * 2.5f;
+                        z = -8f + (candidate / 17) * 2.5f;
                         if (Safe(x, z, result)) { found = true; break; }
                     }
                 }

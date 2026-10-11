@@ -55,7 +55,7 @@ namespace Emberfall
         {
             Mesh mesh = new Mesh { name = name, vertices = data.Vertices, normals = data.Normals,
                 uv = data.Uv, triangles = data.Triangles };
-            mesh.RecalculateBounds();
+            mesh.RecalculateTangents();mesh.RecalculateBounds();
             return mesh;
         }
 

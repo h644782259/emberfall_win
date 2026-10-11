@@ -19,6 +19,7 @@ namespace Emberfall
         private int epoch, cancelledFrame = -1, completedFrame = -1;
         private float duration, elapsed;
         private AdvancedSkillVfx chargeEffect;
+        private SkillCastConduit weaponFocus;
 
         public void Initialize(PlayerController hero, GameSession game) { owner = hero; session = game; }
 
@@ -45,8 +46,9 @@ namespace Emberfall
             duration = chargeTime;
             elapsed = 0;
             SkillIndex = skill;
-            chargeEffect = AdvancedSkillVfx.Rune(owner, owner.HeroClass==HeroClass.Arcanist&&skill==9?TargetPoint:origin, owner.HeroClass==HeroClass.Arcanist&&skill==9?GameBalance.ArcanistFinaleRadius*GameBalance.SkillRangeMultiplier(rank):1.35f, GameBalance.ClassColor(owner.HeroClass), chargeTime + .2f, 2, true, skill==6&&owner.HeroClass==HeroClass.Vanguard?4:owner.HeroClass==HeroClass.Vanguard?1:owner.HeroClass==HeroClass.Summoner?3:owner.HeroClass==HeroClass.Arcanist&&skill==4?2:0);
-            if (chargeEffect != null) chargeEffect.transform.localScale = Vector3.one * (owner.HeroClass==HeroClass.Arcanist&&skill==9?1f:.65f);
+            weaponFocus=SkillCastConduit.BeginCharge(owner,owner.GetComponentInChildren<CombatModel>(),chargeTime+.2f);
+            chargeEffect = AdvancedSkillVfx.Rune(owner, origin, 1.35f, GameBalance.ClassColor(owner.HeroClass), chargeTime + .2f, 2, true, skill==6&&owner.HeroClass==HeroClass.Vanguard?4:owner.HeroClass==HeroClass.Vanguard?1:owner.HeroClass==HeroClass.Summoner?3:owner.HeroClass==HeroClass.Arcanist&&skill==4?2:0);
+            if (chargeEffect != null) chargeEffect.transform.localScale = Vector3.one * .65f;
             return true;
         }
 
@@ -73,7 +75,8 @@ namespace Emberfall
             { Cancel(); return; }
             if (session.InputBlocked || deltaTime <= 0 || float.IsNaN(deltaTime) || float.IsInfinity(deltaTime)) return;
             elapsed += deltaTime;
-            if (chargeEffect != null) chargeEffect.transform.localScale = Vector3.one * (owner.HeroClass==HeroClass.Arcanist&&SkillIndex==9?1f:Mathf.Lerp(.65f, 1.2f, Progress));
+            if(weaponFocus!=null)weaponFocus.ChargeProgress(Progress);
+            if (chargeEffect != null) chargeEffect.transform.localScale = Vector3.one * Mathf.Lerp(.65f, 1.2f, Progress);
             if (elapsed < duration) return;
             int skill = SkillIndex;
             SkillIndex = -1;
@@ -99,6 +102,7 @@ namespace Emberfall
 
         private void ClearEffect()
         {
+            if(weaponFocus!=null){weaponFocus.Retire();weaponFocus=null;}
             if (chargeEffect == null) return;
             chargeEffect.gameObject.SetActive(false);
             Destroy(chargeEffect.gameObject);

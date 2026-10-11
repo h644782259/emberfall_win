@@ -123,7 +123,7 @@ namespace Emberfall
             return 1;
         }
         public static float AdvancedInterval(HeroClass hero,int skill)
-        {if(skill==6)return 1;if(hero==HeroClass.Vanguard)return skill==7?.18f:skill==9?.4f:.2f;if(hero==HeroClass.Arcanist)return skill==7||skill==9?.45f:.2f;return skill==7?.12f:skill==9?.25f:.2f;}
+        {if(skill==6)return 1;if(hero==HeroClass.Vanguard)return skill==7?.27f:skill==9?.48f:.2f;if(hero==HeroClass.Arcanist)return skill==7?.55f:skill==9?.65f:.2f;return skill==7?.18f:skill==9?.42f:.2f;}
         public static float AdvancedFirstEvent(HeroClass hero,int skill)
         {return skill==6?1:hero==HeroClass.Vanguard&&skill==9?.15f:skill==9?.6f:hero==HeroClass.Arcanist&&skill==7?.3f:0;}
         public static float ChargeSeconds(HeroClass hero,int skill)

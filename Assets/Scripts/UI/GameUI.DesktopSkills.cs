@@ -19,9 +19,9 @@ namespace Emberfall
             Fill(r, card);
             Fill(new Rect(r.x, r.y, r.width, 3), accent);
             DrawSkillIdentity(new Rect(r.x+18,r.y+15,48,48),p.heroClass,skill,rank,rank>0,48);
-            Text(new Rect(r.x + 78, r.y + 15, 490, 35), GameBalance.SkillName(p.heroClass, skill), 27, pale, true);
-            SkillStateTag(new Rect(r.x+78,r.y+52,54,24),passive?"被动":"主动",accent,12);
-            SkillStateTag(new Rect(r.x+140,r.y+52,70,24),GameBalance.CategoryName(category),jade,12);
+            Text(new Rect(r.x + 78, r.y + 15, r.width-230, 35), GameBalance.SkillName(p.heroClass, skill), 27, pale, true);
+            SkillStateTag(new Rect(r.xMax-150,r.y+20,54,24),passive?"被动":"主动",accent,12);
+            SkillStateTag(new Rect(r.xMax-88,r.y+20,70,24),GameBalance.CategoryName(category),jade,12);
             if (desktopDetailSkill != skill) { desktopDetailSkill=skill; desktopDetailScroll=Vector2.zero; }
             string description=BuildCatalog.VenomSkillOverride(p,skill,rank);
             if(description.Length==0)description=GameBalance.SkillDescription(p.heroClass,skill);

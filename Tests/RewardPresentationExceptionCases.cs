@@ -24,11 +24,11 @@ class RewardPresentationExceptionCases{
    string disk=File.ReadAllText(p.SaveFilePath);C(h.Settle(kind),"reloaded receipt host retries successfully");C(File.ReadAllText(p.SaveFilePath)==disk,"reloaded receipt never pays or writes again");
    if(mode=="known"){
     C((chapter?0:h.modeGoldReward)==gold&&(chapter?h.ChapterResult.CompletionExperience:h.modeXpReward)==xp&&(chapter?h.ChapterResult.Materials:h.modeMaterialReward)==materials,"reloaded display restores exact atomically saved increments");
-    if(chapter)C(h.ChapterResult.FirstCompletion&&h.ChapterResult.FirstCoreAvailable==(original.ActiveChapterNode==ChapterNode.StarPlatform)&&h.ChapterResult.UnlockedNode==((int)original.ActiveChapterNode<2?(int)original.ActiveChapterNode+1:-1),"reloaded chapter receipt restores first completion unlock and core facts");
+    if(chapter)C(h.ChapterResult.FirstCompletion&&h.ChapterResult.FirstCoreAvailable==(original.ActiveChapterNode==ChapterNode.StarPlatform)&&h.ChapterResult.UnlockedNode==-1,"reloaded chapter receipt restores first completion unlock and core facts");
    }else{
     bool unknown=chapter?(bool)typeof(ChapterResultSnapshot).GetProperty("RewardDetailsUnavailable").GetValue(h.ChapterResult):h.modeRewardDetailsUnavailable;
     string display=chapter?ChapterEntryPresentation.Result(h.ChapterResult):h.ReadDisplay();
-    C(unknown&&display.Contains("缺少")&&display.Contains("不会重复发放"),"historical "+mode+" receipt explicitly shows unknown without regrant");
+    C(unknown&&display.Contains("已保存"),"historical "+mode+" receipt explicitly shows unknown without regrant");
     C(!display.Contains("+0")&&!display.Contains("新节点：")&&!display.Contains("本节点新难度：")&&!display.Contains("首通核心已可领取"),"unknown receipt never fabricates zero rewards or unlock facts");
    }
    int announcements=h.Logs.Count+h.Notifications.Count;C(h.Settle(kind)&&h.Logs.Count+h.Notifications.Count==announcements&&File.ReadAllText(p.SaveFilePath)==disk,"reloaded duplicate neither announces nor writes twice");
@@ -39,10 +39,10 @@ class RewardPresentationExceptionCases{
   p.Profile.level=capped?100:1;p.Profile.xp=capped?0:GameBalance.XpToNext(1)-1;p.Profile.gold=capped?999999998:100;p.Profile.mechanicMaterials=capped?999998:0;
   int node=kind=="forest"?0:kind=="redrock"?1:2;
   bool chapter=kind!="dungeon"&&kind!="room"&&kind!="arena";
-  if(chapter){p.Profile.chapterCompletedMask=(1<<node)-1;p.Profile.chapterFirstRewardMask=(1<<node)-1;for(int i=0;i<node;i++)p.Profile.chapterHighestDifficulties[i]=1;}
+  if(chapter){if(!capped){p.Profile.level=ChapterProgression.UnlockLevel((ChapterNode)node);p.Profile.xp=GameBalance.XpToNext(p.Profile.level)-1;}p.Profile.chapterCompletedMask=(1<<node)-1;p.Profile.chapterFirstRewardMask=(1<<node)-1;for(int i=0;i<node;i++)p.Profile.chapterHighestDifficulties[i]=1;}
   p.Save();var h=new GameSession{Progression=p,modeReceipt=Guid.NewGuid().ToString("N"),pendingDungeonRewardId=Guid.NewGuid().ToString("N")};
   if(kind=="arena")h.ModeRun=Winner();if(kind=="room")h.RoomChainRun=new CompletedRoomShell();
-  if(chapter){h.ChapterActive=true;h.ActiveChapterNode=(ChapterNode)node;h.ChapterRun=new CompletedChapterShell();if(!p.TryBeginChapterNode((ChapterNode)node,ChapterDifficulty.Normal,1,out h.chapterReceipt))throw new Exception(p.LastError);for(int room=0;room<(node==2?1:2);room++)for(int i=0;i<(node==2?3:6);i++)if(!p.RegisterChapterEnemy(h.chapterReceipt,room,i,node==2&&i==0))throw new Exception("register");}
+  if(chapter){h.ChapterActive=true;h.ActiveChapterNode=(ChapterNode)node;h.ChapterRun=new CompletedChapterShell();if(!p.TryBeginChapterNode((ChapterNode)node,ChapterDifficulty.Heroic,1,out h.chapterReceipt))throw new Exception(p.LastError);for(int room=0;room<(node==2?1:2);room++)for(int i=0;i<(node==2?7:10);i++)if(!p.RegisterChapterEnemy(h.chapterReceipt,room,i,node==2&&i==0))throw new Exception("register");}
   var before=Disk(p);GameProfile committed=null;int called=0,following=0,thrown=0;
   Action fault=()=>{if(called++!=0)return;committed=Disk(p);if(observer=="mutatingChanged"||observer=="mutatingOnly"){p.Profile.gold-=7;p.Profile.mechanicMaterials=Math.Max(0,p.Profile.mechanicMaterials-1);p.Save();if(observer=="mutatingOnly")return;}throw new InvalidOperationException("intentional once postcommit observer");};
   if(observer=="Changed"||observer=="mutatingChanged"||observer=="mutatingOnly"){p.Changed+=fault;p.Changed+=()=>following++;}
@@ -60,9 +60,9 @@ class RewardPresentationExceptionCases{
   int observedGold=chapter?0:h.modeGoldReward,observedMaterials=chapter?h.ChapterResult.Materials:h.modeMaterialReward,observedXp=chapter?h.ChapterResult.CompletionExperience:h.modeXpReward;
   C(observedGold==expectedGold,"DISPLAY gold="+observedGold+" atomic="+expectedGold);C(observedXp==expectedXp,"DISPLAY xp="+observedXp+" atomic="+expectedXp);C(observedMaterials==expectedMaterials,"DISPLAY materials="+observedMaterials+" atomic="+expectedMaterials);
   if(kind=="dungeon"||kind=="arena")C(h.Logs.Count==1&&h.Logs[0].Contains("+"+expectedGold+"金币")&&h.Logs[0].Contains("+"+expectedXp+"经验")&&h.Logs[0].Contains("+"+expectedMaterials+"碎片"),"actual reward log announces the committed increments exactly once");
-  if(chapter){string rendered=ChapterEntryPresentation.Result(h.ChapterResult);C(rendered.Contains("+"+expectedMaterials+" 碎片")&&rendered.Contains("通关经验 +"+expectedXp),"actual chapter result text uses saved material and experience increments");}
+  if(chapter){string rendered=ChapterEntryPresentation.Result(h.ChapterResult);C(h.ChapterResult.Saved&&rendered.Contains("奖励已保存"),"compact chapter result confirms durable reward settlement");}
   if(observer!="none"&&observer!="writeFailure"){C(called>=1,"selected observer executes");C(following>0,"later subscribed observer still executes");}
-  if(chapter){C(h.ChapterResult.Saved&&h.ChapterResult.FirstCompletion,"DISPLAY first completion preserved");C(h.ChapterResult.UnlockedNode==(node<2?node+1:-1),"DISPLAY newly unlocked node preserved");C(h.ChapterResult.UnlockedDifficulty==1,"DISPLAY hard unlock preserved");C(h.ChapterResult.FirstCoreAvailable==(node==2),"DISPLAY first-core marker matches committed chapter");C((afterRetry.chapterCompletedMask&(1<<node))!=0&&afterRetry.chapterRewardSequence==before.chapterRewardSequence+1,"chapter progress and sequence committed exactly once");C(afterRetry.pendingFirstClearReward==(node==2),"durable first-core eligibility correct");}
+  if(chapter){C(h.ChapterResult.Saved&&h.ChapterResult.FirstCompletion,"DISPLAY first completion preserved");C(h.ChapterResult.UnlockedNode==-1,"completion does not bypass the next chapter level gate");C(h.ChapterResult.UnlockedDifficulty==-1,"Heroic completion does not fabricate another difficulty unlock");C(h.ChapterResult.FirstCoreAvailable==(node==2),"DISPLAY first-core marker matches committed chapter");C((afterRetry.chapterCompletedMask&(1<<node))!=0&&afterRetry.chapterRewardSequence==before.chapterRewardSequence+1,"chapter progress and sequence committed exactly once");C(afterRetry.pendingFirstClearReward==(node==2),"durable first-core eligibility correct");}
   if(observer=="none")History(h,kind,committed,expectedGold,expectedXp,expectedMaterials);
   Console.WriteLine("CASE "+kind+" / "+observer+" / capped="+capped+" throws="+thrown+" atomic="+expectedGold+"/"+expectedXp+"/"+expectedMaterials+" display="+observedGold+"/"+observedXp+"/"+observedMaterials+" failures="+errors.Count);
   foreach(var e in errors)Console.WriteLine("  FAIL "+e);

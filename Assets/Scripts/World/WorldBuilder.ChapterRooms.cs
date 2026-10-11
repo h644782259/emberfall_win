@@ -20,8 +20,7 @@ namespace Emberfall
                 Primitive(parent,forest?"Root island solid":mine?"Forked mine retaining block":"Star spoke pedestal",obstacle.Radius>0?PrimitiveType.Cylinder:PrimitiveType.Cube,obstacle.Center+Vector3.up*obstacle.Height*.5f,scale,structure,cameraOccluder:true);
                 if(forest)
                 {
-                    Material leaves=r.Material(new Color(.19f,.38f,.28f),false,VisualSurface.Foliage);
-                    Primitive(parent,"Forest island canopy",PrimitiveType.Sphere,obstacle.Center+Vector3.up*(obstacle.Height+1.1f),new Vector3(obstacle.Radius*2.2f,1.6f,obstacle.Radius*2),leaves,cameraOccluder:true);
+                    BuildBranchTree(parent,r,obstacle.Center+Vector3.up*obstacle.Height,Mathf.Clamp(obstacle.Radius*.48f,.75f,1.65f),197+Mathf.RoundToInt(obstacle.Center.x*13+obstacle.Center.z*31));
                 }
                 else if(!mine)
                 {

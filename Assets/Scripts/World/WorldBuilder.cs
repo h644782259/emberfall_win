@@ -9,10 +9,13 @@ namespace Emberfall
         public static GameObject Build(ZoneKind zone, int dungeonLayout = 0, int campProgress = 0, int hub = 0, int chapterSeed = 0)
         {
             WorldTraversal.Reset(zone);
-            WorldTerrain.Configure(zone,hub);
+            WorldTraversal.SetArenaRadius(zone==ZoneKind.Dungeon?(dungeonLayout<2?28:18):hub==0?32:22);
+            WorldTerrain.Configure(zone,hub,WorldTraversal.ArenaRadius);
             Shader.SetGlobalFloat("_EmberTerrainEnabled",WorldTerrain.Enabled?1:0);
+            Shader.SetGlobalFloat("_EmberTerrainDungeon",WorldTerrain.Dungeon?1:0);
+            Shader.SetGlobalFloat("_EmberTerrainRadius",WorldTerrain.Radius);
             GameObject root = new GameObject(zone == ZoneKind.Wilderness ? "Windwhisper Fields" : "Fallen Star Sanctum");
-            WorldResources resources = root.AddComponent<WorldResources>();
+            WorldResources resources = root.AddComponent<WorldResources>();resources.TerrainFollowing=true;
             bool dungeon = zone == ZoneKind.Dungeon;
             RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Trilight;
             RenderSettings.ambientSkyColor = dungeon ? new Color(.27f,.32f,.48f) : new Color(.52f,.62f,.72f);
@@ -31,8 +34,8 @@ namespace Emberfall
             light.color = dungeon ? new Color(.64f, .72f, 1) : new Color(1, .88f, .66f);
             light.intensity = dungeon ? 1.1f : 1.35f;
             light.shadows = LightShadows.Soft;
-            light.shadowStrength = .65f;
-            light.shadowBias = .045f; light.shadowNormalBias = .2f;
+            light.shadowStrength = .55f;
+            light.shadowBias = .025f; light.shadowNormalBias = .12f;
             GameObject fill = new GameObject("Cool silhouette fill");
             fill.transform.SetParent(root.transform, false);
             fill.transform.rotation = Quaternion.Euler(25f,145f,0);
@@ -40,11 +43,13 @@ namespace Emberfall
             rim.color = dungeon ? new Color(.34f,.43f,.8f) : new Color(.44f,.65f,.77f);
             rim.intensity = dungeon ? .28f : .32f; rim.shadows = LightShadows.None;
             ApplyEnvironmentLighting(dungeon,hub,light,rim);
-            if (dungeon) { if(ChapterRoomGeometry.IsChapterLayout(dungeonLayout))BuildChapterRoom(root.transform,resources,ChapterRoomGeometry.FromLayout(dungeonLayout,chapterSeed));else if(dungeonLayout>=20)BuildTacticalRoom(root.transform,resources,dungeonLayout);else if(dungeonLayout>=10)BuildLinkedRoom(root.transform,resources,dungeonLayout-10);else if(dungeonLayout>=2)BuildChallengeArena(root.transform,resources,dungeonLayout-2);else BuildDungeon(root.transform, resources, dungeonLayout); } else { if(hub==0){BuildWilderness(root.transform, resources); BuildCampFacilities(root.transform, resources, campProgress);BuildHubNpcs(root.transform,resources);}else BuildTown(root.transform,resources,hub); }
+            if (dungeon) { if(ChapterRoomGeometry.IsChapterLayout(dungeonLayout))BuildChapterRoom(root.transform,resources,ChapterRoomGeometry.FromLayout(dungeonLayout,chapterSeed));else if(dungeonLayout>=20)BuildTacticalRoom(root.transform,resources,dungeonLayout);else if(dungeonLayout>=10)BuildLinkedRoom(root.transform,resources,dungeonLayout-10);else if(dungeonLayout>=2)BuildChallengeArena(root.transform,resources,dungeonLayout-2);else BuildDungeon(root.transform, resources, dungeonLayout); } else { if(hub==0){BuildWilderness(root.transform, resources);BuildOuterWilderness(root.transform,resources); BuildCampFacilities(root.transform, resources, campProgress);BuildHubNpcs(root.transform,resources);}else BuildTown(root.transform,resources,hub); }
+            if(dungeon)BuildDungeonNaturalScenery(root.transform,resources,dungeonLayout);
             if(!dungeon){BuildHubLightPools(root.transform,hub);BuildClimbableProps(root.transform,resources);BuildTravelStation(root.transform,resources,hub);}
             if(SurfaceTextureLibrary.Enabled&&!dungeon&&hub==0)BuildMeadowDetail(root.transform,resources);
+            if(SurfaceTextureLibrary.Enabled)BuildNaturalGroundDetail(root.transform,resources,dungeon,hub);
             foreach(var renderer in root.GetComponentsInChildren<MeshRenderer>())
-            {var bounds=renderer.localBounds;Vector3 scale=renderer.transform.lossyScale;bounds.Expand(new Vector3(3/Mathf.Max(.01f,Mathf.Abs(scale.x)),3/Mathf.Max(.01f,Mathf.Abs(scale.y)),3/Mathf.Max(.01f,Mathf.Abs(scale.z))));renderer.localBounds=bounds;}
+            {var bounds=renderer.localBounds;Vector3 scale=renderer.transform.lossyScale;bounds.Expand(new Vector3(3/Mathf.Max(.01f,Mathf.Abs(scale.x)),8/Mathf.Max(.01f,Mathf.Abs(scale.y)),3/Mathf.Max(.01f,Mathf.Abs(scale.z))));renderer.localBounds=bounds;}
             if(dungeon)BuildBreakablePockets(root.transform,dungeonLayout);
             return root;
         }
@@ -57,14 +62,14 @@ namespace Emberfall
             Material edge = r.Material(new Color(.22f, .29f, .3f));
             Material gold = r.Material(new Color(.76f, .57f, .28f));
             Material jade = r.Material(new Color(.24f, .91f, .77f), true);
-            Primitive(parent, "Floating island", PrimitiveType.Cylinder, new Vector3(0, -1.4f, 0), new Vector3(49, 1.15f, 49), darkRock);
-            Primitive(parent, "Moss rim", PrimitiveType.Cylinder, new Vector3(0, -.45f, 0), new Vector3(48, .35f, 48), edge);
+            Primitive(parent, "Floating island", PrimitiveType.Cylinder, new Vector3(0, -1.4f, 0), new Vector3(71, 1.15f, 71), darkRock);
+            Primitive(parent, "Moss rim", PrimitiveType.Cylinder, new Vector3(0, -.45f, 0), new Vector3(70, .35f, 70), edge);
             // Ground traversal and raised blockers share the same authored layout.
             Vector2[] coast = new Vector2[20];
             for (int i = 0; i < coast.Length; i++)
             {
                 float a = i * Mathf.PI * 2 / coast.Length;
-                float radius = 25.7f + Mathf.Sin(i * 2.1f) * 1.1f + Mathf.Cos(i * .8f) * .9f;
+                float radius = 35.7f + Mathf.Sin(i * 2.1f) * 1.1f + Mathf.Cos(i * .8f) * .9f;
                 coast[i] = new Vector2(Mathf.Cos(a) * radius, Mathf.Sin(a) * radius);
             }
             Surface(parent, r, "Irregular meadow shoreline", coast, 0, grass);
@@ -77,6 +82,7 @@ namespace Emberfall
             Material sunGrass = r.Material(new Color(.30f, .39f, .265f),false,VisualSurface.Foliage);
             ApplyMeadowTexture(grass);ApplyMeadowTexture(forestFloor);ApplyMeadowTexture(sunGrass);
             Material earth = r.Material(new Color(.40f, .355f, .255f));
+            NaturalWorldMaterial.Trail(earth);
             Material wornStone = r.Material(new Color(.39f, .43f, .39f));
             Surface(woodland, r, "Forest floor", new[] { new Vector2(-24,-10), new Vector2(-11,-15), new Vector2(-7,-8), new Vector2(-8,5), new Vector2(-13,16), new Vector2(-24,9) }, .009f, forestFloor);
             Surface(parent, r, "Sunlit eastern clearing", new[] { new Vector2(5,-17), new Vector2(15,-16), new Vector2(23,-8), new Vector2(21,5), new Vector2(11,8), new Vector2(4,1) }, .011f, sunGrass);
@@ -85,7 +91,7 @@ namespace Emberfall
             Ribbon(parent, r, "Caravan road", mainRoad, 3.5f, .022f, earth);
             Ribbon(woodland, r, "Woodland branch path", new[] { new Vector3(0,0,-9), new Vector3(-7,0,-7), new Vector3(-12,0,-2), new Vector3(-14,0,6), new Vector3(-20,0,14) }, 1.9f, .026f, earth);
             Ribbon(ruins, r, "Courtyard branch path", new[] { new Vector3(1,0,4), new Vector3(7,0,7), new Vector3(13,0,12), new Vector3(11,0,21) }, 2.2f, .029f, stone);
-            Vector3[] stream = { new Vector3(-25,0,5), new Vector3(-18,0,4), new Vector3(-11,0,2), new Vector3(-5,0,.5f), new Vector3(0,0,-1), new Vector3(7,0,-2), new Vector3(14,0,-5), new Vector3(22,0,-7), new Vector3(26,0,-10) };
+            Vector3[] stream = { new Vector3(-37,0,5), new Vector3(-18,0,4), new Vector3(-11,0,2), new Vector3(-5,0,.5f), new Vector3(0,0,-1), new Vector3(7,0,-2), new Vector3(14,0,-5), new Vector3(22,0,-7), new Vector3(37,0,-10) };
             WorldTraversal.SetRiver(stream, 2.4f, new Rect(-1.9f, -3.9f, 3.8f, 5.8f));
             Ribbon(lowland, r, "Pebble stream banks", stream, 3.4f, .032f, r.Material(new Color(.40f,.46f,.41f)));
             BuildWaterSurface(lowland,r,"Brook water",stream,2.4f,.038f,WaterEnvironment.Brook);
@@ -200,6 +206,8 @@ namespace Emberfall
 
         private static void BuildDungeon(Transform parent, WorldResources r, int layout)
         {
+            Transform original=parent;
+            parent=Region(parent,"Expanded cathedral grounds");parent.localScale=new Vector3(1.5f,1,1.5f);
             Material baseStone = r.Material(new Color(.095f, .11f, .17f));
             Material slab = r.Material(new Color(.21f, .23f, .31f));
             Material border = r.Material(new Color(.31f, .31f, .42f));
@@ -221,8 +229,7 @@ namespace Emberfall
             Primitive(west, "Archive corridor floor", PrimitiveType.Cube, new Vector3(-12,.014f,0), new Vector3(10.5f,.022f,24), westStone);
             Primitive(east, "Crystal corridor floor", PrimitiveType.Cube, new Vector3(12,.016f,0), new Vector3(10.5f,.024f,24), eastStone);
             Primitive(nave, "Crossing transept", PrimitiveType.Cube, new Vector3(0,.033f,1), new Vector3(34,.018f,5.8f), border);
-            // Floor slabs, flush stairs and colored inlays define navigable rooms
-            // without pretending the planar controller can climb raised geometry.
+            // Dense paving follows the same smooth terrain as movement and skill contact.
             for (int z = -7; z <= 5; z++)
                 for (int x = -1; x <= 1; x++)
                 {
@@ -244,7 +251,7 @@ namespace Emberfall
                 Vector3 barricade = layout % 2 == 0 ? new Vector3(side*10.5f,0,-7.5f) : new Vector3(side*5f,0,-1.5f);
                 Vector2 barrierSize = layout % 2 == 0 ? new Vector2(4.2f,.9f) : new Vector2(.9f,5.5f);
                 Primitive(gallery, "Collapsed gallery partition", PrimitiveType.Cube, barricade + Vector3.up*.65f, new Vector3(barrierSize.x,1.3f,barrierSize.y), border,cameraOccluder:true);
-                WorldTraversal.AddBox(barricade, barrierSize);
+                WorldTraversal.AddBox(barricade*1.5f, barrierSize*1.5f);
                 for (int i = 0; i < 5; i++)
                 {
                     Vector3 p = new Vector3(side*20.3f,0,-12+i*6);
@@ -288,7 +295,7 @@ namespace Emberfall
                 Primitive(parent, "Lost wall", PrimitiveType.Cube, new Vector3(x, 2.8f, 26), new Vector3(5.5f, 5.6f + i % 2, .7f), baseStone,cameraOccluder:true);
             }
             Label(parent, "THE FALLEN SANCTUM", "沉星遗迹", new Vector3(0,.075f,-7), .12f, new Color(.46f,.55f,.72f), true);
-            Portal(parent, r, new Vector3(0, 0, -16), r.Material(new Color(.58f,.38f,.94f), true));
+            Portal(original, r, new Vector3(0, 0, -16), r.Material(new Color(.58f,.38f,.94f), true));
             PointLight(parent, new Vector3(-9,4,1), new Color(.18f,.48f,1), 2, 17);
             PointLight(parent, new Vector3(9,4,7), new Color(.7f,.25f,1), 1.8f, 16);
         }
@@ -321,7 +328,7 @@ namespace Emberfall
                 triangles.Add(area >= 0 ? (i + 1) % outline.Length + 1 : i + 1);
                 triangles.Add(area >= 0 ? i + 1 : (i + 1) % outline.Length + 1);
             }
-            return Geometry(parent, r, name, vertices, triangles, material);
+            return Geometry(parent, r, name, vertices, triangles, material,true);
         }
 
         private static void Skirt(Transform parent, WorldResources r, string name, Vector2[] outline, float bottom, Material material)
@@ -344,8 +351,19 @@ namespace Emberfall
 
         private static void Ribbon(Transform parent, WorldResources r, string name, Vector3[] path, float width, float height, Material material)
         {
+            if(WorldTerrain.Enabled&&height<=.12f)
+            {
+                var samples=new List<Vector3>();samples.Add(path[0]);
+                for(int segment=1;segment<path.Length;segment++)
+                {
+                    int steps=Mathf.Max(1,Mathf.CeilToInt(Vector3.Distance(path[segment-1],path[segment])/.7f));
+                    for(int sample=1;sample<=steps;sample++)samples.Add(Vector3.Lerp(path[segment-1],path[segment],sample/(float)steps));
+                }
+                path=samples.ToArray();
+            }
             var vertices = new List<Vector3>();
             var triangles = new List<int>();
+            var uv = new List<Vector2>();float distance=0;
             for (int i = 0; i < path.Length; i++)
             {
                 Vector3 normal;float miter;RibbonSection(path,i,out normal,out miter);
@@ -353,19 +371,23 @@ namespace Emberfall
                 Vector3 point = path[i]; point.y = height;
                 vertices.Add(point + normal * halfWidth);
                 vertices.Add(point - normal * halfWidth);
+                if(i>0)distance+=(path[i]-path[i-1]).magnitude;
+                uv.Add(new Vector2(0,distance));uv.Add(new Vector2(1,distance));
                 if (i == path.Length-1) continue;
                 int start = i * 2;
                 triangles.Add(start); triangles.Add(start+2); triangles.Add(start+1);
                 triangles.Add(start+1); triangles.Add(start+2); triangles.Add(start+3);
             }
-            Geometry(parent, r, name, vertices, triangles, material);
+            var ribbon=Geometry(parent, r, name, vertices, triangles, material);
+            ribbon.GetComponent<MeshFilter>().sharedMesh.SetUVs(0,uv);
         }
 
-        private static GameObject Geometry(Transform parent, WorldResources r, string name, List<Vector3> vertices, List<int> triangles, Material material)
+        private static GameObject Geometry(Transform parent, WorldResources r, string name, List<Vector3> vertices, List<int> triangles, Material material,bool ground=false)
         {
-            if(WorldTerrain.Enabled&&(name=="Irregular meadow shoreline"||name=="Forest floor"||name=="Sunlit eastern clearing"))
+            if(ground&&WorldTerrain.Enabled&&vertices.TrueForAll(v=>v.y>=-.10f&&v.y<=.12f))
                 SubdivideGround(ref vertices,ref triangles);
             Mesh mesh = new Mesh { name = name };
+            if(vertices.Count>65535)mesh.indexFormat=UnityEngine.Rendering.IndexFormat.UInt32;
             mesh.SetVertices(vertices);
             mesh.SetTriangles(triangles, 0);
             mesh.RecalculateNormals();
@@ -381,13 +403,13 @@ namespace Emberfall
 
         private static void Tree(Transform parent, WorldResources r, Vector3 p, float size, int seed)
         {
-            if (p.sqrMagnitude < 22f*22f) WorldTraversal.AddCircle(p, .22f);
+            if (p.sqrMagnitude < WorldTraversal.ArenaRadius*WorldTraversal.ArenaRadius) WorldTraversal.AddCircle(p, .22f);
             BuildBranchTree(parent, r, p, size, seed);
         }
 
         private static void Rock(Transform parent, WorldResources r, Vector3 p, float scale, int seed)
         {
-            if (p.y >= -.1f && p.sqrMagnitude < 22f*22f) WorldTraversal.AddCircle(p, scale * .82f);
+            if (p.y >= -.1f && p.sqrMagnitude < WorldTraversal.ArenaRadius*WorldTraversal.ArenaRadius) WorldTraversal.AddCircle(p, scale * .82f);
             GameObject rock = Primitive(parent, "Weathered rock", PrimitiveType.Cube, p + Vector3.up * scale * .35f,
                 new Vector3(scale * 1.3f, scale, scale * .9f), r.Material(seed % 2 == 0 ? new Color(.28f,.34f,.37f) : new Color(.32f,.4f,.39f)));
             if(scale>=1)CameraOcclusionSurface.Mark(rock);
@@ -483,6 +505,14 @@ namespace Emberfall
 
         private static GameObject Primitive(Transform parent,string name,PrimitiveType type,Vector3 p,Vector3 scale,Material material,bool cameraOccluder=false)
         {
+            WorldResources resources=parent.GetComponentInParent<WorldResources>();
+            if(WorldTerrain.Enabled&&resources!=null&&p.y<.10f&&type==PrimitiveType.Cube&&scale.y<=.12f&&scale.x>1&&scale.z>1)
+                return Surface(parent,resources,name,new[]{new Vector2(p.x-scale.x*.5f,p.z-scale.z*.5f),new Vector2(p.x+scale.x*.5f,p.z-scale.z*.5f),new Vector2(p.x+scale.x*.5f,p.z+scale.z*.5f),new Vector2(p.x-scale.x*.5f,p.z+scale.z*.5f)},p.y+scale.y*.5f,material);
+            if(WorldTerrain.Enabled&&resources!=null&&type==PrimitiveType.Cylinder&&scale.x>=30&&p.y+scale.y>=-.05f&&p.y+scale.y<=.1f)
+            {
+                var coast=new Vector2[40];for(int i=0;i<coast.Length;i++){float a=i*Mathf.PI*2/coast.Length;coast[i]=new Vector2(p.x+Mathf.Cos(a)*scale.x*.5f,p.z+Mathf.Sin(a)*scale.z*.5f);}
+                var floor=Surface(parent,resources,name,coast,p.y+scale.y+.003f,material);Skirt(parent,resources,name+" edges",coast,p.y-scale.y,material);return floor;
+            }
             GameObject go=ProceduralVisuals.Create(name,type,material);
             AuthoredFixedScenery.Apply(go,name,type);
             go.transform.SetParent(parent,false); go.transform.localPosition=p; go.transform.localScale=scale;
@@ -549,6 +579,7 @@ namespace Emberfall
 
     public sealed class WorldResources : MonoBehaviour
     {
+        public bool TerrainFollowing;
         private readonly Dictionary<string,Material> materials=new Dictionary<string,Material>();
         private readonly List<Mesh> meshes=new List<Mesh>();
         public Material Material(Color color,bool emissive=false) { return Material(color,emissive,VisualSurface.Stone); }
@@ -561,12 +592,15 @@ namespace Emberfall
             if(shader==null)shader=Shader.Find("Standard");
             if(shader==null) shader=Shader.Find("Sprites/Default");
             material=new Material(shader); material.color=color;
+            if(material.HasProperty("_TerrainFollow"))material.SetFloat("_TerrainFollow",TerrainFollowing?1:0);
             ProceduralVisuals.ApplySurface(material,emissive?VisualSurface.Crystal:surface);
             if(material.HasProperty("_GrainScale"))
             {
                 material.SetFloat("_GrainScale",surface==VisualSurface.Stone?.42f:surface==VisualSurface.Wood?1.3f:3f);
                 material.SetFloat("_GrainStrength",emissive?0:surface==VisualSurface.Stone?.65f:.35f);
             }
+            NaturalWorldMaterial.Apply(material,surface,emissive);
+            if(surface==VisualSurface.Water&&material.HasProperty("_WaterSurface"))material.SetFloat("_WaterSurface",1);
             if(emissive && material.HasProperty("_EmissionColor")) material.SetColor("_EmissionColor",color*.8f);
             materials.Add(key,material); return material;
         }
