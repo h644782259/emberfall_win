@@ -1,5 +1,0 @@
-
-Unhandled exception. System.Exception: managed lookup loop allocated 24624 bytes; this is not a Unity frame measurement
-   at EquipmentLookupTests.Check(Boolean value, String message) in /workspace/scratch/blender-upgrade/win-e-review-accept/Tests/EquipmentLookupTests.cs:line 9
-   at EquipmentLookupTests.Run(String directory) in /workspace/scratch/blender-upgrade/win-e-review-accept/Tests/EquipmentLookupTests.cs:line 53
-   at Program.Main(String[] args) in /tmp/EmberfallCloudValidation-49heq8gv/equipment-lookups/Program.cs:line 1

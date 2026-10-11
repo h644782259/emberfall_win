@@ -1,7 +1,0 @@
-# Complete preliminary combined run — fixture failures and evidence-write side effect
-
-Windows `13ffda9bc711a51a16261dd77bdf55234b21610e` / iOS `f1aa2787458bc343550d024e1d303bd082b12404`. **231/233 passed**. Two compile failures: status-feedback-production lacks ReturningCounterVariant boundary; skill-identity-callsite-production lacks restrictedHealing local. Three explicit pinned API compilations passed.
-
-The cloud runner reports sourceChangedDuringRun=[] for its CS/Python/script scope. The additional complete tracked-input audit found a real test side effect: DefenseIdentityProductionTests writes ArtSource/DefenseIdentity/Runtime-Samples.json, replacing historical dimensions with current output. Before/after/diff are retained. Eight .ps1 byte differences are expected CRLF checkout conversion explicitly declared by Git attributes, not test changes. The final test repair must use temporary output by default and preserve an explicit evidence-export argument. The new freeze will record on-disk input hashes before/after in addition to canonical Git blob manifests.
-
-Actual combined body/protection, real Vanguard death/recovery, restricted healing, Returning Counter/mobile/desktop/persistence, camp drafts, death pending loot, enabled scenery and all other registered checks passed. This aggregate nevertheless failed and is NOT final acceptance. Original failures and complete raw logs are retained. Tests-only repairs and a new complete exact-tree run are required; production is unchanged. No Unity/device acceptance.

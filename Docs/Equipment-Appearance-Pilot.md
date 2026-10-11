@@ -1,9 +1,0 @@
-# Equipment appearance preview pilot
-
-Optional “外观比较” is available from desktop and touch equipment details. Current/candidate is a toggle in one reused CollectionModelPreview (one stage/camera/RenderTexture), not two simultaneous renderers. Candidate receives ProgressionService.PreviewEquippedItem, preserving slot reinforcement. Other equipped slots and actual wings/weapon fashion remain unchanged. The interface explicitly states when weapon fashion overrides the equipment silhouette. No equip, fashion mutation or save operation is called by this surface.
-
-Both views use the same yaw, game-unit camera target, fixed orthographic extent and static idle sample. Combat/detail distance is user-controlled and shared between views. The isolated model still uses CombatModel.Hero and its normal appearance methods; the Blender pilot's unsupported equipment/fashion path must retain its procedural fallback. No claim that a base-only Blender outfit represents an equipped candidate.
-
-Entry/result chapter scrolling is independent. A new ChapterRun identity resets result scroll once; save retries retain it. Desktop icons keep the same 32-pixel footprint and location through status changes, with a reserved lower caption strip.
-
-Validation: actual equipment UI method compiled against explicit GUI/render/progression doubles; compiled raw-item negative control; existing real progression preview tests remain the inheritance oracle. Chapter actual UI/core replay includes new-run/reset/save-retry scrolling and compiled shared-scroll negative control. Actual DrawHotbar replay checks identical icon geometry under opportunity, cooldown and rejection, including an old variable-size negative control. Runtime C# compiles against cached Unity 2021.3 reference APIs only. Unity 6 rendering, clipping across all cosmetics/aspect ratios, touch usability and device performance remain unverified.

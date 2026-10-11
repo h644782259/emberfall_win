@@ -1,3 +1,0 @@
-PASS: 21 actual Enemy/Projectile Update pause-boundary checks (managed substitutes, not Unity execution)
-PASS: old-enemy compiled and failed exact runtime assertion: blocked ordinary windup must stay unchanged
-PASS: old-projectile compiled and failed exact runtime assertion: blocked projectile must keep position and lifetime

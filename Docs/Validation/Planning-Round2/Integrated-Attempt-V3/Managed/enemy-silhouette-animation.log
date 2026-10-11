@@ -1,9 +1,0 @@
-/tmp/enemy-f2-animation-vuirgtbv/Fields.cs(8,71): error CS0246: The type or namespace name 'ThreatAdmissionPolicy' could not be found (are you missing a using directive or an assembly reference?) [/tmp/enemy-f2-animation-vuirgtbv/Test.csproj]
-
-The build failed. Fix the build errors and run again.
-Traceback (most recent call last):
-  File "/workspace/scratch/planning-round2/validation-v3/Tests/EnemySilhouetteAnimationTests.py", line 20, in <module>
-    subprocess.run([dotnet,'run','--project',str(project),'--',str(output)],env=dict(os.environ,DOTNET_CLI_HOME=str(p/'cli'),DOTNET_NOLOGO='1'),check=True)
-  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 571, in run
-    raise CalledProcessError(retcode, process.args,
-subprocess.CalledProcessError: Command '['/workspace/shared/emberfall-tools/dotnet/dotnet', 'run', '--project', '/tmp/enemy-f2-animation-vuirgtbv/Test.csproj', '--', '/tmp/enemy-knockdown-geometry.json']' returned non-zero exit status 1.

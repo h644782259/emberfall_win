@@ -1,4 +1,0 @@
-Read-only baseline check fce5efc4361614aed3eca070ed2574b7d7204a8e
-Required old source-contract needle: TierRewardRules.ChestGoldMinimum(candidate.pendingChestTier)
-Present in baseline production: False
-This failure predates both Round3 commits; no chest production code modified.

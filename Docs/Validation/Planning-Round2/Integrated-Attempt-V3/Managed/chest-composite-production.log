@@ -1,2 +1,0 @@
-PASS: 97 real GUI drawing/cache samples, exact ownership and opaque-alpha oracle
-PASS: old double-alpha composition negative control fails the opacity oracle

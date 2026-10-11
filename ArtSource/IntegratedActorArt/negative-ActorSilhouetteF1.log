@@ -1,6 +1,0 @@
-/tmp/integrated-final-art/export/ActorSilhouetteF1.cs(36,20): warning CS0162: Unreachable code detected [/tmp/integrated-final-art/export/Export.csproj]
-/tmp/integrated-final-art/export/Motion.cs(1,202): warning CS0414: The field 'CombatModel.pilotCharging' is assigned but its value is never used [/tmp/integrated-final-art/export/Export.csproj]
-Unhandled exception. System.Exception: F1 hero visible
-   at Program.Check(Boolean ok, String why) in /tmp/integrated-final-art/export/Exporter.cs:line 3
-   at Emberfall.CombatModel.IntegratedSequence(Action`2 check) in /tmp/integrated-final-art/export/Motion.cs:line 418
-   at Program.Main() in /tmp/integrated-final-art/export/Exporter.cs:line 11

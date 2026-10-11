@@ -1,2 +1,0 @@
-PASS: 552 actual compact preview draw/control geometry assertions; managed GUI rectangles, not rendered pixels
-PASS: overlay control and wrong native framing compiled mutations fail exact production UI assertions

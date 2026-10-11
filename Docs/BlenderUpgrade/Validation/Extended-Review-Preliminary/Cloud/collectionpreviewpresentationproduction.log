@@ -1,4 +1,0 @@
-PASS: 1334 production preview lifecycle checks (managed resource fixture, not Unity rendering)
-PASS: 14981 collection surface/composition/motion rules (not rendered UI or native lifecycle)
-PASS: four compiled imported-group/presentation-action/cached-envelope negative controls fail exact host assertions
-PASS: missing hierarchy cache notification rejected by actual preview host

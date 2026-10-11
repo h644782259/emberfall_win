@@ -1,6 +1,0 @@
-未能将“E:\emberfall_win\Tests\TestResults\Temp\guard-return-g2rqlla2\cli\.dotnet\tools”添加到 PATH 环境变量。请将此目录添加到 PATH，以使用通过 "dotnet tool install" 安装的工具。
-E:\emberfall_win\Tests\TestResults\Temp\guard-return-g2rqlla2\GuardReturnFixture.cs(17,124): warning CS0169: 从不使用字段“EnemyController.attackAnimation” [E:\emberfall_win\Tests\TestResults\Temp\guard-return-g2rqlla2\Test.csproj]
-E:\emberfall_win\Tests\TestResults\Temp\guard-return-g2rqlla2\GuardReturnFixture.cs(17,42): warning CS0169: 从不使用字段“EnemyController.mobileFirst” [E:\emberfall_win\Tests\TestResults\Temp\guard-return-g2rqlla2\Test.csproj]
-E:\emberfall_win\Tests\TestResults\Temp\guard-return-g2rqlla2\GuardReturnFixture.cs(17,54): warning CS0169: 从不使用字段“EnemyController.mobileSecond” [E:\emberfall_win\Tests\TestResults\Temp\guard-return-g2rqlla2\Test.csproj]
-PASS: 132 production guard movement-budget and committed-warning checks
-PASS: old elapsed-time/pre-warning-return mutation fails the exact committed-warning assertion

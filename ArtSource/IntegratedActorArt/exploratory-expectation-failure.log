@@ -1,6 +1,0 @@
-Reproduction of exploratory test expectation failure: walking inertia retained, but expected contact assumes zero cosmetic inertia. Production source unchanged. This is a fixture baseline error, not an asset defect.
-/tmp/integrated-final-art/export/Motion.cs(1,202): warning CS0414: The field 'CombatModel.pilotCharging' is assigned but its value is never used [/tmp/integrated-final-art/export/Export.csproj]
-Unhandled exception. System.Exception: real Vanguard authored contact
-   at Program.Check(Boolean ok, String why) in /tmp/integrated-final-art/export/Exporter.cs:line 3
-   at Emberfall.CombatModel.IntegratedSequence(Action`2 check) in /tmp/integrated-final-art/export/Motion.cs:line 422
-   at Program.Main() in /tmp/integrated-final-art/export/Exporter.cs:line 11

@@ -1,7 +1,0 @@
-Traceback (most recent call last):
-  File "/workspace/scratch/planning-round3/core/Tests/BalanceIntegrationSourceTests.py", line 24, in <module>
-    check('masteryCore.BasicHit()' in p and 'masteryCore.SkillSpent(' in p and 'masteryCore.DamageTaken(' in p and 'masteryCore.PerfectDodge()' in p,'four cores have distinct actual combat triggers')
-  File "/workspace/scratch/planning-round3/core/Tests/BalanceIntegrationSourceTests.py", line 7, in check
-    if not ok:raise AssertionError(label)
-              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-AssertionError: four cores have distinct actual combat triggers

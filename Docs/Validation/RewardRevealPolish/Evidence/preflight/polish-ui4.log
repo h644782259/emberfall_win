@@ -1,8 +1,0 @@
-/workspace/emberfall_win_polish/Tests/RewardPolishUIBoundary.cs(18,137): warning CS0649: Field 'GameUI.jade' is never assigned to, and will always have its default value [/tmp/single-chest-ui-k1ylopje/project/Validation.csproj]
-/workspace/emberfall_win_polish/Tests/RewardPolishUIBoundary.cs(18,142): warning CS0649: Field 'GameUI.pale' is never assigned to, and will always have its default value [/tmp/single-chest-ui-k1ylopje/project/Validation.csproj]
-/workspace/emberfall_win_polish/Tests/RewardPolishUIBoundary.cs(18,147): warning CS0649: Field 'GameUI.muted' is never assigned to, and will always have its default value [/tmp/single-chest-ui-k1ylopje/project/Validation.csproj]
-/workspace/emberfall_win_polish/Tests/RewardPolishUIBoundary.cs(18,132): warning CS0649: Field 'GameUI.gold' is never assigned to, and will always have its default value [/tmp/single-chest-ui-k1ylopje/project/Validation.csproj]
-PASS 304 actual mobile result geometry and reward-moment input/model/resource/audio policy assertions; managed rendering/audio boundaries
-PASS compiled reward-polish UI negative: actual compact mobile result reserves readable model height
-PASS compiled reward-polish UI negative: skip consumes pointer before underlying panel
-PASS compiled reward-polish UI negative: actual desktop/mobile first acquisition and duplicate completion use distinct audio

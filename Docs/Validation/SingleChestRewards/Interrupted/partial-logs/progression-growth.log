@@ -1,6 +1,0 @@
-
-Unhandled exception. System.Exception: next real clear grants next earned band
-   at ProgressionGrowthTests.Check(Boolean value, String message) in /workspace/emberfall_win_rewards/Tests/ProgressionGrowthTests.cs:line 11
-   at ProgressionGrowthTests.TierAndClear(String root) in /workspace/emberfall_win_rewards/Tests/ProgressionGrowthTests.cs:line 162
-   at ProgressionGrowthTests.Run(String directory) in /workspace/emberfall_win_rewards/Tests/ProgressionGrowthTests.cs:line 23
-   at Program.Main(String[] args) in /tmp/EmberfallCloudValidation-3flxeaek/progression-growth/Program.cs:line 1

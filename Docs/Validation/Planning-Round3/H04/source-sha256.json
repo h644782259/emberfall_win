@@ -1,8 +1,0 @@
-{
-  "Assets/Scripts/Combat/CombatModel.StatusAnchors.cs": "026c144266b4f9afd441c271e5dc71a12792765686a626b7e6d36ac06c4cebec",
-  "Assets/Scripts/Combat/CombatModel.StatusAnchors.cs.meta": "2376f16110d7fcb2717b986186c4266bd116f712d83014e95791cc034f676b4b",
-  "Assets/Scripts/Combat/EnemyStatusVisual.cs": "6198784b041acfff6d964ea6750960a1c78656707139e8a9256ffddca6a8ad48",
-  "Tests/EnemyStatusAnchorProductionTests.cs": "3c0161467db439321f3aa1d75038b1fae36d964e1334dad7b3f37258bdf971cc",
-  "Tests/EnemyStatusAnchorProductionTests.py": "2ec556b051935fc3d4bd89ccb767508ff479d899c46d763371095d936a3d46b0",
-  "Tests/EnemyStatusVisualProductionTests.cs": "26f2bdea1f4e85d576ed4dd0057623a2f3d72a361cc9239c80aea6f93c9fd64a"
-}

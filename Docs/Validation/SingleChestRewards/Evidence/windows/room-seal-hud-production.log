@@ -1,4 +1,0 @@
-PASS: 1085 actual room HUD Draw/rectangle/state assertions; managed UI recorder, not Unity/font screenshots
-PASS: 171 mobile room-objective presentation assertions (text/state/layout, not rendered UI)
-
-PASS: compiled expanded-row negative rejected by actual mobile Draw rectangles

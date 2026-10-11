@@ -1,3 +1,0 @@
-# Interrupted candidate — not final acceptance
-
-Windows b32543fc4867fec16f931ac44f5d571359d9f189 / iOS b5a39f2c497a0e6e54a04ccb74230fe3dd500034. The full run was intentionally terminated before completion after parent review identified missing PreserveWorldLoot() / LastError members in the VanguardRecoveryIntegrationTests death-session fixture. Production death logic remains valid; the corrected fixture needs a new source freeze and full report. Partial logs are retained, not counted as a complete pass. Separate three-platform API compile passed for this source, which does not imply managed-suite or engine acceptance.

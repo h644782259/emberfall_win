@@ -1,3 +1,0 @@
-PASS: room tactics pause, route, support, mobile objective and shared arrival wiring (source contracts only)
-PASS: desktop/mobile boss objective includes required guards (source contracts only)
-PASS: room checkpoint lifecycle, cooldown preservation and desktop/mobile route wiring

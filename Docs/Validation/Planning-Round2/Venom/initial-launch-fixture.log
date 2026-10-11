@@ -1,8 +1,0 @@
-Traceback (most recent call last):
-  File "/workspace/scratch/planning-round2/venom/Tests/ConcentratedVenomLaunchTests.py", line 4, in <module>
-    r=Path(__file__).resolve().parents[1];ns={'__file__':str(r/'Tests/AuthoredProjectileProductionTests.py')};exec((r/'Tests/AuthoredProjectileProductionTests.py').read_text().split('with tempfile.TemporaryDirectory',1)[0],ns)
-                                                                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "<string>", line 6
-    ns={'__file__':str(root/'Tests/AuthoredSpellIntegrationTests.py')};exec((root/'Tests/AuthoredSpellIntegrationTests.py').read_text().split('
-                                                                                                                                              ^
-SyntaxError: unterminated string literal (detected at line 6)

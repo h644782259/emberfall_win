@@ -1,6 +1,0 @@
-/tmp/arrow-batch-generation-g_9bbiu1/SequenceProbe.cs(16,42): warning CS0649: Field 'SequenceProbe.origin' is never assigned to, and will always have its default value [/tmp/arrow-batch-generation-g_9bbiu1/Test.csproj]
-/tmp/arrow-batch-generation-g_9bbiu1/SequenceProbe.cs(16,33): warning CS0169: The field 'SequenceProbe.forward' is never used [/tmp/arrow-batch-generation-g_9bbiu1/Test.csproj]
-/tmp/arrow-batch-generation-g_9bbiu1/SequenceProbe.cs(20,22): warning CS0169: The field 'SequenceProbe.restrictedHealing' is never used [/tmp/arrow-batch-generation-g_9bbiu1/Test.csproj]
-PASS 114 real persistent sequence/lease-eviction/re-rent generation assertions with full new-rental state snapshots; managed, not Unity.
-PASS removing only rental-generation guard fails actual stale sequence Update/full snapshot despite same owner and same castId.
-PASS removing lease callback generation guard fails full protected new-rental snapshot.

@@ -1,9 +1,0 @@
-{
-  "passed": false,
-  "exitCode": 1,
-  "sourceChangedDuringRun": [],
-  "onlyFailure": "companion-path-allocation",
-  "isolationCommand": "DOTNET_TieredCompilation=0 python3 Tests/CompanionPathAllocationTests.py /tmp/emberfall-dotnet/dotnet",
-  "isolationPassed": true,
-  "nextRun": "Same frozen sources, full run with DOTNET_TieredCompilation=0; raw nonzero report retained."
-}

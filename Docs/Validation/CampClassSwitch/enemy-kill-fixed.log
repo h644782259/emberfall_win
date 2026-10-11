@@ -1,6 +1,0 @@
-Emberfall: 保存失败：临时存档路径被目录占用，未覆盖原文件或备份。
-Emberfall: 保存失败：发现可恢复的临时存档，已保留且未覆盖。请先备份整个存档目录，再处理临时存档恢复。
-Emberfall: 保存失败：主存档与备份均无法验证，当前进度尚未保存。原文件已保留，请先备份整个目录并恢复可用存档。
-Emberfall: 保存失败：当前存档已删除或移走。请读取其他存档或创建新角色。
-Emberfall: 保存失败：当前存档已删除或移走。请读取其他存档或创建新角色。
-PASS: 170 earned-kill reward assertions in 20 isolated scenarios

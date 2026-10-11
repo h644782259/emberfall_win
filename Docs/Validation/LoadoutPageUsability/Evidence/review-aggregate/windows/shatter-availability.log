@@ -1,8 +1,0 @@
-  Determining projects to restore...
-  Restored /tmp/shatter-availability-33__o9jn/Test.csproj (in 71 ms).
-/tmp/shatter-availability-33__o9jn/ShatterAvailabilityTests.cs(66,16): warning CS0649: Field 'PlayerController.burnFeedbackCast' is never assigned to, and will always have its default value 0 [/tmp/shatter-availability-33__o9jn/Test.csproj]
-PASS: 43 production shatter resolver/availability/geometry assertions (managed substitutes)
-PASS: compiled fabricated-expiry and readiness-bypass controls fail exact typed opportunity assertions
-PASS: old HUD cooldown-only connection fails actual HUD replay
-PASS: old frost-presence-plus-ready shortcut fails actual production query geometry test
-PASS: release/preparation/availability share production query resolvers; not Unity physics or GPU acceptance

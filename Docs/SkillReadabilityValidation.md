@@ -1,9 +1,0 @@
-# Skill readability slice
-
-Small mobile layouts below 800 logical units use the full list body, then a full detail body. Returning to the list preserves its scroll anchor; reopening starts at the list. Tablets retain two panes. The existing shared touch-scroll gesture suppresses horizontal and vertical drag release before row activation. Learning still uses ProgressionService eligibility and persistence.
-
-The existing forty skill glyph recipes are reused at bounded 24/32/48 raster tiers, with thicker small strokes, active/passive containers and three rank marks. Mobile cooldown, charging, energy and refusal captions occupy the lower strip instead of covering the icon. Equipment summaries add the actual eligible mechanism title, benefit and cost; existing score remains explicitly exclusive of mechanism value and full descriptions remain available.
-
-Integration requires the GameUI.cs owner to call CloseMobileSkillDetail() first in ClosePanel and ResetMobileSkillNavigation() when opening Skills. The same DrawSkillIdentity(Rect,HeroClass,int,int,bool,int) helper is available for the owner’s desktop tree and battle-control hooks. No Player, GameSession, gameplay balance, save schema or touch hitbox changes belong to this slice.
-
-Validation: run `python Tests/SkillReadabilityProductionTests.py <dotnet>` for production navigation helper + real TouchScrollGesture, all 120 production icon rasters/cache entries, and actual mechanic presentation eligibility. Run SkillReadabilitySourceTests.py and MobileSkillsWorkshopSourceTests.py for wiring/regression contracts. Engine shells capture CPU raster input; they do not demonstrate visual legibility. No Unity launch, rendered screenshots, real touch hardware or DPI/font appearance has been tested here. Exact Unity 6000.6.3 API compilation and integrated GameUI Back hooks require the parent’s environment.

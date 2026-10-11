@@ -1,7 +1,0 @@
-PASS 41 actual boss channel-mask and detached shutdown lifecycle cases (Unity API doubles)
-PASS scaled-clock mutation fails actual zero-timescale settlement assertion
-Traceback (most recent call last):
-  File "/workspace/scratch/planning-round2/validation-v1/Tests/LargeBossShutdownTests.py", line 15, in <module>
-    session=(r/'Assets/Scripts/Core/GameSession.cs').read_text();kill=session[session.index('public void OnEnemyKilled('):];assert kill.index('Enemies.Remove(enemy)')<kill.index('Progression.GrantEnemyKillReward')<kill.index('enemy.BeginDeath()')
-                                                                                                                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-AssertionError

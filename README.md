@@ -1,8 +1,6 @@
 # 星烬纪元 / Emberfall
 
-> **最新源码交付状态：** [2026-10-03 说明与验证边界](Docs/Release-2026-10-03.md)，覆盖已合并的 PR21–PR28。
-
-> **0.4.0 源码：立体技能动画、十格触控、存读档、三城镇/三试炼与五房远征。** Windows/iOS已同步本轮功能；尚未发布新安装包或完成引擎画面/真机验收。见 [本轮说明与验证边界](Docs/Visual-Mobile-Release.md)。 后续数值与可靠性检查见 [第三轮检查](Docs/Combat-Review-3.md)。
+> **最新源码交付状态：** 2026-10-03 说明与验证边界，覆盖已合并的 PR21–PR28。
 
 Unity 3D 即时战斗 RPG 单机原型，当前使用 **Unity 6（6000.6.3f1）、Windows 64 位、Built-in Render Pipeline**。参考动作 RPG 的技能连招、闪避、副本和装备成长玩法，角色、名称与场景均为原创程序化内容。
 
@@ -224,3 +222,5 @@ git push origin main
 | `Assets/Scripts/World/GroundLootPickup.cs` | 地面装备外观、落地保护与拾取 |
 | `Assets/Scripts/UI/GameUI.cs` | 全部游戏内中文界面 |
 | `Assets/Editor/ProjectTools.cs` | Unity 项目指南、试玩和构建入口 |
+
+开发、测试与资源维护入口见 [维护文档](Docs/README.md)。

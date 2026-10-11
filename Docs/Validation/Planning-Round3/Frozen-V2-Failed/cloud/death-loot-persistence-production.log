@@ -1,9 +1,0 @@
-/tmp/death-loot-_qynxntv/DeathAdapter.cs(3,32): error CS0103: The name 'PracticeRecord' does not exist in the current context [/tmp/death-loot-_qynxntv/test.csproj]
-
-The build failed. Fix the build errors and run again.
-Traceback (most recent call last):
-  File "/workspace/scratch/planning-round3/validation-v2/Tests/DeathLootPersistenceProductionTests.py", line 21, in <module>
-    subprocess.run(cmd,env=env,check=True)
-  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 571, in run
-    raise CalledProcessError(retcode, process.args,
-subprocess.CalledProcessError: Command '['/workspace/shared/emberfall-tools/dotnet/dotnet', 'run', '--project', '/tmp/death-loot-_qynxntv/test.csproj', '--', '/tmp/death-loot-_qynxntv/saves']' returned non-zero exit status 1.

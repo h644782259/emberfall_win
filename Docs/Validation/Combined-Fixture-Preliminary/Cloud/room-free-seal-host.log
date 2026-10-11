@@ -1,3 +1,0 @@
-PASS: 229 actual free-seal host/state/navigation/save-boundary assertions; managed scene/save doubles, not Unity gameplay
-PASS: 52231 room objectives, 540 seeds, 54 combinations and 1000 consecutive-run assertions (not playtesting)
-PASS: compiled forced-order production mutation fails actual B-first host assertion

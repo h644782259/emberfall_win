@@ -1,8 +1,0 @@
-Shared fixture: Tests/EnemyKnockdownProductionTests.cs
-Executable consumers audited across Tests and ArtSource:
-Tests/EnemyKnockdownProductionTests.py: already copies actual ThreatAdmissionPolicy.cs and CampPracticeRecord.cs.
-Tests/EnemyKnockdownGeometryTests.py: now copies actual ThreatAdmissionPolicy.cs.
-Tests/EnemySilhouetteAnimationTests.py: now copies actual ThreatAdmissionPolicy.cs.
-ThreatAdmissionPolicy uses System/System.Collections.Generic only; no additional production enum dependency required.
-Both reruns exit 0. Original assertions and geometry negative control unchanged.
-Managed fixtures only; not Unity engine validation.

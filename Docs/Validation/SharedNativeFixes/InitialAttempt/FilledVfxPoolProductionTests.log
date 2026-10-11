@@ -1,6 +1,0 @@
-PASS 4367 actual loaded pooled VFX ownership/reset/cap/warm-loop assertions; managed, not engine allocation/FPS.
-Traceback (most recent call last):
-  File "/workspace/emberfall_win_native/Tests/FilledVfxPoolProductionTests.py", line 20, in <module>
-    target=p/'FilledSkillVfx.cs';original=target.read_text();assert old in original;target.write_text(original.replace(old,new));result=subprocess.run(cmd,env=env,capture_output=True,text=True);target.write_text(original);assert result.returncode and error in result.stdout+result.stderr,(error,result.stdout,result.stderr);print('PASS compiled pool negative:',error)
-                                                                                                                                                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-AssertionError: ('NullReferenceException', "/tmp/filled-vfx-pool-0503qrtj/FilledSkillVfx.cs(114,13): error CS0118: 'fx' is a variable but is used like a type [/tmp/filled-vfx-pool-0503qrtj/Test.csproj]\n", '\nThe build failed. Fix the build errors and run again.\n')

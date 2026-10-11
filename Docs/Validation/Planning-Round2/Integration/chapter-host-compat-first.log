@@ -1,9 +1,0 @@
-/tmp/chapter-host-production-3m712274/Lifecycle.cs(113,32): error CS1501: No overload for method 'EndPractice' takes 1 arguments [/tmp/chapter-host-production-3m712274/Tests.csproj]
-
-The build failed. Fix the build errors and run again.
-Traceback (most recent call last):
-  File "/workspace/scratch/planning-round2/win/Tests/ChapterHostProductionTests.py", line 39, in <module>
-    subprocess.run(command,env=env,check=True)
-  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 571, in run
-    raise CalledProcessError(retcode, process.args,
-subprocess.CalledProcessError: Command '['/workspace/shared/emberfall-tools/dotnet/dotnet', 'run', '--project', '/tmp/chapter-host-production-3m712274/Tests.csproj', '--no-restore', '--', '/tmp/chapter-host-production-3m712274/saves']' returned non-zero exit status 1.

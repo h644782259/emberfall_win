@@ -1,6 +1,6 @@
 # ReturningBlade counter variant B
 
-The [PR45 follow-up](AdmissionValidation/README.md) fixes and validates the combined pinned-target admission and desktop workshop entry. Its logs supersede the earlier isolated admission evidence below.
+The PR45 follow-up fixes and validates the combined pinned-target admission and desktop workshop entry. Its logs supersede the earlier isolated admission evidence below.
 
 Variant A stays the default for existing saves and keeps the original 8% basic damage penalty, bounce, return bonus and kill rebounce. Variant B uses the existing mutually exclusive index 1 and four-shard first unlock; switching thereafter is free in camp. Build presets, save validation, ascension and reforge retain the choice. No new save fields or parallel unlock system.
 

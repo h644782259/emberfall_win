@@ -1,8 +1,0 @@
-Baseline 5d85e47b9fab2489d5b06963a0b896ec19112740
-Expected failure: lacks attack admission integration
-exit=1
-Traceback (most recent call last):
-  File "/tmp/coordination-baseline-63r0ckjh/Tests/ThreatAdmissionTests.py", line 7, in <module>
-    assert 'ready && AdmitThreatAttack()' in controller
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-AssertionError

@@ -1,4 +1,0 @@
-未能将“E:\emberfall_win\Tests\TestResults\Temp\weapon-swing-identity-57eb5u3y\cli\.dotnet\tools”添加到 PATH 环境变量。请将此目录添加到 PATH，以使用通过 "dotnet tool install" 安装的工具。
-PASS: 34 production visual-child/root-invariance and sword-endpoint checks (managed, not GPU)
-PASS: production decorative/physical Slash dispatch and per-swing identity
-PASS: 3 compiled duplicate-swing, stale-sampling and decorative-Slash negative controls

@@ -1,8 +1,0 @@
-
-Build succeeded.
-    0 Warning(s)
-    0 Error(s)
-
-Time Elapsed 00:00:00.97
-PASS: 12 actual damage ordering and instance evidence assertions
-PASS: compiled late-callback control rejected by lethal result snapshot assertion

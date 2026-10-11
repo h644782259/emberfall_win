@@ -1,2 +1,0 @@
-
-PASS: 60 side reward transaction/restart/bounded receipt checks (recent32 only; host must reject stale epochs)

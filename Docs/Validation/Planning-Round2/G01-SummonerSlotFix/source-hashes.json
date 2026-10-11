@@ -1,8 +1,0 @@
-{
-  "Assets/Scripts/UI/GameUI.CombatOpportunities.cs": "dd9161fad2d523afe873e6c65e81c5d2cd9fa9105461fe6a5a1e33e8f91d48be",
-  "Assets/Scripts/UI/GameUI.MobileFeedback.cs": "98f00aaefaae1e2666cfcce682222477929994588c4c086e830e9c4d278e61fe",
-  "Tests/CombatOpportunitySlotProductionTests.py": "4ddb45c4e3a0a8aba7bd408ff9540b15724a75ad1db67d253205c547e23deccd",
-  "Tests/CombatOpportunitySourceTests.py": "9457bf2b1b6a4e37b8731c464259be4adafdbe00f2d1b27c50be1db534017027",
-  "Tests/DesktopOpportunityHotbarProductionTests.py": "f38cdf919e8a4fafca427cb6bf30276ef7f1762fb3be84ddff910b421f993b9b",
-  "Tests/OpportunityChannelsRound2Tests.py": "9dc37890254f0a7ca05bd4df16b5d73625c79f980c89070cd881852f4b08aaad"
-}

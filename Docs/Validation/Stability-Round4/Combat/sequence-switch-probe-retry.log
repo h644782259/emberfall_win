@@ -1,8 +1,0 @@
-current exit 3
-first-heal callback replaces session.Player; actual Update call count=3 retired=True
-first-heal callback retires epoch; actual Update call count=1 retired=True
-
-candidate exit 0
-first-heal callback replaces session.Player; actual Update call count=1 retired=True
-first-heal callback retires epoch; actual Update call count=1 retired=True
-

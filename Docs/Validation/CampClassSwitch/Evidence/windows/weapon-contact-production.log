@@ -1,8 +1,0 @@
-/tmp/weapon-contact-kmd3pm26/export/Model.cs(10,40): warning CS0414: The field 'CombatModel.quadruped' is assigned but its value is never used [/tmp/weapon-contact-kmd3pm26/export/Export.csproj]
-/tmp/weapon-contact-kmd3pm26/export/Model.cs(720,76): warning CS0414: The field 'CombatModel.floating' is assigned but its value is never used [/tmp/weapon-contact-kmd3pm26/export/Export.csproj]
-PASS 85 actual factory/loader/16-combination before-after/anchors/fallback assertions; managed TRS, not Unity
-PASS compiled weapon negative control: wrong-tip
-PASS compiled weapon negative control: skip-base
-/tmp/weapon-contact-kmd3pm26/export/Model.cs(10,40): warning CS0414: The field 'CombatModel.quadruped' is assigned but its value is never used [/tmp/weapon-contact-kmd3pm26/export/Export.csproj]
-/tmp/weapon-contact-kmd3pm26/export/Model.cs(720,76): warning CS0414: The field 'CombatModel.floating' is assigned but its value is never used [/tmp/weapon-contact-kmd3pm26/export/Export.csproj]
-PASS 1680 loaded 16-combination actual AnimateHero/AimArm contact anchors; real bow draw/string/nock and ribbon Sample; managed numerical transforms, not Unity

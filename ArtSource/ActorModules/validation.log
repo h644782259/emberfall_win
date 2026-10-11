@@ -1,6 +1,0 @@
-PASS actual decoder 20 assets malformed/finite/index/budget guards; exact selector; cache and original fallback. Managed, not Unity.
-SCOPE: optional Blender visual disabled boundary; no imported-rig coverage
-PASS: 7934 production composition assertions; 4 heroes x 4 upgrade ranks x 2 equip orders, T4 + highest fashion. Static TRS/resources only, no Unity animation or GPU validation.
-PASS: 4 compiled production negative controls fail exact attachment-offset, staff-length and owned-palette assertions
-PASS: 128 actual common/rare weapon fashion construction checks; static managed geometry only
-PASS: old common/rare color-only geometry compiled and failed the exact structural assertion

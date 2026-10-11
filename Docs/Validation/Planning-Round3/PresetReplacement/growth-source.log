@@ -1,7 +1,0 @@
-Traceback (most recent call last):
-  File "/workspace/scratch/planning-round3/growth/Tests/ProgressionGrowthSourceTests.py", line 34, in <module>
-    check('TierRewardRules.ChestGoldMinimum(candidate.pendingChestTier)' in p and 'profile.pendingChestTier = TierRewardRules.ClampTier' in p,'chest uses earned tier and old saves get bounded migration')
-  File "/workspace/scratch/planning-round3/growth/Tests/ProgressionGrowthSourceTests.py", line 8, in check
-    if not ok:raise AssertionError(label)
-              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-AssertionError: chest uses earned tier and old saves get bounded migration

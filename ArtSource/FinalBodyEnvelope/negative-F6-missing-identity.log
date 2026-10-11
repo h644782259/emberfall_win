@@ -1,3 +1,0 @@
-Unhandled exception. System.Exception: actual defense selects loaded ProtectionCage
-   at DefenseIdentityTests.Check(Boolean ok, String m) in /tmp/defense-identity-r8iib2o_/Test.cs:line 4
-   at DefenseIdentityTests.Main(String[] args) in /tmp/defense-identity-r8iib2o_/Test.cs:line 33

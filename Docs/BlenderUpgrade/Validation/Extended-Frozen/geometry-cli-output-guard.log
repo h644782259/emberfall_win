@@ -1,4 +1,0 @@
-usage: EnemyKnockdownGeometryTests.py [-h] [--output OUTPUT] [dotnet]
-EnemyKnockdownGeometryTests.py: error: --output must name a .json file
-
-PASS rejects non-JSON output before executing SDK; SDK SHA-256 unchanged: 7dda7a639bc35fba05c40d308b0296450aa4e628d109245a6312c385da9b0931

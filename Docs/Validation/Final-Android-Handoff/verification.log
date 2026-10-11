@@ -1,8 +1,0 @@
-LOCAL CANDIDATE; unified full tests pending; no Android application/APK.
-PASS full archive: 852 changed target files; exact target hashes, sizes, modes and safe unique member paths.
-PASS runtime-only archive: 308 changed target files; exact target hashes, sizes and modes.
-PASS Windows: 306/306 original GUIDs preserved; 142 new GUIDs, no collisions; 273 runtime C# files all have metas.
-PASS iOS: 309/309 original GUIDs preserved; 142 new GUIDs, no collisions; 273 runtime C# files all have metas.
-PASS runtime C# contents and new GUID paths identical between frozen platforms.
-NOT CHECKED: Android baseline, patch applicability, Unity execution or device validation.
-PASS v4 runtime-only SHA-256 equals v2/v3; immutable Scripts/Resources diff is empty. Fixture/test repairs do not alter production inputs.

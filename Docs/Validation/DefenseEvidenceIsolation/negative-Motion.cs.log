@@ -1,4 +1,0 @@
-/tmp/defense-isolation-final-envelope/export/Motion.cs(1,202): warning CS0414: The field 'CombatModel.pilotCharging' is assigned but its value is never used [/tmp/defense-isolation-final-envelope/export/Export.csproj]
-Unhandled exception. System.Exception: actual Vanguard layer changes contact
-   at Emberfall.CombatModel.EnvelopePose(Single progress, Boolean skill) in /tmp/defense-isolation-final-envelope/export/Motion.cs:line 469
-   at Entry.Main() in /tmp/defense-isolation-final-envelope/export/Exporter.cs:line 7

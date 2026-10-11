@@ -1,9 +1,0 @@
-
-Emberfall: 保存失败：当前存档已删除或移走。请读取其他存档或创建新角色。
-Emberfall: 保存失败：当前存档已删除或移走。请读取其他存档或创建新角色。
-Emberfall: 保存失败：当前存档已删除或移走。请读取其他存档或创建新角色。
-Emberfall: 保存失败：已达到 64 份存档/临时恢复文件上限。请先备份目录并处理恢复文件；未覆盖或清理现有文件。
-Emberfall: 保存失败：已达到 64 份存档/临时恢复文件上限。请先备份目录并处理恢复文件；未覆盖或清理现有文件。
-Emberfall: 保存失败：The file '/tmp/EmberfallCloudValidation-b2pf32ng/saves/deletion-775752b88a694415947a4feaa46bd1bc/case-14/emberfall-save-f85b1fa6f88d4eb2bfb93f45e1bede55.json' already exists.
-Emberfall: 保存失败：发现可恢复的临时存档，已保留且未覆盖。请先备份整个存档目录，再处理临时存档恢复。
-PASS: 406 save-deletion/storage assertions in 15 isolated scenarios.

@@ -1,8 +1,0 @@
-{
-  "sourceHead": "dc0b9080a2b0662e73c238be01b0ccae84af683a",
-  "status": "intentionally interrupted, not a full-suite result",
-  "exitCode": 130,
-  "completedCheckLogs": 64,
-  "reason": "Read-only combined review found direct NewGame(practice memory service) null-key exception. Final validation requires the subsequent guarded source.",
-  "timeUtc": "2026-10-03T10:45:14.303801+00:00"
-}

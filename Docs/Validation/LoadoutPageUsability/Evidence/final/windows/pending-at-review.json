@@ -1,7 +1,0 @@
-{
-  "capturedUtc": "2026-10-05T01:36:44.722509+00:00",
-  "complete": false,
-  "pid": 189224,
-  "DOTNET_TieredCompilation": "0",
-  "reason": "Previous frozen aggregate had only companion-path-allocation exact-byte-count failure; isolated tiered-off rerun passed. Clean full aggregate still running. No final pass claimed."
-}

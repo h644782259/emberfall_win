@@ -1,6 +1,0 @@
-/tmp/emberfall-wolf-bzigtsrd/export/Model.cs(720,76): warning CS0414: The field 'CombatModel.floating' is assigned but its value is never used [/tmp/emberfall-wolf-bzigtsrd/export/Export.csproj]
-/tmp/emberfall-wolf-bzigtsrd/export/Model.cs(10,40): warning CS0414: The field 'CombatModel.quadruped' is assigned but its value is never used [/tmp/emberfall-wolf-bzigtsrd/export/Export.csproj]
-/tmp/emberfall-wolf-bzigtsrd/export/Model.cs(10,40): warning CS0414: The field 'CombatModel.quadruped' is assigned but its value is never used [/tmp/emberfall-wolf-bzigtsrd/export/Export.csproj]
-/tmp/emberfall-wolf-bzigtsrd/export/Model.cs(720,76): warning CS0414: The field 'CombatModel.floating' is assigned but its value is never used [/tmp/emberfall-wolf-bzigtsrd/export/Export.csproj]
-PASS actual wolf factory/decoded buffers plus exact quadruped Animate branch: 49 poses, fore/hind dispatch, original bite hinge, finite vertices, stable shared meshes, navigation owner unchanged. Managed TRS, NOT Unity.
-PASS compiled frozen bite hinge negative control rejected

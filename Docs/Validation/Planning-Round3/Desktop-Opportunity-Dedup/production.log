@@ -1,8 +1,0 @@
-PASS: 44 real desktop DrawHotbar remapping/priority/input-state observations (managed drawing, not Unity)
-PASS: compiled old/miswired desktop behavior fails exact assertion: ready window caption renders once outside the slot
-PASS: compiled old/miswired desktop behavior fails exact assertion: summoner no target keeps real clock without executable caption or green border
-PASS: compiled old/miswired desktop behavior fails exact assertion: actual remapped meteor slot reads skill identity not slot index
-PASS: compiled old/miswired desktop behavior fails exact assertion: fixed desktop icon footprint across status changes
-PASS: compiled old/miswired desktop behavior fails exact assertion: opportunity border and skill icon stay on remapped actual slot
-PASS: compiled old/miswired desktop behavior fails exact assertion: actual remapped meteor slot reads skill identity not slot index
-PASS: compiled old/miswired desktop behavior fails exact assertion: desktop basic control names left click and actual counter window

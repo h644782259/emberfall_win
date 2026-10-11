@@ -1,5 +1,0 @@
-
-Unhandled exception. System.Exception: exact delta and deterministic legendary progress
-   at RewardViewingRulesTests.Check(Boolean b, String why) in /workspace/emberfall_ios_polish/Tests/RewardViewingRulesTests.cs:line 5
-   at RewardViewingRulesTests.Run() in /workspace/emberfall_ios_polish/Tests/RewardViewingRulesTests.cs:line 28
-   at Program.Main() in /tmp/EmberfallCloudValidation-jr4xa87_/reward-viewing-rules/Program.cs:line 1

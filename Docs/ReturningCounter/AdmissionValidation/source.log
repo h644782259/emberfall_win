@@ -1,3 +1,0 @@
-PASS: 8 basic action timing wiring contracts
-PASS: gameplay recovery independent of visual pose; confirmed-hit energy and cancellation wiring
-PASS: 8 dodge/basic and captured-target-death priority source contracts (no PlayMode claim)

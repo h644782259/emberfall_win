@@ -1,5 +1,0 @@
-Unhandled exception. System.Exception: Vanguard-fresh-L1: failed load staging preserves built character and paused world
-   at Emberfall.GameSession.JourneyCheck(Boolean ok, String why) in /workspace/scratch/planning-round2/final-fixture-retry/chapter-lifecycle/journey-evidence/20261003T105514561730Z/negative-controls/failed-stage-discards-world/project/IntegratedJourneyFixture.cs:line 15
-   at Emberfall.GameSession.JourneyReload(GameSession s) in /workspace/scratch/planning-round2/final-fixture-retry/chapter-lifecycle/journey-evidence/20261003T105514561730Z/negative-controls/failed-stage-discards-world/project/IntegratedJourneyFixture.cs:line 142
-   at Emberfall.GameSession.VerifyIntegratedJourney(String root) in /workspace/scratch/planning-round2/final-fixture-retry/chapter-lifecycle/journey-evidence/20261003T105514561730Z/negative-controls/failed-stage-discards-world/project/IntegratedJourneyFixture.cs:line 181
-   at Program.<Main>$(String[] args) in /workspace/scratch/planning-round2/final-fixture-retry/chapter-lifecycle/journey-evidence/20261003T105514561730Z/negative-controls/failed-stage-discards-world/project/Program.cs:line 1

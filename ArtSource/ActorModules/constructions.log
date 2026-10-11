@@ -1,3 +1,0 @@
-/workspace/scratch/actor-constructions/export/Model.cs(712,85): warning CS0414: The field 'CombatModel.treantCompanion' is assigned but its value is never used [/workspace/scratch/actor-constructions/export/Export.csproj]
-/workspace/scratch/actor-constructions/export/Model.cs(10,40): warning CS0414: The field 'CombatModel.quadruped' is assigned but its value is never used [/workspace/scratch/actor-constructions/export/Export.csproj]
-/workspace/scratch/actor-constructions/export/Model.cs(712,76): warning CS0414: The field 'CombatModel.floating' is assigned but its value is never used [/workspace/scratch/actor-constructions/export/Export.csproj]

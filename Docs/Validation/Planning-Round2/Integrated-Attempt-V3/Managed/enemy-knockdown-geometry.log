@@ -1,9 +1,0 @@
-/tmp/enemy-knockdown-geometry-chh5b_xi/AnimationFields.cs(8,71): error CS0246: The type or namespace name 'ThreatAdmissionPolicy' could not be found (are you missing a using directive or an assembly reference?) [/tmp/enemy-knockdown-geometry-chh5b_xi/Test.csproj]
-
-The build failed. Fix the build errors and run again.
-Traceback (most recent call last):
-  File "/workspace/scratch/planning-round2/validation-v3/Tests/EnemyKnockdownGeometryTests.py", line 53, in <module>
-    subprocess.run(command,env=env,check=True)
-  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 571, in run
-    raise CalledProcessError(retcode, process.args,
-subprocess.CalledProcessError: Command '['/workspace/shared/emberfall-tools/dotnet/dotnet', 'run', '--project', '/tmp/enemy-knockdown-geometry-chh5b_xi/Test.csproj', '--', '/tmp/enemy-knockdown-geometry.json']' returned non-zero exit status 1.

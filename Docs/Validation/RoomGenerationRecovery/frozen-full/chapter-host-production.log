@@ -1,9 +1,0 @@
-/tmp/chapter-host-production-eiie0q3o/Lifecycle.cs(15,13): error CS0103: The name 'EndHubNpcConversation' does not exist in the current context [/tmp/chapter-host-production-eiie0q3o/Tests.csproj]
-
-The build failed. Fix the build errors and run again.
-Traceback (most recent call last):
-  File "/workspace/emberfall_win_progression/Tests/ChapterHostProductionTests.py", line 40, in <module>
-    subprocess.run(command,env=env,check=True)
-  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 571, in run
-    raise CalledProcessError(retcode, process.args,
-subprocess.CalledProcessError: Command '['/tmp/emberfall-dotnet/dotnet', 'run', '--project', '/tmp/chapter-host-production-eiie0q3o/Tests.csproj', '--no-restore', '--', '/tmp/chapter-host-production-eiie0q3o/saves']' returned non-zero exit status 1.

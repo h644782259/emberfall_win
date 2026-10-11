@@ -1,1 +1,0 @@
-PASS: 17 extracted production capture statements; disabled/unsubscribed 340,000 executions perform zero ID API reads; enabled captures retain complete IDs and damage payload. API doubles, no Unity allocation/frame claim.

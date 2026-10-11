@@ -1,3 +1,0 @@
-SCOPE: optional Blender visual disabled boundary; no imported-rig coverage
-PASS: 7934 production composition assertions; 4 heroes x 4 upgrade ranks x 2 equip orders, T4 + highest fashion. Static TRS/resources only, no Unity animation or GPU validation.
-PASS: 4 compiled production negative controls fail exact attachment-offset, staff-length and owned-palette assertions

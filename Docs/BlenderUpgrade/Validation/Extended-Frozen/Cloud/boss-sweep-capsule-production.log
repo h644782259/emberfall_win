@@ -1,2 +1,0 @@
-PASS: 231 actual sweep clip/containment/contour/traversal geometry checks (managed)
-PASS: compiled old center-ray control fails exact capsule safety assertion

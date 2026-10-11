@@ -1,5 +1,0 @@
-/tmp/f6-compare-bep2qcwn/Player.cs(11,101): warning CS0649: Field 'PlayerController.Specialization' is never assigned to, and will always have its default value [/tmp/f6-compare-bep2qcwn/Test.csproj]
-PASS actual entry at age .75 with renderer property-block tint/opacity
-/tmp/f6-compare-kvhyd271/Player.cs(11,101): warning CS0649: Field 'PlayerController.Specialization' is never assigned to, and will always have its default value [/tmp/f6-compare-kvhyd271/Test.csproj]
-PASS actual entry at age .75 with renderer property-block tint/opacity
-PASS before baseline actual PlayerController entries vs current actual entries; nonzero actual MPB color/opacity

@@ -1,6 +1,6 @@
 # 当前 0.4.0 验收状态
 
-本轮已执行独立生产逻辑、源代码接线与 Unity API 编译检查，未运行 Unity 编辑器、真实画面、Windows 安装包或 iPhone/iPad 真机。当前待测项目见本页下方的“0.4.0 expanded acceptance”与 [本轮整合说明](../Docs/Overnight-Integration.md)。
+本轮已执行独立生产逻辑、源代码接线与 Unity API 编译检查，未运行 Unity 编辑器、真实画面、Windows 安装包或 iPhone/iPad 真机。当前待测项目见本页下方的“0.4.0 expanded acceptance”与 本轮整合说明。
 
 以下 0.3.1 表格是仓库原有的历史记录，本次未复验；其 PASS 不能用于证明当前代码已通过引擎/设备测试。历史手动清单中的三页快捷栏和单独“另存为”入口已经被当前十格技能栏、单一保存入口与加载确认替代，不应按旧入口验收现版。
 
@@ -53,7 +53,7 @@ Play Mode 的 10 张 `Camera.Render` 图片不包含 IMGUI；独立 Player 的84
 
 ## 0.4.0 待运行验收
 
-本轮最终检查通过不代表Play Mode/真机已运行。请执行 [画面/触屏/删除/退出专项清单](../Docs/Visual-Mobile-Release.md#验证结论与待验收)，仅在实际执行后记录通过。
+本轮最终检查通过不代表Play Mode/真机已运行。请执行 画面/触屏/删除/退出专项清单，仅在实际执行后记录通过。
 
 ## 0.4.0 expanded acceptance (pending actual Unity/device execution)
 

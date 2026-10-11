@@ -1,8 +1,0 @@
-/tmp/integrated-actor-art-ygtd5_xf/export/Motion.cs(1,202): warning CS0414: The field 'CombatModel.pilotCharging' is assigned but its value is never used [/tmp/integrated-actor-art-ygtd5_xf/export/Export.csproj]
-PASS 281 integrated assertions: all real F1/F2/F3/ActorModules/Vanguard layers, four class sequential gear/fashion/contact/cancel/recovery, companions/enemies and missing/corrupt isolation; managed TRS NOT Unity
-PASS compiled cross-layer negative: cancel preserves torso contact
-PASS compiled cross-layer negative: real Vanguard authored contact
-PASS compiled cross-layer negative: F1 hero visible
-PASS compiled cross-layer negative: F2 enemy visible
-PASS compiled cross-layer negative: F3 starter complete
-PASS treant final combined pose: two shoulder-shell intersections (bidirectional vertex samples) and both eye/head contacts preserved [{'pose': 2, 'bidirectional_shoulder_body_contact_vertex_samples': [12, 6], 'eye_vertices_inside_head': [77, 3]}]

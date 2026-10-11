@@ -1,7 +1,0 @@
-/workspace/emberfall_ios_polish/Tests/SingleChestUIBoundary.cs(16,129): warning CS0649: Field 'GameUI.muted' is never assigned to, and will always have its default value [/tmp/single-chest-ui-2h6618ji/project/Validation.csproj]
-/workspace/emberfall_ios_polish/Tests/SingleChestUIBoundary.cs(16,114): warning CS0649: Field 'GameUI.gold' is never assigned to, and will always have its default value [/tmp/single-chest-ui-2h6618ji/project/Validation.csproj]
-/workspace/emberfall_ios_polish/Tests/SingleChestUIBoundary.cs(16,124): warning CS0649: Field 'GameUI.pale' is never assigned to, and will always have its default value [/tmp/single-chest-ui-2h6618ji/project/Validation.csproj]
-/workspace/emberfall_ios_polish/Tests/SingleChestUIBoundary.cs(16,119): warning CS0649: Field 'GameUI.jade' is never assigned to, and will always have its default value [/tmp/single-chest-ui-2h6618ji/project/Validation.csproj]
-PASS 104 actual desktop/mobile single-opener, failure/retry, skip and acknowledgement assertions; managed GUI boundaries
-PASS compiled single-opener UI negative: one actual opener, no type or part selection
-PASS compiled single-opener UI negative: one normal acknowledgement retains receipt and amounts

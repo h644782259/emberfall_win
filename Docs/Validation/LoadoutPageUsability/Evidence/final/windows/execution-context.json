@@ -1,5 +1,0 @@
-{
-  "exitCode": 0,
-  "DOTNET_TieredCompilation": "0",
-  "note": "Windows rerun disables tiered JIT after an isolated allocation counter discrepancy; initial failed aggregate and targeted rerun retained."
-}

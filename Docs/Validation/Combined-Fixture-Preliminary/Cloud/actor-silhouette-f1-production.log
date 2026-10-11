@@ -1,6 +1,0 @@
-PASS F1 actual12 resources, strict decoder, cached mesh, role isolation, explicit/missing/malformed fallback
-PASS compiled broad-role replacement mutant rejected
-PASS actual F1 factories + equipment + AnimateHero/AimArm/caster/companion pose branches; 44 combinations, same-body mesh identity throughout
-PASS treant all4 sampled poses: two shoulder-shell intersections (bidirectional vertex samples) and both eye/head contacts preserved [{'pose': 0, 'bidirectional_shoulder_body_contact_vertex_samples': [12, 18], 'eye_vertices_inside_head': [77, 3]}, {'pose': 1, 'bidirectional_shoulder_body_contact_vertex_samples': [12, 18], 'eye_vertices_inside_head': [77, 3]}, {'pose': 2, 'bidirectional_shoulder_body_contact_vertex_samples': [12, 6], 'eye_vertices_inside_head': [77, 3]}, {'pose': 3, 'bidirectional_shoulder_body_contact_vertex_samples': [6, 6], 'eye_vertices_inside_head': [77, 3]}]
-PASS all12 generated modules are visible in actual production compositions;44 body/equipment/action cases
-PASS compiled soft-core-parent attachment regression rejected

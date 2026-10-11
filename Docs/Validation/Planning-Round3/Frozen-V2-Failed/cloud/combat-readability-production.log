@@ -1,6 +1,0 @@
-PASS: 6751 production visual priority/batch/anchor/resource checks (managed substitutes, not Unity)
-PASS: old-empty-anchored compiled then rejected: EMPTY_REQUIRED_SHAPE: actual primary/contact requires positive area
-PASS: old-poison-recipe compiled then rejected: actual non-poison arrow rain must request the independent arrow recipe
-PASS: old-reject-priority compiled then rejected: new main silhouette must evict old sustained mesh
-PASS: old-independent-arrows compiled then rejected: all ultimate arrow events must share one visual owner
-PASS: old-relocated-primary compiled then rejected: primary actual impact anchor must not relocate to clear ground

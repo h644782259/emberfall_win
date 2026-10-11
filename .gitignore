@@ -70,3 +70,15 @@ __pycache__/
 /Docs/Validation/**/*.log
 /Docs/Validation/**/*.json
 /Docs/Validation/**/*.txt
+
+# One-off validation and review outputs are regenerated locally.
+/Docs/Validation/
+/Docs/BlenderUpgrade/Validation/
+/Docs/BlenderUpgrade/ReviewThumbnails/
+/Docs/ReturningCounter/*Validation/
+/ArtSource/Review/
+/ArtSource/**/*.log
+/ArtSource/**/Review/
+/ArtSource/**/Validation/
+/Tests/INTEGRATION_VALIDATION.json
+/Tests/IPAD_UI_INTEGRATION.md

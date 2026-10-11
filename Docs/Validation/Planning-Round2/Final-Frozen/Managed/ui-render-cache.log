@@ -1,2 +1,0 @@
-
-PASS: 694 UI cache correctness checks; 20,000 production appearance snapshots allocate 0 managed bytes; 24 stable captions/48 reflows require 24 metric samples (not Unity profiling)

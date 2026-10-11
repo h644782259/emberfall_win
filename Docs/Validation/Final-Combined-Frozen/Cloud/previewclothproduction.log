@@ -1,3 +1,0 @@
-PASS: 517 actual manual cloth deformation/resource checks (managed mesh, not Unity cloth or GPU)
-PASS: global-clock cloak mutation compiled and rejected by the exact local-clock assertion
-PASS: universal cloak old-behavior control compiled and rejected by actual geometry assertion

@@ -1,4 +1,0 @@
-  Determining projects to restore...
-  Restored /tmp/emberfall-field-continuity-d1j86xsr/Validation.csproj (in 121 ms).
-PASS: 139 production secondary-field revision continuity checks (managed geometry, not GPU)
-PASS: old unconditional replan fails the actual rendered-point continuity assertion

@@ -1,5 +1,0 @@
-PASS: 37 real desktop DrawHotbar remapping/priority/input-state observations (managed drawing, not Unity)
-PASS: compiled old/miswired desktop behavior fails exact assertion: fixed desktop icon footprint across status changes
-PASS: compiled old/miswired desktop behavior fails exact assertion: actual remapped meteor slot reads skill identity not slot index
-PASS: compiled old/miswired desktop behavior fails exact assertion: actual remapped meteor slot reads skill identity not slot index
-PASS: compiled old/miswired desktop behavior fails exact assertion: desktop basic control names left click and actual counter window

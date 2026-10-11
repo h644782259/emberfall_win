@@ -1,6 +1,0 @@
-{
-  "Assets/Scripts/Core/GameTypes.cs": "87c3da9b3b048b60e0f44e92208098f02931abef4849d882fdb8cd519ca2685d",
-  "Assets/Scripts/Core/ProgressionService.cs": "ae5b5295e9d0b43f4835db6355a8b9f1d269dc2afddcc57e80303d9f9bb5955d",
-  "Tests/PresetReplacementProductionTests.py": "c5358f4399bc18bfb946a73fe08d7cf71d523d34154f9e6310736da722564ba5",
-  "Tests/PresetReplacementTests.cs": "6fdbb5df1e00cd36d24f908253cd89737b6dd82ddad9a379f1a19c15a66d937d"
-}

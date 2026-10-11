@@ -1,6 +1,0 @@
-  正在确定要还原的项目…
-  已还原 E:\emberfall_win\Tests\TestResults\Temp\side-event-host-g3fbt8z7\Validation.csproj (用时 63 毫秒)。
-E:\emberfall_win\Tests\TestResults\Temp\side-event-host-g3fbt8z7\SideEventProductionTests.cs(55,16): warning CS0414: 字段“GameSession.sideEventStarted”已被赋值，但从未使用过它的值 [E:\emberfall_win\Tests\TestResults\Temp\side-event-host-g3fbt8z7\Validation.csproj]
-E:\emberfall_win\Tests\TestResults\Temp\side-event-host-g3fbt8z7\SideEventProductionTests.cs(55,64): warning CS0414: 字段“GameSession.sideCrystal”已被赋值，但从未使用过它的值 [E:\emberfall_win\Tests\TestResults\Temp\side-event-host-g3fbt8z7\Validation.csproj]
-PASS: 13 actual side-event host failure/duplicate/death/epoch/old-room/retry checks (managed substitutes, not Unity)
-

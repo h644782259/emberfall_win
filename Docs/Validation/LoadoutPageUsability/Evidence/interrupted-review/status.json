@@ -1,5 +1,0 @@
-{
-  "completed": false,
-  "reason": "Stopped deliberately after separate targeted run exposed missing disclosure fields in the preset replacement fixture. No report/pass claimed for this interrupted attempt.",
-  "sourceManifest": "windows-sources.json / ios-sources.json"
-}

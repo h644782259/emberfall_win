@@ -1,9 +1,0 @@
-/tmp/practice-hud-br84n5zt/GameUI.Practice.cs(64,16): error CS0103: The name 'PrimaryButton' does not exist in the current context [/tmp/practice-hud-br84n5zt/Test.csproj]
-
-The build failed. Fix the build errors and run again.
-
-Traceback (most recent call last):
-  File "/workspace/emberfall_win_controls/Tests/PracticeHudProductionTests.py", line 21, in <module>
-    assert run(['run','--project',str(project)]).returncode==0
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-AssertionError

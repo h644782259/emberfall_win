@@ -1,5 +1,0 @@
-
-Unhandled exception. System.Exception: registered enemy defeat accepted
-   at RoomObjectivePresentationTests.Check(Boolean value, String why) in /workspace/scratch/planning-round3/validation-v2/Tests/RoomObjectivePresentationTests.cs:line 6
-   at RoomObjectivePresentationTests.Run() in /workspace/scratch/planning-round3/validation-v2/Tests/RoomObjectivePresentationTests.cs:line 59
-   at Program.Main() in /tmp/EmberfallCloudValidation-2w4v40ed/mobile-room-objective/Program.cs:line 1

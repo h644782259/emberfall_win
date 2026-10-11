@@ -1,2 +1,0 @@
-namespace Emberfall{public sealed class GameUI{GameSession session;public void RebindProgressionNotifications(ProgressionService a,ProgressionService b){}void BlockUITransition(){}public GameUI(GameSession s){session=s;}public void Return()=>ReturnFromChapter();private void ReturnFromChapter()
-        {if(!session.ChapterFinished)return;if(session.IsDead)session.Respawn();else session.ReturnToCamp();BlockUITransition();}}}

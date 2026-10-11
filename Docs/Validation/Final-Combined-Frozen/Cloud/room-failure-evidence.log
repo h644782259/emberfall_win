@@ -1,7 +1,0 @@
-  Determining projects to restore...
-  Restored /tmp/room-failure-evidence-2m8n7b7z/Test.csproj (in 99 ms).
-PASS: 26 production room failure snapshot/actual evidence/side-event membership assertions
-PASS: 654 recap presentation/layout assertions
-PASS: compiled collapsed B-result evidence mutation fails
-PASS: old room-failure-to-Abandoned production snapshot mutation fails
-PASS: death/path/abandon callsite contracts; no Unity engine execution

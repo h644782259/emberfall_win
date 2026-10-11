@@ -1,7 +1,0 @@
-ChapterCombatProductionTests 1
-BossSweepCapsuleProductionTests 0
-Traceback (most recent call last):
-  File "/workspace/scratch/planning-published-integration/Docs/Validation/Published-planning-art-targeted/retry_environment.py", line 15, in <module>
-    assert all(t['exit']==0 for t in report['tests'].values())
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-AssertionError

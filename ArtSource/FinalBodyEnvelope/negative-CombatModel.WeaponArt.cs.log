@@ -1,5 +1,0 @@
-/tmp/final-body-envelope/export/CombatModel.WeaponArt.cs(17,17): warning CS0162: Unreachable code detected [/tmp/final-body-envelope/export/Export.csproj]
-/tmp/final-body-envelope/export/Motion.cs(1,202): warning CS0414: The field 'CombatModel.pilotCharging' is assigned but its value is never used [/tmp/final-body-envelope/export/Export.csproj]
-Unhandled exception. System.Exception: actual F3 weapon loaded
-   at Entry.C(Boolean ok, String why) in /tmp/final-body-envelope/export/Exporter.cs:line 3
-   at Entry.Main() in /tmp/final-body-envelope/export/Exporter.cs:line 6

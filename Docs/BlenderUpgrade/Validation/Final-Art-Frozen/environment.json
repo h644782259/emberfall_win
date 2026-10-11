@@ -1,9 +1,0 @@
-{
-  "dotnet": "8.0.425",
-  "blender": "4.3.2",
-  "os": "Linux 6.18.44 x86_64",
-  "DOTNET_TieredCompilation": "0",
-  "apiReferences": "pinned Unity 2021.3.33",
-  "UnityEditorExecuted": false,
-  "deviceBuildExecuted": false
-}

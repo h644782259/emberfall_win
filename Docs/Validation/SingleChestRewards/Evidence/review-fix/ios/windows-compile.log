@@ -1,9 +1,0 @@
-  Determining projects to restore...
-  Restored /tmp/class-review-fix-amttuxit/windows-compile/Validation.csproj (in 96 ms).
-  Validation -> /tmp/class-review-fix-amttuxit/windows-compile/bin/Release/netstandard2.1/Validation.dll
-
-Build succeeded.
-    0 Warning(s)
-    0 Error(s)
-
-Time Elapsed 00:00:03.03

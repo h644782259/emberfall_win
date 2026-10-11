@@ -1,7 +1,0 @@
-
-Build succeeded.
-    0 Warning(s)
-    0 Error(s)
-
-Time Elapsed 00:00:00.67
-PASS: removing only stage failure cleanup fails the production partial-resource lifecycle assertion (compiled successfully; controlled resource fixture, not native Unity allocation).

@@ -1,5 +1,0 @@
-/tmp/guard-return-yqhqee5l/GuardReturnFixture.cs(17,54): warning CS0169: The field 'EnemyController.mobileSecond' is never used [/tmp/guard-return-yqhqee5l/Test.csproj]
-/tmp/guard-return-yqhqee5l/GuardReturnFixture.cs(17,124): warning CS0169: The field 'EnemyController.attackAnimation' is never used [/tmp/guard-return-yqhqee5l/Test.csproj]
-/tmp/guard-return-yqhqee5l/GuardReturnFixture.cs(17,42): warning CS0169: The field 'EnemyController.mobileFirst' is never used [/tmp/guard-return-yqhqee5l/Test.csproj]
-PASS: 132 production guard movement-budget and committed-warning checks
-PASS: old elapsed-time/pre-warning-return mutation fails the exact committed-warning assertion

@@ -1,2 +1,0 @@
-# Preserve raw process output byte for byte.
-*.log -text -diff

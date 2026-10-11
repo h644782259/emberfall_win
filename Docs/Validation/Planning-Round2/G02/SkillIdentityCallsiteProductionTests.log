@@ -1,8 +1,0 @@
-/tmp/identity-callsite-d66hn0qp/Test.cs(3,130): warning CS0414: The field 'HealingProbe.range' is assigned but its value is never used [/tmp/identity-callsite-d66hn0qp/Test.csproj]
-PASS actual Healing event -> real authored ProtectionCage, all4 hero classes x normal/restricted mode, self pulse11/16 and rank3 energy8, companion11% preserved; managed, not Unity.
-PASS actual SkillChargeController Begin/pause/cancel/release/epoch/disable -> actual AdvancedSkillVfx -> loaded typed mesh:4 families, no leftover effect/lease, release once. Managed, not Unity.
-PASS actual ChainLightning and actual Summoner slot0 production body:damage/immune/zero/corpse/kill/empty; observed IdentityContact priorities/counts; dynamic chain line retained without fake hit. Observable rendering boundary, not Unity.
-PASS source hook contracts: actual health reduction gates lightning/contract endpoint feedback; dynamic lightning line retained; release/cancel owner retained.
-PASS negative control: typed charge leaves no effect or lease after cancel
-PASS negative control: chain only actual health decrease routes contact
-PASS negative control: impulse only actual health decrease routes contact

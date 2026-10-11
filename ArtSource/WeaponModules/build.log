@@ -1,6 +1,0 @@
-Info: Saved "WeaponModules.blend"
-[{"name": "StarBlade", "triangles": 28, "bytes": 3036}, {"name": "StarGuard", "triangles": 132, "bytes": 14268}, {"name": "StarGrip", "triangles": 140, "bytes": 15132}, {"name": "StarPommel", "triangles": 44, "bytes": 4764}, {"name": "BowJoiner", "triangles": 32, "bytes": 3468}, {"name": "StaffShaft", "triangles": 20, "bytes": 2172}, {"name": "MechanicalHoop", "triangles": 72, "bytes": 7788}, {"name": "Facet", "triangles": 8, "bytes": 876}]
-Blender 4.3.2
-Read blend: "/workspace/scratch/blender-upgrade/f3-weapons/ArtSource/BlenderPilot/Emberfall-Pilot-Props.blend"
-
-Blender quit

@@ -1,4 +1,0 @@
-/tmp/defense-identity-r8iib2o_/AdvancedSkillVfx.cs(58,23): warning CS0162: Unreachable code detected [/tmp/defense-identity-r8iib2o_/Test.csproj]
-Unhandled exception. System.Exception: state cancellation hides hierarchy before deferred destruction
-   at DefenseIdentityTests.Check(Boolean ok, String m) in /tmp/defense-identity-r8iib2o_/Test.cs:line 4
-   at DefenseIdentityTests.Main(String[] args) in /tmp/defense-identity-r8iib2o_/Test.cs:line 37

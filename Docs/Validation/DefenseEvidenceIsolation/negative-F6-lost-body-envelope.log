@@ -1,4 +1,0 @@
-Unhandled exception. System.Exception: persistent protection has body envelope clear above head and shoulders
-   at DefenseIdentityTests.Check(Boolean ok, String m) in /tmp/defense-identity-s5hcw9qx/Test.cs:line 4
-   at DefenseIdentityTests.Sample(String label, AdvancedSkillVfx anchor) in /tmp/defense-identity-s5hcw9qx/Test.cs:line 21
-   at DefenseIdentityTests.Main(String[] args) in /tmp/defense-identity-s5hcw9qx/Test.cs:line 34

@@ -1,5 +1,0 @@
-PASS 15135 Vanguard real resource/adapter checks; managed doubles, not Unity
-PASS compiled negative control: missing-load
-PASS compiled negative control: skip-motion
-PASS compiled negative control: dead-writer
-PASS real factory, AnimateHero and LateUpdate call sites; recovery has final ownership

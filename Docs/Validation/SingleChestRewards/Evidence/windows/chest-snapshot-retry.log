@@ -1,8 +1,0 @@
-PASS: 22 actual SaveAsNewSlot failed-draw snapshot/reload/isolation/capacity checks
-NEGATIVE CONTROL: drop both durable and process save-as pending draw inheritance
-Unhandled exception. System.Exception: save-as snapshot must preserve failed draw identity
-   at ChestSnapshotRetryTests.Check(Boolean b, String why) in /tmp/chest-saveas-retry-glqju190/ChestSnapshotRetryTests.cs:line 4
-   at ChestSnapshotRetryTests.Run(String directory) in /tmp/chest-saveas-retry-glqju190/ChestSnapshotRetryTests.cs:line 15
-   at Program.<Main>$(String[] args) in /tmp/chest-saveas-retry-glqju190/Program.cs:line 1
-
-PASS: compiled lost snapshot draw negative control rejected

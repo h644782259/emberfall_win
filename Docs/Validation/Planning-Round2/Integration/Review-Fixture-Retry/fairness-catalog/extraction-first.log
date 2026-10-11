@@ -1,8 +1,0 @@
-Traceback (most recent call last):
-  File "/workspace/scratch/planning-round2/win/Tests/ThreatAdmissionFairnessProductionTests.py", line 44, in <module>
-    catalog=m.method((root/'Assets/Scripts/Core/GameTypes.cs').read_text(),'public static float ConcentratedVenomCoefficient(')
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/workspace/scratch/planning-round2/win/Tests/BlockedCombatUpdateProductionTests.py", line 17, in method
-    start = source.index('        private ' + declaration)
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-ValueError: substring not found

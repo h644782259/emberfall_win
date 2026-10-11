@@ -1,7 +1,0 @@
-{
-  "DOTNET_TieredCompilation": "0",
-  "dotnet": "8.0.425",
-  "scope": "Explicit fixed managed test runtime configuration, not Unity performance",
-  "checks": 218,
-  "sourceChangedDuringRun": []
-}

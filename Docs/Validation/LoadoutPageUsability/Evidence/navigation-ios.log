@@ -1,3 +1,0 @@
-PASS 49 production navigation assertions; managed boundaries, not Unity events
-PASS compiled negative outer-close: outer closure clears disclosures
-PASS compiled negative external-entry: external free-reset shortcut reopens collapsed

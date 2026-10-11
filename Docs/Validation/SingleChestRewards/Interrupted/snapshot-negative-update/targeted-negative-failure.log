@@ -1,9 +1,0 @@
-PASS: 22 actual SaveAsNewSlot failed-draw snapshot/reload/isolation/capacity checks
-NEGATIVE CONTROL: drop save-as pending draw inheritance
-PASS: 22 actual SaveAsNewSlot failed-draw snapshot/reload/isolation/capacity checks
-
-Traceback (most recent call last):
-  File "/workspace/emberfall_win_rewards/Tests/ChestSnapshotRetryTests.py", line 23, in <module>
-    assert result.returncode and 'save-as snapshot must preserve failed draw choice' in result.stdout+result.stderr
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-AssertionError

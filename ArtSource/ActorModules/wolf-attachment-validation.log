@@ -1,4 +1,0 @@
-PASS actual loaded modules across 12 constructed actors. Correct cloth/metal/bark dispatch; boss 4 articulated shell plates.
-PASS all 4 wolf cap surfaces overlap actual transformed torso: [{'top_world_y': 0.53, 'inside_torso_vertices': 10, 'sampled_cap_vertices': 42}, {'top_world_y': 0.53, 'inside_torso_vertices': 11, 'sampled_cap_vertices': 42}, {'top_world_y': 0.53, 'inside_torso_vertices': 17, 'sampled_cap_vertices': 42}, {'top_world_y': 0.53, 'inside_torso_vertices': 17, 'sampled_cap_vertices': 42}]
-PASS both eye surfaces overlap actual transformed head: [86, 76]
-Scope: static mesh/TRS geometry only; no Unity rendering, locomotion or gameplay collision validation.

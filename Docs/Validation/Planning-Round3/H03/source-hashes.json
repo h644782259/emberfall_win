@@ -1,9 +1,0 @@
-{
-  "Assets/Scripts/UI/ChestRevealPresentation.cs": "413d4ff18548de679296ff532bffe92d019c88d1e9f7882cee63f23e453aca95",
-  "Assets/Scripts/UI/GameUI.ChestChoices.cs": "61c95041675a0581854d26a5c5be7a96ab690bcc3cb8a09e969818b1f10c0c89",
-  "Assets/Scripts/UI/GameUI.ChestChoices.cs.meta": "c0dfe271cf431f149cdaeb1be056067ffda5edf6c2692a5be0d6bd50debb770f",
-  "Assets/Scripts/UI/GameUI.Rewards.cs": "47c07981cff690615524f58b3a7610a8e9988c0de9a34a49c6d929ddd3fc9125",
-  "Assets/Scripts/UI/GameUI.MobileRewards.cs": "c6bb7f050c4040e8755bf1735bc2d87ec4c213a2dc05c37354cf1b5e98226b79",
-  "Tests/ChestChoicePresentationTests.cs": "55842287f40f71df76bdfe89152767050f65c99e87d1a545c6383ef609ecc524",
-  "Tests/ChestChoicePresentationTests.py": "d1be2e72c57b61ff89b741ffd27e247239a9ed8aed5b06de45ae644c17517766"
-}

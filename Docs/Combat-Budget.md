@@ -1,4 +1,4 @@
-> 后续实际组合、时序和资源账本见 [第三轮检查](Combat-Review-3.md) 与 [Combo-Budget](Combo-Budget.md)。本文保留早期属性/防御设计尺的记录；其中2A输出率不是实测DPS或击杀时间，也不能代替当前技能组合。
+> 后续实际组合、时序和资源账本见 第三轮检查 与 [Combo-Budget](Combo-Budget.md)。本文保留早期属性/防御设计尺的记录；其中2A输出率不是实测DPS或击杀时间，也不能代替当前技能组合。
 
 # Combat budget proposal — round 2
 

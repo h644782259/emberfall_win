@@ -1,6 +1,0 @@
-/tmp/status-feedback-tp424huc/Fixture.cs(45,505): warning CS0414: The field 'PlayerController.focusTime' is assigned but its value is never used [/tmp/status-feedback-tp424huc/Test.csproj]
-PASS actual poison->consume->aura clear->same-frame reapply chain; burn/frost basic-hit third-contact feedback. Damage budget, energy and receipt checks retained. Managed only, no Unity GPU validation.
-
-PASS compiled negative control: poison-clear-missing
-PASS compiled negative control: false-frost-feedback
-PASS compiled negative control: lost-counter-variant-exclusion

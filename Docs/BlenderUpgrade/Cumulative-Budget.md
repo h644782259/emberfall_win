@@ -52,7 +52,7 @@ Representative **instantiated** counts remain separately recorded: F3 16 weapon 
 
 ## GUID and platform audit
 
-[GuidPreservationAudit.json](GuidPreservationAudit.json) compares **all tracked Assets meta GUIDs**, including folder metas, independently against each platform's original baseline:
+GuidPreservationAudit.json compares **all tracked Assets meta GUIDs**, including folder metas, independently against each platform's original baseline:
 
 | Platform snapshot | Original GUIDs | Preserved | Changed / missing | New GUID paths | Duplicate GUIDs |
 |---|---:|---:|---:|---:|---:|
@@ -67,4 +67,4 @@ Audit method: `git ls-tree -r -l <recorded-ref> Assets` lists tracked blobs and 
 
 `.blend`, OBJ interchange, PNG review images, geometry exports and logs under ArtSource are editable/review provenance outside Assets, excluded from this runtime-source sum. Meta files are audited separately, not counted as payload bytes. Unity imports/copies resources and can add compression, platform shader variants, mesh/texture import data, serialization and package overhead; loaded TextAsset/decoded arrays/Unity Mesh/GPU buffers can coexist. Therefore **source byte delta is neither EXE/IPA/APK delta nor resident CPU/GPU memory**. No build package, imported mesh memory, Unity render capture, FPS or device acceptance is reported. No new textures does not mean the inherited project's textures consume zero memory.
 
-Finite implementation outcomes are closed in [Remaining-Art-Checklist.md](Remaining-Art-Checklist.md); all40 skill routing decisions are in [SkillCoverage.md](SkillCoverage.md). Remaining work is bounded final integration/PR/platform review and explicit engine/device acceptance, not another open-ended asset expansion.
+Finite implementation outcomes are closed in Remaining-Art-Checklist.md; all40 skill routing decisions are in SkillCoverage.md. Remaining work is bounded final integration/PR/platform review and explicit engine/device acceptance, not another open-ended asset expansion.

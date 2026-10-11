@@ -1,5 +1,0 @@
-SOURCE_HEAD 3f30a9a77199152a03fb87342b5cc01e98fb11ba
-COMMAND ['/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3', '/workspace/scratch/planning-published-integration/Tests/BossSweepCapsuleProductionTests.py', '/workspace/shared/emberfall-tools/dotnet/dotnet']
-DOTNET_CLI_HOME temporary writable cache
-PASS: 231 actual sweep clip/containment/contour/traversal geometry checks (managed)
-PASS: compiled old center-ray control fails exact capsule safety assertion

@@ -45,19 +45,19 @@ These pairs execute the same actual factories. **Before disables only AuthoredFi
 
 | Factory | Before | After |
 |---|---|---|
-| Pillar | [before](factory-0-before.png) | [after](factory-0.png) |
-| Portal | [before](factory-1-before.png) | [after](factory-1.png) |
-| Workshop roof/building | [before](factory-2-before.png) | [after](factory-2.png) |
-| Observatory dais/crown | [before](factory-3-before.png) | [after](factory-3.png) |
-| Four facilities | [before](factory-4-before.png) | [after](factory-4.png) |
-| Three NPCs and stations | [before](factory-5-before.png) | [after](factory-5.png) |
+| Pillar | before | after |
+| Portal | before | after |
+| Workshop roof/building | before | after |
+| Observatory dais/crown | before | after |
+| Four facilities | before | after |
+| Three NPCs and stations | before | after |
 
 NPC close-ups below use the original complete factory scene, with a camera centered on each role. No mesh, joint, tool, station or NPC is repositioned. Each before/after pair uses the same camera and lighting; `role-render.log` records the exact camera transforms and orthographic scale. They intentionally show caps, apron, sleeves and work tools at a readable size.
 
 | Role (Blender factory reconstruction, not Unity) | Before | After |
 |---|---|---|
-| Merchant / stocked shelves / cap | [before](role-0-before.png) | [after](role-0-after.png) |
-| Smith / apron / anvil / hammer | [before](role-1-before.png) | [after](role-1-after.png) |
-| Steward / lectern / real chart ring | [before](role-2-before.png) | [after](role-2-after.png) |
+| Merchant / stocked shelves / cap | before | after |
+| Smith / apron / anvil / hammer | before | after |
+| Steward / lectern / real chart ring | before | after |
 
 Reproduce full comparisons with `F4_STATE=before blender -b -t 2 --python ArtSource/FixedScenery/render.py`. For a role pair, set `F4_SAMPLE=5 F4_ROLE=0` (or 1, 2), and run with `F4_STATE=before` then `F4_STATE=after`. Only evidence scripts/tests changed in this supplement; production assets and runtime code are unchanged.

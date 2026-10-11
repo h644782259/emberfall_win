@@ -1,7 +1,0 @@
-Traceback (most recent call last):
-  File "/workspace/scratch/planning-round3/core/Tests/FilledVfxSourceTests.py", line 18, in <module>
-    check('CombatVisualLease.Attach(root,priority)' in fx and 'if(count>=cap)return' in fx and 'private void OnDisable(){finales.Remove(this);Release();}' in fx,'runtime caps and immediate release')
-  File "/workspace/scratch/planning-round3/core/Tests/FilledVfxSourceTests.py", line 8, in check
-    if not value:raise AssertionError(label)
-                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-AssertionError: runtime caps and immediate release

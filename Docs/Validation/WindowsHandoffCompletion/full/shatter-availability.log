@@ -1,8 +1,0 @@
-  正在确定要还原的项目…
-  已还原 E:\emberfall_win\Tests\TestResults\Temp\shatter-availability-y0dk6oe_\Test.csproj (用时 60 毫秒)。
-E:\emberfall_win\Tests\TestResults\Temp\shatter-availability-y0dk6oe_\ShatterAvailabilityTests.cs(66,16): warning CS0649: 从未对字段“PlayerController.burnFeedbackCast”赋值，字段将一直保持其默认值 0 [E:\emberfall_win\Tests\TestResults\Temp\shatter-availability-y0dk6oe_\Test.csproj]
-PASS: 43 production shatter resolver/availability/geometry assertions (managed substitutes)
-PASS: compiled fabricated-expiry and readiness-bypass controls fail exact typed opportunity assertions
-PASS: old HUD cooldown-only connection fails actual HUD replay
-PASS: old frost-presence-plus-ready shortcut fails actual production query geometry test
-PASS: release/preparation/availability share production query resolvers; not Unity physics or GPU acceptance

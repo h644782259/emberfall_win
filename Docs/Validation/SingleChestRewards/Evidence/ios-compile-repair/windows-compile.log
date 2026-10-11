@@ -1,9 +1,0 @@
-  Determining projects to restore...
-  Restored /tmp/reward-compile-repair-qpv8ve48/windows-compile/Validation.csproj (in 64 ms).
-  Validation -> /tmp/reward-compile-repair-qpv8ve48/windows-compile/bin/Release/netstandard2.1/Validation.dll
-
-Build succeeded.
-    0 Warning(s)
-    0 Error(s)
-
-Time Elapsed 00:00:01.99

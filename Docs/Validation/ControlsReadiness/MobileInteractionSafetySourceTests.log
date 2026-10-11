@@ -1,7 +1,0 @@
-Traceback (most recent call last):
-  File "/workspace/emberfall_win_controls/Tests/MobileInteractionSafetySourceTests.py", line 42, in <module>
-    check('mobileInventoryNpcRequest=kind' in npc,'NPC explicitly requests the corresponding mobile inventory destination')
-  File "/workspace/emberfall_win_controls/Tests/MobileInteractionSafetySourceTests.py", line 10, in check
-    assert value,message
-           ^^^^^
-AssertionError: NPC explicitly requests the corresponding mobile inventory destination

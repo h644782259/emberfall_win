@@ -1,9 +1,0 @@
-/tmp/chapter-host-production-nol1dld2/Lifecycle.cs(54,54): error CS0117: 'Debug' does not contain a definition for 'LogException' [/tmp/chapter-host-production-nol1dld2/Tests.csproj]
-
-The build failed. Fix the build errors and run again.
-Traceback (most recent call last):
-  File "/workspace/scratch/planning-round2/validation-v3/Tests/ChapterHostProductionTests.py", line 39, in <module>
-    subprocess.run(command,env=env,check=True)
-  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 571, in run
-    raise CalledProcessError(retcode, process.args,
-subprocess.CalledProcessError: Command '['/workspace/shared/emberfall-tools/dotnet/dotnet', 'run', '--project', '/tmp/chapter-host-production-nol1dld2/Tests.csproj', '--no-restore', '--', '/tmp/chapter-host-production-nol1dld2/saves']' returned non-zero exit status 1.

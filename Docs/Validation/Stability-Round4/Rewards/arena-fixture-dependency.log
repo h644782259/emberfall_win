@@ -1,9 +1,0 @@
-/tmp/arena-reward-exceptions-_qyninxg/Host.cs(5,87): error CS0246: The type or namespace name 'RunBlessing' could not be found (are you missing a using directive or an assembly reference?) [/tmp/arena-reward-exceptions-_qyninxg/Test.csproj]
-
-The build failed. Fix the build errors and run again.
-Traceback (most recent call last):
-  File "/workspace/scratch/stability-round4-win/Tests/ArenaRewardExceptionTests.py", line 27, in <module>
-    subprocess.run([dotnet,'run','--project',str(p/'Test.csproj'),'--',str(p/'save')],env=env,check=True)
-  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 571, in run
-    raise CalledProcessError(retcode, process.args,
-subprocess.CalledProcessError: Command '['/workspace/shared/emberfall-tools/dotnet/dotnet', 'run', '--project', '/tmp/arena-reward-exceptions-_qyninxg/Test.csproj', '--', '/tmp/arena-reward-exceptions-_qyninxg/save']' returned non-zero exit status 1.

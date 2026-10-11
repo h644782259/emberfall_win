@@ -1,9 +1,0 @@
-{
-  "Assets/Scripts/Core/MasteryCoreRuntime.cs": "bded50e1f756baa267cc266fec2c10fd6c88cf46a00ce6637768a94b288236bb",
-  "Assets/Scripts/Combat/PlayerController.cs": "310d00223ecea488986d4388180bb7eba14dffc8c52725182e97ff1ff7b5b68a",
-  "Assets/Scripts/Combat/PlayerController.MasteryCombo.cs": "c4bba83f8ca6ed5f6a6eec933e8bde1538b6f4bbe8f45b9e64be60bf07673505",
-  "Assets/Scripts/Core/GameTypes.cs": "c1948fd274ea716e0a24557badc11bab4ef18fd14ac09eef6e7ce24e49a7a9fd",
-  "Assets/Scripts/UI/GameUI.CombatOpportunities.cs": "697fadbca074c7f29dc26ae9043364198b45ca58012ef38dab84d084fdc8bbad",
-  "Assets/Scripts/UI/MobileControls.Feedback.cs": "2bd7bbb5dd2148ff50859656ccdee5eaea5ab6ba3d21fe33893ca5b0c5246ba2",
-  "Tests/MasteryComboRound2Tests.py": "f820bb84708e2e26695476e81a70d451128b2c35ae656f880a6c7834b57c089a"
-}

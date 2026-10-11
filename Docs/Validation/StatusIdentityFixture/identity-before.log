@@ -1,9 +1,0 @@
-/tmp/identity-callsite-d_zpuo6o/Test.cs(7,29): error CS0103: The name 'restrictedHealing' does not exist in the current context [/tmp/identity-callsite-d_zpuo6o/Test.csproj]
-
-The build failed. Fix the build errors and run again.
-Traceback (most recent call last):
-  File "/workspace/scratch/complete-final-v2-frozen/Tests/SkillIdentityCallsiteProductionTests.py", line 23, in <module>
-    subprocess.run([sys.argv[1] if len(sys.argv)>1 else os.environ.get('DOTNET','dotnet'),'run','--project',str(p/'Test.csproj'),'--',str(root/'Assets/Resources')],check=True,env=dict(os.environ,DOTNET_CLI_HOME=str(p/'cli'),DOTNET_NOLOGO='1'))
-  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 571, in run
-    raise CalledProcessError(retcode, process.args,
-subprocess.CalledProcessError: Command '['/workspace/shared/emberfall-tools/dotnet/dotnet', 'run', '--project', '/tmp/identity-callsite-d_zpuo6o/Test.csproj', '--', '/workspace/scratch/complete-final-v2-frozen/Assets/Resources']' returned non-zero exit status 1.
